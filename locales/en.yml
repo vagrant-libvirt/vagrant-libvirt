@@ -1,0 +1,103 @@
+en:
+  vagrant_libvirt:
+    already_created: |-
+      The machine is already created.
+    not_created: |-
+      Machine is not created. Please run `vagrant up` first.
+    finding_volume: |-
+      Checking if volume is available.
+    creating_domain: |-
+      Creating machine with the following settings...
+    uploading_volume: |-
+      Uploading base box image as volume into libvirt storage...
+    creating_domain_volume: |-
+      Creating image (snapshot of base box volume).
+    removing_domain_volume: |-
+      Removing image (snapshot of base box volume).
+    starting_domain: |-
+      Starting machine.
+    terminating: |-
+      Removing machine...
+    poweroff_domain: |-
+      Poweroff machine.
+    destroy_domain: |-
+      Removing machine...
+    waiting_for_ready: |-
+      Waiting for machine to become "ready"...
+    waiting_for_ip: |-
+      Waiting for machine to get an IP address...
+    waiting_for_ssh: |-
+      Waiting for SSH to become available...
+    booted: |-
+      Machine is booted.
+    rsync_folder: |-
+      Rsyncing folder: %{hostpath} => %{guestpath}
+    ready: |-
+      Machine is booted and ready for use!
+
+    errors:
+      fog_error: |-
+        There was an error talking to Libvirt. The error message is shown
+        below:
+
+        %{message}
+      no_matching_volume: |-
+        No matching volume was found! Please check your volume setting
+        to make sure you have a valid volume chosen.
+      no_storage_pool: |-
+        No usable storage pool found! Please check if storage pool is
+        created and available.
+      no_box_volume: |-
+        Volume for box image is missing in storage pools. Try to run vagrant
+        again, or check if storage volume is accessible.
+      domain_volume_exists: |-
+        Volume for domain is already created. Please run 'vagrant destroy' first.
+      no_domain_volume: |-
+        Volume for domain is missing. Try to run 'vagrant up' again.
+      interface_slot_not_available: |-
+        Interface adapter number is already in use. Please specify other adapter
+        number.
+      rsync_error: |-
+        There was an error when attemping to rsync a share folder.
+        Please inspect the error message below for more info.
+
+        Host path: %{hostpath}
+        Guest path: %{guestpath}
+        Error: %{stderr}
+      no_box_virtual_size: |-
+        No image virtual size specified for box.
+      no_box_format: |-
+        No image format specified for box.
+      wrong_box_format: |-
+        Wrong image format specified for box.
+      fog_libvirt_connection_error: |-
+        Error while connecting to libvirt: %{error_message}
+      fog_create_volume_error: |-
+        Error while creating a storage pool volume: %{error_message}
+      fog_create_domain_volume_error: |-
+        Error while creating volume for domain: %{error_message}
+      fog_create_server_error: |-
+        Error while creating domain: %{error_message}
+      domain_name_exists: |-
+        Name of domain about to create is already taken. Please try to run
+        `vagrant up` command again.
+      creating_storage_pool_error: |-
+        There was error while creating libvirt storage pool: %{error_message}
+      image_upload_error: |-
+        Error while uploading image to storage pool: %{error_message}
+      no_domain_error: |-
+        No domain found. %{error_message}
+      attach_device_error: |-
+        Error while attaching new device to domain. %{error_message}
+
+    states:
+      short_not_created: |-
+        not created
+      long_not_created: |-
+        The Libvirt domain is not created. Run `vagrant up` to create it.
+
+      short_running: |-
+        running
+      long_running: |-
+        The Libvirt domain is running. To stop this machine, you can run
+        `vagrant halt`. To destroy the machine, you can run `vagrant destroy`.
