@@ -1,5 +1,5 @@
 {
-  "provider"     : "libvirt"
-  "format"       : "qcow2"
-  "virtual_size" : "40"
+  "provider"     : "libvirt",
+  "format"       : "qcow2",
+  "virtual_size" : 40
 }
