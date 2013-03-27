@@ -81,7 +81,8 @@ end
 
 ```
 
-And then run `vagrant up --provider=libvirt`.
+And then run `vagrant up --provider=libvirt`. Other way to tell Vagrant to
+use Libvirt provider is to setup environment variable `export VAGRANT_DEFAULT_PROVIDER=libvirt`.
 
 This will first upload box image to remote Libvirt storage pool as new volume.
 Then create and start a CentOS 6.4 domain on example.com Libvirt host. In this
