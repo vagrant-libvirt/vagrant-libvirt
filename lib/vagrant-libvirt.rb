@@ -11,7 +11,7 @@ module VagrantPlugins
     # Hold connection handler so there is no need to connect more times than
     # one. This can be annoying when there are more machines to create, or when
     # doing state action first and then some other.
-    # 
+    #
     # TODO Don't sure if this is the best solution
     @@libvirt_connection = nil
     def self.libvirt_connection
@@ -24,7 +24,16 @@ module VagrantPlugins
 
     def self.source_root
       @source_root ||= Pathname.new(File.expand_path("../../", __FILE__))
-    end  
+    end
   end
 end
+
+# set provider by bash env
+# export VAGRANT_DEFAULT_PROVIDER=libvirt
+Vagrant::Environment.class_eval do
+  def default_provider
+    (ENV['VAGRANT_DEFAULT_PROVIDER'] || :virtualbox).to_sym
+  end
+end
+
 
