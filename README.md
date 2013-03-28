@@ -170,10 +170,4 @@ $ bundle exec vagrant up --provider=libvirt
 
 ## Future work
 
-* Read cpu and memory settings from config.
-* Hostonly networks.
-* Use Libvirt shared folder, not rsync if machine is local.
-* Test if arpwatch is available for getting MAC->IP mapping.
-* Provision, ssh, reload, halt, resume actions.
-* Support other domain types than KVM.
-
+Take a look on [open issues](https://github.com/pradels/vagrant-libvirt/issues?state=open).
