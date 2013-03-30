@@ -16,7 +16,11 @@ module VagrantPlugins
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
-          domain.start
+          if domain.state.to_s == 'paused'
+            domain.resume
+          else
+            domain.start
+          end
 
           @app.call(env)
         end
