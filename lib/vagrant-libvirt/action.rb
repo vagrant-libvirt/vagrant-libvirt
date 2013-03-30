@@ -13,6 +13,12 @@ module VagrantPlugins
           b.use ConnectLibvirt
           b.use Call, IsCreated do |env, b2|
             if env[:result]
+              b2.use Call, ReadState do |env2,b3|
+                if env2[:machine_state_id] == 'paused'
+                  b3.use StartDomain
+                  return true
+                end
+              end
               b2.use MessageAlreadyCreated
               next
             end
@@ -70,7 +76,18 @@ module VagrantPlugins
         end
       end
 
+      # suspend
+      # save vm to file
+      def self.action_suspend
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use Suspend
+        end
+      end
+
       action_root = Pathname.new(File.expand_path("../action", __FILE__))
+      autoload :Suspend, action_root.join("suspend")
       autoload :ConnectLibvirt, action_root.join("connect_libvirt")
       autoload :IsCreated, action_root.join("is_created")
       autoload :MessageAlreadyCreated, action_root.join("message_already_created")

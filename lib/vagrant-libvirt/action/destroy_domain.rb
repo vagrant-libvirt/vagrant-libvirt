@@ -12,7 +12,7 @@ module VagrantPlugins
 
         def call(env)
 
-          # Destroy the server and remove the tracking ID          
+          # Destroy the server and remove the tracking ID
           env[:ui].info(I18n.t("vagrant_libvirt.destroy_domain"))
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)

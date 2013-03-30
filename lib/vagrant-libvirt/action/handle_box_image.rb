@@ -12,7 +12,7 @@ module VagrantPlugins
         def call(env)
 
           # Verify box metadata for mandatory values.
-          # 
+          #
           # Virtual size has to be set for allocating space in storage pool.
           box_virtual_size = env[:machine].box.metadata['virtual_size']
           if box_virtual_size == nil
@@ -103,7 +103,7 @@ module VagrantPlugins
                 sent = stream.send buff
                 progress += sent
                 yield progress
-              end 
+              end
             end
           rescue => e
             raise Errors::ImageUploadError,
