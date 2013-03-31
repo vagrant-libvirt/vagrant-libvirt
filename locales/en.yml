@@ -91,6 +91,10 @@ en:
         Error while attaching new device to domain. %{error_message}
 
     states:
+      short_paused: |-
+        pause
+      short_shutoff: |-
+        shutoff
       short_not_created: |-
         not created
       long_not_created: |-
