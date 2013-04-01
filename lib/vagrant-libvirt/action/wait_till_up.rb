@@ -47,6 +47,13 @@ module VagrantPlugins
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]["instance_ip_time"]}")
 
+          # Save newly assigned IP address to machines data_dir
+          ip_file_path = env[:machine].data_dir + 'ip'
+          @logger.info("Saving IP address to #{ip_file_path} file.")
+          File.open(ip_file_path, 'w') do |file|
+            file.write(env[:ip_address])
+          end
+
           # Machine has ip address assigned, now wait till we are able to
           # connect via ssh.
           env[:metrics]["instance_ssh_time"] = Util::Timer.time do

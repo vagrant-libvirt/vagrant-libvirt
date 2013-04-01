@@ -37,6 +37,7 @@ module VagrantPlugins
           env[:ui].info(" -- Cpus:          #{@cpus}")
           env[:ui].info(" -- Memory:        #{@memory_size/1024}M")
           env[:ui].info(" -- Base box:      #{env[:machine].box.name}")
+          env[:ui].info(" -- Storage pool:  #{env[:machine].provider_config.storage_pool_name}")
           env[:ui].info(" -- Image:         #{@domain_volume_path}")
 
           # Create libvirt domain.

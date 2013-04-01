@@ -29,12 +29,12 @@ module VagrantPlugins
             b2.use CreateDomainVolume
             b2.use CreateDomain
             b2.use CreateNetworkInterfaces
-          end
 
-          b.use TimedProvision
-          b.use StartDomain
-          b.use WaitTillUp
-          b.use SyncFolders
+            b2.use TimedProvision
+            b2.use StartDomain
+            b2.use WaitTillUp
+            b2.use SyncFolders
+          end
         end
       end
 
@@ -51,6 +51,71 @@ module VagrantPlugins
 
             b2.use ConnectLibvirt
             b2.use DestroyDomain
+          end
+        end
+      end
+
+      # This action is called to SSH into the machine.
+      def self.action_ssh
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use SSHExec
+          end
+        end
+      end
+
+      # This action is called when `vagrant provision` is called.
+      def self.action_provision
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use Provision
+            b2.use SyncFolders
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for suspending
+      # the virtual machine.
+      def self.action_suspend
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use ConnectLibvirt
+            b2.use SuspendDomain
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for resuming
+      # suspended machines.
+      def self.action_resume
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use ConnectLibvirt
+            b2.use ResumeDomain
           end
         end
       end
@@ -76,18 +141,7 @@ module VagrantPlugins
         end
       end
 
-      # suspend
-      # save vm to file
-      def self.action_suspend
-        Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
-          b.use ConnectLibvirt
-          b.use Suspend
-        end
-      end
-
       action_root = Pathname.new(File.expand_path("../action", __FILE__))
-      autoload :Suspend, action_root.join("suspend")
       autoload :ConnectLibvirt, action_root.join("connect_libvirt")
       autoload :IsCreated, action_root.join("is_created")
       autoload :MessageAlreadyCreated, action_root.join("message_already_created")
@@ -100,6 +154,8 @@ module VagrantPlugins
       autoload :CreateNetworkInterfaces, action_root.join("create_network_interfaces")
       autoload :DestroyDomain, action_root.join("destroy_domain")
       autoload :StartDomain, action_root.join("start_domain")
+      autoload :SuspendDomain, action_root.join("suspend_domain")
+      autoload :ResumeDomain, action_root.join("resume_domain")
       autoload :ReadState, action_root.join("read_state")
       autoload :ReadSSHInfo, action_root.join("read_ssh_info")
       autoload :TimedProvision, action_root.join("timed_provision")

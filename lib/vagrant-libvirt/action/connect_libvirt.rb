@@ -48,11 +48,9 @@ module VagrantPlugins
           conn_attr[:libvirt_password] = config.password if config.password
           
           # Setup command for retrieving IP address for newly created machine
-          # with some MAC address. Get it via arp table. This solution doesn't
-          # require arpwatch to be installed.
-          conn_attr[:libvirt_ip_command] = "arp -an | grep $mac | sed '"
-          conn_attr[:libvirt_ip_command] << 's/.*(\([0-9\.]*\)).*/\1/'
-          conn_attr[:libvirt_ip_command] << "'"
+          # with some MAC address. Get it from dnsmasq leases table.
+          conn_attr[:libvirt_ip_command] =  "cat /var/lib/libvirt/dnsmasq/*.leases"
+          conn_attr[:libvirt_ip_command] << " | grep $mac | awk ' { print $3 }'"
 
           @logger.info("Connecting to Libvirt (#{uri}) ...")
           begin

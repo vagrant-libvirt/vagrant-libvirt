@@ -1,13 +1,13 @@
 en:
   vagrant_libvirt:
     already_created: |-
-      The machine is already created.
+      The domain is already created.
     not_created: |-
-      Machine is not created. Please run `vagrant up` first.
+      Domain is not created. Please run `vagrant up` first.
     finding_volume: |-
       Checking if volume is available.
     creating_domain: |-
-      Creating machine with the following settings...
+      Creating domain with the following settings...
     uploading_volume: |-
       Uploading base box image as volume into libvirt storage...
     creating_domain_volume: |-
@@ -15,17 +15,21 @@ en:
     removing_domain_volume: |-
       Removing image (snapshot of base box volume).
     starting_domain: |-
-      Starting machine.
+      Starting domain.
     terminating: |-
-      Removing machine...
+      Removing domain...
     poweroff_domain: |-
-      Poweroff machine.
+      Poweroff domain.
     destroy_domain: |-
-      Removing machine...
+      Removing domain...
+    resuming_domain: |-
+      Resuming domain...
+    suspending_domain: |-
+      Suspending domain...
     waiting_for_ready: |-
-      Waiting for machine to become "ready"...
+      Waiting for domain to become "ready"...
     waiting_for_ip: |-
-      Waiting for machine to get an IP address...
+      Waiting for domain to get an IP address...
     waiting_for_ssh: |-
       Waiting for SSH to become available...
     booted: |-
@@ -89,6 +93,12 @@ en:
         No domain found. %{error_message}
       attach_device_error: |-
         Error while attaching new device to domain. %{error_message}
+      no_ip_address_error: |-
+        No IP address found.
+      ip_address_mismatch_error: |-
+        IP address mismatch. Possible reason is that domain IP address changed.
+        You can run `vagrant destroy` and then `vagrant up` to rebuild your
+        project.
 
     states:
       short_paused: |-
