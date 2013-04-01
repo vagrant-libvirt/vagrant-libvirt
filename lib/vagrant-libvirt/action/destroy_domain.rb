@@ -10,17 +10,12 @@ module VagrantPlugins
         end
 
         def call(env)
-          # Destroy the server, remove the tracking ID and file holding IP
-          # address.
+          # Destroy the server, remove the tracking ID
           env[:ui].info(I18n.t("vagrant_libvirt.destroy_domain"))
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
           domain.destroy(:destroy_volumes => true)
           env[:machine].id = nil
-
-          # Remove file holding IP address
-          ip_file_path = env[:machine].data_dir + 'ip'
-          File.delete(ip_file_path) if File.exists?(ip_file_path)
 
           @app.call(env)
         end

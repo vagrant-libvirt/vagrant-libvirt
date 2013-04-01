@@ -12,28 +12,77 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use ConnectLibvirt
           b.use Call, IsCreated do |env, b2|
-            if env[:result]
-              b2.use Call, ReadState do |env2,b3|
-                if env2[:machine_state_id] == 'paused'
-                  b3.use StartDomain
-                  return true
-                end
+            # Create VM if not yet created.
+            if !env[:result]
+              b2.use SetNameOfDomain
+              b2.use HandleStoragePool
+              b2.use HandleBoxImage
+              b2.use CreateDomainVolume
+              b2.use CreateDomain
+              b2.use CreateNetworkInterfaces
+
+              b2.use TimedProvision
+              b2.use StartDomain
+              b2.use WaitTillUp
+              b2.use SyncFolders
+            else
+              b2.use action_start
+            end
+          end
+        end
+      end
+
+      # Assuming VM is created, just start it. This action is not called
+      # directly by any subcommand. VM can be suspended, already running or in
+      # poweroff state.
+      def self.action_start
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use Call, IsRunning do |env, b2|
+            # If the VM is running, then our work here is done, exit
+            next if env[:result]
+
+            b2.use Call, IsSuspended do |env2, b3|
+              if env2[:result]
+                b3.use ResumeDomain
+                next
               end
-              b2.use MessageAlreadyCreated
+
+              # VM is not running or suspended. Start it.. Machine should gain
+              # IP address when comming up, so wait for dhcp lease and store IP
+              # into machines data_dir.
+              b3.use StartDomain
+              b3.use WaitTillUp
+            end
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for halting the
+      # virtual machine.
+      def self.action_halt
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
               next
             end
 
-            b2.use SetNameOfDomain
-            b2.use HandleStoragePool
-            b2.use HandleBoxImage
-            b2.use CreateDomainVolume
-            b2.use CreateDomain
-            b2.use CreateNetworkInterfaces
+            b2.use Call, IsSuspended do |env2, b3|
+              b3.use ResumeDomain if env2[:result]
+            end
 
-            b2.use TimedProvision
-            b2.use StartDomain
-            b2.use WaitTillUp
-            b2.use SyncFolders
+            b2.use Call, IsRunning do |env2, b3|
+              next if !env2[:result]
+
+              # VM is running, halt it.. Cleanup running instance data. Now
+              # only IP address is stored.
+              b3.use HaltDomain
+              b3.use CleanupDataDir
+            end
           end
         end
       end
@@ -51,6 +100,9 @@ module VagrantPlugins
 
             b2.use ConnectLibvirt
             b2.use DestroyDomain
+
+            # Cleanup running instance data. Now only IP address is stored.
+            b2.use CleanupDataDir
           end
         end
       end
@@ -65,7 +117,15 @@ module VagrantPlugins
               next
             end
 
-            b2.use SSHExec
+            b2.use ConnectLibvirt
+            b2.use Call, IsRunning do |env2, b3|
+              if !env2[:result]
+                b3.use MessageNotRunning
+                next
+              end
+
+              b3.use SSHExec
+            end
           end
         end
       end
@@ -80,8 +140,16 @@ module VagrantPlugins
               next
             end
 
-            b2.use Provision
-            b2.use SyncFolders
+            b2.use ConnectLibvirt
+            b2.use Call, IsRunning do |env2, b3|
+              if !env2[:result]
+                b3.use MessageNotRunning
+                next
+              end
+
+              b3.use Provision
+              b3.use SyncFolders
+            end
           end
         end
       end
@@ -98,7 +166,13 @@ module VagrantPlugins
             end
 
             b2.use ConnectLibvirt
-            b2.use SuspendDomain
+            b2.use Call, IsRunning do |env2, b3|
+              if !env2[:result]
+                b3.use MessageNotRunning
+                next
+              end
+              b3.use SuspendDomain
+            end
           end
         end
       end
@@ -115,7 +189,13 @@ module VagrantPlugins
             end
 
             b2.use ConnectLibvirt
-            b2.use ResumeDomain
+            b2.use Call, IsSuspended do |env2, b3|
+              if !env2[:result]
+                b3.use MessageNotSuspended
+                next
+              end
+              b3.use ResumeDomain
+            end
           end
         end
       end
@@ -144,8 +224,12 @@ module VagrantPlugins
       action_root = Pathname.new(File.expand_path("../action", __FILE__))
       autoload :ConnectLibvirt, action_root.join("connect_libvirt")
       autoload :IsCreated, action_root.join("is_created")
+      autoload :IsRunning, action_root.join("is_running")
+      autoload :IsSuspended, action_root.join("is_suspended")
       autoload :MessageAlreadyCreated, action_root.join("message_already_created")
       autoload :MessageNotCreated, action_root.join("message_not_created")
+      autoload :MessageNotRunning, action_root.join("message_not_running")
+      autoload :MessageNotSuspended, action_root.join("message_not_suspended")
       autoload :HandleStoragePool, action_root.join("handle_storage_pool")
       autoload :HandleBoxImage, action_root.join("handle_box_image")
       autoload :SetNameOfDomain, action_root.join("set_name_of_domain")
@@ -154,8 +238,10 @@ module VagrantPlugins
       autoload :CreateNetworkInterfaces, action_root.join("create_network_interfaces")
       autoload :DestroyDomain, action_root.join("destroy_domain")
       autoload :StartDomain, action_root.join("start_domain")
+      autoload :HaltDomain, action_root.join("halt_domain")
       autoload :SuspendDomain, action_root.join("suspend_domain")
       autoload :ResumeDomain, action_root.join("resume_domain")
+      autoload :CleanupDataDir, action_root.join("cleanup_data_dir")
       autoload :ReadState, action_root.join("read_state")
       autoload :ReadSSHInfo, action_root.join("read_ssh_info")
       autoload :TimedProvision, action_root.join("timed_provision")

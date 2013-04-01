@@ -4,6 +4,10 @@ en:
       The domain is already created.
     not_created: |-
       Domain is not created. Please run `vagrant up` first.
+    not_running: |-
+      Domain is not running. Please run `vagrant up` or `vagrant resume` first.
+    not_suspended: |-
+      Domain is not suspended.
     finding_volume: |-
       Checking if volume is available.
     creating_domain: |-
@@ -22,6 +26,8 @@ en:
       Poweroff domain.
     destroy_domain: |-
       Removing domain...
+    halt_domain: |-
+      Halting domain...
     resuming_domain: |-
       Resuming domain...
     suspending_domain: |-

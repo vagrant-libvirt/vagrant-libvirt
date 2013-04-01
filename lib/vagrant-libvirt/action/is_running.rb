@@ -1,27 +1,21 @@
-require 'log4r'
-
 module VagrantPlugins
   module Libvirt
     module Action
-
-      # Just start the domain.
-      class StartDomain
+      # This can be used with "Call" built-in to check if the machine
+      # is running and branch in the middleware.
+      class IsRunning
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::start_domain")
           @app = app
         end
 
         def call(env)
-          env[:ui].info(I18n.t("vagrant_libvirt.starting_domain"))
-
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
-          domain.start
+          env[:result] = domain.state.to_s == 'running'
 
           @app.call(env)
         end
       end
-
     end
   end
 end
