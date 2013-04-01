@@ -130,10 +130,14 @@ Bridged network adapter connected to network `default` is defined.
 
 There is a little problem to find out which IP address was assigned to remote
 domain. Fog library uses SSH connection to remote libvirt host and by default
-checks arpwatch entries there. Libvirt provider uses just arp table. There is no
-need to install and setup arpwatch, but information about MAC->IP address
-mapping is lost after short time. That is why there are no ssh or provision
-actions available yet.
+checks arpwatch entries there.
+
+Vagrant Libvirt provider is using dnsmasq leases files to find out, which IPs
+dhcp server offered. VMs IP address is then saved to `$data_dir/ip` file for
+later use. Of course, VMs IP can be changed over time. That's why IP is
+checked, if matches with VMs MAC address after each reading from this state
+file. Mismatch error is shown if IP doesn't match.
+
 
 ## Synced Folders
 
