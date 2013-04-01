@@ -8,7 +8,7 @@ This plugin is inspired by existing [vagrant-aws](https://github.com/mitchellh/v
 
 **Note:** This plugin requires Vagrant 1.1+.
 
-## Features
+## Features (Version 0.0.2)
 
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
@@ -16,6 +16,7 @@ This plugin is inspired by existing [vagrant-aws](https://github.com/mitchellh/v
 * SSH into domains.
 * Provision domains with any built-in Vagrant provisioner.
 * Minimal synced folder support via `rsync`.
+* Up, destroy, suspend, resume, halt, ssh, provision subcommands.
 
 ## Usage
 
