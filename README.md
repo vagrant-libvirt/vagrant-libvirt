@@ -4,37 +4,34 @@ This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-This plugin is inspired by existing [vagrant-aws](https://github.com/mitchellh/vagrant-aws) provider.
-
-**Note:** This plugin requires Vagrant 1.1+.
+**Note:** Actual version (0.0.2) is still a development one. Feedback is
+welcome and can help a lot :-)
 
 ## Features (Version 0.0.2)
 
+* Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
 * Create and boot Libvirt domains.
 * SSH into domains.
 * Provision domains with any built-in Vagrant provisioner.
 * Minimal synced folder support via `rsync`.
-* Up, destroy, suspend, resume, halt, ssh, provision subcommands.
 
-## Usage
+## Future work
 
-Install using standard Vagrant 1.1+ plugin installation methods. After
-installing, `vagrant up` and specify the `libvirt` provider. An example is
-shown below.
+* More boxes should be available.
+* Take a look at [open issues](https://github.com/pradels/vagrant-libvirt/issues?state=open).
+
+## Installation
+
+Install using standard [Vagrant 1.1+](http://downloads.vagrantup.com) plugin installation methods. After
+installing, `vagrant up` and specify the `libvirt` provider. An example is shown below.
 
 ```
 $ vagrant plugin install vagrant-libvirt
-...
-$ vagrant up --provider=libvirt
-...
 ```
 
-Of course prior to doing this, you'll need to obtain an Libvirt-compatible
-box file for Vagrant. 
-
-### Problems with plugin installation
+### Possible problems with plugin installation
 
 In case of problems with building nokogiri gem, install missing development
 libraries libxslt and libxml2.
@@ -49,7 +46,7 @@ In RedHat, Centos, Fedora, ...
 # yum install libxslt-devel libxml2-devel
 ```
 
-## Quick Start
+## Vagrant Project Preparation
 
 After installing the plugin (instructions above), the quickest way to get
 started is to add Libvirt box and specify all the details manually within
@@ -64,7 +61,7 @@ $ vagrant box add centos64 http://kwok.cz/centos64.box
 And then make a Vagrantfile that looks like the following, filling in
 your information where necessary.
 
-```
+```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :test_vm do |test_vm|
     test_vm.vm.box = "centos64"
@@ -75,31 +72,13 @@ Vagrant.configure("2") do |config|
     libvirt.host = "example.com"
     libvirt.connect_via_ssh = true
     libvirt.username = "root"
-    #libvirt.password = "secret"
     libvirt.storage_pool_name = "default"
   end
 end
 
 ```
 
-And then run `vagrant up --provider=libvirt`. Other way to tell Vagrant to
-use Libvirt provider is to setup environment variable `export VAGRANT_DEFAULT_PROVIDER=libvirt`.
-
-This will first upload box image to remote Libvirt storage pool as new volume.
-Then create and start a CentOS 6.4 domain on example.com Libvirt host. In this
-example configuration, connection to Libvirt is tunneled via SSH.
-
-## Box Format
-
-Every provider in Vagrant must introduce a custom box format. This
-provider introduces `Libvirt` boxes. You can view an example box in
-the [example_box/directory](https://github.com/pradels/vagrant-libvirt/tree/master/example_box). That directory also contains instructions on how to build a box.
-
-The box format is qcow2 image file `box.img`, the required `metadata.json` file
-along with a `Vagrantfile` that does default settings for the
-provider-specific configuration for this provider.
-
-## Configuration
+### Configuration Options
 
 This provider exposes quite a few provider-specific configuration options:
 
@@ -111,6 +90,32 @@ This provider exposes quite a few provider-specific configuration options:
 * `storage_pool_name` - Libvirt storage pool name, where box image and
   instance snapshots will be stored.
 
+## Create Project - Vagrant up
+
+In prepared project directory, run following command:
+
+```
+$ vagrant up --provider=libvirt
+...
+```
+
+Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
+That's why there is `--provider=libvirt` option specified. Other way to tell
+Vagrant to use Libvirt provider is to setup environment variable
+`export VAGRANT_DEFAULT_PROVIDER=libvirt`.
+
+### How Project Is Created
+
+1.	Connect to Libvirt localy or remotely via SSH.
+2.	Check if box image is available in Libvirt storage pool. If not, upload it to
+	remote Libvirt storage pool as new volume. 
+3.	Create COW diff image of base box image for new Libvirt domain.
+4.	Create and start new domain on Libvirt host.
+5.	Check for DHCP lease from dnsmasq server. Store IP address into
+	machines *data_dir* for later use, when lease information is not
+	available. Then wait till SSH is available.
+6.	Sync folders via `rsync` and run Vagrant provisioner on new domain.
+
 ## Networks
 
 Networking features in the form of `config.vm.network` are supported only
@@ -119,26 +124,27 @@ provider.
 
 Example of network interface definition:
 
-```
+```ruby
   config.vm.define :test_vm do |test_vm|
     test_vm.vm.network :bridged, :bridge => "default", :adapter => 1
   end
 ```
 
-Bridged network adapter connected to network `default` is defined.
+In example above, bridged network adapter connected to network `default` is
+defined.
 
-## Getting IP address
+## Obtaining Domain IP Address
 
-There is a little problem to find out which IP address was assigned to remote
-domain. Fog library uses SSH connection to remote libvirt host and by default
-checks arpwatch entries there.
+Libvirt doesn't provide a way to find out an IP address of running domain. We
+can get domains MAC address only. So to get an IP address, Libvirt provider is
+checking dnsmasq leases files in `/var/lib/libvirt/dnsmasq` directory. After
+IP address is known, it's stored into machines *data_dir* for later use, because
+lease information disappears after some time.
 
-Vagrant Libvirt provider is using dnsmasq leases files to find out, which IPs
-dhcp server offered. VMs IP address is then saved to `$data_dir/ip` file for
-later use. Of course, VMs IP can be changed over time. That's why IP is
-checked, if matches with VMs MAC address after each reading from this state
-file. Mismatch error is shown if IP doesn't match.
-
+Possible problem raises when machines IP was changed since last write into
+*data_dir*. Libvirt provider first checks, if IP address matches with domains MAC
+address. If not, error is writen to user. As possible solution in this
+situation occurs `fping` or `nmap` command to ping whole network.
 
 ## Synced Folders
 
@@ -149,13 +155,25 @@ to the remote machine over SSH.
 This is good enough for all built-in Vagrant provisioners (shell,
 chef, and puppet) to work!
 
+## Box Format
+
+You can view an example box in the [example_box/directory](https://github.com/pradels/vagrant-libvirt/tree/master/example_box). That directory also contains instructions on how to build a box.
+
+The box is a tarball containing:
+
+* qcow2 image file named `box.img`.
+* `metadata.json` file describing box image (provider, virtual_size, format).
+* `Vagrantfile` that does default settings for the provider-specific configuration for this provider.
+
 ## Development
 
 To work on the `vagrant-libvirt` plugin, clone this repository out, and use
 [Bundler](http://gembundler.com) to get the dependencies:
 
 ```
-$ bundle
+$ git clone https://github.com/pradels/vagrant-libvirt.git
+$ cd vagrant-libvirt
+$ bundle install
 ```
 
 Once you have the dependencies, verify the unit tests pass with `rake`:
@@ -173,6 +191,11 @@ that uses it, and uses bundler to execute Vagrant:
 $ bundle exec vagrant up --provider=libvirt
 ```
 
-## Future work
+## Contributing
 
-Take a look on [open issues](https://github.com/pradels/vagrant-libvirt/issues?state=open).
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
+
