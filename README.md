@@ -38,12 +38,12 @@ libraries libxslt and libxml2.
 
 In Ubuntu, Debian, ...
 ```
-$ sudo apt-get install libxslt-dev libxml2-dev
+$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev
 ```
 
 In RedHat, Centos, Fedora, ...
 ```
-# yum install libxslt-devel libxml2-devel
+# yum install libxslt-devel libxml2-devel libvirt-devel
 ```
 
 ## Vagrant Project Preparation
