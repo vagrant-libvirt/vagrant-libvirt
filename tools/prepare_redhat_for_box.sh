@@ -71,11 +71,13 @@ usermod -G admin vagrant
 
 echo 'Defaults    env_keep += "SSH_AUTH_SOCK"' >> /etc/sudoers
 echo '%admin ALL=NOPASSWD: ALL' >> /etc/sudoers
-sed -i 's/Defaults requiretty/Defaults !requiretty/' /etc/sudoers
+sed -i 's/Defaults\s*requiretty/Defaults !requiretty/' /etc/sudoers
 
 
-# SSH keys
+# SSH setup
 # Add Vagrant ssh key for root accout.
+sed -i 's/.*UseDNS.*/UseDNS no/' /etc/ssh/sshd_config
+
 [ -d ~root/.ssh ] || mkdir ~root/.ssh
 chmod 700 ~root/.ssh
 cat > ~root/.ssh/authorized_keys << EOF
