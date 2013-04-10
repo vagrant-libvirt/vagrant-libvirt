@@ -90,10 +90,6 @@ module VagrantPlugins
         error_key(:no_ip_address_error)
       end
 
-      class IpAddressMismatchError < VagrantLibvirtError
-        error_key(:ip_address_mismatch_error)
-      end
-
     end
   end
 end

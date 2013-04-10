@@ -101,10 +101,6 @@ en:
         Error while attaching new device to domain. %{error_message}
       no_ip_address_error: |-
         No IP address found.
-      ip_address_mismatch_error: |-
-        IP address mismatch. Possible reason is that domain IP address changed.
-        You can run `vagrant destroy` and then `vagrant up` to rebuild your
-        project.
 
     states:
       short_paused: |-

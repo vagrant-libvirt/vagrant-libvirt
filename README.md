@@ -34,7 +34,7 @@ $ vagrant plugin install vagrant-libvirt
 ### Possible problems with plugin installation
 
 In case of problems with building nokogiri gem, install missing development
-libraries libxslt and libxml2.
+libraries for libxslt, libxml2 and libvirt.
 
 In Ubuntu, Debian, ...
 ```
@@ -55,7 +55,6 @@ want. This is just an example of Libvirt CentOS 6.4 box available:
 
 ```
 $ vagrant box add centos64 http://kwok.cz/centos64.box
-...
 ```
 
 And then make a Vagrantfile that looks like the following, filling in
@@ -96,7 +95,6 @@ In prepared project directory, run following command:
 
 ```
 $ vagrant up --provider=libvirt
-...
 ```
 
 Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
@@ -106,6 +104,8 @@ Vagrant to use Libvirt provider is to setup environment variable
 
 ### How Project Is Created
 
+Vagrant goes through steps below when creating new project:
+
 1.	Connect to Libvirt localy or remotely via SSH.
 2.	Check if box image is available in Libvirt storage pool. If not, upload it to
 	remote Libvirt storage pool as new volume. 
@@ -114,7 +114,8 @@ Vagrant to use Libvirt provider is to setup environment variable
 5.	Check for DHCP lease from dnsmasq server. Store IP address into
 	machines *data_dir* for later use, when lease information is not
 	available. Then wait till SSH is available.
-6.	Sync folders via `rsync` and run Vagrant provisioner on new domain.
+6.	Sync folders via `rsync` and run Vagrant provisioner on new domain if
+	setup in Vagrantfile.
 
 ## Networks
 
@@ -135,16 +136,13 @@ defined.
 
 ## Obtaining Domain IP Address
 
-Libvirt doesn't provide a way to find out an IP address of running domain. We
-can get domains MAC address only. So to get an IP address, Libvirt provider is
-checking dnsmasq leases files in `/var/lib/libvirt/dnsmasq` directory. After
-IP address is known, it's stored into machines *data_dir* for later use, because
-lease information disappears after some time.
-
-Possible problem raises when machines IP was changed since last write into
-*data_dir*. Libvirt provider first checks, if IP address matches with domains MAC
-address. If not, error is writen to user. As possible solution in this
-situation occurs `fping` or `nmap` command to ping whole network.
+Libvirt doesn't provide standard way how to find out an IP address of running
+domain. But we know, what is MAC address of virtual machine. Libvirt is closely
+connected with dnsmasq server, which acts also as a DHCP server. Dnsmasq server
+makes lease information public in `/var/lib/libvirt/dnsmasq` directory, or in
+`/var/lib/misc/dnsmasq.leases` file on some systems. This is the place, where
+information like which MAC address has which IP address resides and it's parsed
+by vagrant-libvirt plugin.
 
 ## Synced Folders
 
@@ -185,7 +183,14 @@ $ bundle exec rake
 If those pass, you're ready to start developing the plugin. You can test
 the plugin without installing it into your Vagrant environment by just
 creating a `Vagrantfile` in the top level of this directory (it is gitignored)
-that uses it, and uses bundler to execute Vagrant:
+that uses it. Don't forget to add following line at the beginning of your
+`Vagrantfile` while in development mode:
+
+```ruby
+Vagrant.require_plugin "vagrant-libvirt"
+```
+
+Now you can use bundler to execute Vagrant:
 
 ```
 $ bundle exec vagrant up --provider=libvirt

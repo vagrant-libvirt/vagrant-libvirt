@@ -37,7 +37,7 @@ module VagrantPlugins
               # Wait for domain to obtain an ip address
               domain.wait_for(2) {
                 addresses.each_pair do |type, ip|
-                  env[:ip_address] = ip[0]
+                  env[:ip_address] = ip[0] if ip[0] != nil
                 end
                 env[:ip_address] != nil
               }
@@ -46,14 +46,7 @@ module VagrantPlugins
           terminate(env) if env[:interrupted]
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]["instance_ip_time"]}")
-
-          # Save newly assigned IP address to machines data_dir
-          ip_file_path = env[:machine].data_dir + 'ip'
-          @logger.info("Saving IP address to #{ip_file_path} file.")
-          File.open(ip_file_path, 'w') do |file|
-            file.write(env[:ip_address])
-          end
-
+          
           # Machine has ip address assigned, now wait till we are able to
           # connect via ssh.
           env[:metrics]["instance_ssh_time"] = Util::Timer.time do
