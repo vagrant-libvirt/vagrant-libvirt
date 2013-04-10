@@ -86,6 +86,12 @@ EOF
 chmod 600 ~root/.ssh/authorized_keys
 
 
+# Disable firewall and switch SELinux to permissive mode.
+chkconfig iptables off
+chkconfig ip6tables off
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
+
+
 # Networking setup..
 # Don't fix ethX names to hw address.
 rm -f /etc/udev/rules.d/*persistent-net.rules
