@@ -4,10 +4,10 @@ This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.2) is still a development one. Feedback is
+**Note:** Actual version (0.0.3) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.2)
+## Features (Version 0.0.3)
 
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
