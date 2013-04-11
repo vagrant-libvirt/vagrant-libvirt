@@ -13,11 +13,13 @@ module VagrantPlugins
         end
 
         def call(env)
+          # Get config.
+          config = env[:machine].provider_config
+
           # Gather some info about domain
-          # TODO from Vagrantfile
           @name = env[:domain_name]
-          @cpus = 1
-          @memory_size = 512*1024
+          @cpus = config.cpus
+          @memory_size = config.memory*1024
 
           # TODO get type from driver config option
           @domain_type = 'kvm'

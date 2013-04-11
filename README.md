@@ -33,8 +33,8 @@ $ vagrant plugin install vagrant-libvirt
 
 ### Possible problems with plugin installation
 
-In case of problems with building nokogiri gem, install missing development
-libraries for libxslt, libxml2 and libvirt.
+In case of problems with building nokogiri and ruby-libvirt gem, install
+missing development libraries for libxslt, libxml2 and libvirt.
 
 In Ubuntu, Debian, ...
 ```
@@ -77,7 +77,7 @@ end
 
 ```
 
-### Configuration Options
+### Libvirt Configuration Options
 
 This provider exposes quite a few provider-specific configuration options:
 
@@ -88,6 +88,28 @@ This provider exposes quite a few provider-specific configuration options:
 * `password` - Password to access Libvirt.
 * `storage_pool_name` - Libvirt storage pool name, where box image and
   instance snapshots will be stored.
+
+### Domain Specific Options
+
+* `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
+* `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+
+Specific domain settings can be set for each domain separately in multi-VM
+environment. Example below shows a part of Vagrantfile, where specific options
+are set for dbserver domain.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :dbserver do |dbserver|
+    dbserver.vm.box = "centos64"
+    dbserver.vm.provider :libvirt do |domain|
+      domain.memory = 2048
+      domain.cpus = 2
+    end
+  end
+
+  ...
+```
 
 ## Create Project - Vagrant up
 
@@ -111,10 +133,9 @@ Vagrant goes through steps below when creating new project:
 	remote Libvirt storage pool as new volume. 
 3.	Create COW diff image of base box image for new Libvirt domain.
 4.	Create and start new domain on Libvirt host.
-5.	Check for DHCP lease from dnsmasq server. Store IP address into
-	machines *data_dir* for later use, when lease information is not
-	available. Then wait till SSH is available.
-6.	Sync folders via `rsync` and run Vagrant provisioner on new domain if
+5.	Check for DHCP lease from dnsmasq server.
+6.	Wait till SSH is available.
+7.	Sync folders via `rsync` and run Vagrant provisioner on new domain if
 	setup in Vagrantfile.
 
 ## Networks
