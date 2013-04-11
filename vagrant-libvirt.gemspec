@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["ls@elostech.cz"]
   gem.description   = %q{Vagrant provider for libvirt.}
   gem.summary       = %q{Vagrant provider for libvirt.}
-  gem.homepage      = "http://www.vagrantup.com"
+  gem.homepage      = "https://github.com/pradels/vagrant-libvirt"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
