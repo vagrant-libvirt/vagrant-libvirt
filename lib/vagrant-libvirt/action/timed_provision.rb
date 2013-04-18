@@ -6,7 +6,10 @@ module VagrantPlugins
       # This is the same as the builtin provision except it times the
       # provisioner runs.
       class TimedProvision < Vagrant::Action::Builtin::Provision
-        def run_provisioner(env, p)
+        def run_provisioner(env, name, p)
+          env[:ui].info(I18n.t("vagrant.actions.vm.provision.beginning",
+                               :provisioner => name))
+
           timer = Util::Timer.time do
             super
           end
