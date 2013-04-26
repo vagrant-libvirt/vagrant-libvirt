@@ -16,7 +16,12 @@ module VagrantPlugins
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
-          domain.start
+
+          begin
+            domain.start
+          rescue => e
+            raise Errors::FogError, :message => e.message
+          end
 
           @app.call(env)
         end

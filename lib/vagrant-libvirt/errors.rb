@@ -48,6 +48,10 @@ module VagrantPlugins
 
 
       # Fog libvirt exceptions
+      class FogError < VagrantLibvirtError
+        error_key(:fog_error)
+      end
+
       class FogLibvirtConnectionError < VagrantLibvirtError
         error_key(:fog_libvirt_connection_error)
       end
