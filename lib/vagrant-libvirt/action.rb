@@ -222,6 +222,31 @@ module VagrantPlugins
         end
       end
 
+      # This is the action that will run a single SSH command.
+      def self.action_ssh_run
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use ConnectLibvirt
+            b2.use Call, IsRunning do |env2, b3|
+              if !env2[:result]
+                b3.use MessageNotRunning
+                next
+              end
+
+              b3.use SSHRun
+            end
+          end
+
+        end
+      end
+
+
       action_root = Pathname.new(File.expand_path("../action", __FILE__))
       autoload :ConnectLibvirt, action_root.join("connect_libvirt")
       autoload :IsCreated, action_root.join("is_created")
@@ -249,6 +274,7 @@ module VagrantPlugins
       autoload :TimedProvision, action_root.join("timed_provision")
       autoload :WaitTillUp, action_root.join("wait_till_up")
       autoload :SyncFolders, action_root.join("sync_folders")
+      autoload :SSHRun,  "vagrant/action/builtin/ssh_run"
     end
   end
 end
