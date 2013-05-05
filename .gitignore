@@ -18,3 +18,4 @@ tmp
 Vagrantfile
 !example_box/Vagrantfile
 .vagrant
+*.swp
