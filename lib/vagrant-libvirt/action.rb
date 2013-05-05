@@ -16,6 +16,7 @@ module VagrantPlugins
             if !env[:result]
               b2.use SetNameOfDomain
               b2.use HandleStoragePool
+              b2.use HandleBoxUrl
               b2.use HandleBoxImage
               b2.use CreateDomainVolume
               b2.use CreateDomain
@@ -231,6 +232,7 @@ module VagrantPlugins
       autoload :MessageNotRunning, action_root.join("message_not_running")
       autoload :MessageNotSuspended, action_root.join("message_not_suspended")
       autoload :HandleStoragePool, action_root.join("handle_storage_pool")
+      autoload :HandleBoxUrl, "vagrant/action/builtin/handle_box_url"
       autoload :HandleBoxImage, action_root.join("handle_box_image")
       autoload :SetNameOfDomain, action_root.join("set_name_of_domain")
       autoload :CreateDomainVolume, action_root.join("create_domain_volume")
