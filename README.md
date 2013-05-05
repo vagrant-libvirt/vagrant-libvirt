@@ -4,10 +4,10 @@ This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.3) is still a development one. Feedback is
+**Note:** Actual version (0.0.4) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.3)
+## Features (Version 0.0.4)
 
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
@@ -140,20 +140,9 @@ Vagrant goes through steps below when creating new project:
 
 ## Networks
 
-Networking features in the form of `config.vm.network` are supported only
-in bridged format, no hostonly network is supported in current version of
+Networking features in the form of `config.vm.network` are not supported right
+now. Support for private network is planned to be added in next release of
 provider.
-
-Example of network interface definition:
-
-```ruby
-  config.vm.define :test_vm do |test_vm|
-    test_vm.vm.network :bridged, :bridge => "default", :adapter => 1
-  end
-```
-
-In example above, bridged network adapter connected to network `default` is
-defined.
 
 ## Obtaining Domain IP Address
 
