@@ -72,11 +72,11 @@ Vagrant.configure("2") do |config|
     libvirt.connect_via_ssh = true
     libvirt.username = "root"
     libvirt.storage_pool_name = "default"
+    libvirt.nested = true
   end
 end
 
 ```
-
 ### Libvirt Configuration Options
 
 This provider exposes quite a few provider-specific configuration options:
@@ -93,6 +93,7 @@ This provider exposes quite a few provider-specific configuration options:
 
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+* `nested` - [Enable nested virtualization.Default: false] (https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt)
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -130,7 +131,7 @@ Vagrant goes through steps below when creating new project:
 
 1.	Connect to Libvirt localy or remotely via SSH.
 2.	Check if box image is available in Libvirt storage pool. If not, upload it to
-	remote Libvirt storage pool as new volume. 
+	remote Libvirt storage pool as new volume.
 3.	Create COW diff image of base box image for new Libvirt domain.
 4.	Create and start new domain on Libvirt host.
 5.	Check for DHCP lease from dnsmasq server.
