@@ -2,6 +2,14 @@
   <name><%= @name %></name>
   <memory><%= @memory_size %></memory>
   <vcpu><%= @cpus %></vcpu>
+
+  <% if @nested %>
+    <cpu match='exact'>
+      <model>core2duo</model>
+      <feature policy='require' name='vmx'/>
+    </cpu>
+  <% end %>
+
   <os>
     <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>

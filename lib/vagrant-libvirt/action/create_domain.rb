@@ -19,6 +19,7 @@ module VagrantPlugins
           # Gather some info about domain
           @name = env[:domain_name]
           @cpus = config.cpus
+          @nested = config.nested
           @memory_size = config.memory*1024
 
           # TODO get type from driver config option

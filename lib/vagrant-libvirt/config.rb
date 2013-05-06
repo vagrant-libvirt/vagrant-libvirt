@@ -25,6 +25,7 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :memory
       attr_accessor :cpus
+      attr_accessor :nested
 
       def initialize
         @driver            = UNSET_VALUE
@@ -37,6 +38,7 @@ module VagrantPlugins
         # Domain specific settings.
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @nested            = UNSET_VALUE
       end
 
       def finalize!
@@ -50,6 +52,7 @@ module VagrantPlugins
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @nested = false if @nested == UNSET_VALUE
       end
 
       def validate(machine)
