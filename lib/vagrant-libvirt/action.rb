@@ -20,9 +20,10 @@ module VagrantPlugins
               b2.use HandleBoxImage
               b2.use CreateDomainVolume
               b2.use CreateDomain
-              b2.use CreateNetworkInterfaces
 
               b2.use TimedProvision
+              b2.use CreateNetworks
+              b2.use CreateNetworkInterfaces
               b2.use StartDomain
               b2.use WaitTillUp
               b2.use SyncFolders
@@ -101,6 +102,7 @@ module VagrantPlugins
 
             b2.use ConnectLibvirt
             b2.use DestroyDomain
+            b2.use DestroyNetworks
 
             # Cleanup running instance data. Now only IP address is stored.
             b2.use CleanupDataDir
@@ -262,8 +264,10 @@ module VagrantPlugins
       autoload :SetNameOfDomain, action_root.join("set_name_of_domain")
       autoload :CreateDomainVolume, action_root.join("create_domain_volume")
       autoload :CreateDomain, action_root.join("create_domain")
+      autoload :CreateNetworks, action_root.join("create_networks")
       autoload :CreateNetworkInterfaces, action_root.join("create_network_interfaces")
       autoload :DestroyDomain, action_root.join("destroy_domain")
+      autoload :DestroyNetworks, action_root.join("destroy_networks")
       autoload :StartDomain, action_root.join("start_domain")
       autoload :HaltDomain, action_root.join("halt_domain")
       autoload :SuspendDomain, action_root.join("suspend_domain")

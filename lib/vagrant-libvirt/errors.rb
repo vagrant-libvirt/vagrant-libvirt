@@ -74,6 +74,30 @@ module VagrantPlugins
         error_key(:interface_slot_not_available)
       end
 
+      class NetworkNameAndAddressMismatch < VagrantLibvirtError
+        error_key(:network_name_and_address_mismatch)
+      end
+
+      class CreateNetworkError < VagrantLibvirtError
+        error_key(:create_network_error)
+      end
+
+      class DestroyNetworkError < VagrantLibvirtError
+        error_key(:destroy_network_error)
+      end
+
+      class NetworkNotAvailableError < VagrantLibvirtError
+        error_key(:network_not_available_error)
+      end
+
+      class AutostartNetworkError < VagrantLibvirtError
+        error_key(:autostart_network_error)
+      end
+
+      class ActivateNetworkError < VagrantLibvirtError
+        error_key(:activate_network_error)
+      end
+
       class RsyncError < VagrantLibvirtError
         error_key(:rsync_error)
       end
