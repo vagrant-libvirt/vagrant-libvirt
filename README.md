@@ -4,16 +4,19 @@ This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.4) is still a development one. Feedback is
+**Note:** Actual version (0.0.5) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.4)
+## Features (Version 0.0.5)
 
+* Controll local or remote Libvirt hypervisors.
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
+* Create private networks.
 * Create and boot Libvirt domains.
 * SSH into domains.
+* Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
 * Minimal synced folder support via `rsync`.
 
@@ -31,7 +34,7 @@ installing, `vagrant up` and specify the `libvirt` provider. An example is shown
 $ vagrant plugin install vagrant-libvirt
 ```
 
-### Possible problems with plugin installation
+### Possible problems with plugin installation on Linux
 
 In case of problems with building nokogiri and ruby-libvirt gem, install
 missing development libraries for libxslt, libxml2 and libvirt.
@@ -57,26 +60,27 @@ want. This is just an example of Libvirt CentOS 6.4 box available:
 $ vagrant box add centos64 http://kwok.cz/centos64.box
 ```
 
-And then make a Vagrantfile that looks like the following, filling in
-your information where necessary.
+And then make a Vagrantfile that looks like the following, filling in your
+information where necessary. In example below, VM named test_vm is created from
+centos64 box and setup with 10.20.30.40 IP address.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :test_vm do |test_vm|
     test_vm.vm.box = "centos64"
+    test_vm.vm.network :private_network, :ip => '10.20.30.40'
   end
 
   config.vm.provider :libvirt do |libvirt|
     libvirt.driver = "qemu"
-    libvirt.host = "example.com"
+    libvirt.host = "localhost"
     libvirt.connect_via_ssh = true
     libvirt.username = "root"
     libvirt.storage_pool_name = "default"
-    libvirt.nested = true
   end
 end
-
 ```
+
 ### Libvirt Configuration Options
 
 This provider exposes quite a few provider-specific configuration options:
@@ -93,7 +97,7 @@ This provider exposes quite a few provider-specific configuration options:
 
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
-* `nested` - [Enable nested virtualization.Default: false] (https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt)
+* `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -109,7 +113,7 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  ...
+  # ...
 ```
 
 ## Create Project - Vagrant up
@@ -141,9 +145,47 @@ Vagrant goes through steps below when creating new project:
 
 ## Networks
 
-Networking features in the form of `config.vm.network` are not supported right
-now. Support for private network is planned to be added in next release of
-provider.
+Networking features in the form of `config.vm.network` support private networks
+concept. No public network or port forwarding are supported in current version
+of provider.
+
+An examples of network interface definitions:
+
+```ruby
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :private_network, :ip => '10.20.30.40'
+  end
+```
+
+In example below, one network interface is configured for VM test_vm1. After
+you run `vagrant up`, VM will be accessible on IP address 10.20.30.40. So if
+you install a web server via provisioner, you will be able to access your
+testing server on http://10.20.30.40 URL. But beware that this address is
+private to libvirt host only. It's not visible outside of the hypervisor box.
+
+If network 10.20.30.0/24 doesn't exist, provider will create it. By default
+created networks are NATed to outside world, so your VM will be able to connect
+to the internet (if hypervisor can). And by default, DHCP is offering addresses
+on newly created networks.
+
+### Private Network Options
+
+There is a way to pass specific options for libvirt provider when using
+`config.vm.network` to configure new network interface. Each parameter name
+starts with 'libvirt__' string. Here is a list of those options:
+
+* `:libvirt__network_name` - Name of libvirt network to connect to. By default,
+  network 'default' is used.
+* `:libvirt__netmask` - Used only together with `:ip` option. Default is
+  '255.255.255.0'.
+* `:libvirt__nat_interface` - Name of interface, where should network be
+  NATed. Used only when creating new network. By default, all physical
+  interfaces are used.
+* `:libvirt__isolated` - If network should be isolated - without NAT to outside.
+  Used only when creating new network. Default is set to false.
+* `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
+  when creating new network. Default is true.
+* `:libvirt__adapter` - Number specifiyng sequence number of interface.
 
 ## Obtaining Domain IP Address
 
