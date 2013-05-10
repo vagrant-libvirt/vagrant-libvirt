@@ -18,7 +18,7 @@ module VagrantPlugins
             env[:libvirt_compute] = Libvirt.libvirt_connection
             return @app.call(env)
           end
-          
+
           # Get config options for libvirt provider.
           config = env[:machine].provider_config
 
@@ -38,7 +38,7 @@ module VagrantPlugins
           else
             uri << '://'
             uri << config.host if config.host
-          end                
+          end
           uri << '/system?no_verify=1'
 
           conn_attr = {}
@@ -46,7 +46,7 @@ module VagrantPlugins
           conn_attr[:libvirt_uri] = uri
           conn_attr[:libvirt_username] = config.username if config.username
           conn_attr[:libvirt_password] = config.password if config.password
-          
+
           # Setup command for retrieving IP address for newly created machine
           # with some MAC address. Get it from dnsmasq leases table - either
           # /var/lib/libvirt/dnsmasq/*.leases files, or
@@ -54,7 +54,7 @@ module VagrantPlugins
           ip_command =  "LEASES='/var/lib/libvirt/dnsmasq/*.leases'; "
           ip_command << "[ -f /var/lib/misc/dnsmasq.leases ] && "
           ip_command << "LEASES='/var/lib/misc/dnsmasq.leases'; "
-          ip_command << "cat $LEASES | grep $mac | awk '{ print $3 }'"
+          ip_command << "grep $mac $LEASES | awk '{ print $3 }'"
           conn_attr[:libvirt_ip_command] = ip_command
 
           @logger.info("Connecting to Libvirt (#{uri}) ...")

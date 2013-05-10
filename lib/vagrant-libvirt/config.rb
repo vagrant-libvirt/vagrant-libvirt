@@ -27,7 +27,10 @@ module VagrantPlugins
       attr_accessor :cpus
       attr_accessor :nested
 
+      attr_reader :shared_folders
+
       def initialize
+        @shared_folders      = {}
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
@@ -53,6 +56,19 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
+      end
+
+      def share_folder(name, guestpath, hostpath, opts=nil)
+        @shared_folders[name] = {
+          :guestpath => guestpath.to_s,
+          :hostpath => hostpath.to_s,
+          :create => false,
+          :owner => nil,
+          :group => nil,
+          :nfs   => false,
+          :transient => false,
+          :extra => nil
+        }.merge(opts || {})
       end
 
       def validate(machine)
