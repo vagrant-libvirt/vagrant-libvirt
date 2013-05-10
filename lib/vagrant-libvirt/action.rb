@@ -24,6 +24,7 @@ module VagrantPlugins
               b2.use TimedProvision
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
+              b2.use SetHostname
               b2.use StartDomain
               b2.use WaitTillUp
               b2.use SyncFolders
