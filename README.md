@@ -164,6 +164,8 @@ to the remote machine over SSH.
 This is good enough for all built-in Vagrant provisioners (shell,
 chef, and puppet) to work!
 
+if used options :nfs => true, folder will exported by nfs.
+
 ## Box Format
 
 You can view an example box in the [example_box/directory](https://github.com/pradels/vagrant-libvirt/tree/master/example_box). That directory also contains instructions on how to build a box.

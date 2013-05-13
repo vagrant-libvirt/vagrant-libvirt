@@ -25,7 +25,6 @@ module VagrantPlugins
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
 
-              b2.use PruneNFSExports
               b2.use NFS
               b2.use PrepareNFSSettings
               b2.use ShareFolders
@@ -105,8 +104,8 @@ module VagrantPlugins
               next
             end
 
-            b2.use PruneNFSExports
             b2.use ConnectLibvirt
+            b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
 

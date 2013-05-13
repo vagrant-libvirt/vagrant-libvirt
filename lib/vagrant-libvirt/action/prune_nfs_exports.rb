@@ -3,6 +3,7 @@ module VagrantPlugins
   module Libvirt
     module Action
       class PruneNFSExports
+
         def initialize(app, env)
           @app = app
         end
@@ -10,7 +11,11 @@ module VagrantPlugins
         def call(env)
           if env[:host]
             uuid = env[:machine].id
-            env[:host].nfs_prune(uuid)
+            # get all uuids
+            uuids = env[:libvirt_compute].servers.all.map(&:id)
+            # not exiisted in array will removed from nfs
+            uuids.delete(uuid)
+            env[:host].nfs_prune(uuids)
           end
 
           @app.call(env)

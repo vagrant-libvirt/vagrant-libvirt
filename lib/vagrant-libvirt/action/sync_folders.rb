@@ -18,6 +18,7 @@ module VagrantPlugins
           ssh_info = env[:machine].ssh_info
 
           env[:machine].config.vm.synced_folders.each do |id, data|
+            next if data[:nfs]
             hostpath  = File.expand_path(data[:hostpath], env[:root_path])
             guestpath = data[:guestpath]
 
