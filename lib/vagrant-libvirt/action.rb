@@ -28,6 +28,7 @@ module VagrantPlugins
               b2.use NFS
               b2.use PrepareNFSSettings
               b2.use ShareFolders
+              b2.use SetHostname
               b2.use StartDomain
               b2.use WaitTillUp
               b2.use SyncFolders
@@ -84,10 +85,8 @@ module VagrantPlugins
             b2.use Call, IsRunning do |env2, b3|
               next if !env2[:result]
 
-              # VM is running, halt it.. Cleanup running instance data. Now
-              # only IP address is stored.
+              # VM is running, halt it.
               b3.use HaltDomain
-              b3.use CleanupDataDir
             end
           end
         end
@@ -108,9 +107,6 @@ module VagrantPlugins
             b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
-
-            # Cleanup running instance data. Now only IP address is stored.
-            b2.use CleanupDataDir
           end
         end
       end
@@ -277,7 +273,6 @@ module VagrantPlugins
       autoload :HaltDomain, action_root.join("halt_domain")
       autoload :SuspendDomain, action_root.join("suspend_domain")
       autoload :ResumeDomain, action_root.join("resume_domain")
-      autoload :CleanupDataDir, action_root.join("cleanup_data_dir")
       autoload :ReadState, action_root.join("read_state")
       autoload :ReadSSHInfo, action_root.join("read_ssh_info")
       autoload :TimedProvision, action_root.join("timed_provision")

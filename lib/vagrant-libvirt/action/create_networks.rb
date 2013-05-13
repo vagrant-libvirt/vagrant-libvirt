@@ -44,7 +44,7 @@ module VagrantPlugins
             # (:libvirt__network_name => ...).
             @options = scoped_hash_override(options, :libvirt)
             @options = {
-              :netmask => '255.255.255.0',
+              :netmask      => '255.255.255.0',
             }.merge(@options)
 
             # Prepare a hash describing network for this specific interface.
@@ -64,6 +64,13 @@ module VagrantPlugins
               handle_ip_option(env)
             elsif @options[:network_name]
               handle_network_name_option
+            else
+              # TODO Should be smarter than just using fixed 'default' string.
+              @interface_network = lookup_network_by_name('default')
+              if not @interface_network
+                raise Errors::NetworkNotAvailableError,
+                  :network_name => 'default'
+              end 
             end
 
             autostart_network if not @interface_network[:autostart]
@@ -212,6 +219,7 @@ module VagrantPlugins
 
             # First is address of network, second is gateway. Start the range two
             # addresses after network address.
+            # TODO Detect if this IP is not set on the interface.
             start_address = net.to_range.begin.succ.succ
 
             # Stop address must not be broadcast.

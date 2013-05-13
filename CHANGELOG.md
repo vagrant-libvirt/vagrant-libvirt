@@ -1,3 +1,12 @@
+# 0.0.5 (May 10, 2013)
+
+* Private networks support.
+* Creating new private networks if ip is specified and network is not
+  available.
+* Removing previously created networks, if there are no active connections.
+* Guest interfaces configuration.
+* Setting guest hostname (via `config.vm.hostname`).
+
 # 0.0.4 (May 5, 2013)
 
 * Bug fix in number of parameters for provisioner.
