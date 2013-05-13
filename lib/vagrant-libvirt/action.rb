@@ -24,6 +24,10 @@ module VagrantPlugins
               b2.use TimedProvision
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
+
+              b2.use NFS
+              b2.use PrepareNFSSettings
+              b2.use ShareFolders
               b2.use SetHostname
               b2.use StartDomain
               b2.use WaitTillUp
@@ -100,6 +104,7 @@ module VagrantPlugins
             end
 
             b2.use ConnectLibvirt
+            b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
           end
@@ -274,6 +279,9 @@ module VagrantPlugins
       autoload :WaitTillUp, action_root.join("wait_till_up")
       autoload :SyncFolders, action_root.join("sync_folders")
       autoload :SSHRun,  "vagrant/action/builtin/ssh_run"
+      autoload :PrepareNFSSettings, action_root.join("prepare_nfs_settings")
+      autoload :PruneNFSExports, action_root.join("prune_nfs_exports")
+      autoload :ShareFolders, action_root.join("share_folders")
     end
   end
 end
