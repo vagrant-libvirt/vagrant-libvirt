@@ -18,7 +18,7 @@ welcome and can help a lot :-)
 * SSH into domains.
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
-* Minimal synced folder support via `rsync`.
+* Synced folder support via `rsync` and `nfs`
 
 ## Future work
 
