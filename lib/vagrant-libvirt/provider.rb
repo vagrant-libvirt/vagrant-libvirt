@@ -9,6 +9,7 @@ module VagrantPlugins
     class Provider < Vagrant.plugin('2', :provider)
       def initialize(machine)
         @machine = machine
+        raise 'REQUIRE USE RUBY >= 1.9.3 VERSION' if RUBY_VERSION < '1.9.3'
       end
 
       # This should return an action callable for the given name.
