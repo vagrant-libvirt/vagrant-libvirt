@@ -45,7 +45,6 @@ module VagrantPlugins
           return {
             :host          => ip_address,
             :port          => 22,
-            :username      => 'root',
             :forward_agent => true,
             :forward_x11   => true,
           }
