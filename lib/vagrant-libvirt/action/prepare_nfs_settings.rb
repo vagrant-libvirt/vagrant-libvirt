@@ -41,7 +41,7 @@ module VagrantPlugins
             xml=Nokogiri::XML(domain.to_xml)
             networkname = xml.xpath('/domain/devices/interface/source').first.attributes['network'].value.to_s
             puts "network name = #{networkname}"
-            net = env[:libvirt_compute].list_networks.map {|netw| netw if netw[:name] == networkname}.first
+            net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
           end
           # FIXME better implement by libvirt xml parsing
           `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
