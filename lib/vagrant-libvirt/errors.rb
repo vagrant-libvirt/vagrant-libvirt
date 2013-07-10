@@ -25,7 +25,7 @@ module VagrantPlugins
       end
 
       class ImageUploadError < VagrantLibvirtError
-        error_key(:image_upload_error_error)
+        error_key(:image_upload_error)
       end
 
 

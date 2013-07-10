@@ -96,7 +96,14 @@ module VagrantPlugins
             volume = pool.lookup_volume_by_name(volume_name)
             stream = env[:libvirt_compute].client.stream
             volume.upload(stream, offset=0, length=image_size)
-            buf_size = 1024*1024 # 1M
+
+            # Exception Libvirt::RetrieveError can be raised if buffer is
+            # longer than length accepted by API send function.
+            # 
+            # TODO: How to find out if buffer is too large and what is the
+            # length that send function will accept?
+
+            buf_size = 1024*250 # 250K
             progress = 0
             open(image_file, 'rb') do |io|
               while (buff = io.read(buf_size)) do
