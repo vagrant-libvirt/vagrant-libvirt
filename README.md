@@ -4,12 +4,12 @@ This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.5) is still a development one. Feedback is
+**Note:** Actual version (0.0.6) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.5)
+## Features (Version 0.0.6)
 
-* Controll local or remote Libvirt hypervisors.
+* Controll local Libvirt hypervisors.
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
@@ -18,7 +18,7 @@ welcome and can help a lot :-)
 * SSH into domains.
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
-* Synced folder support via `rsync` and `nfs`
+* Synced folder support via `rsync` or `nfs`.
 
 ## Future work
 
@@ -66,6 +66,11 @@ centos64 box and setup with 10.20.30.40 IP address.
 
 ```ruby
 Vagrant.configure("2") do |config|
+
+  # If you are still using old centos box, you have to setup root username for
+  # ssh access. Read more in section 'SSH Access To VM'.
+  config.ssh.username = "root"
+
   config.vm.define :test_vm do |test_vm|
     test_vm.vm.box = "centos64"
     test_vm.vm.network :private_network, :ip => '10.20.30.40'
@@ -110,6 +115,7 @@ Vagrant.configure("2") do |config|
     dbserver.vm.provider :libvirt do |domain|
       domain.memory = 2048
       domain.cpus = 2
+      domain.nested = true
     end
   end
 
@@ -153,7 +159,7 @@ An examples of network interface definitions:
 
 ```ruby
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :private_network, :ip => '10.20.30.40'
+    test_vm1.vm.network :private_network, :ip => "10.20.30.40",
   end
 ```
 
@@ -178,14 +184,18 @@ starts with 'libvirt__' string. Here is a list of those options:
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
-* `:libvirt__nat_interface` - Name of interface, where should network be
-  NATed. Used only when creating new network. By default, all physical
-  interfaces are used.
-* `:libvirt__isolated` - If network should be isolated - without NAT to outside.
-  Used only when creating new network. Default is set to false.
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
+* `:libvirt__forward_mode` - Specify one of `none`, `nat` or `route` options.
+  This option is used only when creating new network. Mode `none` will create
+  isolated network without NATing or routing outside. You will want to use
+  NATed forwarding typically to reach networks outside of hypervisor. Routed
+  forwarding is typically useful to reach other networks within hypervisor.
+  By default, option `nat` is used.
+* `:libvirt__forward_device` - Name of interface/device, where network should
+  be forwarded (NATed or routed). Used only when creating new network. By
+  default, all physical interfaces are used.
 
 ## Obtaining Domain IP Address
 
@@ -197,6 +207,24 @@ makes lease information public in `/var/lib/libvirt/dnsmasq` directory, or in
 information like which MAC address has which IP address resides and it's parsed
 by vagrant-libvirt plugin.
 
+## SSH Access To VM
+
+There are some configuration options for ssh access to VM via `config.ssh.*` in
+Vagrantfile. Untill provider version 0.0.5, root user was hardcoded and used to
+access VMs ssh. Now, vagrant user is used by default, but it's configurable via
+`config.ssh.username` option in Vagrantfile now.
+
+If you are still using CentOS 6.4 box from example in this README, please set
+ssh username back to root, because user vagrant is not usable (I forgot to add
+necessary ssh key to his authorized_keys).
+
+Configurable ssh parameters in Vagrantfile after provider version 0.0.5 are:
+
+* `config.ssh.username` - Default is username vagrant.
+* `config.ssh.guest_port` - Default port is set to 22.
+* `config.ssh.forward_agent` - Default is false.
+* `config.ssh.forward_x11` - Default is false.
+
 ## Synced Folders
 
 There is minimal support for synced folders. Upon `vagrant up`, the Libvirt
@@ -206,7 +234,7 @@ to the remote machine over SSH.
 This is good enough for all built-in Vagrant provisioners (shell,
 chef, and puppet) to work!
 
-if used options :nfs => true, folder will exported by nfs.
+If used options `:nfs => true`, folder will exported by nfs.
 
 ## Box Format
 

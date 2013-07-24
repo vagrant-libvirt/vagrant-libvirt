@@ -40,14 +40,19 @@ module VagrantPlugins
           }
           raise Errors::NoIpAddressError if not ip_address
 
-          # Return the info
-          # TODO: Some info should be configurable in Vagrantfile
-          return {
+          ssh_info = {
             :host          => ip_address,
-            :port          => 22,
-            :forward_agent => true,
-            :forward_x11   => true,
+            :port          => machine.config.ssh.guest_port,
+            :username      => machine.config.ssh.username,
+            :forward_agent => machine.config.ssh.forward_agent,
+            :forward_x11   => machine.config.ssh.forward_x11,
           }
+
+          if not ssh_info[:username]
+            ssh_info[:username] = machine.config.ssh.default.username
+          end
+
+          ssh_info
         end 
       end
     end

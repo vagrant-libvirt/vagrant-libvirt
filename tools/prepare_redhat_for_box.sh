@@ -10,7 +10,7 @@
 # For more info about creating custom box refer to
 # https://github.com/pradels/vagrant-libvirt/tree/master/example_box
 
-# We need a hostname.
+# We need to set a hostname.
 if [ $# -ne 1 ]; then
 	echo "Usage: $0 <hostname>"
 	echo "Hostname should be in format vagrant-[os-name], e.g. vagrant-redhat63."
@@ -75,7 +75,7 @@ sed -i 's/Defaults\s*requiretty/Defaults !requiretty/' /etc/sudoers
 
 
 # SSH setup
-# Add Vagrant ssh key for root accout.
+# Add Vagrant ssh key for root and vagrant accouts.
 sed -i 's/.*UseDNS.*/UseDNS no/' /etc/ssh/sshd_config
 
 [ -d ~root/.ssh ] || mkdir ~root/.ssh
@@ -84,6 +84,13 @@ cat > ~root/.ssh/authorized_keys << EOF
 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 EOF
 chmod 600 ~root/.ssh/authorized_keys
+
+[ -d ~vagrant/.ssh ] || mkdir ~vagrant/.ssh
+chmod 700 ~vagrant/.ssh
+cat > ~vagrant/.ssh/authorized_keys << EOF
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+EOF
+chmod 600 ~vagrant/.ssh/authorized_keys
 
 
 # Disable firewall and switch SELinux to permissive mode.

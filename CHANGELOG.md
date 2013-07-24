@@ -1,3 +1,10 @@
+# 0.0.6 (Jul 24, 2013)
+
+* Synced folder via NFS support.
+* Routed private network support.
+* Configurable ssh parameters in Vagrantfile via `config.ssh.*`.
+* Fixed uploading base box image to storage pool bug (buffer was too big).
+
 # 0.0.5 (May 10, 2013)
 
 * Private networks support.

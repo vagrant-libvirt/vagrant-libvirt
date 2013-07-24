@@ -45,6 +45,8 @@ module VagrantPlugins
             @options = scoped_hash_override(options, :libvirt)
             @options = {
               :netmask      => '255.255.255.0',
+              :dhcp_enabled => true,
+              :forward_mode => 'nat',
             }.merge(@options)
 
             # Prepare a hash describing network for this specific interface.
@@ -201,14 +203,9 @@ module VagrantPlugins
           @network_address = @interface_network[:ip_address]
           @network_netmask = @interface_network[:netmask]
 
-          if @options[:isolated]
-            @network_forward_mode = false
-          else
-            @network_forward_mode = 'nat'
-
-            if @options[:nat_interface]
-              @network_nat_interface = @options[:nat_interface]
-            end
+          @network_forward_mode = @options[:forward_mode]
+          if @options[:forward_device]
+            @network_forward_device = @options[:forward_device]
           end
 
           if @options[:dhcp_enabled]
