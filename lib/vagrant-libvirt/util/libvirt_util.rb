@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'vagrant/util/network_ip'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Util
       module LibvirtUtil
         include Vagrant::Util::NetworkIP

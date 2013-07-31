@@ -3,7 +3,7 @@ require 'vagrant-libvirt/util/timer'
 require 'vagrant/util/retryable'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
 
       # Wait till domain is started, till it obtains an IP address and is

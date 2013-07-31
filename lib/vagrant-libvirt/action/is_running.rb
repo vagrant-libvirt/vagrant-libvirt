@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # This can be used with "Call" built-in to check if the machine
       # is running and branch in the middleware.

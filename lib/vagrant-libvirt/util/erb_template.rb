@@ -1,7 +1,7 @@
 require 'erb'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Util
       module ErbTemplate
 

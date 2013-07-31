@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class MessageAlreadyCreated
         def initialize(app, env)

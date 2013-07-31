@@ -2,7 +2,7 @@ require 'log4r'
 require 'nokogiri'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # Destroy all networks created for this specific domain. Skip
       # removing if network has still active connections.

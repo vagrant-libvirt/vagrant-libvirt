@@ -1,6 +1,6 @@
 require 'nokogiri'
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class PrepareNFSSettings
         def initialize(app,env)

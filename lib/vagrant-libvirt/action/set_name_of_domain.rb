@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
 
       # Setup name for domain and domain volumes.
@@ -14,7 +14,7 @@ module VagrantPlugins
           env[:domain_name] << "_#{Time.now.to_i}"
 
           # Check if the domain name is not already taken
-          domain = Libvirt::Util::Collection.find_matching(
+          domain = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].servers.all, env[:domain_name])
           if domain != nil
             raise Vagrant::Errors::DomainNameExists,

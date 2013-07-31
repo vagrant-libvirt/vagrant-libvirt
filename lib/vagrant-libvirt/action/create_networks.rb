@@ -4,14 +4,14 @@ require 'vagrant/util/scoped_hash_override'
 require 'ipaddr'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # Prepare all networks needed for domain connections.
       class CreateNetworks
         include Vagrant::Util::NetworkIP
         include Vagrant::Util::ScopedHashOverride
-        include VagrantPlugins::Libvirt::Util::ErbTemplate
-        include VagrantPlugins::Libvirt::Util::LibvirtUtil
+        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::LibvirtUtil
 
         def initialize(app, env)
           @logger = Log4r::Logger.new("vagrant_libvirt::action::create_networks")

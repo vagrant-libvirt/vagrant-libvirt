@@ -2,7 +2,7 @@ require 'pathname'
 require 'vagrant-libvirt/plugin'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     lib_path = Pathname.new(File.expand_path("../vagrant-libvirt", __FILE__))
     autoload :Action, lib_path.join("action")
     autoload :Errors, lib_path.join("errors")

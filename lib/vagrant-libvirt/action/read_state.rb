@@ -1,7 +1,7 @@
 require "log4r"
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # This action reads the state of the machine and puts it in the
       # `:machine_state_id` key in the environment.
