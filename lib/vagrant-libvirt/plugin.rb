@@ -12,7 +12,7 @@ if Vagrant::VERSION < '1.1.0'
 end
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     class Plugin < Vagrant.plugin('2')
       name "libvirt"
       description <<-DESC

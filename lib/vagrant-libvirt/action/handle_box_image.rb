@@ -1,7 +1,7 @@
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class HandleBoxImage
         def initialize(app, env)
@@ -35,7 +35,7 @@ module VagrantPlugins
           env[:box_volume_name] << '_vagrant_box_image.img'
 
           # Don't continue if image already exists in storage pool.
-          return @app.call(env) if Libvirt::Util::Collection.find_matching(
+          return @app.call(env) if ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].volumes.all, env[:box_volume_name])
 
           # Box is not available as a storage pool volume. Create and upload
@@ -97,7 +97,7 @@ module VagrantPlugins
             stream = env[:libvirt_compute].client.stream
             volume.upload(stream, offset=0, length=image_size)
 
-            # Exception Libvirt::RetrieveError can be raised if buffer is
+            # Exception ProviderLibvirt::RetrieveError can be raised if buffer is
             # longer than length accepted by API send function.
             # 
             # TODO: How to find out if buffer is too large and what is the

@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class MessageNotRunning
         def initialize(app, env)

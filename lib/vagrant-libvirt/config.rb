@@ -1,7 +1,7 @@
 require 'vagrant'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver

@@ -3,7 +3,7 @@ require "pathname"
 require "log4r"
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class ShareFolders
         def initialize(app, env)

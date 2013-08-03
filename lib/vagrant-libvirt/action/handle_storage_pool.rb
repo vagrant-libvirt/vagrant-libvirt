@@ -1,10 +1,10 @@
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class HandleStoragePool
-        include VagrantPlugins::Libvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
         def initialize(app, env)
           @logger = Log4r::Logger.new("vagrant_libvirt::action::handle_storage_pool")
@@ -16,7 +16,7 @@ module VagrantPlugins
           config = env[:machine].provider_config
 
           # Check for storage pool, where box image should be created
-          fog_pool = Libvirt::Util::Collection.find_matching(
+          fog_pool = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].pools.all, config.storage_pool_name)
           return @app.call(env) if fog_pool
 

@@ -1,7 +1,7 @@
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # Resume suspended domain.
       class ResumeDomain

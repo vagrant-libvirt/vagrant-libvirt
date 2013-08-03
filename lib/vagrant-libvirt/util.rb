@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Util
       autoload :ErbTemplate, 'vagrant-libvirt/util/erb_template'
       autoload :Collection,  'vagrant-libvirt/util/collection'
