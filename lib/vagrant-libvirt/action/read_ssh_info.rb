@@ -1,7 +1,7 @@
 require "log4r"
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # This action reads the SSH info for the machine and puts it into the
       # `:machine_ssh_info` key in the environment.

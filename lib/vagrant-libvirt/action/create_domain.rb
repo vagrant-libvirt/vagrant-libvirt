@@ -1,11 +1,11 @@
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
 
       class CreateDomain
-        include VagrantPlugins::Libvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
         def initialize(app, env)
           @logger = Log4r::Logger.new("vagrant_libvirt::action::create_domain")
@@ -28,7 +28,7 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image.
-          domain_volume = Libvirt::Util::Collection.find_matching(
+          domain_volume = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].volumes.all, "#{@name}.img")
           raise Errors::DomainVolumeExists if domain_volume == nil
           @domain_volume_path = domain_volume.path

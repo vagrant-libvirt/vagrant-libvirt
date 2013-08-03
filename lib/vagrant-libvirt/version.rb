@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
-    VERSION = "0.0.6"
+  module ProviderLibvirt
+    VERSION = "0.0.7"
   end
 end

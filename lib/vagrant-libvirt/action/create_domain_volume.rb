@@ -1,14 +1,14 @@
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
 
       # Create a snapshot of base box image. This new snapshot is just new
       # cow image with backing storage pointing to base box image. Use this
       # image as new domain volume.
       class CreateDomainVolume
-        include VagrantPlugins::Libvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
         def initialize(app, env)
           @logger = Log4r::Logger.new("vagrant_libvirt::action::create_domain_volume")
@@ -25,12 +25,12 @@ module VagrantPlugins
           @name = "#{env[:domain_name]}.img"
 
           # Verify the volume doesn't exist already.
-          domain_volume = Libvirt::Util::Collection.find_matching(
+          domain_volume = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].volumes.all, @name)
           raise Errors::DomainVolumeExists if domain_volume
 
           # Get path to backing image - box volume.
-          box_volume = Libvirt::Util::Collection.find_matching(
+          box_volume = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].volumes.all, env[:box_volume_name])
           @backing_file = box_volume.path
 

@@ -1,7 +1,7 @@
 require "vagrant-libvirt/util/timer"
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # This is the same as the builtin provision except it times the
       # provisioner runs.

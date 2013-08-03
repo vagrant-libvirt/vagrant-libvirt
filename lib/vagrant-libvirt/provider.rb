@@ -1,7 +1,7 @@
 require 'vagrant'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
 
     # This is the base class for a provider for the V2 API. A provider
     # is responsible for creating compute resources to match the

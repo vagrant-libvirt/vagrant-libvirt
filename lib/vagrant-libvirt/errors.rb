@@ -1,7 +1,7 @@
 require 'vagrant'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Errors
       class VagrantLibvirtError < Vagrant::Errors::VagrantError
         error_namespace("vagrant_libvirt.errors")

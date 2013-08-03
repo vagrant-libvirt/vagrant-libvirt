@@ -2,7 +2,7 @@ require "log4r"
 require "vagrant/util/subprocess"
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       # This middleware uses `rsync` to sync the folders over to the
       # libvirt domain.

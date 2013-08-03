@@ -1,3 +1,8 @@
+# 0.0.7
+
+* Fixed namespace collision with ruby-libvirt library which used by
+  vagrant-kvm provider.(by Hiroshi Miura)
+
 # 0.0.6 (Jul 24, 2013)
 
 * Synced folder via NFS support.

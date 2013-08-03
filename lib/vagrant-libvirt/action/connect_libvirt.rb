@@ -2,7 +2,7 @@ require 'fog'
 require 'log4r'
 
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Action
       class ConnectLibvirt
         def initialize(app, env)
@@ -14,8 +14,8 @@ module VagrantPlugins
 
           # If already connected to libvirt, just use it and don't connect
           # again.
-          if Libvirt.libvirt_connection
-            env[:libvirt_compute] = Libvirt.libvirt_connection
+          if ProviderLibvirt.libvirt_connection
+            env[:libvirt_compute] = ProviderLibvirt.libvirt_connection
             return @app.call(env)
           end
 
@@ -64,7 +64,7 @@ module VagrantPlugins
             raise Errors::FogLibvirtConnectionError,
               :error_message => e.message
           end
-          Libvirt.libvirt_connection = env[:libvirt_compute]
+          ProviderLibvirt.libvirt_connection = env[:libvirt_compute]
 
           @app.call(env)
         end

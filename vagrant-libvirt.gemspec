@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "vagrant-libvirt"
   gem.require_paths = ["lib"]
-  gem.version       = VagrantPlugins::Libvirt::VERSION
+  gem.version       = VagrantPlugins::ProviderLibvirt::VERSION
 
   gem.add_runtime_dependency "fog", "~> 1.10.0"
   gem.add_runtime_dependency "ruby-libvirt", "~> 0.4.0"

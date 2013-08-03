@@ -1,5 +1,5 @@
 module VagrantPlugins
-  module Libvirt
+  module ProviderLibvirt
     module Util
       class Timer
         # A basic utility method that times the execution of the given
