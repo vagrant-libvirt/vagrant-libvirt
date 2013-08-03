@@ -14,14 +14,14 @@ end
 module VagrantPlugins
   module ProviderLibvirt
     class Plugin < Vagrant.plugin('2')
-      name "libvirt"
+      name 'libvirt'
       description <<-DESC
       Vagrant plugin to manage VMs in libvirt.
       DESC
 
 
-      config("libvirt", :provider) do
-        require_relative "config"
+      config('libvirt', :provider) do
+        require_relative 'config'
         Config
       end
 
@@ -37,7 +37,7 @@ module VagrantPlugins
 
       # This initializes the internationalization strings.
       def self.setup_i18n
-        I18n.load_path << File.expand_path("locales/en.yml", Libvirt.source_root)
+        I18n.load_path << File.expand_path("locales/en.yml", ProviderLibvirt.source_root)
         I18n.reload!
       end
 
