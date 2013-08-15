@@ -34,7 +34,6 @@ module VagrantPlugins
           ip_address = nil
           domain.wait_for(2) {
             addresses.each_pair do |type, ip|
-              puts ip
               ip_address = ip[0] if ip[0] != nil
             end
             ip_address != nil
