@@ -6,7 +6,7 @@ module VagrantPlugins
     module Action
       class ConnectLibvirt
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::connect_libvirt")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::connect_libvirt')
           @app = app
         end
 
@@ -39,7 +39,11 @@ module VagrantPlugins
             uri << '://'
             uri << config.host if config.host
           end
+
           uri << '/system?no_verify=1'
+          # set ssh key for access to libvirt host
+          home_dir = `echo ${HOME}`.chomp
+          uri << "&keyfile=#{home_dir}/.ssh/id_rsa"
 
           conn_attr = {}
           conn_attr[:provider] = 'libvirt'
