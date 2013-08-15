@@ -12,8 +12,8 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:machine_ssh_info] = read_ssh_info(
-            env[:libvirt_compute], env[:machine])
+          env[:machine_ssh_info] = read_ssh_info(env[:libvirt_compute],
+                                                 env[:machine])
 
           @app.call(env)
         end
@@ -34,6 +34,7 @@ module VagrantPlugins
           ip_address = nil
           domain.wait_for(2) {
             addresses.each_pair do |type, ip|
+              puts ip
               ip_address = ip[0] if ip[0] != nil
             end
             ip_address != nil
@@ -53,7 +54,7 @@ module VagrantPlugins
           end
 
           ssh_info
-        end 
+        end
       end
     end
   end
