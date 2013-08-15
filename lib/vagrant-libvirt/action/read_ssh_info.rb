@@ -12,8 +12,8 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:machine_ssh_info] = read_ssh_info(
-            env[:libvirt_compute], env[:machine])
+          env[:machine_ssh_info] = read_ssh_info(env[:libvirt_compute],
+                                                 env[:machine])
 
           @app.call(env)
         end
@@ -53,7 +53,7 @@ module VagrantPlugins
           end
 
           ssh_info
-        end 
+        end
       end
     end
   end
