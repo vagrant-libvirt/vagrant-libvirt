@@ -60,6 +60,12 @@ want. This is just an example of Libvirt CentOS 6.4 box available:
 $ vagrant box add centos64 http://kwok.cz/centos64.box
 ```
 
+Also an Ubuntu 12.04.2 LTS box available (user is 'vagrant'):
+
+```
+$ vagrant box add vagrant-ubuntu-precise http://goo.gl/HBf2eE
+```
+
 And then make a Vagrantfile that looks like the following, filling in your
 information where necessary. In example below, VM named test_vm is created from
 centos64 box and setup with 10.20.30.40 IP address.
