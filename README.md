@@ -152,14 +152,25 @@ Vagrant goes through steps below when creating new project:
 ## Networks
 
 Networking features in the form of `config.vm.network` support private networks
-concept. No public network or port forwarding are supported in current version
-of provider.
+concept. Port Forwarding is currently not supported.
+
+Public Network interfaces are currently implemented using the macvtap driver. The macvtap
+driver is only available with the Linux Kernel version >= 2.6.24. See the following libvirt
+documentation for the details of the macvtap usage.
+
+http://www.libvirt.org/formatdomain.html#elementsNICSDirect
 
 An examples of network interface definitions:
 
 ```ruby
+  # Private network
   config.vm.define :test_vm1 do |test_vm1|
     test_vm1.vm.network :private_network, :ip => "10.20.30.40",
+  end
+
+  # Public Network
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge'
   end
 ```
 
@@ -174,7 +185,15 @@ created networks are NATed to outside world, so your VM will be able to connect
 to the internet (if hypervisor can). And by default, DHCP is offering addresses
 on newly created networks.
 
+The second interface is created and bridged into the physical device 'eth0'.
+This mechanism uses the macvtap Kernel driver and therefore does not require
+an existing bridge device. This configuration assumes that DHCP and DNS services
+are being provided by the public network. This public interface should be reachable
+by anyone with access to the public network.
+
 ### Private Network Options
+
+*Note: These options are not applicable to public network interfaces.*
 
 There is a way to pass specific options for libvirt provider when using
 `config.vm.network` to configure new network interface. Each parameter name
