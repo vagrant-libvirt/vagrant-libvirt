@@ -70,8 +70,9 @@ module VagrantPlugins
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
               template_name = 'public_interface'
-              @device = iface_configuration[:dev]
-              @mode = iface_configuration[:mode]
+              @device = iface_configuration.fetch(:dev, 'eth0')
+              @mode = iface_configuration.fetch(:mode, 'bridge')
+              @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
             end
 
             message = "Creating network interface eth#{@iface_number}"

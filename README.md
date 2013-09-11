@@ -216,6 +216,12 @@ starts with 'libvirt__' string. Here is a list of those options:
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
 
+### Public Network Options
+* `:dev` - Physical device that the public interface should use. Default is 'eth0'
+* `:mode` - The mode in which the public interface should operate in. Supported
+  modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
+  Default mode is 'bridge'.
+
 ## Obtaining Domain IP Address
 
 Libvirt doesn't provide standard way how to find out an IP address of running
