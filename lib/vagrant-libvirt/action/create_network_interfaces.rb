@@ -32,28 +32,16 @@ module VagrantPlugins
           # Setup list of interfaces before creating them.
           adapters = []
 
-          # Assign main interface for provisioning to first slot.
-          # Use network 'default' as network for ssh connecting and
-          # machine provisioning.
-          #
-          # TODO Network name with DHCP for first interface should be
-          # configurable.
-          adapters[0] = {
-            :network_name => 'default'
-          }
+          # Vagrant gives you adapter 0 by default
 
           # Assign interfaces to slots.
           env[:machine].config.vm.networks.each do |type, options|
-            # Only private network is supported now. Port forwarding and public
-            # network are not supported via libvirt API, so they are not
-            # implemented in this provider.
-            next if type != :private_network
 
             # Get options for this interface. Options can be specified in
             # Vagrantfile in short format (:ip => ...), or provider format
             # (:libvirt__network_name => ...).
             options = scoped_hash_override(options, :libvirt)
-            options = { :netmask => '255.255.255.0' }.merge(options)
+            options = { :netmask => '255.255.255.0', :iface_type => type }.merge(options)
 
             # TODO fill first ifaces with adapter option specified.
             if options[:adapter]
@@ -63,7 +51,7 @@ module VagrantPlugins
 
               free_slot = options[:adapter].to_i
             else
-              free_slot = find_empty(adapters, start=1)
+              free_slot = find_empty(adapters)
               raise Errors::InterfaceSlotNotAvailable if free_slot == nil
             end
 
@@ -77,13 +65,22 @@ module VagrantPlugins
           adapters.each_with_index do |iface_configuration, slot_number|
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
+            template_name = 'interface'
+
+            # Configuration for public interfaces which use the macvtap driver
+            if iface_configuration[:iface_type] == :public_network
+              template_name = 'public_interface'
+              @device = iface_configuration.fetch(:dev, 'eth0')
+              @mode = iface_configuration.fetch(:mode, 'bridge')
+              @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
+            end
 
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
             @logger.info(message)
 
             begin
-              domain.attach_device(to_xml('interface'))
+              domain.attach_device(to_xml(template_name))
             rescue => e
               raise Errors::AttachDeviceError,
                 :error_message => e.message
