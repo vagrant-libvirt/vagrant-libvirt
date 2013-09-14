@@ -26,6 +26,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :nested
+      attr_accessor :volume_cache
 
       def initialize
         @driver            = UNSET_VALUE
@@ -39,6 +40,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @nested            = UNSET_VALUE
+        @volume_cache      = UNSET_VALUE
       end
 
       def finalize!
@@ -53,6 +55,7 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
+        @volume_cache = 'default' if @volume_cache == UNSET_VALUE
       end
 
       def validate(machine)

@@ -21,6 +21,7 @@ module VagrantPlugins
           @cpus = config.cpus
           @nested = config.nested
           @memory_size = config.memory*1024
+          @domain_volume_cache = config.volume_cache
 
           # TODO get type from driver config option
           @domain_type = 'kvm'
@@ -42,6 +43,7 @@ module VagrantPlugins
           env[:ui].info(" -- Base box:      #{env[:machine].box.name}")
           env[:ui].info(" -- Storage pool:  #{env[:machine].provider_config.storage_pool_name}")
           env[:ui].info(" -- Image:         #{@domain_volume_path}")
+          env[:ui].info(" -- Volume Cache:  #{@domain_volume_cache}")
 
           # Create libvirt domain.
           # Is there a way to tell fog to create new domain with already

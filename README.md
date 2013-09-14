@@ -103,6 +103,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
+* `volume_cache` - cache attribute controls the cache mechanism, possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -116,6 +117,7 @@ Vagrant.configure("2") do |config|
       domain.memory = 2048
       domain.cpus = 2
       domain.nested = true
+	  domain.volume_cache = 'none'
     end
   end
 
