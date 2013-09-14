@@ -26,6 +26,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :nested
+      attr_accessor :volume_cache
 
       def initialize
         @driver            = UNSET_VALUE
