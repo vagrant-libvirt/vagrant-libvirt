@@ -167,12 +167,12 @@ An examples of network interface definitions:
 ```ruby
   # Private network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :private_network, :ip => "10.20.30.40",
+    test_vm1.vm.network :private_network, :ip => "10.20.30.40"
   end
 
   # Public Network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge', :mac => '92-c6-8f-94-b5-8d'
+    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge'
   end
 ```
 
@@ -191,7 +191,7 @@ The second interface is created and bridged into the physical device 'eth0'.
 This mechanism uses the macvtap Kernel driver and therefore does not require
 an existing bridge device. This configuration assumes that DHCP and DNS services
 are being provided by the public network. This public interface should be reachable
-by anyone with access to the public network. If `:mac` is not defined it will be generated.
+by anyone with access to the public network.
 
 ### Private Network Options
 
@@ -217,12 +217,14 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:libvirt__forward_device` - Name of interface/device, where network should
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
+* `:mac` - MAC address for the interface.
 
 ### Public Network Options
 * `:dev` - Physical device that the public interface should use. Default is 'eth0'
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
+* `:mac` - MAC address for the interface.
 
 ## Obtaining Domain IP Address
 
