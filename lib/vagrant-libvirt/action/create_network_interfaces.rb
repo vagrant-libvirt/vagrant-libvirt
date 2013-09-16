@@ -79,7 +79,7 @@ module VagrantPlugins
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
             if @mac
-              message << "Using MAC address: #{@mac}"
+              message << " Using MAC address: #{@mac}"
             end
             @logger.info(message)
 
