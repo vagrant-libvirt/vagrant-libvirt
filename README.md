@@ -103,7 +103,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
-* `volume_cache` - cache attribute controls the cache mechanism, possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
+* `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -167,7 +167,7 @@ An examples of network interface definitions:
 ```ruby
   # Private network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :private_network, :ip => "10.20.30.40",
+    test_vm1.vm.network :private_network, :ip => "10.20.30.40"
   end
 
   # Public Network
@@ -217,12 +217,14 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:libvirt__forward_device` - Name of interface/device, where network should
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
+* `:mac` - MAC address for the interface.
 
 ### Public Network Options
 * `:dev` - Physical device that the public interface should use. Default is 'eth0'
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
+* `:mac` - MAC address for the interface.
 
 ## Obtaining Domain IP Address
 
