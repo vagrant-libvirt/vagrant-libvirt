@@ -1,5 +1,8 @@
 <interface type='network'>
   <source network='<%= @network_name %>'/>
+  <% if @mac %>
+  	<mac address='<%= @mac %>'/>
+  <% end %>
   <target dev='vnet<%= @iface_number %>'/>
   <alias name='net<%= @iface_number %>'/>
   <model type='virtio'/>

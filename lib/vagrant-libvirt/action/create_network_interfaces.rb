@@ -72,6 +72,7 @@ module VagrantPlugins
               template_name = 'public_interface'
               @device = iface_configuration.fetch(:dev, 'eth0')
               @mode = iface_configuration.fetch(:mode, 'bridge')
+              @mac = iface_configuration.fetch(:mac, false)
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
             end
 

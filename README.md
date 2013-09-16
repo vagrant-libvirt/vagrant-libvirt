@@ -103,7 +103,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
-* `volume_cache` - cache attribute controls the cache mechanism, possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
+* `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -172,7 +172,7 @@ An examples of network interface definitions:
 
   # Public Network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge'
+    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge', :mac => '92-c6-8f-94-b5-8d'
   end
 ```
 
@@ -191,7 +191,7 @@ The second interface is created and bridged into the physical device 'eth0'.
 This mechanism uses the macvtap Kernel driver and therefore does not require
 an existing bridge device. This configuration assumes that DHCP and DNS services
 are being provided by the public network. This public interface should be reachable
-by anyone with access to the public network.
+by anyone with access to the public network. If `:mac` is not defined it will be generated.
 
 ### Private Network Options
 
