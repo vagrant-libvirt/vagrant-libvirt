@@ -1,4 +1,7 @@
 <interface type='direct'>
+	<% if @mac %>
+  	<mac address='<%= @mac %>'/>
+  <% end %>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
 </interface>
 

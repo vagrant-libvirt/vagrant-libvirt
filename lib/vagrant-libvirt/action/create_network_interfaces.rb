@@ -65,6 +65,7 @@ module VagrantPlugins
           adapters.each_with_index do |iface_configuration, slot_number|
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
+            @mac = iface_configuration.fetch(:mac, false)
             template_name = 'interface'
 
             # Configuration for public interfaces which use the macvtap driver
@@ -77,6 +78,9 @@ module VagrantPlugins
 
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
+            if @mac
+              message << " Using MAC address: #{@mac}"
+            end
             @logger.info(message)
 
             begin
