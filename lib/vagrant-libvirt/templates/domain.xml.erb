@@ -4,9 +4,10 @@
   <vcpu><%= @cpus %></vcpu>
 
   <% if @nested %>
-    <cpu match='exact'>
-      <model>core2duo</model>
-      <feature policy='require' name='vmx'/>
+    <cpu mode='host-passthrough'>
+      <model fallback='allow'>qemu64</model>
+      <feature policy='optional' name='vmx'/>
+      <feature policy='optional' name='svm'/>
     </cpu>
   <% end %>
 
