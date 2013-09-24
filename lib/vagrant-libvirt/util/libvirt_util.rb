@@ -8,7 +8,7 @@ module VagrantPlugins
         include Vagrant::Util::NetworkIP
 
         # Return a list of all (active and inactive) libvirt networks as a list
-        # of hashes with their name, network address and status (active or not).
+        # of hashes with their name, network address and status (active or not)
         def libvirt_networks(libvirt_client)
           libvirt_networks = []
 
@@ -29,22 +29,22 @@ module VagrantPlugins
 
             # Calculate network address of network from ip address and
             # netmask.
-            if ip and netmask
+            if ip && netmask
               network_address = network_address(ip, netmask)
             else
               network_address = nil
             end
 
             libvirt_networks << {
-              :name            => network_name,
-              :ip_address      => ip,
-              :netmask         => netmask,
-              :network_address => network_address,
-              :bridge_name     => libvirt_network.bridge_name,
-              :created         => true,
-              :active          => libvirt_network.active?,
-              :autostart       => libvirt_network.autostart?,
-              :libvirt_network => libvirt_network,
+              name:             network_name,
+              ip_address:       ip,
+              netmask:          netmask,
+              network_address:  network_address,
+              bridge_name:      libvirt_network.bridge_name,
+              created:          true,
+              active:           libvirt_network.active?,
+              autostart:        libvirt_network.autostart?,
+              libvirt_network:  libvirt_network
             }
           end
 

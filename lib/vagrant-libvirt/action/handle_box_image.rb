@@ -5,7 +5,7 @@ module VagrantPlugins
     module Action
       class HandleBoxImage
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::handle_box_image")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::handle_box_image')
           @app = app
         end
 
@@ -30,7 +30,7 @@ module VagrantPlugins
 
           # Get config options
           config   = env[:machine].provider_config
-          box_image_file = env[:machine].box.directory.join("box.img").to_s
+          box_image_file = env[:machine].box.directory.join('box.img').to_s
           env[:box_volume_name] = env[:machine].box.name.to_s.dup
           env[:box_volume_name] << '_vagrant_box_image.img'
 
@@ -40,7 +40,7 @@ module VagrantPlugins
 
           # Box is not available as a storage pool volume. Create and upload
           # it as a copy of local box image.
-          env[:ui].info(I18n.t("vagrant_libvirt.uploading_volume"))
+          env[:ui].info(I18n.t('vagrant_libvirt.uploading_volume'))
 
           # Create new volume in storage pool
           box_image_size = File.size(box_image_file) # B
@@ -49,11 +49,11 @@ module VagrantPlugins
           @logger.info(message)
           begin
             fog_volume = env[:libvirt_compute].volumes.create(
-              :name        => env[:box_volume_name],
-              :allocation  => "#{box_image_size/1024/1024}M",
-              :capacity    => "#{box_virtual_size}G",
-              :format_type => box_format,
-              :pool_name   => config.storage_pool_name)
+              name:         env[:box_volume_name],
+              allocation:   "#{box_image_size/1024/1024}M",
+              capacity:     "#{box_virtual_size}G",
+              format_type:  box_format,
+              pool_name:    config.storage_pool_name)
           rescue Fog::Errors::Error => e
             raise Errors::FogCreateVolumeError,
               :error_message => e.message
@@ -72,7 +72,7 @@ module VagrantPlugins
 
           # If upload failed or was interrupted, remove created volume from
           # storage pool.
-          if env[:interrupted] or !ret
+          if env[:interrupted] || !ret
             begin
               fog_volume.destroy
             rescue
@@ -99,7 +99,7 @@ module VagrantPlugins
 
             # Exception ProviderLibvirt::RetrieveError can be raised if buffer is
             # longer than length accepted by API send function.
-            # 
+            #
             # TODO: How to find out if buffer is too large and what is the
             # length that send function will accept?
 
@@ -117,8 +117,11 @@ module VagrantPlugins
               :error_message => e.message
           end
 
-          return true if progress == image_size
-          false
+          if progress == image_size
+            return true
+          else
+            return false
+          end
         end
 
       end

@@ -15,7 +15,7 @@ module VagrantPlugins
         include Vagrant::Util::ScopedHashOverride
 
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::create_network_interfaces")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @app = app
         end
 
@@ -91,7 +91,7 @@ module VagrantPlugins
             end
           end
 
-          # Continue the middleware chain. 
+          # Continue the middleware chain.
           @app.call(env)
 
           # Configure interfaces that user requested. Machine should be up and
@@ -122,15 +122,15 @@ module VagrantPlugins
             networks_to_configure << network
           end
 
-          env[:ui].info I18n.t("vagrant.actions.vm.network.configuring")
+          env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
           env[:machine].guest.capability(
-            :configure_networks, networks_to_configure) 
+            :configure_networks, networks_to_configure)
         end
 
         private
 
         def find_empty(array, start=0, stop=8)
-          for i in start..stop
+          (start..stop).each do |i|
             return i if !array[i]
           end
           return nil
