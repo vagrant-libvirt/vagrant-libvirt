@@ -4,11 +4,10 @@ rescue LoadError
   raise 'The Vagrant Libvirt plugin must be run within Vagrant.'
 end
 
-
 # This is a sanity check to make sure no one is attempting to install
 # this into an early Vagrant version.
-if Vagrant::VERSION < '1.1.0'
-  raise 'The Vagrant Libvirt plugin is only compatible with Vagrant 1.1+'
+if Vagrant::VERSION < '1.3.0'
+  raise 'The Vagrant Libvirt plugin is only compatible with Vagrant 1.3+'
 end
 
 module VagrantPlugins
@@ -18,7 +17,6 @@ module VagrantPlugins
       description <<-DESC
       Vagrant plugin to manage VMs in libvirt.
       DESC
-
 
       config('libvirt', :provider) do
         require_relative 'config'
@@ -34,13 +32,12 @@ module VagrantPlugins
         Provider
       end
 
-
       # This initializes the internationalization strings.
       def self.setup_i18n
-        I18n.load_path << File.expand_path('locales/en.yml', ProviderLibvirt.source_root)
+        I18n.load_path << File.expand_path('locales/en.yml',
+                                           ProviderLibvirt.source_root)
         I18n.reload!
       end
-
 
       # This sets up our log level to be whatever VAGRANT_LOG is.
       def self.setup_logging
