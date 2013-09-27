@@ -76,8 +76,8 @@ module VagrantPlugins
               end
             end
 
-            autostart_network if @interface_network[:autostart].nil?
-            activate_network if @interface_network[:active].nil?
+            autostart_network if !@interface_network[:autostart]
+            activate_network if !@interface_network[:active]
           end
 
           @app.call(env)
