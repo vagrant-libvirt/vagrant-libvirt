@@ -1,7 +1,18 @@
+# 0.0.9 (September 29, 2013)
+
+* fixed version of nokogiri = 1.5.10(by Brian Pitts <brian@polibyte.com>)
+* fix issue with network activation (by Brian Pitts <brian@polibyte.com>)
+* restrict version of vagrant > 1.3.0
+
+# 0.0.8 (September 25, 2013)
+
+* enable parallelization (by Brian Pitts <brian@polibyte.com>)
+
 # 0.0.7
 
 * Fixed namespace collision with ruby-libvirt library which used by
   vagrant-kvm provider.(by Hiroshi Miura)
+* enable nested virtualization for amd (by Jordan Tardif <jordan@dreamhost.com>)
 
 # 0.0.6 (Jul 24, 2013)
 
