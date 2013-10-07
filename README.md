@@ -1,13 +1,13 @@
 # Vagrant Libvirt Provider
 
-This is a [Vagrant](http://www.vagrantup.com) 1.1+ plugin that adds an
+This is a [Vagrant](http://www.vagrantup.com) 1.3+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.6) is still a development one. Feedback is
+**Note:** Actual version (0.0.10) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.6)
+## Features (Version 0.0.10)
 
 * Controll local Libvirt hypervisors.
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh` and `provision` commands.
@@ -27,7 +27,7 @@ welcome and can help a lot :-)
 
 ## Installation
 
-Install using standard [Vagrant 1.1+](http://downloads.vagrantup.com) plugin installation methods. After
+Install using standard [Vagrant 1.3+](http://downloads.vagrantup.com) plugin installation methods. After
 installing, `vagrant up` and specify the `libvirt` provider. An example is shown below.
 
 ```
