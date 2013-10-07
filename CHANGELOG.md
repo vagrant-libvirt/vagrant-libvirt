@@ -1,3 +1,7 @@
+# 0.0.10 (Oct. 7, 2013)
+
+* Delete files from destination to avoid confusions(by <skullzeek@gmail.com>)
+
 # 0.0.9 (September 29, 2013)
 
 * fixed version of nokogiri = 1.5.10(by Brian Pitts <brian@polibyte.com>)
