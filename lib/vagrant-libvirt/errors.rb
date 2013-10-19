@@ -118,6 +118,10 @@ module VagrantPlugins
         error_key(:no_ip_address_error)
       end
 
+      class DeleteSnapshotError < VagrantLibvirtError
+        error_key(:delete_snapshot_error)
+      end
+
     end
   end
 end
