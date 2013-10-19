@@ -92,6 +92,23 @@ module VagrantPlugins
         end
       end
 
+      # This is the action implements the reload command
+      # It uses the halt and start actions
+      def self.action_reload
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use ConfigValidate
+            b2.use action_halt
+            b2.use action_start
+          end
+        end
+      end
+
       # This is the action that is primarily responsible for completely
       # freeing the resources of the underlying virtual machine.
       def self.action_destroy
