@@ -1,4 +1,4 @@
-require "log4r"
+require 'log4r'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -8,7 +8,7 @@ module VagrantPlugins
       class ReadState
         def initialize(app, env)
           @app    = app
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::read_state")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::read_state')
         end
 
         def call(env)
@@ -21,9 +21,9 @@ module VagrantPlugins
 
           # Find the machine
           server = libvirt.servers.get(machine.id)
-          if server.nil? || [:"shutting-down", :terminated].include?(server.state.to_sym)
+          if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
             # The machine can't be found
-            @logger.info("Machine not found or terminated, assuming it got destroyed.")
+            @logger.info('Machine not found or terminated, assuming it got destroyed.')
             machine.id = nil
             return :not_created
           end

@@ -3,10 +3,10 @@ require 'vagrant-libvirt/plugin'
 
 module VagrantPlugins
   module ProviderLibvirt
-    lib_path = Pathname.new(File.expand_path("../vagrant-libvirt", __FILE__))
-    autoload :Action, lib_path.join("action")
-    autoload :Errors, lib_path.join("errors")
-    autoload :Util, lib_path.join("util")
+    lib_path = Pathname.new(File.expand_path('../vagrant-libvirt', __FILE__))
+    autoload :Action, lib_path.join('action')
+    autoload :Errors, lib_path.join('errors')
+    autoload :Util, lib_path.join('util')
 
     # Hold connection handler so there is no need to connect more times than
     # one. This can be annoying when there are more machines to create, or when
@@ -23,7 +23,7 @@ module VagrantPlugins
     end
 
     def self.source_root
-      @source_root ||= Pathname.new(File.expand_path("../../", __FILE__))
+      @source_root ||= Pathname.new(File.expand_path('../../', __FILE__))
     end
   end
 end

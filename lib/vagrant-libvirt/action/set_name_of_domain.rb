@@ -11,8 +11,9 @@ module VagrantPlugins
         def call(env)
           require 'securerandom'
           env[:domain_name] = env[:root_path].basename.to_s.dup
-          env[:domain_name].gsub!(/[^-a-z0-9_]/i, "")
-          env[:domain_name] << "_#{SecureRandom.hex}"
+          env[:domain_name].gsub!(/[^-a-z0-9_]/i, '')
+          env[:domain_name] << '_'
+          env[:domain_name] << env[:machine].name.to_s
 
           # Check if the domain name is not already taken
           domain = ProviderLibvirt::Util::Collection.find_matching(
