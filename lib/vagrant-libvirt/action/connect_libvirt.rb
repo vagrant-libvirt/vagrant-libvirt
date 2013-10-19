@@ -24,6 +24,17 @@ module VagrantPlugins
 
           # Setup connection uri.
           uri = config.driver
+          virt_path = case uri
+          when 'qemu', 'openvz', 'uml', 'phyp', 'parallels'
+            '/system'
+          when 'xen', 'esx'
+            '/'
+          when 'vbox', 'vmwarews', 'hyperv'
+            '/session'
+          else
+            raise "Require specify driver #{uri}"
+          end
+
           if config.connect_via_ssh
             uri << '+ssh://'
             if config.username
@@ -40,7 +51,8 @@ module VagrantPlugins
             uri << config.host if config.host
           end
 
-          uri << '/system?no_verify=1'
+          uri << virt_path
+          uri << '?no_verify=1'
           # set ssh key for access to libvirt host
           home_dir = `echo ${HOME}`.chomp
           uri << "&keyfile=#{home_dir}/.ssh/id_rsa"
