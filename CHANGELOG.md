@@ -1,3 +1,12 @@
+# 0.0.11 (Oct. 20, 2013)
+
+* BUG FIX  close #70 undefine machine id should be after all operations
+* BUG FIX  close #76 correct uri for different virtualizations
+* BUG FIX  close #72 possibility to give VMs a name
+* Delete any snapshots when destroying domain (by Brian Pitts <brian@polibyte.com>)
+* Add reload command (by Brian Pitts <brian@polibyte.com>)
+* Update README (by <brett@apache.org>)
+
 # 0.0.10 (Oct. 7, 2013)
 
 * Delete files from destination to avoid confusions(by <skullzeek@gmail.com>)
