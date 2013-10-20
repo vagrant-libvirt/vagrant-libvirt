@@ -5,13 +5,13 @@ module VagrantPlugins
     module Action
       class DestroyDomain
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::destroy_domain")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::destroy_domain')
           @app = app
         end
 
         def call(env)
           # Destroy the server, remove the tracking ID
-          env[:ui].info(I18n.t("vagrant_libvirt.destroy_domain"))
+          env[:ui].info(I18n.t('vagrant_libvirt.destroy_domain'))
 
           # Must delete any snapshots before domain can be destroyed
           # Fog libvirt currently doesn't support snapshots. Use
@@ -28,8 +28,7 @@ module VagrantPlugins
           end
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
-          domain.destroy(:destroy_volumes => true)
-          env[:machine].id = nil
+          domain.destroy(destroy_volumes: true)
 
           @app.call(env)
         end
