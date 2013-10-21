@@ -19,6 +19,7 @@ welcome and can help a lot :-)
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
 * Synced folder support via `rsync` or `nfs`.
+* Snapshots via [sahara](https://github.com/jedi4ever/sahara)
 
 ## Future work
 
