@@ -96,7 +96,6 @@ chmod 600 ~vagrant/.ssh/authorized_keys
 # Disable firewall and switch SELinux to permissive mode.
 chkconfig iptables off
 chkconfig ip6tables off
-sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 
 
 # Networking setup..
