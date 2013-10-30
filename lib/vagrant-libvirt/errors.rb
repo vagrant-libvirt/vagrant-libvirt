@@ -35,15 +35,15 @@ module VagrantPlugins
       end
 
       class NoBoxVirtualSizeSet < VagrantLibvirtError
-        error_key(:no_box_virtual_size_error)
+        error_key(:no_box_virtual_size)
       end
 
       class NoBoxFormatSet < VagrantLibvirtError
-        error_key(:no_box_format_error)
+        error_key(:no_box_format)
       end
 
       class WrongBoxFormatSet < VagrantLibvirtError
-        error_key(:wrong_box_format_error)
+        error_key(:wrong_box_format)
       end
 
 
