@@ -96,8 +96,9 @@ This provider exposes quite a few provider-specific configuration options:
 * `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
-* `storage_pool_name` - Libvirt storage pool name, where box image and
-  instance snapshots will be stored.
+* `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
+* `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
+* `default_network` - Libvirt default network name. If not specified default network name is 'default'.
 
 ### Domain Specific Options
 
