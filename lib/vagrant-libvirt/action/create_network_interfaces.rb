@@ -16,6 +16,7 @@ module VagrantPlugins
 
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
+          @default_network = env[:machine].provider_config.default_network;
           @app = app
         end
 
@@ -58,7 +59,7 @@ module VagrantPlugins
             # We have slot for interface, fill it with interface configuration.
             adapters[free_slot] = options
             adapters[free_slot][:network_name] = interface_network(
-              env[:libvirt_compute].client, adapters[free_slot])
+              env[:libvirt_compute].client, adapters[free_slot], )
           end
 
           # Create each interface as new domain device.
@@ -151,7 +152,7 @@ module VagrantPlugins
           end
 
           # TODO Network default can be missing or named different.
-          return 'default'
+          return @default_network;
         end
       end
     end
