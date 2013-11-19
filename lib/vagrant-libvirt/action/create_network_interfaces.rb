@@ -59,7 +59,7 @@ module VagrantPlugins
             # We have slot for interface, fill it with interface configuration.
             adapters[free_slot] = options
             adapters[free_slot][:network_name] = interface_network(
-              env[:libvirt_compute].client, adapters[free_slot], )
+              env[:libvirt_compute].client, adapters[free_slot])
           end
 
           # Create each interface as new domain device.
