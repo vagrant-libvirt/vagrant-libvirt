@@ -21,3 +21,9 @@ Libvirt box should define at least three data fields in `metadata.json` file.
 * format - Currently supported format is qcow2.
 * virtual_size - Virtual size of image in GBytes.
 
+## Converting Boxes
+
+Instead of creating a box from scratch, you can use 
+[vagrant-mutate](https://github.com/sciurus/vagrant-mutate) 
+to take boxes created for other Vagrant providers and use them 
+with vagrant-libvirt.
