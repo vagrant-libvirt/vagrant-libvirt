@@ -59,9 +59,9 @@ module VagrantPlugins
               # VM is not running or suspended. Start it.. Machine should gain
               # IP address when comming up, so wait for dhcp lease and store IP
               # into machines data_dir.
-              b2.use NFS
-              b2.use PrepareNFSSettings
-              b2.use ShareFolders
+              b3.use NFS
+              b3.use PrepareNFSSettings
+              b3.use ShareFolders
 
               b3.use StartDomain
               b3.use WaitTillUp
