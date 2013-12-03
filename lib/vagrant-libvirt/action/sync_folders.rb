@@ -19,6 +19,7 @@ module VagrantPlugins
 
           env[:machine].config.vm.synced_folders.each do |id, data|
             next if data[:nfs]
+            proxycommand = "-o ProxyCommand='#{ssh_info[:proxy_command]}'" if ssh_info[:proxy_command]
             hostpath  = File.expand_path(data[:hostpath], env[:root_path])
             guestpath = data[:guestpath]
 
@@ -39,7 +40,7 @@ module VagrantPlugins
             command = [
               "rsync", "--del", "--verbose", "--archive", "-z",
               "--exclude", ".vagrant/",
-              "-e", "ssh -p #{ssh_info[:port]} -o StrictHostKeyChecking=no -i '#{ssh_info[:private_key_path]}'",
+              "-e", "ssh -p #{ssh_info[:port]} #{proxycommand} -o StrictHostKeyChecking=no -i '#{ssh_info[:private_key_path]}'",
               hostpath,
               "#{ssh_info[:username]}@#{ssh_info[:host]}:#{guestpath}"]
 
