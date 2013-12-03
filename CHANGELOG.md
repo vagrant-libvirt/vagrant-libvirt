@@ -1,3 +1,14 @@
+# 0.0.12 (Dec. 03, 2013)
+
+* Proxy ssh through libvirt host, if libvirt is connected via ssh(by @erik-smit)
+* Fix wrong nfs methods call (by rosario.disomma@dreamhost.com)
+* adding the nfs share on start (by @cp16net)
+* Mention vagrant-mutate  (by Brian Pitts <brian@polibyte.com>)
+* Fix box metadata error keys (by Brian Pitts <brian@polibyte.com>)
+* Fix selinux should working
+* Mention compatibility with sahara (by Brian Pitts <brian@polibyte.com>)
+* Add default network and ssh key file parameters (by Mathilde Ffrench <ffrench.mathilde@gmail.com>)
+
 # 0.0.11 (Oct. 20, 2013)
 
 * BUG FIX  close #70 undefine machine id should be after all operations
