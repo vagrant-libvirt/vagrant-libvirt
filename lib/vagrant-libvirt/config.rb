@@ -49,6 +49,7 @@ module VagrantPlugins
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
+        @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
 
         # Domain specific settings.
