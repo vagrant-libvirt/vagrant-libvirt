@@ -16,6 +16,7 @@ module VagrantPlugins
 
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
+          @default_network = env[:machine].provider_config.default_network;
           @app = app
         end
 
@@ -151,7 +152,7 @@ module VagrantPlugins
           end
 
           # TODO Network default can be missing or named different.
-          return 'default'
+          return @default_network;
         end
       end
     end

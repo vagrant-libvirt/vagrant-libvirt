@@ -18,9 +18,15 @@ module VagrantPlugins
       # Password for Libvirt connection.
       attr_accessor :password
 
+      # ID SSH key file
+      attr_accessor :id_ssh_key_file
+
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
       attr_accessor :storage_pool_name
+
+      # Libvirt default network
+      attr_accessor :default_network
 
       # Domain specific settings used while creating new domain.
       attr_accessor :memory
@@ -34,7 +40,9 @@ module VagrantPlugins
         @connect_via_ssh   = UNSET_VALUE
         @username          = UNSET_VALUE
         @password          = UNSET_VALUE
+        @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
+        @default_network   = UNSET_VALUE
 
         # Domain specific settings.
         @memory            = UNSET_VALUE
@@ -49,7 +57,9 @@ module VagrantPlugins
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
+        @id_ssh_key_file = nil if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @default_network = 'default' if @default_network == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
