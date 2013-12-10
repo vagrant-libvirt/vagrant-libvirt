@@ -308,6 +308,8 @@ Now you can use bundler to execute Vagrant:
 $ bundle exec vagrant up --provider=libvirt
 ```
 
+IMPORTANT NOTE: bundle is crucial. You need to use bundled vagrant.
+
 ## Contributing
 
 1. Fork it

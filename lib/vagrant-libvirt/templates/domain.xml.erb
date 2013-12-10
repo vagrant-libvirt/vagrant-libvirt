@@ -4,8 +4,8 @@
   <vcpu><%= @cpus %></vcpu>
 
   <% if @nested %>
-    <cpu mode='host-passthrough'>
-      <model fallback='allow'>qemu64</model>
+    <cpu mode='host-model'>
+      <model fallback='allow'>qemu64</model>>
       <feature policy='optional' name='vmx'/>
       <feature policy='optional' name='svm'/>
     </cpu>
