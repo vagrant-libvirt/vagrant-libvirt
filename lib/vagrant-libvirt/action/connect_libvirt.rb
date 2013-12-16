@@ -67,13 +67,11 @@ module VagrantPlugins
           conn_attr[:libvirt_password] = config.password if config.password
 
           # Setup command for retrieving IP address for newly created machine
-          # with some MAC address. Get it from dnsmasq leases table - either
-          # /var/lib/libvirt/dnsmasq/*.leases files, or
-          # /var/lib/misc/dnsmasq.leases if available.
-          ip_command =  "LEASES='/var/lib/libvirt/dnsmasq/*.leases'; "
-          ip_command << "[ -f /var/lib/misc/dnsmasq.leases ] && "
-          ip_command << "LEASES='/var/lib/misc/dnsmasq.leases'; "
+          # with some MAC address. Get it from dnsmasq leases table
+          ip_command =  "LEASES=$(find /var/lib/libvirt/dnsmasq/ /var/lib/misc/ -name '*leases');"
+          ip_command << "if [ -n $LEASES ]; then"
           ip_command << "grep $mac $LEASES | awk '{ print $3 }'"
+          ip_command << "fi"
           conn_attr[:libvirt_ip_command] = ip_command
 
           @logger.info("Connecting to Libvirt (#{uri}) ...")
