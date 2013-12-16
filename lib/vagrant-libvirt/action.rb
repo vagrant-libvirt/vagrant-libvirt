@@ -25,7 +25,9 @@ module VagrantPlugins
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
 
-              b2.use NFS
+              b2.use SyncedFolderCleanup
+              b2.use SyncedFolders
+
               b2.use PrepareNFSSettings
               b2.use ShareFolders
               b2.use SetHostname
@@ -59,7 +61,8 @@ module VagrantPlugins
               # VM is not running or suspended. Start it.. Machine should gain
               # IP address when comming up, so wait for dhcp lease and store IP
               # into machines data_dir.
-              b3.use NFS
+              b3.use SyncedFolderCleanup
+              b3.use SyncedFolders
               b3.use PrepareNFSSettings
               b3.use ShareFolders
 
@@ -302,6 +305,8 @@ module VagrantPlugins
       autoload :WaitTillUp, action_root.join('wait_till_up')
       autoload :SSHRun,  'vagrant/action/builtin/ssh_run'
       autoload :HandleBoxUrl, 'vagrant/action/builtin/handle_box_url'
+      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
+      autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
     end
   end
 end

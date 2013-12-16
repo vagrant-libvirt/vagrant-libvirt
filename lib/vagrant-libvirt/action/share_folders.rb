@@ -1,4 +1,4 @@
-require "pathname"
+require 'pathname'
 
 require "log4r"
 
