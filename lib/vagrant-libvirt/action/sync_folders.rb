@@ -27,7 +27,7 @@ module VagrantPlugins
             # avoid creating an additional directory with rsync
             hostpath = "#{hostpath}/" if hostpath !~ /\/$/
 
-            env[:ui].info(I18n.t("vagrant_libvirt.rsync_folder",
+            env[:ui].info(I18n.t('vagrant_libvirt.rsync_folder',
                                 :hostpath => hostpath,
                                 :guestpath => guestpath))
 
@@ -38,9 +38,9 @@ module VagrantPlugins
 
             # Rsync over to the guest path using the SSH info
             command = [
-              "rsync", "--del", "--verbose", "--archive", "-z",
-              "--exclude", ".vagrant/",
-              "-e", "ssh -p #{ssh_info[:port]} #{proxycommand} -o StrictHostKeyChecking=no -i '#{ssh_info[:private_key_path]}'",
+              'rsync', '--del', '--verbose', '--archive', '-z',
+              '--exclude', '.vagrant/',
+              '-e', "ssh -p #{ssh_info[:port]} #{proxycommand} -o StrictHostKeyChecking=no  #{ssh_key_options(ssh_info)}",
               hostpath,
               "#{ssh_info[:username]}@#{ssh_info[:host]}:#{guestpath}"]
 
@@ -52,6 +52,12 @@ module VagrantPlugins
                 :stderr => r.stderr
             end
           end
+        end
+        private
+
+        def ssh_key_options(ssh_info)
+          # Ensure that `private_key_path` is an Array (for Vagrant < 1.4)
+          Array(ssh_info[:private_key_path]).map { |path| "-i '#{path}' " }.join
         end
       end
     end
