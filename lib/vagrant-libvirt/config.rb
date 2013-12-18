@@ -66,7 +66,7 @@ module VagrantPlugins
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
-        @cpu_mode = host-model if @cpu_mode == UNSET_VALUE
+        @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
       end
