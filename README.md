@@ -106,6 +106,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
+* `cpu_mode` - What cpu mode to use for nested virtualization. Defaults to 'host-model' if not set.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 
 Specific domain settings can be set for each domain separately in multi-VM
