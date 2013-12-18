@@ -31,6 +31,7 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :memory
       attr_accessor :cpus
+      attr_accessor :cpu_mode
       attr_accessor :nested
       attr_accessor :volume_cache
 
@@ -47,6 +48,7 @@ module VagrantPlugins
         # Domain specific settings.
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @cpu_mode          = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
       end
@@ -64,6 +66,7 @@ module VagrantPlugins
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @cpu_mode = host-model if @cpu_mode == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
       end
