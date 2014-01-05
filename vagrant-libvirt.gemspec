@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   gem.version       = VagrantPlugins::ProviderLibvirt::VERSION
 
   gem.add_runtime_dependency 'fog', '1.15.0'
+  gem.add_runtime_dependency 'ruby-libvirt', '~> 0.4.0'
   gem.add_runtime_dependency 'nokogiri', '1.5.10'
 
   gem.add_development_dependency 'rake'
