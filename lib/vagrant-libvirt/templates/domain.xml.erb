@@ -26,7 +26,7 @@
       <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
-      <target dev='vda' bus='virtio'/>
+      <target dev='vda' bus='<%= @disk_bus %>'/>
     </disk>
     <serial type='pty'>
       <target port='0'/>
