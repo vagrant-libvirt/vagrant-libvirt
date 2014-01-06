@@ -20,6 +20,7 @@ module VagrantPlugins
           @name = env[:domain_name]
           @cpus = config.cpus
           @cpu_mode = config.cpu_mode
+          @disk_bus = config.disk_bus
           @nested = config.nested
           @memory_size = config.memory*1024
           @domain_volume_cache = config.volume_cache
