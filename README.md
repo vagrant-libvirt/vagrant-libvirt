@@ -103,6 +103,7 @@ This provider exposes quite a few provider-specific configuration options:
 
 ### Domain Specific Options
 
+* `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
@@ -121,7 +122,7 @@ Vagrant.configure("2") do |config|
       domain.memory = 2048
       domain.cpus = 2
       domain.nested = true
-	  domain.volume_cache = 'none'
+      domain.volume_cache = 'none'
     end
   end
 
