@@ -5,6 +5,7 @@ module VagrantPlugins
       # Setup name for domain and domain volumes.
       class SetNameOfDomain
         def initialize(app, env)
+          @logger     = Log4r::Logger.new("vagrant_libvirt::action::set_name_of_domain")
           @app = app
         end
 
@@ -14,12 +15,16 @@ module VagrantPlugins
           env[:domain_name].gsub!(/[^-a-z0-9_]/i, '')
           env[:domain_name] << '_'
           env[:domain_name] << env[:machine].name.to_s
-
+          
+          @logger.info("Looking for domain #{env[:domain_name]} through list #{env[:libvirt_compute].servers.all}")
           # Check if the domain name is not already taken
           domain = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].servers.all, env[:domain_name])
+
+          @logger.info("Looking for domain #{env[:domain_name]}")
+
           if domain != nil
-            raise Vagrant::Errors::DomainNameExists,
+            raise ProviderLibvirt::Errors::DomainNameExists,
               :domain_name => env[:domain_name]
           end
 
