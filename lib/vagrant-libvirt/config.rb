@@ -35,6 +35,9 @@ module VagrantPlugins
       attr_accessor :disk_bus
       attr_accessor :nested
       attr_accessor :volume_cache
+      attr_accessor :kernel
+      attr_accessor :cmd_line
+      attr_accessor :initrd
 
       def initialize
         @driver            = UNSET_VALUE
@@ -53,6 +56,9 @@ module VagrantPlugins
         @disk_bus          = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
+        @kernel            = UNSET_VALUE
+        @initrd            = UNSET_VALUE
+        @cmd_line          = UNSET_VALUE
       end
 
       def finalize!
@@ -72,6 +78,9 @@ module VagrantPlugins
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
+        @kernel = nil if @kernel == UNSET_VALUE
+        @cmd_line = '' if @cmd_line == UNSET_VALUE
+        @initrd = '' if @initrd == UNSET_VALUE
       end
 
       def validate(machine)
