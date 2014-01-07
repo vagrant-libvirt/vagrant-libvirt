@@ -109,6 +109,10 @@ This provider exposes quite a few provider-specific configuration options:
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
 * `cpu_mode` - What cpu mode to use for nested virtualization. Defaults to 'host-model' if not set.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
+* `kernel` - To launch the guest with a kernel residing on host filesystems (Equivalent to qemu `-kernel`)
+* `initrd` - To specify the initramfs/initrd to use for the guest (Equivalent to qemu `-initrd`)
+* `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use (Equivalent to qemu `-append`)
+ 
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
