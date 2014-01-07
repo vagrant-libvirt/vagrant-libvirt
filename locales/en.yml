@@ -89,7 +89,7 @@ en:
       fog_create_server_error: |-
         Error while creating domain: %{error_message}
       domain_name_exists: |-
-        Name of domain about to create is already taken. Please try to run
+        Name `%{domain_name}` of domain about to create is already taken. Please try to run
         `vagrant up` command again.
       creating_storage_pool_error: |-
         There was error while creating libvirt storage pool: %{error_message}

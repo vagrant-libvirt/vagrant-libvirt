@@ -103,7 +103,7 @@ module VagrantPlugins
       end
 
       class DomainNameExists < VagrantLibvirtError
-        error_key(:domain_name_exists_error)
+        error_key(:domain_name_exists)
       end
 
       class NoDomainError < VagrantLibvirtError
