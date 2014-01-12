@@ -67,17 +67,12 @@ module VagrantPlugins
             if @options[:ip]
               @logger.debug "handle by ip"
               handle_ip_option(env)
+            # in vagrant 1.2.3 and later it is not possible to take this branch
+            # bcasue cannot have name without ip
+            # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
             elsif @options[:network_name]
               @logger.debug "handle by name"
               handle_network_name_option
-            else
-              @logger.debug "neither ip nor name specified so finding default"
-              # TODO: Should be smarter than just using fixed 'default' string.
-              @interface_network = lookup_network_by_name('default')
-              if !@interface_network
-                raise Errors::NetworkNotAvailableError,
-                      network_name: 'default'
-              end
             end
 
             autostart_network if !@interface_network[:autostart]
