@@ -28,6 +28,9 @@ module VagrantPlugins
       # Libvirt default network
       attr_accessor :default_network
 
+      # Default host prefix (alternative to use project folder name)
+      attr_accessor :default_prefix
+
       # Domain specific settings used while creating new domain.
       attr_accessor :memory
       attr_accessor :cpus
@@ -45,6 +48,7 @@ module VagrantPlugins
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
         @default_network   = UNSET_VALUE
+        @default_prefix    = UNSET_VALUE
 
         # Domain specific settings.
         @memory            = UNSET_VALUE
@@ -64,6 +68,7 @@ module VagrantPlugins
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @default_network = 'default' if @default_network == UNSET_VALUE
+        @default_prefix = nil if @default_prefix == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE

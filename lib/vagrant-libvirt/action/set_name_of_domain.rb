@@ -11,7 +11,12 @@ module VagrantPlugins
 
         def call(env)
           require 'securerandom'
-          env[:domain_name] = env[:root_path].basename.to_s.dup
+          config = env[:machine].provider_config
+          if config.default_prefix.nil?
+            env[:domain_name] = env[:root_path].basename.to_s.dup
+          else
+            env[:domain_name] = config.default_prefix.to_s
+          end
           env[:domain_name].gsub!(/[^-a-z0-9_]/i, '')
           env[:domain_name] << '_'
           env[:domain_name] << env[:machine].name.to_s

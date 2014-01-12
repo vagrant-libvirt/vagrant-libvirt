@@ -100,6 +100,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
 * `default_network` - Libvirt default network name. If not specified default network name is 'default'.
+* `default_prefix` - Set a prefix for the machines that's different than the project dir name.
 
 ### Domain Specific Options
 
