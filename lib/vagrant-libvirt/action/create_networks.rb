@@ -28,6 +28,7 @@ module VagrantPlugins
           # Iterate over networks requested from config. If some network is not
           # available, create it if possible. Otherwise raise an error.
           env[:machine].config.vm.networks.each do |type, options|
+            @logger.debug "In config found network type #{type} options #{options}"
 
             # Get a list of all (active and inactive) libvirt networks. This
             # list is used throughout this class and should be easier to
@@ -64,10 +65,13 @@ module VagrantPlugins
             }
 
             if @options[:ip]
+              @logger.debug "handle by ip"
               handle_ip_option(env)
             elsif @options[:network_name]
+              @logger.debug "handle by name"
               handle_network_name_option
             else
+              @logger.debug "neither ip nor name specified so finding default"
               # TODO: Should be smarter than just using fixed 'default' string.
               @interface_network = lookup_network_by_name('default')
               if !@interface_network
@@ -87,6 +91,7 @@ module VagrantPlugins
 
         # Return hash of network for specified name, or nil if not found.
         def lookup_network_by_name(network_name)
+          @logger.debug "looking up network named #{network_name}"
           @available_networks.each do |network|
             return network if network[:name] == network_name
           end
@@ -95,6 +100,7 @@ module VagrantPlugins
 
         # Return hash of network for specified bridge, or nil if not found.
         def lookup_bridge_by_name(bridge_name)
+          @logger.debug "looking up bridge named #{bridge_name}"
           @available_networks.each do |network|
             return network if network[:bridge_name] == bridge_name
           end
@@ -120,11 +126,14 @@ module VagrantPlugins
             if available_network[:network_address] == \
             @interface_network[:network_address]
               @interface_network = available_network
+              @logger.debug "found existing network by ip, values are"
+              @logger.debug @interface_network
               break
             end
           end
 
           if @options[:network_name]
+            @logger.debug "Checking that network name does not clash with ip"
             if @interface_network[:created]
               # Just check for mismatch error here - if name and ip from
               # config match together.
@@ -156,6 +165,7 @@ module VagrantPlugins
             # Is name for new network set? If not, generate a unique one.
             count = 0
             while @interface_network[:name].nil?
+              @logger.debug "generating name for network"
 
               # Generate a network name.
               network_name = env[:root_path].basename.to_s.dup
@@ -171,6 +181,7 @@ module VagrantPlugins
             # Generate a unique name for network bridge.
             count = 0
             while @interface_network[:bridge_name].nil?
+              @logger.debug "generating name for bridge"
               bridge_name = 'virbr'
               bridge_name << count.to_s
               count += 1
@@ -234,6 +245,7 @@ module VagrantPlugins
           begin
             @interface_network[:libvirt_network] = \
               @libvirt_client.define_network_xml(to_xml('private_network'))
+            @logger.debug "created network"
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message
           end

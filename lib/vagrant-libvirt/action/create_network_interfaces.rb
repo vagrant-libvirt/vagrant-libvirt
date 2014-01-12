@@ -37,6 +37,7 @@ module VagrantPlugins
 
           # Assign interfaces to slots.
           env[:machine].config.vm.networks.each do |type, options|
+            @logger.debug "In config found network type #{type} options #{options}"
 
             # Get options for this interface. Options can be specified in
             # Vagrantfile in short format (:ip => ...), or provider format
@@ -51,8 +52,10 @@ module VagrantPlugins
               end
 
               free_slot = options[:adapter].to_i
+              @logger.debug "Using specified adapter slot #{free_slot}"
             else
               free_slot = find_empty(adapters)
+              @logger.debug "Adapter not specified so found slot #{free_slot}"
               raise Errors::InterfaceSlotNotAvailable if free_slot == nil
             end
 
@@ -104,6 +107,7 @@ module VagrantPlugins
             # it has to be available during provisioning - ifdown command is
             # not acceptable here.
             next if slot_number == 0
+            @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
             network = {
               :interface => slot_number,
@@ -139,7 +143,10 @@ module VagrantPlugins
 
         # Return network name according to interface options.
         def interface_network(libvirt_client, options)
-          return options[:network_name] if options[:network_name]
+          if options[:network_name]
+            @logger.debug "Found network by name"
+            return options[:network_name]
+          end
 
           # Get list of all (active and inactive) libvirt networks.
           available_networks = libvirt_networks(libvirt_client)
@@ -147,11 +154,13 @@ module VagrantPlugins
           if options[:ip]
             address = network_address(options[:ip], options[:netmask])
             available_networks.each do |network|
+              @logger.debug "Found network by ip"
               return network[:name] if address == network[:network_address]
             end
           end
 
-          # TODO Network default can be missing or named different.
+          # TODO Network default can be missing
+          @logger.debug "Did not find network so using default #{@default_network}"
           return @default_network;
         end
       end
