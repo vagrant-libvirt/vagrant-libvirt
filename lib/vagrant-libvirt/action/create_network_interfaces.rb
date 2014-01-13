@@ -16,7 +16,7 @@ module VagrantPlugins
 
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
-          @default_network = env[:machine].provider_config.default_network;
+          @default_network_name = env[:machine].provider_config.default_network_name
           @app = app
         end
 
@@ -159,9 +159,13 @@ module VagrantPlugins
             end
           end
 
-          # TODO Network default can be missing
-          @logger.debug "Did not find network so using default #{@default_network}"
-          return @default_network;
+          # the default network always gets attached to slot 0
+          # because the first network is of type forwarded_port.
+          # this is confusing.
+          # TODO only iterate over networks of type private_network
+          # and prepend the default network to that list
+          @logger.debug "Did not find network so using default of #{@default_network_name}"
+          return @default_network_name
         end
       end
     end

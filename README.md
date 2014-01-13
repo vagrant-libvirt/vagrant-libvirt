@@ -99,7 +99,8 @@ This provider exposes quite a few provider-specific configuration options:
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
-* `default_network` - Libvirt default network name. If not specified default network name is 'default'.
+* `default_network_name` - Libvirt default network name. If not specified the default network name is 'default'.
+* `default_network_address` - Libvirt default network address. Must include the address and subnet mask. If not specified the default is '192.168.122.0/24'.
 
 ### Domain Specific Options
 

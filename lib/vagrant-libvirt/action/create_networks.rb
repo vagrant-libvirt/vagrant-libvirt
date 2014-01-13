@@ -25,31 +25,67 @@ module VagrantPlugins
 
         def call(env)
 
-          # Iterate over networks requested from config. If some network is not
+          default_network_name = env[:machine].provider_config.default_network_name
+          default_network_address = env[:machine].provider_config.default_network_address
+          @logger.info "Using #{default_network_name} at #{default_network_address} as the default network"
+
+          begin
+            default_network_ip = IPAddr.new(default_network_address)
+          rescue ArgumentError
+            raise Errors::DefaultNetworkError,
+              error_message: "#{default_network_address} is not a valid IP address"
+          end
+
+          # capture address into $1 and mask into $2
+          default_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
+
+          if $2 == '255.255.255.255'
+            raise Errors::DefaultNetworkError,
+              error_message: "#{default_network_address} does not include both an address and subnet mask"
+          end
+
+          default_network_options = {
+            network_name: default_network_name,
+            ip: $1,
+            netmask: $2,
+            dhcp_enabled: true,
+            forward_mode: 'nat',
+          }
+
+          # add default network to list of networks to check
+          networks = [ default_network_options ]
+
+          env[:machine].config.vm.networks.each do |type, original_options|
+            # There are two other types public network and port forwarding,
+            # but there are problems with creating them via libvirt API,
+            # so this provider doesn't implement them.
+            next if type != :private_network
+            # Options can be specified in Vagrantfile in short format (:ip => ...),
+            # or provider format # (:libvirt__network_name => ...).
+            # https://github.com/mitchellh/vagrant/blob/master/lib/vagrant/util/scoped_hash_override.rb
+            options = scoped_hash_override(original_options, :libvirt)
+            # use default values if not already set
+            options = {
+              netmask:      '255.255.255.0',
+              dhcp_enabled: true,
+              forward_mode: 'nat',
+            }.merge(options)
+            # add to list of networks to check
+            networks.push(options)
+          end
+
+          # Iterate over networks If some network is not
           # available, create it if possible. Otherwise raise an error.
-          env[:machine].config.vm.networks.each do |type, options|
-            @logger.debug "In config found network type #{type} options #{options}"
+          networks.each do |options|
+            @logger.debug "Searching for network with options #{options}"
+
+            # should fix other methods so this doesn't have to be instance var
+            @options = options
 
             # Get a list of all (active and inactive) libvirt networks. This
             # list is used throughout this class and should be easier to
             # process than libvirt API calls.
             @available_networks = libvirt_networks(env[:libvirt_compute].client)
-
-            # Now, we support private networks only. There are two other types
-            # public network and port forwarding, but there are problems with
-            # creating them via libvirt API, so this provider doesn't implement
-            # them.
-            next if type != :private_network
-
-            # Get options for this interface network. Options can be specified
-            # in Vagrantfile in short format (:ip => ...), or provider format
-            # (:libvirt__network_name => ...).
-            @options = scoped_hash_override(options, :libvirt)
-            @options = {
-              netmask:      '255.255.255.0',
-              dhcp_enabled: true,
-              forward_mode: 'nat',
-            }.merge(@options)
 
             # Prepare a hash describing network for this specific interface.
             @interface_network = {
@@ -65,13 +101,11 @@ module VagrantPlugins
             }
 
             if @options[:ip]
-              @logger.debug "handle by ip"
               handle_ip_option(env)
             # in vagrant 1.2.3 and later it is not possible to take this branch
-            # bcasue cannot have name without ip
+            # because cannot have name without ip
             # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
             elsif @options[:network_name]
-              @logger.debug "handle by name"
               handle_network_name_option
             end
 
