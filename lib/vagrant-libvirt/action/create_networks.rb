@@ -136,6 +136,18 @@ module VagrantPlugins
           nil
         end
 
+        # Throw an error if dhcp setting for an existing network does not
+        # match what was configured in the vagrantfile
+        # since we always enable dhcp for the default network
+        # this ensures we wont start a vm vagrant cant reach
+        def verify_dhcp
+          unless @options[:dhcp_enabled] == @interface_network[:dhcp_enabled]
+            raise Errors::DHCPMismatch,
+                  network_name: @interface_network[:name],
+                  requested: @options[:dhcp_enabled] ? 'enabled' : 'disabled'
+          end
+        end
+
         # Handle only situations, when ip is specified. Variables @options and
         # @available_networks should be filled before calling this function.
         def handle_ip_option(env)
@@ -159,6 +171,10 @@ module VagrantPlugins
               @logger.debug @interface_network
               break
             end
+          end
+
+          if @interface_network[:created]
+            verify_dhcp
           end
 
           if @options[:network_name]
@@ -235,6 +251,8 @@ module VagrantPlugins
           if !@interface_network
             raise Errors::NetworkNotAvailableError,
                   network_name: @options[:network_name]
+          else
+            verify_dhcp
           end
         end
 

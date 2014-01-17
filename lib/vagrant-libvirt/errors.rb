@@ -77,6 +77,10 @@ module VagrantPlugins
         error_key(:network_name_and_address_mismatch)
       end
 
+      class DHCPMismatch < VagrantLibvirtError
+        error_key(:dhcp_mismatch)
+      end
+
       class CreateNetworkError < VagrantLibvirtError
         error_key(:create_network_error)
       end

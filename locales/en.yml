@@ -106,6 +106,9 @@ en:
       network_name_and_address_mismatch: |-
         Address %{ip_address} does not match with network name %{network_name}.
         Please fix your configuration and run vagrant again.
+      dhcp_mismatch: |-
+        Network %{network_name} exists but does not have dhcp %{requested}.
+        Please fix your configuration and run vagrant again.
       create_network_error: |-
         Error occured while creating new network: %{error_message}.
       network_not_available_error: |-
