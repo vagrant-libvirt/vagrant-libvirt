@@ -154,8 +154,10 @@ module VagrantPlugins
           if options[:ip]
             address = network_address(options[:ip], options[:netmask])
             available_networks.each do |network|
-              @logger.debug "Found network by ip"
-              return network[:name] if address == network[:network_address]
+              if address == network[:network_address]
+                @logger.debug "Found network by ip"
+                return network[:name]
+              end
             end
           end
 
