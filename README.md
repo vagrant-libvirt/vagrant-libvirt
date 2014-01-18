@@ -99,8 +99,8 @@ This provider exposes quite a few provider-specific configuration options:
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
-* `default_network_name` - Libvirt default network name. If not specified the default network name is 'vagrant-libvirt'.
-* `default_network_address` - Libvirt default network address. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
+* `management_network_name` - Name of libvirt network to which all VMs will be connected. If not specified the default is 'vagrant-libvirt'.
+* `management_network_address` - Address of network to which all VMs will be connected. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
 
 ### Domain Specific Options
 

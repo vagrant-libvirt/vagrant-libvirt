@@ -69,8 +69,8 @@ module VagrantPlugins
       end
 
       # Network exceptions
-      class DefaultNetworkError < VagrantLibvirtError
-        error_key(:default_network_error)
+      class ManagementNetworkError < VagrantLibvirtError
+        error_key(:management_network_error)
       end
 
       class NetworkNameAndAddressMismatch < VagrantLibvirtError

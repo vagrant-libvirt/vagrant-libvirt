@@ -101,8 +101,8 @@ en:
         Error while attaching new device to domain. %{error_message}
       no_ip_address_error: |-
         No IP address found.
-      default_network_error: |-
-        Error in specification of default network: %{error_message}.
+      management_network_error: |-
+        Error in specification of management network: %{error_message}.
       network_name_and_address_mismatch: |-
         Address %{ip_address} does not match with network name %{network_name}.
         Please fix your configuration and run vagrant again.

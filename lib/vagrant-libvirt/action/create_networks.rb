@@ -28,35 +28,35 @@ module VagrantPlugins
 
         def call(env)
 
-          default_network_name = env[:machine].provider_config.default_network_name
-          default_network_address = env[:machine].provider_config.default_network_address
-          @logger.info "Using #{default_network_name} at #{default_network_address} as the default network"
+          management_network_name = env[:machine].provider_config.management_network_name
+          management_network_address = env[:machine].provider_config.management_network_address
+          @logger.info "Using #{management_network_name} at #{management_network_address} as the management network"
 
           begin
-            default_network_ip = IPAddr.new(default_network_address)
+            management_network_ip = IPAddr.new(management_network_address)
           rescue ArgumentError
-            raise Errors::DefaultNetworkError,
-              error_message: "#{default_network_address} is not a valid IP address"
+            raise Errors::ManagementNetworkError,
+              error_message: "#{management_network_address} is not a valid IP address"
           end
 
           # capture address into $1 and mask into $2
-          default_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
+          management_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
 
           if $2 == '255.255.255.255'
-            raise Errors::DefaultNetworkError,
-              error_message: "#{default_network_address} does not include both an address and subnet mask"
+            raise Errors::ManagementNetworkError,
+              error_message: "#{management_network_address} does not include both an address and subnet mask"
           end
 
-          default_network_options = {
-            network_name: default_network_name,
+          management_network_options = {
+            network_name: management_network_name,
             ip: $1,
             netmask: $2,
             dhcp_enabled: true,
             forward_mode: 'nat',
           }
 
-          # add default network to list of networks to check
-          networks = [ default_network_options ]
+          # add management network to list of networks to check
+          networks = [ management_network_options ]
 
           env[:machine].config.vm.networks.each do |type, original_options|
             # There are two other types public network and port forwarding,
@@ -146,7 +146,7 @@ module VagrantPlugins
 
         # Throw an error if dhcp setting for an existing network does not
         # match what was configured in the vagrantfile
-        # since we always enable dhcp for the default network
+        # since we always enable dhcp for the management network
         # this ensures we wont start a vm vagrant cant reach
         def verify_dhcp
           unless @options[:dhcp_enabled] == @interface_network[:dhcp_enabled]

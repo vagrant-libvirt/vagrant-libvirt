@@ -26,8 +26,8 @@ module VagrantPlugins
       attr_accessor :storage_pool_name
 
       # Libvirt default network
-      attr_accessor :default_network_name
-      attr_accessor :default_network_address
+      attr_accessor :management_network_name
+      attr_accessor :management_network_address
 
       # Domain specific settings used while creating new domain.
       attr_accessor :memory
@@ -45,8 +45,8 @@ module VagrantPlugins
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
-        @default_network_name    = UNSET_VALUE
-        @default_network_address = UNSET_VALUE
+        @management_network_name    = UNSET_VALUE
+        @management_network_address = UNSET_VALUE
 
         # Domain specific settings.
         @memory            = UNSET_VALUE
@@ -65,8 +65,8 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
-        @default_network_name = 'vagrant-libvirt' if @default_network_name == UNSET_VALUE
-        @default_network_address = '192.168.121.0/24' if @default_network_address == UNSET_VALUE
+        @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
+        @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
