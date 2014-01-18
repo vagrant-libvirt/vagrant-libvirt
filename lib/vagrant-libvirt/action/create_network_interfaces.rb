@@ -167,7 +167,7 @@ module VagrantPlugins
           # TODO only iterate over networks of type private_network
           # and prepend the management network to that list
           @logger.debug "Did not find network so using default of #{@management_network_name}"
-          return @management_network_name
+          @management_network_name
         end
       end
     end
