@@ -14,6 +14,9 @@
   <os>
     <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
+    <kernel><%= @kernel %></kernel>
+    <initrd><%= @initrd %></initrd>
+    <cmdline><%= @cmd_line %></cmdline>
   </os>
   <features>
     <acpi/>
