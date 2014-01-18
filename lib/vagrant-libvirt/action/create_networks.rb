@@ -2,6 +2,7 @@ require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
 require 'ipaddr'
+require 'thread'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -12,6 +13,8 @@ module VagrantPlugins
         include Vagrant::Util::ScopedHashOverride
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
         include VagrantPlugins::ProviderLibvirt::Util::LibvirtUtil
+
+        @@lock = Mutex.new
 
         def initialize(app, env)
           mess = 'vagrant_libvirt::action::create_networks'
@@ -25,60 +28,98 @@ module VagrantPlugins
 
         def call(env)
 
-          # Iterate over networks requested from config. If some network is not
-          # available, create it if possible. Otherwise raise an error.
-          env[:machine].config.vm.networks.each do |type, options|
+          management_network_name = env[:machine].provider_config.management_network_name
+          management_network_address = env[:machine].provider_config.management_network_address
+          @logger.info "Using #{management_network_name} at #{management_network_address} as the management network"
 
-            # Get a list of all (active and inactive) libvirt networks. This
-            # list is used throughout this class and should be easier to
-            # process than libvirt API calls.
-            @available_networks = libvirt_networks(env[:libvirt_compute].client)
+          begin
+            management_network_ip = IPAddr.new(management_network_address)
+          rescue ArgumentError
+            raise Errors::ManagementNetworkError,
+              error_message: "#{management_network_address} is not a valid IP address"
+          end
 
-            # Now, we support private networks only. There are two other types
-            # public network and port forwarding, but there are problems with
-            # creating them via libvirt API, so this provider doesn't implement
-            # them.
+          # capture address into $1 and mask into $2
+          management_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
+
+          if $2 == '255.255.255.255'
+            raise Errors::ManagementNetworkError,
+              error_message: "#{management_network_address} does not include both an address and subnet mask"
+          end
+
+          management_network_options = {
+            network_name: management_network_name,
+            ip: $1,
+            netmask: $2,
+            dhcp_enabled: true,
+            forward_mode: 'nat',
+          }
+
+          # add management network to list of networks to check
+          networks = [ management_network_options ]
+
+          env[:machine].config.vm.networks.each do |type, original_options|
+            # There are two other types public network and port forwarding,
+            # but there are problems with creating them via libvirt API,
+            # so this provider doesn't implement them.
             next if type != :private_network
-
-            # Get options for this interface network. Options can be specified
-            # in Vagrantfile in short format (:ip => ...), or provider format
-            # (:libvirt__network_name => ...).
-            @options = scoped_hash_override(options, :libvirt)
-            @options = {
+            # Options can be specified in Vagrantfile in short format (:ip => ...),
+            # or provider format # (:libvirt__network_name => ...).
+            # https://github.com/mitchellh/vagrant/blob/master/lib/vagrant/util/scoped_hash_override.rb
+            options = scoped_hash_override(original_options, :libvirt)
+            # use default values if not already set
+            options = {
               netmask:      '255.255.255.0',
               dhcp_enabled: true,
               forward_mode: 'nat',
-            }.merge(@options)
-
-            # Prepare a hash describing network for this specific interface.
-            @interface_network = {
-              name:             nil,
-              ip_address:       nil,
-              netmask:          @options[:netmask],
-              network_address:  nil,
-              bridge_name:      nil,
-              created:          false,
-              active:           false,
-              autostart:        false,
-              libvirt_network:  nil,
-            }
-
-            if @options[:ip]
-              handle_ip_option(env)
-            elsif @options[:network_name]
-              handle_network_name_option
-            else
-              # TODO: Should be smarter than just using fixed 'default' string.
-              @interface_network = lookup_network_by_name('default')
-              if !@interface_network
-                raise Errors::NetworkNotAvailableError,
-                      network_name: 'default'
-              end
-            end
-
-            autostart_network if !@interface_network[:autostart]
-            activate_network if !@interface_network[:active]
+            }.merge(options)
+            # add to list of networks to check
+            networks.push(options)
           end
+
+          # only one vm at a time should try to set up networks
+          # otherwise they'll have inconsitent views of current state
+          # and conduct redundant operations that cause errors
+          @@lock.synchronize do
+            # Iterate over networks If some network is not
+            # available, create it if possible. Otherwise raise an error.
+            networks.each do |options|
+              @logger.debug "Searching for network with options #{options}"
+
+              # should fix other methods so this doesn't have to be instance var
+              @options = options
+
+              # Get a list of all (active and inactive) libvirt networks. This
+              # list is used throughout this class and should be easier to
+              # process than libvirt API calls.
+              @available_networks = libvirt_networks(env[:libvirt_compute].client)
+
+              # Prepare a hash describing network for this specific interface.
+              @interface_network = {
+                name:             nil,
+                ip_address:       nil,
+                netmask:          @options[:netmask],
+                network_address:  nil,
+                bridge_name:      nil,
+                created:          false,
+                active:           false,
+                autostart:        false,
+                libvirt_network:  nil,
+              }
+
+              if @options[:ip]
+                handle_ip_option(env)
+              # in vagrant 1.2.3 and later it is not possible to take this branch
+              # because cannot have name without ip
+              # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
+              elsif @options[:network_name]
+                handle_network_name_option
+              end
+
+              autostart_network if !@interface_network[:autostart]
+              activate_network if !@interface_network[:active]
+          end
+        end
 
           @app.call(env)
         end
@@ -87,6 +128,7 @@ module VagrantPlugins
 
         # Return hash of network for specified name, or nil if not found.
         def lookup_network_by_name(network_name)
+          @logger.debug "looking up network named #{network_name}"
           @available_networks.each do |network|
             return network if network[:name] == network_name
           end
@@ -95,10 +137,23 @@ module VagrantPlugins
 
         # Return hash of network for specified bridge, or nil if not found.
         def lookup_bridge_by_name(bridge_name)
+          @logger.debug "looking up bridge named #{bridge_name}"
           @available_networks.each do |network|
             return network if network[:bridge_name] == bridge_name
           end
           nil
+        end
+
+        # Throw an error if dhcp setting for an existing network does not
+        # match what was configured in the vagrantfile
+        # since we always enable dhcp for the management network
+        # this ensures we wont start a vm vagrant cant reach
+        def verify_dhcp
+          unless @options[:dhcp_enabled] == @interface_network[:dhcp_enabled]
+            raise Errors::DHCPMismatch,
+                  network_name: @interface_network[:name],
+                  requested: @options[:dhcp_enabled] ? 'enabled' : 'disabled'
+          end
         end
 
         # Handle only situations, when ip is specified. Variables @options and
@@ -120,11 +175,18 @@ module VagrantPlugins
             if available_network[:network_address] == \
             @interface_network[:network_address]
               @interface_network = available_network
+              @logger.debug "found existing network by ip, values are"
+              @logger.debug @interface_network
               break
             end
           end
 
+          if @interface_network[:created]
+            verify_dhcp
+          end
+
           if @options[:network_name]
+            @logger.debug "Checking that network name does not clash with ip"
             if @interface_network[:created]
               # Just check for mismatch error here - if name and ip from
               # config match together.
@@ -156,6 +218,7 @@ module VagrantPlugins
             # Is name for new network set? If not, generate a unique one.
             count = 0
             while @interface_network[:name].nil?
+              @logger.debug "generating name for network"
 
               # Generate a network name.
               network_name = env[:root_path].basename.to_s.dup
@@ -171,6 +234,7 @@ module VagrantPlugins
             # Generate a unique name for network bridge.
             count = 0
             while @interface_network[:bridge_name].nil?
+              @logger.debug "generating name for bridge"
               bridge_name = 'virbr'
               bridge_name << count.to_s
               count += 1
@@ -195,6 +259,8 @@ module VagrantPlugins
           if !@interface_network
             raise Errors::NetworkNotAvailableError,
                   network_name: @options[:network_name]
+          else
+            verify_dhcp
           end
         end
 
@@ -234,6 +300,7 @@ module VagrantPlugins
           begin
             @interface_network[:libvirt_network] = \
               @libvirt_client.define_network_xml(to_xml('private_network'))
+            @logger.debug "created network"
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message
           end

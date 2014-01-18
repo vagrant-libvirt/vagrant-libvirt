@@ -27,6 +27,12 @@ module VagrantPlugins
             netmask = xml.xpath('/network/ip/@netmask').first
             netmask = netmask.value if netmask
 
+            if xml.at_xpath('//network/ip/dhcp')
+              dhcp_enabled = true
+            else
+              dhcp_enabled = false
+            end
+
             # Calculate network address of network from ip address and
             # netmask.
             if ip && netmask
@@ -40,6 +46,7 @@ module VagrantPlugins
               ip_address:       ip,
               netmask:          netmask,
               network_address:  network_address,
+              dhcp_enabled:     dhcp_enabled,
               bridge_name:      libvirt_network.bridge_name,
               created:          true,
               active:           libvirt_network.active?,

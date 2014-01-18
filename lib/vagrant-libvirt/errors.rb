@@ -68,14 +68,17 @@ module VagrantPlugins
         error_key(:fog_create_server_error)
       end
 
-
-      # Other exceptions
-      class InterfaceSlotNotAvailable < VagrantLibvirtError
-        error_key(:interface_slot_not_available)
+      # Network exceptions
+      class ManagementNetworkError < VagrantLibvirtError
+        error_key(:management_network_error)
       end
 
       class NetworkNameAndAddressMismatch < VagrantLibvirtError
         error_key(:network_name_and_address_mismatch)
+      end
+
+      class DHCPMismatch < VagrantLibvirtError
+        error_key(:dhcp_mismatch)
       end
 
       class CreateNetworkError < VagrantLibvirtError
@@ -96,6 +99,11 @@ module VagrantPlugins
 
       class ActivateNetworkError < VagrantLibvirtError
         error_key(:activate_network_error)
+      end
+
+      # Other exceptions
+      class InterfaceSlotNotAvailable < VagrantLibvirtError
+        error_key(:interface_slot_not_available)
       end
 
       class RsyncError < VagrantLibvirtError

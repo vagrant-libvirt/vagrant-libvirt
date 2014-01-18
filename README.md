@@ -99,8 +99,8 @@ This provider exposes quite a few provider-specific configuration options:
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
-* `default_network` - Libvirt default network name. If not specified default network name is 'default'.
-* `default_prefix` - Set a prefix for the machines that's different than the project dir name.
+* `management_network_name` - Name of libvirt network to which all VMs will be connected. If not specified the default is 'vagrant-libvirt'.
+* `management_network_address` - Address of network to which all VMs will be connected. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
 
 ### Domain Specific Options
 
@@ -113,7 +113,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `kernel` - To launch the guest with a kernel residing on host filesystems (Equivalent to qemu `-kernel`)
 * `initrd` - To specify the initramfs/initrd to use for the guest (Equivalent to qemu `-initrd`)
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use (Equivalent to qemu `-append`)
- 
+
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
