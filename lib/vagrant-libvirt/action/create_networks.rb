@@ -2,6 +2,7 @@ require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
 require 'ipaddr'
+require 'thread'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -12,6 +13,8 @@ module VagrantPlugins
         include Vagrant::Util::ScopedHashOverride
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
         include VagrantPlugins::ProviderLibvirt::Util::LibvirtUtil
+
+        @@lock = Mutex.new
 
         def initialize(app, env)
           mess = 'vagrant_libvirt::action::create_networks'
@@ -74,44 +77,49 @@ module VagrantPlugins
             networks.push(options)
           end
 
-          # Iterate over networks If some network is not
-          # available, create it if possible. Otherwise raise an error.
-          networks.each do |options|
-            @logger.debug "Searching for network with options #{options}"
+          # only one vm at a time should try to set up networks
+          # otherwise they'll have inconsitent views of current state
+          # and conduct redundant operations that cause errors
+          @@lock.synchronize do
+            # Iterate over networks If some network is not
+            # available, create it if possible. Otherwise raise an error.
+            networks.each do |options|
+              @logger.debug "Searching for network with options #{options}"
 
-            # should fix other methods so this doesn't have to be instance var
-            @options = options
+              # should fix other methods so this doesn't have to be instance var
+              @options = options
 
-            # Get a list of all (active and inactive) libvirt networks. This
-            # list is used throughout this class and should be easier to
-            # process than libvirt API calls.
-            @available_networks = libvirt_networks(env[:libvirt_compute].client)
+              # Get a list of all (active and inactive) libvirt networks. This
+              # list is used throughout this class and should be easier to
+              # process than libvirt API calls.
+              @available_networks = libvirt_networks(env[:libvirt_compute].client)
 
-            # Prepare a hash describing network for this specific interface.
-            @interface_network = {
-              name:             nil,
-              ip_address:       nil,
-              netmask:          @options[:netmask],
-              network_address:  nil,
-              bridge_name:      nil,
-              created:          false,
-              active:           false,
-              autostart:        false,
-              libvirt_network:  nil,
-            }
+              # Prepare a hash describing network for this specific interface.
+              @interface_network = {
+                name:             nil,
+                ip_address:       nil,
+                netmask:          @options[:netmask],
+                network_address:  nil,
+                bridge_name:      nil,
+                created:          false,
+                active:           false,
+                autostart:        false,
+                libvirt_network:  nil,
+              }
 
-            if @options[:ip]
-              handle_ip_option(env)
-            # in vagrant 1.2.3 and later it is not possible to take this branch
-            # because cannot have name without ip
-            # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
-            elsif @options[:network_name]
-              handle_network_name_option
-            end
+              if @options[:ip]
+                handle_ip_option(env)
+              # in vagrant 1.2.3 and later it is not possible to take this branch
+              # because cannot have name without ip
+              # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
+              elsif @options[:network_name]
+                handle_network_name_option
+              end
 
-            autostart_network if !@interface_network[:autostart]
-            activate_network if !@interface_network[:active]
+              autostart_network if !@interface_network[:autostart]
+              activate_network if !@interface_network[:active]
           end
+        end
 
           @app.call(env)
         end
