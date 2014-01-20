@@ -99,8 +99,6 @@ This provider exposes quite a few provider-specific configuration options:
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
-* `management_network_name` - Name of libvirt network to which all VMs will be connected. If not specified the default is 'vagrant-libvirt'.
-* `management_network_address` - Address of network to which all VMs will be connected. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
 
 ### Domain Specific Options
 
@@ -236,15 +234,24 @@ starts with 'libvirt__' string. Here is a list of those options:
   Default mode is 'bridge'.
 * `:mac` - MAC address for the interface.
 
-## Obtaining Domain IP Address
+### Management Network
 
-Libvirt doesn't provide standard way how to find out an IP address of running
-domain. But we know, what is MAC address of virtual machine. Libvirt is closely
-connected with dnsmasq server, which acts also as a DHCP server. Dnsmasq server
-makes lease information public in `/var/lib/libvirt/dnsmasq` directory, or in
-`/var/lib/misc/dnsmasq.leases` file on some systems. This is the place, where
-information like which MAC address has which IP address resides and it's parsed
-by vagrant-libvirt plugin.
+Vagrant-libvirt uses a private network to perform some management operations
+on VMs. All VMs will have an interface connected to this network and
+an IP address dynamically assigned by libvirt. This is in addition to any
+networks you configure. The name and address used by this network are
+configurable at the provider level.
+
+* `management_network_name` - Name of libvirt network to which all VMs will be connected. If not specified the default is 'vagrant-libvirt'.
+* `management_network_address` - Address of network to which all VMs will be connected. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
+
+You may wonder how vagrant-libvirt knows the IP address a VM received.
+Libvirt doesn't provide a standard way to find out the IP address of a running
+domain. But we do know the MAC address of the virtual machine's interface on
+the management network. Libvirt is closely connected with dnsmasq, which acts as
+a DHCP server. dnsmasq writes lease information in the `/var/lib/libvirt/dnsmasq`
+directory. Vagrant-libvirt looks for the MAC address in this file and extracts
+the corresponding IP address.
 
 ## SSH Access To VM
 
