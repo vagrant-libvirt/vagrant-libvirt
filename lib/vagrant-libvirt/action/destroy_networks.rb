@@ -18,7 +18,7 @@ module VagrantPlugins
           # data directory, created_networks file holds UUIDs of each network.
           created_networks_file = env[:machine].data_dir + 'created_networks'
 
-          @logger.info 'Attepmt destroy network'
+          @logger.info 'Checking if any networks were created'
           # If created_networks file doesn't exist, there are no networks we
           # need to remove.
           unless File.exist?(created_networks_file)
@@ -26,39 +26,45 @@ module VagrantPlugins
             return @app.call(env)
           end
 
-          @logger.info 'file with network exists'
+          @logger.info 'File with created networks exists'
 
           # Iterate over each created network UUID and try to remove it.
           created_networks = []
           file = File.open(created_networks_file, 'r')
           file.readlines.each do |network_uuid|
-            @logger.info network_uuid
+            @logger.info "Checking for #{network_uuid}"
+            # lookup_network_by_uuid throws same exception
+            # if there is an error or if the network just doesn't exist
             begin
               libvirt_network = env[:libvirt_compute].client.lookup_network_by_uuid(
                 network_uuid)
-            rescue
-              raise network_uuid
-              next
+            rescue Libvirt::RetrieveError => e
+              # this network is already destroyed, so move on
+              if e.message =~ /Network not found/
+                @logger.info "It is already undefined"
+                next
+              # some other error occured, so raise it again
+              else
+                raise e
+              end
             end
-
-            # Maybe network doesn't exist anymore.
-            next unless libvirt_network
 
             # Skip removing if network has still active connections.
             xml = Nokogiri::XML(libvirt_network.xml_desc)
             connections = xml.xpath('/network/@connections').first
-            @logger.info connections
             if connections != nil
+              @logger.info "Still has connections so will not undefine"
               created_networks << network_uuid
               next
             end
 
-            # Shutdown network first.
-            libvirt_network.destroy
 
+            # Shutdown network first.
             # Undefine network.
             begin
+              libvirt_network.destroy
               libvirt_network.undefine
+              @logger.info "Undefined it"
             rescue => e
               raise Error::DestroyNetworkError,
                 network_name: libvirt_network.name,
@@ -68,13 +74,16 @@ module VagrantPlugins
           file.close
 
           # Update status of created networks after removing some/all of them.
+          # Not sure why we are doing this, something else seems to always delete the file
           if created_networks.length > 0
             File.open(created_networks_file, 'w') do |file|
+              @logger.info "Writing new created_networks file"
               created_networks.each do |network_uuid|
                 file.puts network_uuid
               end
             end
           else
+            @logger.info "Deleting created_networks file"
             File.delete(created_networks_file)
           end
 
