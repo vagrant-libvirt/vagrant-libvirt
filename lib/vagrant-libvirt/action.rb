@@ -57,14 +57,18 @@ module VagrantPlugins
             next if env[:result]
 
             b2.use Call, IsSuspended do |env2, b3|
+              # if vm is suspended resume it then exit
               if env2[:result]
                 b3.use ResumeDomain
                 next
               end
 
-              # VM is not running or suspended. Start it.. Machine should gain
-              # IP address when comming up, so wait for dhcp lease and store IP
-              # into machines data_dir.
+              # VM is not running or suspended.
+
+              # Ensure networks are created and active
+              b3.use CreateNetworks
+
+              # Handle shared folders
               if Vagrant::VERSION < "1.4.0"
                 b3.use NFS
               else
@@ -74,7 +78,11 @@ module VagrantPlugins
               b3.use PrepareNFSSettings
               b3.use ShareFolders
 
+              # Start it..
               b3.use StartDomain
+
+              # Machine should gain IP address when comming up,
+              # so wait for dhcp lease and store IP into machines data_dir.
               b3.use WaitTillUp
             end
           end
