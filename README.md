@@ -162,7 +162,7 @@ Vagrant goes through steps below when creating new project:
 ## Networks
 
 Networking features in the form of `config.vm.network` support private networks
-concept. Port Forwarding is currently not supported.
+concept.
 
 Public Network interfaces are currently implemented using the macvtap driver. The macvtap
 driver is only available with the Linux Kernel version >= 2.6.24. See the following libvirt
