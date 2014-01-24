@@ -271,6 +271,12 @@ Configurable ssh parameters in Vagrantfile after provider version 0.0.5 are:
 * `config.ssh.forward_agent` - Default is false.
 * `config.ssh.forward_x11` - Default is false.
 
+## Forwarded Ports
+
+vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  For each
+`forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt
+will maintain an active ssh process for the lifetime of the VM.
+
 ## Synced Folders
 
 There is minimal support for synced folders. Upon `vagrant up`, the Libvirt
