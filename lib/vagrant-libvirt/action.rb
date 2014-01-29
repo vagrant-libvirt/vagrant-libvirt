@@ -38,6 +38,8 @@ module VagrantPlugins
                 b2.use SyncedFolders
               end
 
+              b2.use ForwardPorts
+
               b2.use PrepareNFSSettings
               b2.use ShareFolders
               b2.use SetHostname
@@ -87,6 +89,8 @@ module VagrantPlugins
                 b3.use SyncedFolderCleanup
                 b3.use SyncedFolders
               end
+
+              b3.use ForwardPorts
               b3.use PrepareNFSSettings
               b3.use ShareFolders
 
@@ -101,6 +105,7 @@ module VagrantPlugins
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
           b.use ConnectLibvirt
+          b.use ClearForwardedPorts
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
               b2.use MessageNotCreated
@@ -150,6 +155,7 @@ module VagrantPlugins
             end
 
             b2.use ConnectLibvirt
+            b2.use ClearForwardedPorts
             b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
@@ -303,6 +309,8 @@ module VagrantPlugins
       autoload :CreateNetworks, action_root.join('create_networks')
       autoload :DestroyDomain, action_root.join('destroy_domain')
       autoload :DestroyNetworks, action_root.join('destroy_networks')
+      autoload :ForwardPorts, action_root.join('forward_ports')
+      autoload :ClearForwardedPorts, action_root.join('forward_ports')
       autoload :HaltDomain, action_root.join('halt_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')

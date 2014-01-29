@@ -162,7 +162,7 @@ Vagrant goes through steps below when creating new project:
 ## Networks
 
 Networking features in the form of `config.vm.network` support private networks
-concept. Port Forwarding is currently not supported.
+concept.
 
 Public Network interfaces are currently implemented using the macvtap driver. The macvtap
 driver is only available with the Linux Kernel version >= 2.6.24. See the following libvirt
@@ -270,6 +270,12 @@ Configurable ssh parameters in Vagrantfile after provider version 0.0.5 are:
 * `config.ssh.guest_port` - Default port is set to 22.
 * `config.ssh.forward_agent` - Default is false.
 * `config.ssh.forward_x11` - Default is false.
+
+## Forwarded Ports
+
+vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  For each
+`forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt
+will maintain an active ssh process for the lifetime of the VM.
 
 ## Synced Folders
 
