@@ -82,11 +82,12 @@ module VagrantPlugins
             -L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
             -N
           ).join(' ')
-          ssh_cmd = "ssh $(vagrant ssh-config #{machine}"\
-              "| awk '{print \" -o \"$1\"=\"$2}') #{params} 2>/dev/null"
+          # TODO get options without shelling out
+          options = `vagrant ssh-config #{machine} | awk '{printf " -o "$1"="$2}'`
+          ssh_cmd = "ssh #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
-          spawn ssh_cmd
+          spawn(ssh_cmd,  [:out, :err] => '/dev/null')
         end
 
         def store_ssh_pid(host_port, ssh_pid)
@@ -124,7 +125,7 @@ module VagrantPlugins
             ssh_pids.each do |pid|
               next unless ssh_pid?(pid)
               @logger.debug "Killing pid #{pid}"
-              system "pkill -TERM -P #{pid}"
+              system "kill #{pid}"
             end
 
             @logger.info 'Removing ssh pid files'
