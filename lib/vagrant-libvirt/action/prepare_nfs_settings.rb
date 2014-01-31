@@ -3,6 +3,8 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
+        include Vagrant::Action::Builtin::MixinSyncedFolders
+        
         def initialize(app,env)
           @app = app
           @logger = Log4r::Logger.new("vagrant::action::vm::nfs")
@@ -27,7 +29,7 @@ module VagrantPlugins
         # we are not using NFS we don't need to do the extra work to
         # populate these fields in the environment.
         def using_nfs?
-          @machine.config.vm.synced_folders.any? { |_, opts| opts[:type] == :nfs }
+          !!synced_folders(@machine)[:nfs]
         end
 
         # Returns the IP address of the first host only network adapter
