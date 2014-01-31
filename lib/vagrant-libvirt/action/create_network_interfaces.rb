@@ -10,7 +10,7 @@ module VagrantPlugins
       # Networks for connecting those interfaces should be already prepared.
       class CreateNetworkInterfaces
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
-        include VagrantPlugins::ProviderLibvirt::Util::LibvirtUtil
+        include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
         include Vagrant::Util::NetworkIP
         include Vagrant::Util::ScopedHashOverride
 
@@ -36,14 +36,10 @@ module VagrantPlugins
           # Vagrant gives you adapter 0 by default
 
           # Assign interfaces to slots.
-          env[:machine].config.vm.networks.each do |type, options|
-            @logger.debug "In config found network type #{type} options #{options}"
+          configured_networks(env, @logger).each do |options|
 
-            # Get options for this interface. Options can be specified in
-            # Vagrantfile in short format (:ip => ...), or provider format
-            # (:libvirt__network_name => ...).
-            options = scoped_hash_override(options, :libvirt)
-            options = { :netmask => '255.255.255.0', :iface_type => type }.merge(options)
+            # dont need to create interface for this type
+            next if options[:iface_type] == :forwarded_port
 
             # TODO fill first ifaces with adapter option specified.
             if options[:adapter]
@@ -103,9 +99,9 @@ module VagrantPlugins
           networks_to_configure = []
 
           adapters.each_with_index do |options, slot_number|
-            # Skip configuring first interface. It's used for provisioning and
-            # it has to be available during provisioning - ifdown command is
-            # not acceptable here.
+            # Skip configuring the management network, which is on the first interface.
+            # It's used for provisioning and it has to be available during provisioning,
+            # ifdown command is not acceptable here.
             next if slot_number == 0
             @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
@@ -161,13 +157,7 @@ module VagrantPlugins
             end
           end
 
-          # the management network always gets attached to slot 0
-          # because the first network is of type forwarded_port.
-          # this is confusing.
-          # TODO only iterate over networks of type private_network
-          # and prepend the management network to that list
-          @logger.debug "Did not find network so using default of #{@management_network_name}"
-          @management_network_name
+          raise NetworkNotAvailableError, network_name: options[:ip]
         end
       end
     end

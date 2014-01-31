@@ -12,7 +12,7 @@ module VagrantPlugins
         include Vagrant::Util::NetworkIP
         include Vagrant::Util::ScopedHashOverride
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
-        include VagrantPlugins::ProviderLibvirt::Util::LibvirtUtil
+        include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
 
         @@lock = Mutex.new
 
@@ -27,63 +27,15 @@ module VagrantPlugins
         end
 
         def call(env)
-
-          management_network_name = env[:machine].provider_config.management_network_name
-          management_network_address = env[:machine].provider_config.management_network_address
-          @logger.info "Using #{management_network_name} at #{management_network_address} as the management network"
-
-          begin
-            management_network_ip = IPAddr.new(management_network_address)
-          rescue ArgumentError
-            raise Errors::ManagementNetworkError,
-              error_message: "#{management_network_address} is not a valid IP address"
-          end
-
-          # capture address into $1 and mask into $2
-          management_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
-
-          if $2 == '255.255.255.255'
-            raise Errors::ManagementNetworkError,
-              error_message: "#{management_network_address} does not include both an address and subnet mask"
-          end
-
-          management_network_options = {
-            network_name: management_network_name,
-            ip: $1,
-            netmask: $2,
-            dhcp_enabled: true,
-            forward_mode: 'nat',
-          }
-
-          # add management network to list of networks to check
-          networks = [ management_network_options ]
-
-          env[:machine].config.vm.networks.each do |type, original_options|
-            # There are two other types public network and port forwarding,
-            # but there are problems with creating them via libvirt API,
-            # so this provider doesn't implement them.
-            next if type != :private_network
-            # Options can be specified in Vagrantfile in short format (:ip => ...),
-            # or provider format # (:libvirt__network_name => ...).
-            # https://github.com/mitchellh/vagrant/blob/master/lib/vagrant/util/scoped_hash_override.rb
-            options = scoped_hash_override(original_options, :libvirt)
-            # use default values if not already set
-            options = {
-              netmask:      '255.255.255.0',
-              dhcp_enabled: true,
-              forward_mode: 'nat',
-            }.merge(options)
-            # add to list of networks to check
-            networks.push(options)
-          end
-
           # only one vm at a time should try to set up networks
           # otherwise they'll have inconsitent views of current state
           # and conduct redundant operations that cause errors
           @@lock.synchronize do
             # Iterate over networks If some network is not
             # available, create it if possible. Otherwise raise an error.
-            networks.each do |options|
+            configured_networks(env, @logger).each do |options|
+              # Only need to create private networks
+              next if options[:iface_type] != :private_network
               @logger.debug "Searching for network with options #{options}"
 
               # should fix other methods so this doesn't have to be instance var
