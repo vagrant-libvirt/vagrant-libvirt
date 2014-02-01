@@ -1,4 +1,4 @@
-require "vagrant-libvirt/util/timer"
+require 'vagrant-libvirt/util/timer'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -12,8 +12,8 @@ module VagrantPlugins
           end
 
           env[:metrics] ||= {}
-          env[:metrics]["provisioner_times"] ||= []
-          env[:metrics]["provisioner_times"] << [env[:provisioner].class.to_s, timer]
+          env[:metrics]['provisioner_times'] ||= []
+          env[:metrics]['provisioner_times'] << [env[:provisioner].class.to_s, timer]
         end
       end
     end
