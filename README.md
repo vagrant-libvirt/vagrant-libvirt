@@ -1,10 +1,10 @@
 # Vagrant Libvirt Provider
 
-This is a [Vagrant](http://www.vagrantup.com) 1.3+ plugin that adds an
+This is a [Vagrant](http://www.vagrantup.com) 1.4.3+ plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
-**Note:** Actual version (0.0.13) is still a development one. Feedback is
+**Note:** Actual version (0.0.15) is still a development one. Feedback is
 welcome and can help a lot :-)
 
 ## Features (Version 0.0.13)
@@ -29,7 +29,7 @@ welcome and can help a lot :-)
 
 ## Installation
 
-Install using standard [Vagrant 1.3+](http://downloads.vagrantup.com) plugin installation methods. After
+Install using standard [Vagrant 1.4.3+](http://downloads.vagrantup.com) plugin installation methods. After
 installing, `vagrant up` and specify the `libvirt` provider. An example is shown below.
 
 ```
