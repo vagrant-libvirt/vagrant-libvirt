@@ -1,3 +1,24 @@
+# 0.0.15 (Feb 01, 2014)
+* Minimum vagrant version supported is 1.4.3
+* Add support for port forwarding (by Ryan Petrello <ryan@ryanpetrello.com>)
+* Improve network device creation (by Brian Pitts <brian@polibyte.com>)
+* Improvements to NFS sharing (by Matt Palmer and Jason DeTiberus <detiber@gmail.com>)
+* Provisioning fixes for Vagrant 1.4 (by @keitwb)
+
+# 0.0.14 (Jan. 21, 2014)
+* Vagrant 1.4 compatibility fixes (by Dmitry Vasilets <pronix.service@gmail.com>)
+* Improve how VMs IP address is discovered  (by Brian Pitts <brian@polibyte.com>)
+* Add cpu_mode parameter (by Jordan Tardif <jordan.tardi@gmail.com>)
+* Add disk_bus parameter (by Brian Pitts <brian@polibyte.com>)
+* Fixes to some error output (by Matthiew Coudron <matthieu.coudron@lip6.fr>)
+* Add parameters for booting kernel file (by Matthiew Coudron <matthieu.coudron@lip6.fr>)
+* Add default_prefix parameter (by James Shubin <purpleidea@gmail.com>)
+* Improve network creation (by Brian Pitts <brian@polibyte.com>)
+* Replace default_network parameter with management_network parameters (by Brian Pitts <brian@polibyte.com>)
+
+# 0.0.13 (Dec. 12, 2013)
+* Allow to use nested virtualization again (by Artem Chernikov <achernikov@suse.com>)
+
 # 0.0.12 (Dec. 03, 2013)
 
 * Proxy ssh through libvirt host, if libvirt is connected via ssh(by @erik-smit)
