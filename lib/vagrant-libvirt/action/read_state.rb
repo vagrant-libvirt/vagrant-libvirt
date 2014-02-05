@@ -20,11 +20,16 @@ module VagrantPlugins
           return :not_created if machine.id.nil?
 
           # Find the machine
-          server = libvirt.servers.get(machine.id)
-          if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
-            # The machine can't be found
-            @logger.info('Machine not found or terminated, assuming it got destroyed.')
-            machine.id = nil
+          begin
+            server = libvirt.servers.get(machine.id)
+            if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
+              # The machine can't be found
+              @logger.info('Machine not found or terminated, assuming it got destroyed.')
+              machine.id = nil
+              return :not_created
+            end
+          rescue Libvirt::RetrieveError
+            @logger.info("Machine #{machine.id} not found.")
             return :not_created
           end
 
