@@ -30,13 +30,9 @@ module VagrantPlugins
               b2.use StartDomain
               b2.use WaitTillUp
 
-              if Vagrant::VERSION < "1.4.0"
-                b2.use NFS
-              else
-                b2.use PrepareNFSValidIds
-                b2.use SyncedFolderCleanup
-                b2.use SyncedFolders
-              end
+              b2.use PrepareNFSValidIds
+              b2.use SyncedFolderCleanup
+              b2.use SyncedFolders
 
               b2.use ForwardPorts
 
@@ -81,14 +77,9 @@ module VagrantPlugins
               # so wait for dhcp lease and store IP into machines data_dir.
               b3.use WaitTillUp
 
-              # Handle shared folders
-              if Vagrant::VERSION < "1.4.0"
-                b3.use NFS
-              else
-                b3.use PrepareNFSValidIds
-                b3.use SyncedFolderCleanup
-                b3.use SyncedFolders
-              end
+              b3.use PrepareNFSValidIds
+              b3.use SyncedFolderCleanup
+              b3.use SyncedFolders
 
               b3.use ForwardPorts
               b3.use PrepareNFSSettings
@@ -336,10 +327,8 @@ module VagrantPlugins
       autoload :WaitTillUp, action_root.join('wait_till_up')
       autoload :SSHRun,  'vagrant/action/builtin/ssh_run'
       autoload :HandleBoxUrl, 'vagrant/action/builtin/handle_box_url'
-      unless Vagrant::VERSION < "1.4.0"
-        autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
-        autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
-      end
+      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
+      autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
     end
   end
 end
