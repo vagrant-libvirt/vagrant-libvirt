@@ -47,8 +47,8 @@ module VagrantPlugins
             ))
 
             ssh_pid = redirect_port(
-              @env[:machine].name,
-              fp[:host_ip] || '0.0.0.0',
+              @env[:machine],
+              fp[:host_ip] || 'localhost',
               fp[:host],
               fp[:guest_ip] || @env[:machine].provider.ssh_info[:host],
               fp[:guest]
@@ -77,13 +77,24 @@ module VagrantPlugins
         end
 
         def redirect_port(machine, host_ip, host_port, guest_ip, guest_port)
+          ssh_info = machine.ssh_info
           params = %W(
-            #{machine}
-            -L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
+            "-L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}"
             -N
+            #{ssh_info[:host]}
           ).join(' ')
-          # TODO get options without shelling out
-          options = `vagrant ssh-config #{machine} | awk '{printf " -o "$1"="$2}'`
+
+          options = (%W(
+            User=#{ssh_info[:username]}
+            Port=#{ssh_info[:port]}
+            UserKnownHostsFile=/dev/null
+            StrictHostKeyChecking=no
+            PasswordAuthentication=no
+            ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
+          ) + ssh_info[:private_key_path].map do |pk|
+              "IdentityFile=#{pk}"
+            end).map { |s| s.prepend('-o ') }.join(' ')
+            
           ssh_cmd = "ssh #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
