@@ -29,7 +29,6 @@ module VagrantPlugins
               return :not_created
             end
           rescue Libvirt::RetrieveError => e
-            require 'pry'; binding.pry
             if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
               @logger.info("Machine #{machine.id} not found.")
               machine.id = nil
