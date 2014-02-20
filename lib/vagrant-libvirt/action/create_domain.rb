@@ -28,8 +28,8 @@ module VagrantPlugins
           @cmd_line = config.cmd_line
           @initrd = config.initrd
 
-          # TODO get type from driver config option
-          @domain_type = 'kvm'
+          config = env[:machine].provider_config
+          @domain_type = config.driver
 
           @os_type = 'hvm'
 

@@ -23,7 +23,7 @@ module VagrantPlugins
           config = env[:machine].provider_config
 
           # Setup connection uri.
-          uri = config.driver
+          uri = config.driver.dup
           virt_path = case uri
           when 'qemu', 'openvz', 'uml', 'phyp', 'parallels'
             '/system'
