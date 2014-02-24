@@ -7,7 +7,7 @@ control and provision machines via Libvirt toolkit.
 **Note:** Actual version (0.0.15) is still a development one. Feedback is
 welcome and can help a lot :-)
 
-## Features (Version 0.0.13)
+## Features
 
 * Controll local Libvirt hypervisors.
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload` and `provision` commands.
