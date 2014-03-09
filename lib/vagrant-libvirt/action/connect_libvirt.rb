@@ -57,7 +57,7 @@ module VagrantPlugins
           if config.id_ssh_key_file
             # set ssh key for access to libvirt host
             home_dir = `echo ${HOME}`.chomp
-            uri << "&keyfile=#{home_dir}/.ssh/"+config.id_ssh_key_file
+            uri << "\&keyfile=#{home_dir}/.ssh/"+config.id_ssh_key_file
           end
 
           conn_attr = {}
