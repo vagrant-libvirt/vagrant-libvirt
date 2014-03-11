@@ -98,6 +98,7 @@ This provider exposes quite a few provider-specific configuration options:
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
+* `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
 
 ### Domain Specific Options
