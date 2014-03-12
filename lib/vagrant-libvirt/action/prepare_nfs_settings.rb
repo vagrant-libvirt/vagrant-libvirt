@@ -48,7 +48,11 @@ module VagrantPlugins
             net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
           end
           # FIXME better implement by libvirt xml parsing
-          `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
+          if env[:machine].provider_config.nfs_address.nil?
+            return `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
+          else
+            return env[:machine].provider_config.nfs_address
+          end
         end
 
         # Returns the IP address of the guest by looking at the first
