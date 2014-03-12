@@ -70,9 +70,11 @@ module VagrantPlugins
 
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
-              template_name = 'public_interface'
               @device = iface_configuration.fetch(:dev, 'eth0')
+              @type = iface_configuration.fetch(:type, 'direct')
               @mode = iface_configuration.fetch(:mode, 'bridge')
+              @model_type = iface_configuration.fetch(:model_type, 'e1000')
+              template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
             end
 
@@ -147,6 +149,10 @@ module VagrantPlugins
           # Get list of all (active and inactive) libvirt networks.
           available_networks = libvirt_networks(libvirt_client)
 
+          if options[:iface_type] == :public_network
+            return 'public'
+          end
+
           if options[:ip]
             address = network_address(options[:ip], options[:netmask])
             available_networks.each do |network|
@@ -157,7 +163,7 @@ module VagrantPlugins
             end
           end
 
-          raise NetworkNotAvailableError, network_name: options[:ip]
+          raise Errors::NetworkNotAvailableError, network_name: options[:ip]
         end
       end
     end
