@@ -35,6 +35,9 @@ module VagrantPlugins
       # NFS mount address
       attr_accessor :nfs_address
 
+      # enable management_network
+      attr_accessor :management_network
+
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
 
@@ -60,6 +63,7 @@ module VagrantPlugins
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_address = UNSET_VALUE
+        @management_network = UNSET_VALUE
         @nfs_address = UNSET_VALUE
 
         # Domain specific settings.
@@ -85,6 +89,7 @@ module VagrantPlugins
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_address = nil if @management_address == UNSET_VALUE
+        @management_network = true if @management_network == UNSET_VALUE
         @nfs_address = nil if @nfs_address == UNSET_VALUE
 
         # Domain specific settings.
