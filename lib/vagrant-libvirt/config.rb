@@ -32,6 +32,9 @@ module VagrantPlugins
       # Libvirt default network
       attr_accessor :management_address
 
+      # NFS mount address
+      attr_accessor :nfs_address
+
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
 
@@ -57,6 +60,7 @@ module VagrantPlugins
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_address = UNSET_VALUE
+        @nfs_address = UNSET_VALUE
 
         # Domain specific settings.
         @memory            = UNSET_VALUE
@@ -81,6 +85,7 @@ module VagrantPlugins
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_address = nil if @management_address == UNSET_VALUE
+        @nfs_address = nil if @nfs_address == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
