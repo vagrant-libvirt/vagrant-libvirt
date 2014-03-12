@@ -67,6 +67,7 @@ module VagrantPlugins
             @network_name = iface_configuration[:network_name]
             @mac = iface_configuration.fetch(:mac, false)
             template_name = 'interface'
+            next if slot_number == 0 && env[:machine].provider_config.management_network == false
 
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
