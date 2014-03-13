@@ -29,7 +29,7 @@ module VagrantPlugins
           @initrd = config.initrd
 
           config = env[:machine].provider_config
-          @domain_type = config.driver
+          @domain_type = config.domain_type
 
           @os_type = 'hvm'
 

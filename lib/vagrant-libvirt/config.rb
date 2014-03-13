@@ -6,6 +6,9 @@ module VagrantPlugins
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver
 
+      # Set domain type
+      attr_accessor :domain_type
+
       # The name of the server, where libvirtd is running.
       attr_accessor :host
 
@@ -57,6 +60,7 @@ module VagrantPlugins
 
       def initialize
         @driver            = UNSET_VALUE
+        @domain_type            = UNSET_VALUE
         @host              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
         @username          = UNSET_VALUE
@@ -83,6 +87,7 @@ module VagrantPlugins
 
       def finalize!
         @driver = 'qemu' if @driver == UNSET_VALUE
+        @domain_type = 'qemu' if @domain_type == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
