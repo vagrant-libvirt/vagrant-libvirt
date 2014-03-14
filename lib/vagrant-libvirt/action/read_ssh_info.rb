@@ -13,12 +13,12 @@ module VagrantPlugins
 
         def call(env)
           env[:machine_ssh_info] = read_ssh_info(env[:libvirt_compute],
-                                                 env[:machine])
+                                                 env[:machine], env)
 
           @app.call(env)
         end
 
-        def read_ssh_info(libvirt, machine)
+        def read_ssh_info(libvirt, machine, env)
           return nil if machine.id.nil?
 
           # Find the machine
@@ -31,14 +31,18 @@ module VagrantPlugins
           end
 
           # Get IP address from dnsmasq lease file.
-          ip_address = nil
-          domain.wait_for(2) {
-            addresses.each_pair do |type, ip|
-              ip_address = ip[0] if ip[0] != nil
-            end
-            ip_address != nil
-          }
+          unless env[:ip_address].nil?
+            ip_address = nil
+            domain.wait_for(2) {
+              addresses.each_pair do |type, ip|
+                ip_address = ip[0] if ip[0] != nil
+              end
+              ip_address != nil
+            }
           raise Errors::NoIpAddressError if not ip_address
+          else 
+            ip_address = env[:ip_address]
+          end
 
           ssh_info = {
             :host          => ip_address,
