@@ -43,7 +43,7 @@ module VagrantPlugins
           else
             domain = env[:libvirt_compute].servers.get(machine.id.to_s)
             xml=Nokogiri::XML(domain.to_xml)
-            networkname = xml.xpath('/domain/devices/interface/source').first.attributes['network'].value.to_s
+            networkname = xml.xpath('/domain/devices/interface/source').first.attributes['bridge'].value.to_s
             puts "network name = #{networkname}"
             net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
           end

@@ -1,6 +1,9 @@
 require 'log4r'
 require 'vagrant-libvirt/util/timer'
 require 'vagrant/util/retryable'
+require 'vagrant/util/network_ip'
+require 'vagrant/util/scoped_hash_override'
+
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -10,6 +13,9 @@ module VagrantPlugins
       # accessible via ssh.
       class WaitTillUp
         include Vagrant::Util::Retryable
+        include Vagrant::Util::NetworkIP
+        include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
+        include Vagrant::Util::ScopedHashOverride
 
         def initialize(app, env)
           @logger = Log4r::Logger.new("vagrant_libvirt::action::wait_till_up")
@@ -35,6 +41,10 @@ module VagrantPlugins
               next if env[:interrupted]
 
               # Wait for domain to obtain an ip address
+              if env[:machine].provider_config.management_network == false
+                env[:ip_address] = configured_networks(env, @logger)[3][:ip]
+                next
+              end
               domain.wait_for(2) {
                 addresses.each_pair do |type, ip|
                   env[:ip_address] = ip[0] if ip[0] != nil
