@@ -39,11 +39,18 @@ module VagrantPlugins
             retryable(:on => Fog::Errors::TimeoutError, :tries => 300) do
               # If we're interrupted don't worry about waiting
               next if env[:interrupted]
+              next if configured_networks(env, @logger).count == 1
 
               # Wait for domain to obtain an ip address
-              if env[:machine].provider_config.management_network == false
-                env[:ip_address] = configured_networks(env, @logger)[3][:ip]
+              if env[:machine].provider_config.management_network == false &&
+                configured_networks(env, @logger).select {|net| net[:iface_type] == :public_network}.first[:ip] != nil
+
+                env[:ui].info(I18n.t("vagrant_libvirt.need_to_configure_ip_yourself"))
                 next
+              elsif  env[:machine].provider_config.management_network == false &&
+                configured_networks(env, @logger).select {|net| net[:iface_type] == :public_network}.first[:ip] == nil
+
+                env[:ui].info(I18n.t("vagrant_libvirt.no_static_ip_on_public_network"))
               end
               domain.wait_for(2) {
                 addresses.each_pair do |type, ip|

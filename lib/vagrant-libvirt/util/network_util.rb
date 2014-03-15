@@ -10,6 +10,7 @@ module VagrantPlugins
         def configured_networks(env, logger)
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
+          management_network = env[:machine].provider_config.management_network
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network"
 
           begin
@@ -37,7 +38,8 @@ module VagrantPlugins
           }
 
           # add management network to list of networks to check
-          networks = [ management_network_options ]
+          networks = []
+          networks = [ management_network_options ] if management_network
 
           env[:machine].config.vm.networks.each do |type, original_options|
             logger.debug "In config found network type #{type} options #{original_options}"
