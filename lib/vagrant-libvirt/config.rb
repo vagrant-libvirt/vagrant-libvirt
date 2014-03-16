@@ -47,7 +47,10 @@ module VagrantPlugins
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
 
+
       # Domain specific settings used while creating new domain.
+      attr_accessor :serial_type
+      attr_accessor :serial_port
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
@@ -74,6 +77,8 @@ module VagrantPlugins
         @nfs_address = UNSET_VALUE
 
         # Domain specific settings.
+        @serial_type       = UNSET_VALUE
+        @serial_port       = UNSET_VALUE
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -101,6 +106,8 @@ module VagrantPlugins
         @nfs_address = nil if @nfs_address == UNSET_VALUE
 
         # Domain specific settings.
+        @serial_type = nil if @serial_type == UNSET_VALUE
+        @serial_port = nil if @serial_port == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE

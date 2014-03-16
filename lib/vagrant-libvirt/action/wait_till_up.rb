@@ -3,6 +3,7 @@ require 'vagrant-libvirt/util/timer'
 require 'vagrant/util/retryable'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
+require 'net/telnet'
 
 
 module VagrantPlugins
@@ -39,12 +40,22 @@ module VagrantPlugins
             retryable(:on => Fog::Errors::TimeoutError, :tries => 300) do
               # If we're interrupted don't worry about waiting
               next if env[:interrupted]
-              next if configured_networks(env, @logger).count == 1
+              #next if configured_networks(env, @logger).count == 1
 
               # Wait for domain to obtain an ip address
               if env[:machine].provider_config.management_network == false &&
                 configured_networks(env, @logger).select {|net| net[:iface_type] == :public_network}.first[:ip] != nil
 
+ 		firstnet = configured_networks(env, @logger).select {|net| net[:iface_type] == :public_network}.first
+                env[:ui].info(I18n.t("vagrant_libvirt.wait_for_ip_configuration_telnet"))
+                interfaceconfig = {:name => "vio0", :ip => firstnet[:ip]}
+                localhost = Net::Telnet::new("Host" => "localhost",
+                             "Port" => env[:machine].provider_config.serial_port,
+                             "Timeout" => false,
+                             "Prompt" => /[$%#>] \z/n)
+                localhost.login("vagrant", "vagrant") { |c| print c }
+                localhost.cmd("sudo ifconfig #{interfaceconfig[:name]} #{interfaceconfig[:ip]}") { |c| print c }
+                localhost.close
                 env[:ui].info(I18n.t("vagrant_libvirt.need_to_configure_ip_yourself"))
                 next
               elsif  env[:machine].provider_config.management_network == false &&
