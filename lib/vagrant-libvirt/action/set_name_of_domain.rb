@@ -21,10 +21,16 @@ module VagrantPlugins
           env[:domain_name] << '_'
           env[:domain_name] << env[:machine].name.to_s
           
+          begin
           @logger.info("Looking for domain #{env[:domain_name]} through list #{env[:libvirt_compute].servers.all}")
           # Check if the domain name is not already taken
-          domain = ProviderLibvirt::Util::Collection.find_matching(
+          
+            domain = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].servers.all, env[:domain_name])
+          rescue Fog::Errors::Error => e
+            @logger.info("#{e}")
+            domain = nil
+          end
 
           @logger.info("Looking for domain #{env[:domain_name]}")
 
