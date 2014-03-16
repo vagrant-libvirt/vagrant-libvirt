@@ -59,6 +59,8 @@ module VagrantPlugins
             home_dir = `echo ${HOME}`.chomp
             uri << "\&keyfile=#{home_dir}/.ssh/"+config.id_ssh_key_file
           end
+          # set path to libvirt socket
+          uri << "\&socket="+config.socket if config.socket
 
           conn_attr = {}
           conn_attr[:provider] = 'libvirt'

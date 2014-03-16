@@ -12,6 +12,9 @@ module VagrantPlugins
       # If use ssh tunnel to connect to Libvirt.
       attr_accessor :connect_via_ssh
 
+      # Path towards the libvirt socket
+      attr_accessor :socket
+
       # The username to access Libvirt.
       attr_accessor :username
 
