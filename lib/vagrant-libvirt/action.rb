@@ -27,19 +27,22 @@ module VagrantPlugins
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
 
-              b2.use StartDomain
-              b2.use WaitTillUp
-
               b2.use PrepareNFSValidIds
               b2.use SyncedFolderCleanup
               b2.use SyncedFolders
+
+              b2.use StartDomain
+              b2.use WaitTillUp
+
+              
+
 
               b2.use ForwardPorts
 
               b2.use PrepareNFSSettings
               b2.use ShareFolders
               b2.use SetHostname
-              b2.use SyncFolders
+              # b2.use SyncFolders
             else
               b2.use action_start
             end
@@ -70,6 +73,12 @@ module VagrantPlugins
               # Ensure networks are created and active
               b3.use CreateNetworks
 
+
+              b3.use PrepareNFSValidIds
+              b3.use SyncedFolderCleanup
+              b3.use SyncedFolders
+
+
               # Start it..
               b3.use StartDomain
 
@@ -77,9 +86,6 @@ module VagrantPlugins
               # so wait for dhcp lease and store IP into machines data_dir.
               b3.use WaitTillUp
 
-              b3.use PrepareNFSValidIds
-              b3.use SyncedFolderCleanup
-              b3.use SyncedFolders
 
               b3.use ForwardPorts
               b3.use PrepareNFSSettings
@@ -195,7 +201,7 @@ module VagrantPlugins
               end
 
               b3.use Provision
-              b3.use SyncFolders
+              # b3.use SyncFolders
             end
           end
         end
@@ -313,17 +319,20 @@ module VagrantPlugins
       autoload :MessageNotRunning, action_root.join('message_not_running')
       autoload :MessageNotSuspended, action_root.join('message_not_suspended')
       autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
-      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
       autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
       autoload :ReadSSHInfo, action_root.join('read_ssh_info')
       autoload :ReadState, action_root.join('read_state')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
+      
+      # I don't think we need it anymore 
       autoload :ShareFolders, action_root.join('share_folders')
       autoload :StartDomain, action_root.join('start_domain')
       autoload :SuspendDomain, action_root.join('suspend_domain')
-      autoload :SyncFolders, action_root.join('sync_folders')
+      autoload :TimedProvision, action_root.join('timed_provision')
       autoload :WaitTillUp, action_root.join('wait_till_up')
+      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
+
       autoload :SSHRun,  'vagrant/action/builtin/ssh_run'
       autoload :HandleBoxUrl, 'vagrant/action/builtin/handle_box_url'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
