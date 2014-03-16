@@ -6,7 +6,7 @@ end
 
 # This is a sanity check to make sure no one is attempting to install
 # this into an early Vagrant version.
-if Vagrant::VERSION < '1.4.0'
+if Vagrant::VERSION < '1.5.0'
   raise 'The Vagrant Libvirt plugin is only compatible with Vagrant 1.4+'
 end
 
@@ -30,6 +30,17 @@ module VagrantPlugins
 
         require_relative 'provider'
         Provider
+      end
+      
+      guest_capability("linux", "mount_p9_shared_folder") do
+        require_relative "cap/mount_p9"
+        Cap::MountP9
+      end
+
+      # We set p9 as high priority (default 10)
+      synced_folder("9p", 20) do
+        require_relative "cap/synced_folder"
+        VagrantPlugins::SyncedFolder9p::SyncedFolder
       end
 
       # This initializes the internationalization strings.
