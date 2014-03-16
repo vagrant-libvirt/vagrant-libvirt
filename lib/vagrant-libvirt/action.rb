@@ -23,7 +23,7 @@ module VagrantPlugins
               b2.use CreateDomainVolume
               b2.use CreateDomain
 
-              b2.use TimedProvision
+              b2.use Provision
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
 
@@ -323,7 +323,6 @@ module VagrantPlugins
       autoload :StartDomain, action_root.join('start_domain')
       autoload :SuspendDomain, action_root.join('suspend_domain')
       autoload :SyncFolders, action_root.join('sync_folders')
-      autoload :TimedProvision, action_root.join('timed_provision')
       autoload :WaitTillUp, action_root.join('wait_till_up')
       autoload :SSHRun,  'vagrant/action/builtin/ssh_run'
       autoload :HandleBoxUrl, 'vagrant/action/builtin/handle_box_url'
