@@ -52,10 +52,13 @@ module VagrantPlugins
                 localhost = Net::Telnet::new("Host" => "localhost",
                              "Port" => env[:machine].provider_config.serial_port,
                              "Timeout" => false,
-                             "Prompt" => /[$%#>] \z/n)
+                             "Prompt" => /[$%#>] /n)
                 localhost.login("vagrant", "vagrant") { |c| print c }
-                localhost.cmd("sudo ifconfig #{interfaceconfig[:name]} #{interfaceconfig[:ip]}") { |c| print c }
+                sleep 2
+                localhost.cmd("String" => "sudo ifconfig #{interfaceconfig[:name]} #{interfaceconfig[:ip]}") { |c| print c }
+                sleep 2
                 localhost.close
+                env[:ip_address] = interfaceconfig[:ip]
                 env[:ui].info(I18n.t("vagrant_libvirt.need_to_configure_ip_yourself"))
                 next
               elsif  env[:machine].provider_config.management_network == false &&
