@@ -70,8 +70,7 @@ module VagrantPlugins
 
           # Setup command for retrieving IP address for newly created machine
           # with some MAC address. Get it from dnsmasq leases table
-          ip_command =  %q[ LEASES=$(find /var/lib/libvirt/dnsmasq/ /var/lib/misc/ -name '*leases'); ]
-          ip_command << %q[ [ -n "$LEASES" ] && grep $mac $LEASES | awk '{ print $3 }' ]
+          ip_command = %q[ find /var/lib/libvirt/dnsmasq/ /var/lib/misc/ -name '*leases' -exec grep $mac {} \; | cut -d' ' -f3 ]
           conn_attr[:libvirt_ip_command] = ip_command
 
           @logger.info("Connecting to Libvirt (#{uri}) ...")
