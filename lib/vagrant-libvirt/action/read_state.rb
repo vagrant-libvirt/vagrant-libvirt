@@ -18,20 +18,30 @@ module VagrantPlugins
 
         def read_state(libvirt, machine)
           return :not_created if machine.id.nil?
-          
+
           begin
             server = libvirt.servers.get(machine.id)
           rescue Libvirt::RetrieveError => e
             server = nil
             @logger.debug('Machine not found #{e}.')
-          end 
+          end
           # Find the machine
-          
-          if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
-            # The machine can't be found
-            @logger.info('Machine not found or terminated, assuming it got destroyed.')
-            machine.id = nil
-            return :not_created
+          begin
+            server = libvirt.servers.get(machine.id)
+            if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
+              # The machine can't be found
+              @logger.info('Machine shutting down or terminated, assuming it got destroyed.')
+              machine.id = nil
+              return :not_created
+            end
+          rescue Libvirt::RetrieveError => e
+            if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
+              @logger.info("Machine #{machine.id} not found.")
+              machine.id = nil
+              return :not_created
+            else
+              raise e
+            end
           end
 
           # Return the state
