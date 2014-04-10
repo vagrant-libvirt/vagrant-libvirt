@@ -1,5 +1,14 @@
 require 'vagrant'
 
+class Numeric
+  Alphabet = ('a'..'z').to_a
+  def vdev
+    s, q = '', self
+    (q, r = (q - 1).divmod(26)) && s.prepend(Alphabet[r]) until q.zero?
+    'vd'+s
+  end
+end
+
 module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
@@ -46,6 +55,9 @@ module VagrantPlugins
       attr_accessor :cmd_line
       attr_accessor :initrd
 
+      # Storage
+      attr_accessor :disks
+
       def initialize
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
@@ -67,6 +79,47 @@ module VagrantPlugins
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
         @cmd_line          = UNSET_VALUE
+
+        # Storage
+        @disks             = UNSET_VALUE
+      end
+
+      def __get_device(disks)
+        disks = [] if disks == UNSET_VALUE
+        # skip existing devices and also the first one (vda)
+        exist = disks.collect {|x| x[:device]}+[1.vdev.to_s]
+        skip = 1		# we're 1 based, not 0 based...
+        while true do
+          dev = skip.vdev	# get lettered device
+          if not exist.include?(dev)
+            return dev
+          end
+          skip+=1
+        end
+      end
+
+      # NOTE: this will run twice for each time it's needed- keep it idempotent
+      def storage(storage_type, options={})
+        options = {
+          :device => __get_device(@disks),
+          :type => 'qcow2',
+          :size => '10G',	# matches the fog default
+          :path => nil,
+        }.merge(options)
+
+        #puts "storage(#{storage_type} --- #{options.to_s})"
+        @disks = [] if @disks == UNSET_VALUE
+
+        disk = {
+          :device => options[:device],
+          :type => options[:type],
+          :size => options[:size],
+          :path => options[:path],
+        }
+
+        if storage_type == :file
+          @disks << disk	# append
+        end
       end
 
       def finalize!
@@ -90,6 +143,9 @@ module VagrantPlugins
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
+
+        # Storage
+        @disks = [] if @disks == UNSET_VALUE
       end
 
       def validate(machine)
