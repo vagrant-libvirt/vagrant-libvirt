@@ -1,7 +1,13 @@
-<interface type='direct'>
+<interface type='<%= @type %>'>
 	<% if @mac %>
   	<mac address='<%= @mac %>'/>
   <% end %>
+  <%if @type == 'direct'%>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
+  <% else %>
+  <source bridge='<%=@device%>'/>
+  <model type='<%=@model_type%>'/>
+  <% end %>
 </interface>
+
 
