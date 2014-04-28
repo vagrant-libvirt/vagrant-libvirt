@@ -28,6 +28,7 @@ module VagrantPlugins
                       :tries => 5,
                       :sleep => 3) do
               machine.communicate.sudo('modprobe 9p')
+              machine.communicate.sudo('modprobe 9pnet_virtio')
               machine.communicate.sudo(mount_command,
                       :error_class => Vagrant::Errors::LinuxMountFailed)
             end
