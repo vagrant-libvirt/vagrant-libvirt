@@ -15,7 +15,8 @@ module VagrantPlugins
             uuids = env[:libvirt_compute].servers.all.map(&:id)
             # not exiisted in array will removed from nfs
             uuids.delete(uuid)
-            env[:host].nfs_prune(uuids)
+            env[:host].capability(
+              :nfs_prune, env[:machine].ui, uuids)
           end
 
           @app.call(env)
