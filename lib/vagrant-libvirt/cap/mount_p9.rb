@@ -27,6 +27,7 @@ module VagrantPlugins
             retryable(:on => Vagrant::Errors::LinuxMountFailed,
                       :tries => 5,
                       :sleep => 3) do
+              machine.communicate.sudo('modprobe 9p')
               machine.communicate.sudo(mount_command,
                       :error_class => Vagrant::Errors::LinuxMountFailed)
             end
