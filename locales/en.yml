@@ -99,6 +99,8 @@ en:
         No domain found. %{error_message}
       attach_device_error: |-
         Error while attaching new device to domain. %{error_message}
+      detach_device_error: |-
+        Error while detaching device from domain. %{error_message}
       no_ip_address_error: |-
         No IP address found.
       management_network_error: |-
