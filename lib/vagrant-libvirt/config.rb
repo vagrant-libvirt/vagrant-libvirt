@@ -6,6 +6,9 @@ module VagrantPlugins
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver
 
+      # Set domain type
+      attr_accessor :domain_type
+
       # The name of the server, where libvirtd is running.
       attr_accessor :host
 
@@ -32,10 +35,22 @@ module VagrantPlugins
       attr_accessor :management_network_name
       attr_accessor :management_network_address
 
+      # Libvirt default network
+      attr_accessor :management_address
+
+      # NFS mount address
+      attr_accessor :nfs_address
+
+      # enable management_network
+      attr_accessor :management_network
+
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
 
+
       # Domain specific settings used while creating new domain.
+      attr_accessor :serial_type
+      attr_accessor :serial_port
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
@@ -48,6 +63,7 @@ module VagrantPlugins
 
       def initialize
         @driver            = UNSET_VALUE
+        @domain_type            = UNSET_VALUE
         @host              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
         @username          = UNSET_VALUE
@@ -56,8 +72,13 @@ module VagrantPlugins
         @storage_pool_name = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
+        @management_address = UNSET_VALUE
+        @management_network = UNSET_VALUE
+        @nfs_address = UNSET_VALUE
 
         # Domain specific settings.
+        @serial_type       = UNSET_VALUE
+        @serial_port       = UNSET_VALUE
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -71,6 +92,7 @@ module VagrantPlugins
 
       def finalize!
         @driver = 'qemu' if @driver == UNSET_VALUE
+        @domain_type = 'qemu' if @domain_type == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
@@ -79,8 +101,13 @@ module VagrantPlugins
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
+        @management_address = nil if @management_address == UNSET_VALUE
+        @management_network = true if @management_network == UNSET_VALUE
+        @nfs_address = nil if @nfs_address == UNSET_VALUE
 
         # Domain specific settings.
+        @serial_type = nil if @serial_type == UNSET_VALUE
+        @serial_port = nil if @serial_port == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE

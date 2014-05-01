@@ -18,6 +18,8 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
+          @serial_type = config.serial_type
+          @serial_port = config.serial_port
           @cpus = config.cpus
           @cpu_mode = config.cpu_mode
           @disk_bus = config.disk_bus
@@ -29,7 +31,7 @@ module VagrantPlugins
           @initrd = config.initrd
 
           config = env[:machine].provider_config
-          @domain_type = config.driver
+          @domain_type = config.domain_type
 
           @os_type = 'hvm'
 

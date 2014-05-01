@@ -36,6 +36,10 @@ en:
       Waiting for domain to become "ready"...
     waiting_for_ip: |-
       Waiting for domain to get an IP address...
+    no_static_ip_on_public_network: |-
+      INFO: No static IP found on public interface  
+    need_to_configure_ip_yourself: |-
+      INFO: No management network. Domain needs IP from external DHCP server or by setting it over vnc or serial 
     waiting_for_ssh: |-
       Waiting for SSH to become available...
     booted: |-

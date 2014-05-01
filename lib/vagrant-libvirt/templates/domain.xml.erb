@@ -31,9 +31,17 @@
       <%# we need to ensure a unique target dev -%>
       <target dev='vda' bus='<%= @disk_bus %>'/>
     </disk>
+    <% if @serial_type.nil? %>
     <serial type='pty'>
       <target port='0'/>
     </serial>
+    <% else %>
+    <serial type="tcp">
+      <source mode="bind" host="0.0.0.0" service="<%=@serial_port%>"/>
+      <protocol type="telnet"/>
+      <target port="1"/>
+    </serial>
+    <% end %>
     <console type='pty'>
       <target port='0'/>
     </console>

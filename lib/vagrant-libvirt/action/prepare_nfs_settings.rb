@@ -1,9 +1,14 @@
 require 'nokogiri'
+require 'vagrant/util/network_ip'
+require 'vagrant/util/scoped_hash_override'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
         include Vagrant::Action::Builtin::MixinSyncedFolders
+        include Vagrant::Util::NetworkIP
+        include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
+        include Vagrant::Util::ScopedHashOverride
         
         def initialize(app,env)
           @app = app
@@ -16,7 +21,7 @@ module VagrantPlugins
 
           if using_nfs?
             @logger.info("Using NFS, preparing NFS settings by reading host IP and machine IP")
-            env[:nfs_host_ip]    = read_host_ip(env[:machine],env)
+            env[:nfs_host_ip]    = read_nfs_host_ip(env)
             env[:nfs_machine_ip] = env[:machine].ssh_info[:host]
 
             @logger.info("host IP: #{env[:nfs_host_ip]} machine IP: #{env[:nfs_machine_ip]}")
@@ -36,19 +41,24 @@ module VagrantPlugins
         #
         # @param [Machine] machine
         # @return [String]
-        def read_host_ip(machine,env)
+        def read_nfs_host_ip(env)
+          return env[:machine].provider_config.nfs_address if !env[:machine].provider_config.nfs_address.nil?
+
+          machine = env[:machine]
           nets = env[:libvirt_compute].list_networks
           if nets.size == 1
             net = nets.first
           else
             domain = env[:libvirt_compute].servers.get(machine.id.to_s)
             xml=Nokogiri::XML(domain.to_xml)
+            networkname = ""
+              
             networkname = xml.xpath('/domain/devices/interface/source').first.attributes['network'].value.to_s
-            puts "network name = #{networkname}"
+
             net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
           end
           # FIXME better implement by libvirt xml parsing
-          `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
+          return `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
         end
 
         # Returns the IP address of the guest by looking at the first
