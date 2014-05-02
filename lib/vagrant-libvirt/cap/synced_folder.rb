@@ -1,5 +1,6 @@
 require "log4r"
 require 'ostruct'
+require 'nokogiri'
 
 
 require "vagrant/util/subprocess"
@@ -35,8 +36,8 @@ module VagrantPlugins
           # loop through folders
           folders.each do |id, folder_opts|
             folder_opts.merge!({ :accessmode => "passthrough",
-                                :readonly => true })
-            # machine.ui.info "================\nMachine id: #{machine.id}Should be mounting folders\n #{id}, opts: #{folder_opts}"
+                                :readonly => nil })
+            machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
             xml =  to_xml('filesystem', folder_opts )
             # puts "<<<<< XML:\n #{xml}\n >>>>>"
@@ -44,7 +45,7 @@ module VagrantPlugins
 
           end 
         rescue => e
-          # machine.ui.error("could not attach device because: #{e}")
+          machine.ui.error("could not attach device because: #{e}")
           raise VagrantPlugins::ProviderLibvirt::Errors::AttachDeviceError,:error_message => e.message
         end
       end
@@ -67,9 +68,28 @@ module VagrantPlugins
             :mount_p9_shared_folder, mount_folders, common_opts)
       end
 
-      def cleanup(machine, opts)
-        # driver(machine).clear_shared_folders if machine.id && machine.id != ""
+      def cleanup(machine, _opts)
+
+        raise Vagrant::Errors::Error("No libvirt connection") if ProviderLibvirt.libvirt_connection.nil?
+
+        @conn = ProviderLibvirt.libvirt_connection.client
+ 
+        begin
+          if machine.id && machine.id != ""
+            dom = @conn.lookup_domain_by_uuid(machine.id)
+            Nokogiri::XML(dom.xml_desc).xpath('/domain/devices/filesystem').each do |xml|
+              dom.detach_device(xml.to_s)
+
+              machine.ui.info "Cleaned up shared folders"
+            end
+          end
+        rescue => e
+          machine.ui.error("could not detach device because: #{e}")
+          raise VagrantPlugins::ProviderLibvirt::Errors::DetachDeviceError,:error_message => e.message
+        end
+
       end
+
     end
   end
 end

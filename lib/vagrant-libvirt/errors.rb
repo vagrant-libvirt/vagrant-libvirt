@@ -122,6 +122,10 @@ module VagrantPlugins
         error_key(:attach_device_error)
       end
 
+      class DetachDeviceError < VagrantLibvirtError
+        error_key(:detach_device_error)
+      end
+
       class NoIpAddressError < VagrantLibvirtError
         error_key(:no_ip_address_error)
       end
