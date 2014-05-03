@@ -43,7 +43,7 @@ module VagrantPlugins
 
               b2.use ForwardPorts
 
-              # b2.use PrepareNFSSettings
+              b2.use PrepareNFSSettings
               b2.use ShareFolders
               b2.use SetHostname
               # b2.use SyncFolders
@@ -91,7 +91,7 @@ module VagrantPlugins
 
 
               b3.use ForwardPorts
-              # b3.use PrepareNFSSettings
+              b3.use PrepareNFSSettings
               b3.use ShareFolders
 
             end
