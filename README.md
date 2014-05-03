@@ -20,6 +20,7 @@ welcome and can help a lot :-)
 * Provision domains with any built-in Vagrant provisioner.
 * Synced folder support via `rsync`, `nfs` or `9p`.
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara)
+* Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/)
 * Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate)
 
 ## Future work
