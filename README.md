@@ -18,7 +18,7 @@ welcome and can help a lot :-)
 * SSH into domains.
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
-* Synced folder support via `rsync` or `nfs`.
+* Synced folder support via `rsync`, `nfs` or `9p`.
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara)
 * Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate)
 
@@ -157,7 +157,7 @@ Vagrant goes through steps below when creating new project:
 4.	Create and start new domain on Libvirt host.
 5.	Check for DHCP lease from dnsmasq server.
 6.	Wait till SSH is available.
-7.	Sync folders via `rsync` and run Vagrant provisioner on new domain if
+7.	Sync folders and run Vagrant provisioner on new domain if
 	setup in Vagrantfile.
 
 ## Networks
@@ -280,14 +280,16 @@ will maintain an active ssh process for the lifetime of the VM.
 
 ## Synced Folders
 
-There is minimal support for synced folders. Upon `vagrant up`, the Libvirt
-provider will use `rsync` (if available) to uni-directionally sync the folder
-to the remote machine over SSH.
+vagrant-libvirt supports bidirectional synced folders via nfs or 9p and
+unidirectional via rsync. The default is nfs. Vagrant automatically syncs
+the project folder on the host to */vagrant* in the guest. You can also
+configure additional synced folders.
 
-This is good enough for all built-in Vagrant provisioners (shell,
-chef, and puppet) to work!
+You can change the synced folder type for */vagrant* by explicity configuring
+it an setting the type, e.g.
 
-If used options `:nfs => true`, folder will exported by nfs.
+    config.vm.synced_folder './', '/vagrant', type: 'rsync'
+
 
 ## Box Format
 
