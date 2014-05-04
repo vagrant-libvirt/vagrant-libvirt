@@ -21,9 +21,17 @@ module VagrantPlugins
       end
 
       def usable?(machine, raise_error=false)
-        # TODO check for host support (eg in linux is 9p compiled ?)
-        # and support in Qemu for instance ?
-        machine.provider_name == :libvirt
+        # bail now if not using libvirt since checking version would throw error
+        return false unless machine.provider_name == :libvirt
+
+        # <filesystem/> support in device attach/detach introduced in 1.2.2
+        # version number format is major * 1,000,000 + minor * 1,000 + release
+        libvirt_version = ProviderLibvirt.libvirt_connection.client.libversion
+        if libvirt_version >= 1002002
+          return true
+        else
+          return false
+        end
       end
 
       def prepare(machine, folders, opts)

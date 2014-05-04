@@ -18,7 +18,7 @@ module VagrantPlugins
             if !env[:result]
               b2.use SetNameOfDomain
               b2.use HandleStoragePool
-              b2.use HandleBoxUrl
+              b2.use HandleBox
               b2.use HandleBoxImage
               b2.use CreateDomainVolume
               b2.use CreateDomain
@@ -43,7 +43,7 @@ module VagrantPlugins
 
               b2.use ForwardPorts
 
-              # b2.use PrepareNFSSettings
+              b2.use PrepareNFSSettings
               b2.use ShareFolders
               b2.use SetHostname
               # b2.use SyncFolders
@@ -91,7 +91,7 @@ module VagrantPlugins
 
 
               b3.use ForwardPorts
-              # b3.use PrepareNFSSettings
+              b3.use PrepareNFSSettings
               b3.use ShareFolders
 
             end
@@ -341,7 +341,7 @@ module VagrantPlugins
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
 
       autoload :SSHRun,  'vagrant/action/builtin/ssh_run'
-      autoload :HandleBoxUrl, 'vagrant/action/builtin/handle_box_url'
+      autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
     end

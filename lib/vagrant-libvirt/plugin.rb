@@ -37,8 +37,9 @@ module VagrantPlugins
         Cap::MountP9
       end
 
-      # We set p9 as high priority (default 10)
-      synced_folder("9p", 20) do
+      # lower priority than nfs or rsync
+      # https://github.com/pradels/vagrant-libvirt/pull/170
+      synced_folder("9p", 4) do
         require_relative "cap/synced_folder"
         VagrantPlugins::SyncedFolder9p::SyncedFolder
       end
