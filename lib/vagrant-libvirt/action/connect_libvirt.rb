@@ -25,7 +25,7 @@ module VagrantPlugins
           # Setup connection uri.
           uri = config.driver.dup
           virt_path = case uri
-          when 'qemu', 'openvz', 'uml', 'phyp', 'parallels'
+          when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
             '/system'
           when 'xen', 'esx'
             '/'
@@ -33,6 +33,9 @@ module VagrantPlugins
             '/session'
           else
             raise "Require specify driver #{uri}"
+          end
+          if uri == 'kvm'
+            uri = 'qemu'	# use qemu uri for kvm domain type
           end
 
           if config.connect_via_ssh
