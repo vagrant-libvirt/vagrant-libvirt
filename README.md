@@ -85,6 +85,13 @@ Vagrant.configure("2") do |config|
     libvirt.connect_via_ssh = true
     libvirt.username = "root"
     libvirt.storage_pool_name = "default"
+
+    # include as many of these addition disks as you want to
+    libvirt.storage :file,
+      #:path => '',		# automatically chosen if unspecified!
+      #:device => 'vdb',	# automatically chosen if unspecified!
+      #:size => '10G',		# defaults to 10G if unspecified!
+      :type => 'qcow2'		# defaults to 'qcow2' if unspecified!
   end
 end
 ```
