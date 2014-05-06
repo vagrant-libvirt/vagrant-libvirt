@@ -12,6 +12,14 @@ module VagrantPlugins
           @app = app
         end
 
+        def _disk_name(name, disk)
+          return "#{name}-#{disk[:device]}.#{disk[:type]}"	# disk name
+        end
+
+        def _disks_print(disks)
+          return disks.collect{ |x| x[:device]+'('+x[:type]+','+x[:size]+')' }.join(', ')
+        end
+
         def call(env)
           # Get config.
           config = env[:machine].provider_config
@@ -43,16 +51,14 @@ module VagrantPlugins
           raise Errors::DomainVolumeExists if domain_volume == nil
           @domain_volume_path = domain_volume.path
 
-          #storage_prefix = '/var/lib/libvirt/images/'
+          # the default storage prefix is typically: /var/lib/libvirt/images/
           storage_prefix = File.dirname(@domain_volume_path)+'/'	# steal
 
           @disks.each do |disk|
-            dname = "#{@name}-#{disk[:device]}.#{disk[:type]}"	# disk name
-            disk[:name] = dname
+            disk[:name] = _disk_name(@name, disk)
             if disk[:path].nil?
-              disk[:path] = "#{storage_prefix}#{dname}"	# automatically chosen!
+              disk[:path] = "#{storage_prefix}#{_disk_name(@name, disk)}"	# automatically chosen!
             end
-            #puts "Disk: #{disk[:device]}, #{disk[:type]}, #{disk[:path]}"
 
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
@@ -84,7 +90,7 @@ module VagrantPlugins
           env[:ui].info(" -- Kernel:        #{@kernel}")
           env[:ui].info(" -- Initrd:        #{@initrd}")
           if @disks.length > 0
-            env[:ui].info(" -- Disks:         #{@disks.collect{ |x| x[:device]+'('+x[:type]+','+x[:size]+')' }.join(', ')}")
+            env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
           @disks.each do |disk|
             env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:path]}")

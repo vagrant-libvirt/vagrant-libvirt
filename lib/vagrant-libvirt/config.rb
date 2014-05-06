@@ -84,14 +84,14 @@ module VagrantPlugins
         @disks             = UNSET_VALUE
       end
 
-      def __get_device(disks)
+      def _get_device(disks)
         disks = [] if disks == UNSET_VALUE
         # skip existing devices and also the first one (vda)
         exist = disks.collect {|x| x[:device]}+[1.vdev.to_s]
         skip = 1		# we're 1 based, not 0 based...
         while true do
           dev = skip.vdev	# get lettered device
-          if not exist.include?(dev)
+          if !exist.include?(dev)
             return dev
           end
           skip+=1
@@ -101,7 +101,7 @@ module VagrantPlugins
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options={})
         options = {
-          :device => __get_device(@disks),
+          :device => _get_device(@disks),
           :type => 'qcow2',
           :size => '10G',	# matches the fog default
           :path => nil,
