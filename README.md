@@ -9,7 +9,7 @@ welcome and can help a lot :-)
 
 ## Features
 
-* Controll local Libvirt hypervisors.
+* Control local Libvirt hypervisors.
 * Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
@@ -19,9 +19,9 @@ welcome and can help a lot :-)
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
 * Synced folder support via `rsync`, `nfs` or `9p`.
-* Snapshots via [sahara](https://github.com/jedi4ever/sahara)
-* Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/)
-* Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate)
+* Snapshots via [sahara](https://github.com/jedi4ever/sahara).
+* Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
+* Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate).
 
 ## Future work
 
@@ -117,9 +117,9 @@ This provider exposes quite a few provider-specific configuration options:
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
 * `cpu_mode` - What cpu mode to use for nested virtualization. Defaults to 'host-model' if not set.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
-* `kernel` - To launch the guest with a kernel residing on host filesystems (Equivalent to qemu `-kernel`)
-* `initrd` - To specify the initramfs/initrd to use for the guest (Equivalent to qemu `-initrd`)
-* `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use (Equivalent to qemu `-append`)
+* `kernel` - To launch the guest with a kernel residing on host filesystems. Equivalent to qemu `-kernel`.
+* `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent to qemu `-initrd`.
+* `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
 
 
 Specific domain settings can be set for each domain separately in multi-VM
@@ -237,7 +237,7 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:mac` - MAC address for the interface.
 
 ### Public Network Options
-* `:dev` - Physical device that the public interface should use. Default is 'eth0'
+* `:dev` - Physical device that the public interface should use. Default is 'eth0'.
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
@@ -346,9 +346,9 @@ IMPORTANT NOTE: bundle is crucial. You need to use bundled vagrant.
 
 ## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+1. Fork it.
+2. Create your feature branch (`git checkout -b my-new-feature`).
+3. Commit your changes (`git commit -am 'Add some feature'`).
+4. Push to the branch (`git push origin my-new-feature`).
+5. Create new Pull Request.
 
