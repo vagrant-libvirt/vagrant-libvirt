@@ -53,6 +53,8 @@ In RedHat, Centos, Fedora, ...
 
 ## Vagrant Project Preparation
 
+### Add Box
+
 After installing the plugin (instructions above), the quickest way to get
 started is to add Libvirt box and specify all the details manually within
 a `config.vm.provider` block. So first, add Libvirt box using any name you
@@ -61,6 +63,8 @@ want. This is just an example of Libvirt CentOS 6.4 box available:
 ```
 $ vagrant box add centos64 http://kwok.cz/centos64.box
 ```
+
+### Create Vagrantfile
 
 And then make a Vagrantfile that looks like the following, filling in your
 information where necessary. In example below, VM named test_vm is created from
@@ -74,7 +78,37 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-### Libvirt Configuration Options
+### Start VM
+
+In prepared project directory, run following command:
+
+```
+$ vagrant up --provider=libvirt
+```
+
+Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
+That's why there is `--provider=libvirt` option specified. Other way to tell
+Vagrant to use Libvirt provider is to setup environment variable
+`export VAGRANT_DEFAULT_PROVIDER=libvirt`.
+
+### How Project Is Created
+
+Vagrant goes through steps below when creating new project:
+
+1.	Connect to Libvirt localy or remotely via SSH.
+2.	Check if box image is available in Libvirt storage pool. If not, upload it to
+	remote Libvirt storage pool as new volume.
+3.	Create COW diff image of base box image for new Libvirt domain.
+4.	Create and start new domain on Libvirt host.
+5.	Check for DHCP lease from dnsmasq server.
+6.	Wait till SSH is available.
+7.	Sync folders and run Vagrant provisioner on new domain if
+	setup in Vagrantfile.
+
+
+### Libvirt Configuration
+
+### Provider Options
 
 Although it should work without any configuration for most people, this provider exposes quite a few provider-specific configuration options:
 
@@ -128,33 +162,6 @@ Vagrant.configure("2") do |config|
 
   # ...
 ```
-
-## Create Project - Vagrant up
-
-In prepared project directory, run following command:
-
-```
-$ vagrant up --provider=libvirt
-```
-
-Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
-That's why there is `--provider=libvirt` option specified. Other way to tell
-Vagrant to use Libvirt provider is to setup environment variable
-`export VAGRANT_DEFAULT_PROVIDER=libvirt`.
-
-### How Project Is Created
-
-Vagrant goes through steps below when creating new project:
-
-1.	Connect to Libvirt localy or remotely via SSH.
-2.	Check if box image is available in Libvirt storage pool. If not, upload it to
-	remote Libvirt storage pool as new volume.
-3.	Create COW diff image of base box image for new Libvirt domain.
-4.	Create and start new domain on Libvirt host.
-5.	Check for DHCP lease from dnsmasq server.
-6.	Wait till SSH is available.
-7.	Sync folders and run Vagrant provisioner on new domain if
-	setup in Vagrantfile.
 
 ## Networks
 
