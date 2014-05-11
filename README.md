@@ -25,7 +25,6 @@ welcome and can help a lot :-)
 
 ## Future work
 
-* More boxes should be available.
 * Take a look at [open issues](https://github.com/pradels/vagrant-libvirt/issues?state=open).
 
 ## Installation
@@ -65,40 +64,19 @@ $ vagrant box add centos64 http://kwok.cz/centos64.box
 
 And then make a Vagrantfile that looks like the following, filling in your
 information where necessary. In example below, VM named test_vm is created from
-centos64 box and setup with 10.20.30.40 IP address.
+centos64 box.
 
 ```ruby
 Vagrant.configure("2") do |config|
-
-  # If you are still using old centos box, you have to setup root username for
-  # ssh access. Read more in section 'SSH Access To VM'.
-  config.ssh.username = "root"
-
   config.vm.define :test_vm do |test_vm|
     test_vm.vm.box = "centos64"
-    test_vm.vm.network :private_network, :ip => '10.20.30.40'
-  end
-
-  config.vm.provider :libvirt do |libvirt|
-    libvirt.driver = "kvm"
-    libvirt.host = "localhost"
-    libvirt.connect_via_ssh = true
-    libvirt.username = "root"
-    libvirt.storage_pool_name = "default"
-
-    # include as many of these addition disks as you want to
-    libvirt.storage :file,
-      #:path => '',		# automatically chosen if unspecified!
-      #:device => 'vdb',	# automatically chosen if unspecified!
-      #:size => '10G',		# defaults to 10G if unspecified!
-      :type => 'qcow2'		# defaults to 'qcow2' if unspecified!
   end
 end
 ```
 
 ### Libvirt Configuration Options
 
-This provider exposes quite a few provider-specific configuration options:
+Although it should work without any configuration for most people, this provider exposes quite a few provider-specific configuration options:
 
 * `driver` - A hypervisor name to access. For now only kvm and qemu are supported.
 * `host` - The name of the server, where libvirtd is running.
@@ -108,6 +86,16 @@ This provider exposes quite a few provider-specific configuration options:
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
+
+Here is an example of how to set these options.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.host = "example.com"
+  end
+end
+```
 
 ### Domain Specific Options
 
@@ -261,6 +249,26 @@ the management network. Libvirt is closely connected with dnsmasq, which acts as
 a DHCP server. dnsmasq writes lease information in the `/var/lib/libvirt/dnsmasq`
 directory. Vagrant-libvirt looks for the MAC address in this file and extracts
 the corresponding IP address.
+
+## Additional Disks
+
+You can create and attach additional disks to a VM via `libvirt.storage :file`. It has a number of options:
+
+* `path` - Location of the disk image. If unspecified, a path is automtically chosen in the same storage pool as the VMs primary disk.
+* `device` - Name of the device node the disk image will have in the VM, e.g. *vdb*. If unspecified, the next available device is chosen.
+* `size` - Size of the disk image. If unspecified, defaults to 10G.
+* `type` - Type of disk image to create. Defaults to *qcow2*.
+
+The following example creates two additional disks.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :size => '20G'
+    libvirt.storage :file, :size => '40G', :type => 'raw'
+  end
+end
+```
 
 ## SSH Access To VM
 
