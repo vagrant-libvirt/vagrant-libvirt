@@ -123,7 +123,7 @@ module VagrantPlugins
       end
 
       def finalize!
-        @driver = 'qemu' if @driver == UNSET_VALUE
+        @driver = 'kvm' if @driver == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE

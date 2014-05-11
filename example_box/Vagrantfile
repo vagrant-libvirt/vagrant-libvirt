@@ -33,10 +33,11 @@ Vagrant.configure("2") do |config|
 
     # A hypervisor name to access. Different drivers can be specified, but
     # this version of provider creates KVM machines only. Some examples of
-    # drivers are qemu (KVM/qemu), xen (Xen hypervisor), lxc (Linux Containers),
+    # drivers are kvm (qemu hardware accelerated), qemu (qemu emulated),
+    # xen (Xen hypervisor), lxc (Linux Containers),
     # esx (VMware ESX), vmwarews (VMware Workstation) and more. Refer to
     # documentation for available drivers (http://libvirt.org/drivers.html).
-    libvirt.driver = "qemu"
+    libvirt.driver = "kvm"
 
     # The name of the server, where libvirtd is running.
     libvirt.host = "localhost"

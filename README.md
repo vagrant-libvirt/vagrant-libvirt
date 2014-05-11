@@ -80,7 +80,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider :libvirt do |libvirt|
-    libvirt.driver = "qemu"
+    libvirt.driver = "kvm"
     libvirt.host = "localhost"
     libvirt.connect_via_ssh = true
     libvirt.username = "root"
@@ -100,7 +100,7 @@ end
 
 This provider exposes quite a few provider-specific configuration options:
 
-* `driver` - A hypervisor name to access. For now only qemu is supported.
+* `driver` - A hypervisor name to access. For now only kvm and qemu are supported.
 * `host` - The name of the server, where libvirtd is running.
 * `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
 * `username` - Username and password to access Libvirt.
