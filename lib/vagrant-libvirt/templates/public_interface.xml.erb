@@ -4,6 +4,7 @@
   <% end %>
   <%if @type == 'direct'%>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
+  <model type='<%=@model_type%>'/>
   <% else %>
   <source bridge='<%=@device%>'/>
   <model type='<%=@model_type%>'/>
