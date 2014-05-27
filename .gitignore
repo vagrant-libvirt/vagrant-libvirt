@@ -19,4 +19,6 @@ Vagrantfile
 !example_box/Vagrantfile
 .vagrant
 *.swp
-testboxes
+testboxes/vagrant-libvirt-installtest/.vagrant/
+!testboxes/vagrant-libvirt-installtest/Vagrantfile
+testboxes/vagrant-libvirt-installtest/vagrant-libvirt-0.0.15.gem
