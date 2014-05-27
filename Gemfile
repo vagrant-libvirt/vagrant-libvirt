@@ -11,10 +11,7 @@ group :development do
 end
 
 group :plugins do
-<<<<<<< HEAD
   gem "vagrant-libvirt", :path => '.'
-=======
   gem "vagrant-mutate"
->>>>>>> 16ba363... Add support for bridge interface
 end
 
