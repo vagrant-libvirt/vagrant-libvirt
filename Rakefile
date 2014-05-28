@@ -9,6 +9,7 @@ task :deftask do
   puts 'call rake -T'
 end
 
+desc "Install gem on vagrant testbox"
 task :remote_install => :build  do
   sh "cp pkg/vagrant-libvirt-0.0.15.gem testboxes/vagrant-libvirt-installtest/"
   sh "cd testboxes/vagrant-libvirt-installtest && " +
