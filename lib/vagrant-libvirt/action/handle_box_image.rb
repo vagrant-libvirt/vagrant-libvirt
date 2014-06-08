@@ -31,7 +31,7 @@ module VagrantPlugins
           # Get config options
           config   = env[:machine].provider_config
           box_image_file = env[:machine].box.directory.join('box.img').to_s
-          env[:box_volume_name] = env[:machine].box.name.to_s.dup
+          env[:box_volume_name] = env[:machine].box.name.to_s.dup.gsub("/", "-VAGRANTSLASH-")
           env[:box_volume_name] << '_vagrant_box_image.img'
 
           # Don't continue if image already exists in storage pool.
