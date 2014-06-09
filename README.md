@@ -113,7 +113,7 @@ Vagrant goes through steps below when creating new project:
 
 ### Provider Options
 
-Although it should work without any configuration for most people, this provider exposes quite a few provider-specific configuration options:
+Although it should work without any configuration for most people, this provider exposes quite a few provider-specific configuration options. The following options allow you to configure how vagrant-libvirt connects to libvirt, and are used to generate the [libvirt connection URI](http://libvirt.org/uri.html):
 
 * `driver` - A hypervisor name to access. For now only kvm and qemu are supported.
 * `host` - The name of the server, where libvirtd is running.
@@ -122,6 +122,10 @@ Although it should work without any configuration for most people, this provider
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
 * `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
+* `uri` - For advanced usage. Directly specifies what libvirt connection URI vagrant-libvirt should use. Overrides all other connection configuration options.
+
+Connection-independent options:
+
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance snapshots will be stored.
 
 Here is an example of how to set these options.
