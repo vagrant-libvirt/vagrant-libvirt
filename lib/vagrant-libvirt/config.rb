@@ -12,6 +12,10 @@ end
 module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
+      # manually specify URI
+      # will supercede most other options if provided
+      attr_accessor :uri
+
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver
 
@@ -19,8 +23,7 @@ module VagrantPlugins
       attr_accessor :host
 
       # If use ssh tunnel to connect to Libvirt.
-      attr_accessor :connect_via_ssh
-
+      attr_accessor :connect_via_ssh 
       # Path towards the libvirt socket
       attr_accessor :socket
 
@@ -122,6 +125,54 @@ module VagrantPlugins
         end
       end
 
+      # code to generate URI from a config moved out of the connect action
+      def _generate_uri
+        # builds the libvirt connection URI from the given driver config
+        # Setup connection uri.
+        uri = @driver.dup
+        virt_path = case uri
+        when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
+          '/system'
+        when '@en', 'esx'
+          '/'
+        when 'vbox', 'vmwarews', 'hyperv'
+          '/session'
+        else
+          raise "Require specify driver #{uri}"
+        end
+        if uri == 'kvm'
+          uri = 'qemu'	# use qemu uri for kvm domain type
+        end
+
+        if @connect_via_ssh
+          uri << '+ssh://'
+          if @username
+            uri << @username + '@'
+          end
+
+          if @host
+            uri << @host
+          else
+            uri << 'localhost'
+          end
+        else
+          uri << '://'
+          uri << @host if @host
+        end
+
+        uri << virt_path
+        uri << '?no_verify=1'
+
+        if @id_ssh_key_file
+          # set ssh key for access to libvirt host
+          home_dir = `echo ${HOME}`.chomp
+          uri << "\&keyfile=#{home_dir}/.ssh/"+@id_ssh_key_file
+        end
+        # set path to libvirt socket
+        uri << "\&socket="+@socket if @socket
+        return uri
+      end
+
       def finalize!
         @driver = 'kvm' if @driver == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
@@ -132,6 +183,9 @@ module VagrantPlugins
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
+
+        # generate a URI if none is supplied
+        @uri = _generate_uri() if @uri == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE

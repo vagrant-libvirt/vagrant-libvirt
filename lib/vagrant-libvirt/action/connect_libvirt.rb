@@ -11,7 +11,6 @@ module VagrantPlugins
         end
 
         def call(env)
-
           # If already connected to libvirt, just use it and don't connect
           # again.
           if ProviderLibvirt.libvirt_connection
@@ -21,49 +20,7 @@ module VagrantPlugins
 
           # Get config options for libvirt provider.
           config = env[:machine].provider_config
-
-          # Setup connection uri.
-          uri = config.driver.dup
-          virt_path = case uri
-          when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
-            '/system'
-          when 'xen', 'esx'
-            '/'
-          when 'vbox', 'vmwarews', 'hyperv'
-            '/session'
-          else
-            raise "Require specify driver #{uri}"
-          end
-          if uri == 'kvm'
-            uri = 'qemu'	# use qemu uri for kvm domain type
-          end
-
-          if config.connect_via_ssh
-            uri << '+ssh://'
-            if config.username
-              uri << config.username + '@'
-            end
-
-            if config.host
-              uri << config.host
-            else
-              uri << 'localhost'
-            end
-          else
-            uri << '://'
-            uri << config.host if config.host
-          end
-
-          uri << virt_path
-          uri << '?no_verify=1'
-
-          if config.id_ssh_key_file
-            # set ssh key for access to libvirt host
-            home_dir = `echo ${HOME}`.chomp
-            uri << "\&keyfile=#{home_dir}/.ssh/"+config.id_ssh_key_file
-          end
-          # set path to libvirt socket
-          uri << "\&socket="+config.socket if config.socket
+          uri = config.uri
 
           conn_attr = {}
           conn_attr[:provider] = 'libvirt'
