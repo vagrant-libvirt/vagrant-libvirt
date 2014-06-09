@@ -62,6 +62,7 @@ module VagrantPlugins
       attr_accessor :disks
 
       def initialize
+        @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
