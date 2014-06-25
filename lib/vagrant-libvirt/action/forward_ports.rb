@@ -3,6 +3,8 @@ module VagrantPlugins
     module Action
       # Adds support for vagrant's `forward_ports` configuration directive.
       class ForwardPorts
+        @@lock = Mutex.new
+
         def initialize(app, env)
           @app    = app
           @logger = Log4r::Logger.new('vagrant_libvirt::action::forward_ports')
@@ -94,8 +96,21 @@ module VagrantPlugins
           ) + ssh_info[:private_key_path].map do |pk|
               "IdentityFile=#{pk}"
             end).map { |s| s.prepend('-o ') }.join(' ')
-            
-          ssh_cmd = "ssh #{options} #{params}"
+
+          # TODO: instead of this, try and lock and get the stdin from spawn...
+          ssh_cmd = ''
+          if host_port <= 1024
+            @@lock.synchronize do
+              # TODO: add i18n
+              @env[:ui].info 'Requesting sudo for host port(s) <= 1024'
+              r = system('sudo -v')
+              if r
+                ssh_cmd << 'sudo '	# add sudo prefix
+              end
+            end
+          end
+
+          ssh_cmd << "ssh #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
           spawn(ssh_cmd,  [:out, :err] => '/dev/null')
@@ -119,6 +134,8 @@ module VagrantPlugins
     module Action
       # Cleans up ssh-forwarded ports on VM halt/destroy.
       class ClearForwardedPorts
+        @@lock = Mutex.new
+
         def initialize(app, env)
           @app = app
           @logger = Log4r::Logger.new(
@@ -133,10 +150,19 @@ module VagrantPlugins
             env[:ui].info I18n.t(
               'vagrant.actions.vm.clear_forward_ports.deleting'
             )
-            ssh_pids.each do |pid|
-              next unless ssh_pid?(pid)
-              @logger.debug "Killing pid #{pid}"
-              system "kill #{pid}"
+            ssh_pids.each do |tag|
+              next unless ssh_pid?(tag[:pid])
+              @logger.debug "Killing pid #{tag[:pid]}"
+              kill_cmd = ''
+
+              if tag[:port] <= 1024
+                kill_cmd << 'sudo '	# add sudo prefix
+              end
+
+              kill_cmd << "kill #{tag[:pid]}"
+              @@lock.synchronize do
+                system(kill_cmd)
+              end
             end
 
             @logger.info 'Removing ssh pid files'
@@ -153,7 +179,10 @@ module VagrantPlugins
         def ssh_pids
           glob = @env[:machine].data_dir.join('pids').to_s + '/ssh_*.pid'
           @ssh_pids = Dir[glob].map do |file|
-            File.read(file).strip.chomp
+            {
+              :pid => File.read(file).strip.chomp,
+              :port => File.basename(file)['ssh_'.length..-1*('.pid'.length+1)].to_i
+            }
           end
         end
 
