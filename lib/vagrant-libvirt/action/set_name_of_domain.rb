@@ -1,3 +1,4 @@
+require 'securerandom'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -5,28 +6,19 @@ module VagrantPlugins
       # Setup name for domain and domain volumes.
       class SetNameOfDomain
         def initialize(app, env)
-          @logger     = Log4r::Logger.new("vagrant_libvirt::action::set_name_of_domain")
-          @app = app
+          @logger = Log4r::Logger.new("vagrant_libvirt::action::set_name_of_domain")
+          @app    = app
         end
 
         def call(env)
-          require 'securerandom'
-          config = env[:machine].provider_config
-          if config.default_prefix.nil?
-            env[:domain_name] = env[:root_path].basename.to_s.dup
-          else
-            env[:domain_name] = config.default_prefix.to_s
-          end
-          env[:domain_name].gsub!(/[^-a-z0-9_]/i, '')
-          env[:domain_name] << '_'
-          env[:domain_name] << env[:machine].name.to_s
-          
+          env[:domain_name] = build_domain_name(env)
+
           begin
-          @logger.info("Looking for domain #{env[:domain_name]} through list #{env[:libvirt_compute].servers.all}")
-          # Check if the domain name is not already taken
-          
+            @logger.info("Looking for domain #{env[:domain_name]} through list #{env[:libvirt_compute].servers.all}")
+            # Check if the domain name is not already taken
+
             domain = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].servers.all, env[:domain_name])
+              env[:libvirt_compute].servers.all, env[:domain_name])
           rescue Fog::Errors::Error => e
             @logger.info("#{e}")
             domain = nil
@@ -34,13 +26,32 @@ module VagrantPlugins
 
           @logger.info("Looking for domain #{env[:domain_name]}")
 
-          if domain != nil
+          unless domain.nil?
             raise ProviderLibvirt::Errors::DomainNameExists,
               :domain_name => env[:domain_name]
           end
 
           @app.call(env)
         end
+
+        # build domain name
+        # avoids `domain about to create is already taken`
+        # @example
+        #   development-centos-6-chef-11_1404488971_3b7a569e2fd7c554b852
+        # @return [String] libvirt domain name
+        def build_domain_name(env)
+          postfix = "#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}"
+          config = env[:machine].provider_config
+          domain_name = 
+            if config.default_prefix.nil?
+              env[:root_path].basename.to_s.dup
+            else
+              config.default_prefix.to_s
+            end
+          domain_name.gsub!(/[^-a-z0-9_]/i, '')
+          domain_name << "_#{postfix}"           
+        end
+
       end
 
     end
