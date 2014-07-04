@@ -97,6 +97,8 @@ module VagrantPlugins
               "IdentityFile=#{pk}"
             end).map { |s| s.prepend('-o ') }.join(' ')
 
+          options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
+
           # TODO: instead of this, try and lock and get the stdin from spawn...
           ssh_cmd = ''
           if host_port <= 1024
