@@ -3,7 +3,7 @@ require "pathname"
 
 class EnvironmentHelper
 
-  attr_writer :default_prefix
+  attr_writer :default_prefix, :domain_name
 
   def [](value)
     self.send(value.to_sym)
