@@ -10,7 +10,8 @@ module VagrantPlugins
         def configured_networks(env, logger)
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
-          logger.info "Using #{management_network_name} at #{management_network_address} as the management network"
+          management_network_mode = env[:machine].provider_config.management_network_mode 
+          logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
             management_network_ip = IPAddr.new(management_network_address)
@@ -33,7 +34,7 @@ module VagrantPlugins
             ip: $1,
             netmask: $2,
             dhcp_enabled: true,
-            forward_mode: 'nat',
+            forward_mode: management_network_mode,
           }
 
           # add management network to list of networks to check
