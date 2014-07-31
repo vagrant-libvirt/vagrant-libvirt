@@ -5,6 +5,8 @@ class EnvironmentHelper
 
   attr_writer :default_prefix, :domain_name
 
+  attr_accessor :random_hostname, :name
+
   def [](value)
     self.send(value.to_sym)
   end

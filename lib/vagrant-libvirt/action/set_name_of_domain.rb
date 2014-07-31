@@ -41,7 +41,6 @@ module VagrantPlugins
         #   development-centos-6-chef-11_1404488971_3b7a569e2fd7c554b852
         # @return [String] libvirt domain name
         def build_domain_name(env)
-          postfix = "#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}"
           config = env[:machine].provider_config
           domain_name = 
             if config.default_prefix.nil?
@@ -49,8 +48,11 @@ module VagrantPlugins
             else
               config.default_prefix.to_s
             end
+          domain_name << '_'
+          domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_]/i, '')
-          domain_name << "_#{postfix}"           
+          domain_name << "_#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}" if config.random_hostname
+          domain_name
         end
 
       end
@@ -58,4 +60,3 @@ module VagrantPlugins
     end
   end
 end
-
