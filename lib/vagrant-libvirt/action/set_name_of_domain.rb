@@ -35,7 +35,8 @@ module VagrantPlugins
         end
 
         # build domain name
-        # avoids `domain about to create is already taken`
+        # random_hostname option avoids
+        # `domain about to create is already taken`
         # parsable and sortable by epoch time
         # @example
         #   development-centos-6-chef-11_1404488971_3b7a569e2fd7c554b852
