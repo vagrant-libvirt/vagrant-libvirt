@@ -17,6 +17,8 @@ module VagrantPlugins
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @management_network_name = env[:machine].provider_config.management_network_name
+	  config = env[:machine].provider_config
+	  @nic_model_type = config.nic_model_type
           @app = app
         end
 
@@ -66,6 +68,7 @@ module VagrantPlugins
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
             @mac = iface_configuration.fetch(:mac, false)
+            @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
             template_name = 'interface'
 
             # Configuration for public interfaces which use the macvtap driver
@@ -73,7 +76,7 @@ module VagrantPlugins
               @device = iface_configuration.fetch(:dev, 'eth0')
               @type = iface_configuration.fetch(:type, 'direct')
               @mode = iface_configuration.fetch(:mode, 'bridge')
-              @model_type = iface_configuration.fetch(:model_type, 'e1000')
+              @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
             end

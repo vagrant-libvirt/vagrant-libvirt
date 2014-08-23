@@ -141,6 +141,7 @@ end
 ### Domain Specific Options
 
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
+* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
@@ -237,6 +238,7 @@ starts with 'libvirt__' string. Here is a list of those options:
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
 * `:mac` - MAC address for the interface.
+* `model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
 ### Public Network Options
 * `:dev` - Physical device that the public interface should use. Default is 'eth0'.
