@@ -40,6 +40,9 @@ module VagrantPlugins
       # be stored.
       attr_accessor :storage_pool_name
 
+      # Turn on to prevent hostname conflicts
+      attr_accessor :random_hostname
+
       # Libvirt default network
       attr_accessor :management_network_name
       attr_accessor :management_network_address
@@ -70,6 +73,7 @@ module VagrantPlugins
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
+        @random_hostname   = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
 
@@ -182,6 +186,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
 

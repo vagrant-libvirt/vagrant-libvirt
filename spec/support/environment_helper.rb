@@ -3,7 +3,9 @@ require "pathname"
 
 class EnvironmentHelper
 
-  attr_writer :default_prefix, :domain_name
+  attr_writer :domain_name
+
+  attr_accessor :random_hostname, :name, :default_prefix
 
   def [](value)
     self.send(value.to_sym)
@@ -15,10 +17,6 @@ class EnvironmentHelper
 
   def provider_config
     self
-  end
-
-  def default_prefix
-    # noop 
   end
 
   def root_path
