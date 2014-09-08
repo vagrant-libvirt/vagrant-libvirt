@@ -67,13 +67,12 @@ module VagrantPlugins
         mount_folders = {}
         folders.each do |id, opts|
           mount_folders[id] = opts.dup if opts[:guestpath]
+          # merge common options if not given
+          mount_folders[id].merge!(:version => '9p2000.L') { |_k, ov, _nv| ov }
         end
-        common_opts = {
-          :version => '9p2000.L',
-        }
         # Mount the actual folder
         machine.guest.capability(
-            :mount_p9_shared_folder, mount_folders, common_opts)
+            :mount_p9_shared_folder, mount_folders)
       end
 
       def cleanup(machine, _opts)
