@@ -44,7 +44,7 @@ module VagrantPlugins
           # loop through folders
           folders.each do |id, folder_opts|
             folder_opts.merge!({ :accessmode => "passthrough",
-                                :readonly => nil })
+                                 :readonly => nil }) { |_k, ov, _nv| ov }
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
             xml =  to_xml('filesystem', folder_opts )
