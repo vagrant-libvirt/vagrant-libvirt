@@ -53,7 +53,8 @@ module VagrantPlugins
               fp[:host_ip] || 'localhost',
               fp[:host],
               fp[:guest_ip] || @env[:machine].provider.ssh_info[:host],
-              fp[:guest]
+              fp[:guest],
+              fp[:gateway_ports] || false
             )
             store_ssh_pid(fp[:host], ssh_pid)
           end
@@ -78,13 +79,15 @@ module VagrantPlugins
           mappings.values
         end
 
-        def redirect_port(machine, host_ip, host_port, guest_ip, guest_port)
+        def redirect_port(machine, host_ip, host_port, guest_ip, guest_port,
+                          gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
             "-L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}"
             -N
             #{ssh_info[:host]}
           ).join(' ')
+          params += ' -g' if gateway_ports
 
           options = (%W(
             User=#{ssh_info[:username]}
