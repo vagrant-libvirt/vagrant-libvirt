@@ -309,6 +309,12 @@ vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  For each
 `forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt
 will maintain an active ssh process for the lifetime of the VM.
 
+vagrant-libvirt supports an additional `forwarded_port` option
+`gateway_ports` which defaults to `false`, but can be set to `true` if
+you want the forwarded port to be accessible from outside the Vagrant
+host.  In this case you should also set the `host_ip` option to `'*'`
+since it defaults to `'localhost'`.
+
 ## Synced Folders
 
 vagrant-libvirt supports bidirectional synced folders via nfs or 9p and
