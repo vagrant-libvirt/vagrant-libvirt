@@ -44,7 +44,7 @@ module VagrantPlugins
           # loop through folders
           folders.each do |id, folder_opts|
             folder_opts.merge!({ :accessmode => "passthrough",
-                                :readonly => nil })
+                                 :readonly => nil }) { |_k, ov, _nv| ov }
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
             xml =  to_xml('filesystem', folder_opts )
@@ -67,13 +67,12 @@ module VagrantPlugins
         mount_folders = {}
         folders.each do |id, opts|
           mount_folders[id] = opts.dup if opts[:guestpath]
+          # merge common options if not given
+          mount_folders[id].merge!(:version => '9p2000.L') { |_k, ov, _nv| ov }
         end
-        common_opts = {
-          :version => '9p2000.L',
-        }
         # Mount the actual folder
         machine.guest.capability(
-            :mount_p9_shared_folder, mount_folders, common_opts)
+            :mount_p9_shared_folder, mount_folders)
       end
 
       def cleanup(machine, _opts)
