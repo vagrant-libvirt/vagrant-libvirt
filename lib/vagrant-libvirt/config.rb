@@ -55,6 +55,7 @@ module VagrantPlugins
       attr_accessor :cpus
       attr_accessor :cpu_mode
       attr_accessor :disk_bus
+      attr_accessor :nic_model_type
       attr_accessor :nested
       attr_accessor :volume_cache
       attr_accessor :kernel
@@ -82,6 +83,7 @@ module VagrantPlugins
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
+        @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
         @kernel            = UNSET_VALUE
@@ -198,6 +200,7 @@ module VagrantPlugins
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
+        @nic_model_type = 'virtio' if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE

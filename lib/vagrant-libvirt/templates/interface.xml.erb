@@ -5,6 +5,6 @@
 	<% end %>
   <target dev='vnet<%= @iface_number %>'/>
   <alias name='net<%= @iface_number %>'/>
-  <model type='virtio'/>
+  <model type='<%=@model_type%>'/>
 </interface>
 
