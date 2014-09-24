@@ -74,6 +74,8 @@ module VagrantPlugins
 
               # VM is not running or suspended.
 
+              b3.use Provision
+
               # Ensure networks are created and active
               b3.use CreateNetworks
 
