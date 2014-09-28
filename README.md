@@ -152,7 +152,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end to prevent hostname conflicts.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
 * `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", or "vnc".
-* `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5901. 
+* `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900. 
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  Possible values are "cirrus", "std", "vmware", "qxl", "tcx", "cg3", or "none".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
