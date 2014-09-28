@@ -43,16 +43,11 @@ module VagrantPlugins
           ssh_info = {
             :host          => ip_address,
             :port          => machine.config.ssh.guest_port,
-            :username      => machine.config.ssh.username,
             :forward_agent => machine.config.ssh.forward_agent,
             :forward_x11   => machine.config.ssh.forward_x11,
           }
           
           ssh_info[:proxy_command] = "ssh '#{machine.provider_config.host}' -l '#{machine.provider_config.username}' nc %h %p" if machine.provider_config.connect_via_ssh
-
-          if not ssh_info[:username]
-            ssh_info[:username] = machine.config.ssh.default.username
-          end
 
           ssh_info
         end
