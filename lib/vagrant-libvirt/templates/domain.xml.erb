@@ -5,9 +5,11 @@
 
   <% if @nested %>
     <cpu mode='<%= @cpu_mode %>'>
+      <% unless @cpu_mode == 'host-passthrough' %>
       <model fallback='allow'>qemu64</model>
       <feature policy='optional' name='vmx'/>
       <feature policy='optional' name='svm'/>
+      <% end %>
     </cpu>
   <% end %>
 
