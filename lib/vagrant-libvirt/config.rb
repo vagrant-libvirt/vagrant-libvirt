@@ -62,6 +62,7 @@ module VagrantPlugins
       attr_accessor :cmd_line
       attr_accessor :initrd
       attr_accessor :graphics_type
+      attr_accessor :graphics_autoport
       attr_accessor :graphics_port
       attr_accessor :graphics_ip
       attr_accessor :video_type
@@ -95,6 +96,7 @@ module VagrantPlugins
         @initrd            = UNSET_VALUE
         @cmd_line          = UNSET_VALUE
         @graphics_type     = UNSET_VALUE
+        @graphics_autoport = UNSET_VALUE
         @graphics_port     = UNSET_VALUE
         @graphics_ip       = UNSET_VALUE
         @video_type        = UNSET_VALUE
@@ -217,6 +219,8 @@ module VagrantPlugins
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
+        @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
+        @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
         @graphics_port = 5900 if @graphics_port == UNSET_VALUE
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE

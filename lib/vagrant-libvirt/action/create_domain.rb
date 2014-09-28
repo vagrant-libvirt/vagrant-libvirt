@@ -36,6 +36,7 @@ module VagrantPlugins
           @cmd_line = config.cmd_line
           @initrd = config.initrd
           @graphics_type = config.graphics_type
+          @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
           @graphics_ip = config.graphics_ip
           @video_type = config.video_type
