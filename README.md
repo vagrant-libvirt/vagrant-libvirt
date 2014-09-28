@@ -151,6 +151,11 @@ end
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent to qemu `-initrd`.
 * `random_hostname` - To create a domain name with extra information on the end to prevent hostname conflicts.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
+* `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", or "vnc".
+* `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900. 
+* `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
+* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  Possible values are "cirrus", "std", "vmware", "qxl", "tcx", "cg3", or "none".
+* `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 
 
 Specific domain settings can be set for each domain separately in multi-VM
@@ -329,6 +334,23 @@ it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
 
+## Customized Graphics
+
+vagrant-libvirt supports customizing the display and video settings of the
+managed guest.  This is probably most useful for VNC-type displays with multiple
+guests.  It lets you specify the exact port for each guest to use deterministically.
+
+Here is an example of using custom display options:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.graphics_port = 5901
+    libvirt.graphics_ip = '0.0.0.0'
+    libvirt.video_type = 'qxl'
+  end
+end
+```
 
 ## Box Format
 

@@ -35,6 +35,12 @@ module VagrantPlugins
           @kernel = config.kernel
           @cmd_line = config.cmd_line
           @initrd = config.initrd
+          @graphics_type = config.graphics_type
+          @graphics_autoport = config.graphics_autoport
+          @graphics_port = config.graphics_port
+          @graphics_ip = config.graphics_ip
+          @video_type = config.video_type
+          @video_vram = config.video_vram
 
           # Storage
           @storage_pool_name = config.storage_pool_name
@@ -89,6 +95,12 @@ module VagrantPlugins
           env[:ui].info(" -- Volume Cache:  #{@domain_volume_cache}")
           env[:ui].info(" -- Kernel:        #{@kernel}")
           env[:ui].info(" -- Initrd:        #{@initrd}")
+          env[:ui].info(" -- Graphics Type: #{@graphics_type}")
+          env[:ui].info(" -- Graphics Port: #{@graphics_port}")
+          env[:ui].info(" -- Graphics IP:   #{@graphics_ip}")
+          env[:ui].info(" -- Video Type:    #{@video_type}")
+          env[:ui].info(" -- Video VRAM:    #{@video_vram}")
+
           if @disks.length > 0
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
