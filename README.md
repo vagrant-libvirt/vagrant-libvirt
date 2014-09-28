@@ -294,21 +294,7 @@ end
 
 ## SSH Access To VM
 
-There are some configuration options for ssh access to VM via `config.ssh.*` in
-Vagrantfile. Untill provider version 0.0.5, root user was hardcoded and used to
-access VMs ssh. Now, vagrant user is used by default, but it's configurable via
-`config.ssh.username` option in Vagrantfile now.
-
-If you are still using CentOS 6.4 box from example in this README, please set
-ssh username back to root, because user vagrant is not usable (I forgot to add
-necessary ssh key to his authorized_keys).
-
-Configurable ssh parameters in Vagrantfile after provider version 0.0.5 are:
-
-* `config.ssh.username` - Default is username vagrant.
-* `config.ssh.guest_port` - Default port is set to 22.
-* `config.ssh.forward_agent` - Default is false.
-* `config.ssh.forward_x11` - Default is false.
+vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html).
 
 ## Forwarded Ports
 
