@@ -31,9 +31,9 @@ module VagrantPlugins
         require_relative 'provider'
         Provider
       end
-      
-      guest_capability("linux", "mount_p9_shared_folder") do
-        require_relative "cap/mount_p9"
+
+      guest_capability('linux', 'mount_p9_shared_folder') do
+        require_relative 'cap/mount_p9'
         Cap::MountP9
       end
 

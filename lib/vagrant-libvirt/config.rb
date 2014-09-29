@@ -23,7 +23,7 @@ module VagrantPlugins
       attr_accessor :host
 
       # If use ssh tunnel to connect to Libvirt.
-      attr_accessor :connect_via_ssh 
+      attr_accessor :connect_via_ssh
       # Path towards the libvirt socket
       attr_accessor :socket
 
@@ -65,6 +65,7 @@ module VagrantPlugins
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
       attr_accessor :graphics_port
+      attr_accessor :graphics_passwd
       attr_accessor :graphics_ip
       attr_accessor :video_type
       attr_accessor :video_vram
@@ -101,6 +102,7 @@ module VagrantPlugins
         @graphics_autoport = UNSET_VALUE
         @graphics_port     = UNSET_VALUE
         @graphics_ip       = UNSET_VALUE
+        @graphics_passwd   = UNSET_VALUE
         @video_type        = UNSET_VALUE
         @video_vram        = UNSET_VALUE
 
@@ -132,6 +134,8 @@ module VagrantPlugins
         }.merge(options)
 
         #puts "storage(#{storage_type} --- #{options.to_s})"
+        require 'pry'
+        binding.pry
         @disks = [] if @disks == UNSET_VALUE
 
         disk = {
@@ -224,6 +228,10 @@ module VagrantPlugins
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
+        if (@graphics_type != 'vnc' && @graphics_port != 'spice') ||
+            @graphics_passwd == UNSET_VALUE
+          @graphics_passwd = nil
+        end
         @graphics_port = 5900 if @graphics_port == UNSET_VALUE
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE

@@ -51,9 +51,11 @@
       <target port='0'/>
     </console>
     <input type='mouse' bus='ps2'/>
-    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='en-us'/>
-    <video>
-        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-    </video>
+    <%# Video device -%>
+    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='en-us' <%= @graphics_passwd%> />
+      <video>
+          <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+      </video>
+    <%#End Video -%>
   </devices>
 </domain>

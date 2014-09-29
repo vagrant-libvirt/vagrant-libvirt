@@ -8,7 +8,7 @@ module VagrantPlugins
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
         def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::create_domain")
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::create_domain')
           @app = app
         end
 
@@ -39,6 +39,11 @@ module VagrantPlugins
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
           @graphics_ip = config.graphics_ip
+          @graphics_passwd =  if config.graphics_passwd.to_s.empty?
+                                ''
+                              else
+                                "passwd='#{config.graphics_passwd.to_s}'"
+                              end
           @video_type = config.video_type
           @video_vram = config.video_vram
 
@@ -54,7 +59,7 @@ module VagrantPlugins
           # Get path to domain image.
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
             env[:libvirt_compute].volumes.all, "#{@name}.img")
-          raise Errors::DomainVolumeExists if domain_volume == nil
+          raise Errors::DomainVolumeExists if domain_volume.nil?
           @domain_volume_path = domain_volume.path
 
           # the default storage prefix is typically: /var/lib/libvirt/images/
@@ -84,22 +89,23 @@ module VagrantPlugins
           end
 
           # Output the settings we're going to use to the user
-          env[:ui].info(I18n.t("vagrant_libvirt.creating_domain"))
-          env[:ui].info(" -- Name:          #{@name}")
-          env[:ui].info(" -- Domain type:   #{@domain_type}")
-          env[:ui].info(" -- Cpus:          #{@cpus}")
-          env[:ui].info(" -- Memory:        #{@memory_size/1024}M")
-          env[:ui].info(" -- Base box:      #{env[:machine].box.name}")
-          env[:ui].info(" -- Storage pool:  #{@storage_pool_name}")
-          env[:ui].info(" -- Image:         #{@domain_volume_path}")
-          env[:ui].info(" -- Volume Cache:  #{@domain_volume_cache}")
-          env[:ui].info(" -- Kernel:        #{@kernel}")
-          env[:ui].info(" -- Initrd:        #{@initrd}")
-          env[:ui].info(" -- Graphics Type: #{@graphics_type}")
-          env[:ui].info(" -- Graphics Port: #{@graphics_port}")
-          env[:ui].info(" -- Graphics IP:   #{@graphics_ip}")
-          env[:ui].info(" -- Video Type:    #{@video_type}")
-          env[:ui].info(" -- Video VRAM:    #{@video_vram}")
+          env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
+          env[:ui].info(" -- Name:              #{@name}")
+          env[:ui].info(" -- Domain type:       #{@domain_type}")
+          env[:ui].info(" -- Cpus:              #{@cpus}")
+          env[:ui].info(" -- Memory:            #{@memory_size/1024}M")
+          env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
+          env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
+          env[:ui].info(" -- Image:             #{@domain_volume_path}")
+          env[:ui].info(" -- Volume Cache:      #{@domain_volume_cache}")
+          env[:ui].info(" -- Kernel:            #{@kernel}")
+          env[:ui].info(" -- Initrd:            #{@initrd}")
+          env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
+          env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
+          env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
+          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined': 'Defined'}")
+          env[:ui].info(" -- Video Type:        #{@video_type}")
+          env[:ui].info(" -- Video VRAM:        #{@video_vram}")
 
           if @disks.length > 0
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
