@@ -209,7 +209,7 @@ module VagrantPlugins
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
-        @management_network_mode = 'nat' if @management_network_address == UNSET_VALUE
+        @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri() if @uri == UNSET_VALUE
