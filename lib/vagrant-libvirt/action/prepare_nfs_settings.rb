@@ -44,7 +44,7 @@ module VagrantPlugins
             domain = env[:libvirt_compute].servers.get(machine.id.to_s)
             xml=Nokogiri::XML(domain.to_xml)
             networkname = xml.xpath('/domain/devices/interface/source').first.attributes['network'].value.to_s
-            puts "network name = #{networkname}"
+            @logger.info("Using network named #{networkname}")
             net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
           end
           # FIXME better implement by libvirt xml parsing
