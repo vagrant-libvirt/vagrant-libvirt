@@ -66,15 +66,28 @@ module VagrantPlugins
           storage_prefix = File.dirname(@domain_volume_path)+'/'	# steal
 
           @disks.each do |disk|
-            disk[:name] = _disk_name(@name, disk)
-            if disk[:path].nil?
-              disk[:path] = "#{storage_prefix}#{_disk_name(@name, disk)}"	# automatically chosen!
+            if disk[:path] and disk[:path][0] == '/'
+              raise Errors::FogCreateVolumeError,
+                :error_message =>
+                  "absolute volume path '#{disk[:path]}' not yet supported"
+            end
+
+            disk[:path] ||= _disk_name(@name, disk)
+
+            # On volume creation, the <path> element inside <target>
+            # is oddly ignored; instead the path is taken from the
+            # <name> element:
+            # http://www.redhat.com/archives/libvir-list/2008-August/msg00329.html
+            disk[:name] = disk[:path]
+
+            # Prefix relative paths by storage pool path
+            unless disk[:path][0] == '/'
+              disk[:path] = storage_prefix + disk[:path]
             end
 
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
-              #puts "Making disk: #{d}, #{t}, #{p}"
               domain_volume_disk = env[:libvirt_compute].volumes.create(
                 :name => disk[:name],
                 :format_type => disk[:type],
