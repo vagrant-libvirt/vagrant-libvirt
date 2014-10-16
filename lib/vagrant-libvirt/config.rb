@@ -134,8 +134,6 @@ module VagrantPlugins
         }.merge(options)
 
         #puts "storage(#{storage_type} --- #{options.to_s})"
-        require 'pry'
-        binding.pry
         @disks = [] if @disks == UNSET_VALUE
 
         disk = {
