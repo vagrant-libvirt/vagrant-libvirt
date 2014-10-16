@@ -142,6 +142,7 @@ module VagrantPlugins
           :size => options[:size],
           :path => options[:path],
           :cache => options[:cache] || 'default',
+          :allow_existing => options[:allow_existing],
         }
 
         if storage_type == :file

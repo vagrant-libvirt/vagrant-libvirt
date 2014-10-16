@@ -85,6 +85,13 @@ module VagrantPlugins
             rescue Fog::Errors::Error => e
               raise Errors::FogDomainVolumeCreateError,
                 :error_message => e.message
+            rescue Libvirt::Error => e
+              if disk[:allow_existing] &&
+                  e.message =~ /storage vol.* (already exists|exists already)/
+                disk[:preexisting] = true
+              else
+                raise
+              end
             end
           end
 
@@ -111,7 +118,9 @@ module VagrantPlugins
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
           @disks.each do |disk|
-            env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:path]}")
+            msg = " -- Disk(#{disk[:device]}):     #{disk[:path]}"
+            msg += " (preexisting)" if disk[:preexisting]
+            env[:ui].info(msg)
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
