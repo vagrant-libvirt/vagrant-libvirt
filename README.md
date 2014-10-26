@@ -281,6 +281,7 @@ You can create and attach additional disks to a VM via `libvirt.storage :file`. 
 * `device` - Name of the device node the disk image will have in the VM, e.g. *vdb*. If unspecified, the next available device is chosen.
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
+* `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks) or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation). Defaults to *default*.
 
 The following example creates two additional disks.
 
