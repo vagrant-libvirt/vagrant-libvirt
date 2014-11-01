@@ -83,7 +83,8 @@ module VagrantPlugins
                           gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
-            "-L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}"
+            -L
+            #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
             -N
             #{ssh_info[:host]}
           ).join(' ')
