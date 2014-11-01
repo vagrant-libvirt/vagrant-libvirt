@@ -118,7 +118,20 @@ module VagrantPlugins
           ssh_cmd << "ssh #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
-          spawn(ssh_cmd,  [:out, :err] => '/dev/null')
+          log_file = ssh_forward_log_file(host_ip, host_port,
+                                          guest_ip, guest_port)
+          @logger.info "Logging to #{log_file}"
+          spawn(ssh_cmd,  [:out, :err] => [log_file, 'w'])
+        end
+
+        def ssh_forward_log_file(host_ip, host_port, guest_ip, guest_port)
+          log_dir = @env[:machine].data_dir.join('logs')
+          log_dir.mkdir unless log_dir.directory?
+          File.join(
+            log_dir,
+            'ssh-forwarding-%s_%s-%s_%s.log' %
+              [ host_ip, host_port, guest_ip, guest_port ]
+          )
         end
 
         def store_ssh_pid(host_port, ssh_pid)
