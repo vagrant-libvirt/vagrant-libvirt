@@ -27,13 +27,3 @@ module VagrantPlugins
     end
   end
 end
-
-# set provider by bash env
-# export VAGRANT_DEFAULT_PROVIDER=libvirt
-Vagrant::Environment.class_eval do
-  def default_provider
-    (ENV['VAGRANT_DEFAULT_PROVIDER'] || :virtualbox).to_sym
-  end
-end
-
-
