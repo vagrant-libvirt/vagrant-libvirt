@@ -131,6 +131,7 @@ module VagrantPlugins
           :type => 'qcow2',
           :size => '10G',	# matches the fog default
           :path => nil,
+          :bus => 'virtio'
         }.merge(options)
 
         #puts "storage(#{storage_type} --- #{options.to_s})"
@@ -141,6 +142,7 @@ module VagrantPlugins
           :type => options[:type],
           :size => options[:size],
           :path => options[:path],
+          :bus => options[:bus],
           :cache => options[:cache] || 'default',
         }
 
