@@ -155,7 +155,7 @@ end
 * `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900.
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
-* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  Possible values are "cirrus", "std", "vmware", "qxl", "tcx", "cg3", or "none".
+* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 
 
