@@ -66,11 +66,6 @@ module VagrantPlugins
           storage_prefix = File.dirname(@domain_volume_path)+'/'	# steal
 
           @disks.each do |disk|
-            if disk[:path] and disk[:path][0] == '/'
-              raise Errors::FogCreateVolumeError,
-                :error_message =>
-                  "absolute volume path '#{disk[:path]}' not yet supported"
-            end
 
             disk[:path] ||= _disk_name(@name, disk)
 
