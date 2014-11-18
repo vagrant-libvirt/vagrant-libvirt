@@ -131,11 +131,10 @@ module VagrantPlugins
           :type => 'qcow2',
           :size => '10G',	# matches the fog default
           :path => nil,
+          :bus => 'virtio'
         }.merge(options)
 
         #puts "storage(#{storage_type} --- #{options.to_s})"
-        require 'pry'
-        binding.pry
         @disks = [] if @disks == UNSET_VALUE
 
         disk = {
@@ -143,6 +142,8 @@ module VagrantPlugins
           :type => options[:type],
           :size => options[:size],
           :path => options[:path],
+          :bus => options[:bus],
+          :cache => options[:cache] || 'default',
         }
 
         if storage_type == :file
