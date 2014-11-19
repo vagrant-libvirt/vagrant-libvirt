@@ -253,6 +253,7 @@ starts with 'libvirt__' string. Here is a list of those options:
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
 * `:mac` - MAC address for the interface.
+* `:ovs` - Support to connect to an open vSwitch bridge device. Default is 'false'.
 
 ### Management Network
 
