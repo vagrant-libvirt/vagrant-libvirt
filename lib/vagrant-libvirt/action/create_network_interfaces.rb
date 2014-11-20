@@ -79,6 +79,7 @@ module VagrantPlugins
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
+              @ovs = iface_configuration.fetch(:ovs, false)
             end
 
             message = "Creating network interface eth#{@iface_number}"
