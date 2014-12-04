@@ -66,19 +66,24 @@ module VagrantPlugins
           storage_prefix = File.dirname(@domain_volume_path)+'/'	# steal
 
           @disks.each do |disk|
-            disk[:name] = _disk_name(@name, disk)
-            if disk[:path].nil?
-              disk[:path] = "#{storage_prefix}#{_disk_name(@name, disk)}"	# automatically chosen!
-            end
+
+            disk[:path] ||= _disk_name(@name, disk)
+
+            # On volume creation, the <path> element inside <target>
+            # is oddly ignored; instead the path is taken from the
+            # <name> element:
+            # http://www.redhat.com/archives/libvir-list/2008-August/msg00329.html
+            disk[:name] = disk[:path]
+
+            disk[:absolute_path] = storage_prefix + disk[:path]
 
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
-              #puts "Making disk: #{d}, #{t}, #{p}"
               domain_volume_disk = env[:libvirt_compute].volumes.create(
                 :name => disk[:name],
                 :format_type => disk[:type],
-                :path => disk[:path],
+                :path => disk[:absolute_path],
                 :capacity => disk[:size],
                 #:allocation => ?,
                 :pool_name => @storage_pool_name)
@@ -111,7 +116,7 @@ module VagrantPlugins
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
           @disks.each do |disk|
-            env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:path]}")
+            env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}")
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 

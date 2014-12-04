@@ -243,7 +243,17 @@ module VagrantPlugins
       end
 
       def validate(machine)
+        errors = _detected_errors
+
+        machine.provider_config.disks.each do |disk|
+          if disk[:path] and disk[:path][0] == '/'
+            errors << "absolute volume paths like '#{disk[:path]}' not yet supported"
+          end
+        end
+
+         { "Libvirt Provider" => errors }
       end
+
     end
   end
 end
