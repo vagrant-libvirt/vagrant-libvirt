@@ -34,8 +34,10 @@ module VagrantPlugins
             # Fog libvirt currently doesn't support creating pools. Use
             # ruby-libvirt client directly.
             begin
-              libvirt_pool = env[:libvirt_compute].client.create_storage_pool_xml(
+              libvirt_pool = env[:libvirt_compute].client.define_storage_pool_xml(
                 to_xml('default_storage_pool'))
+              libvirt_pool.build
+              libvirt_pool.create
             rescue => e
               raise Errors::CreatingStoragePoolError,
                 :error_message => e.message
