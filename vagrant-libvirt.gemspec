@@ -5,8 +5,8 @@ Gem::Specification.new do |gem|
   gem.authors       = ['Lukas Stanek','Dima Vasilets','Brian Pitts']
   gem.email         = ['ls@elostech.cz','pronix.service@gmail.com','brian@polibyte.com']
   gem.license       = 'MIT'
-  gem.description   = %q{Vagrant provider for libvirt.}
-  gem.summary       = %q{Vagrant provider for libvirt.}
+  gem.description   = %q{libvirt provider for Vagrant.}
+  gem.summary       = %q{libvirt provider for Vagrant.}
   gem.homepage      = 'https://github.com/pradels/vagrant-libvirt'
 
   gem.files         = `git ls-files`.split($\)
