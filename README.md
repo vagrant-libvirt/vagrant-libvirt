@@ -31,7 +31,7 @@ welcome and can help a lot :-)
 
 First, you should have libvirt installed if you plan to run VMs on your local system. For instructions, refer to your linux distribution's documentation,
 
-Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5 and 1.6.
+Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5, 1.6 and 1.7.
 
  Now you're ready to install vagrant-libvirt using standard [Vagrant plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
