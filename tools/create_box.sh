@@ -25,6 +25,12 @@ rebase(){
     [[ "$?" -ne 0 ]] && error "Error during rebase"
 }
 
+# Is absolute path
+isabspath(){
+    local path=${1}
+    [[ $path =~ ^/.* ]]
+}
+
 if [ -z "$1" ]; then
     usage
     exit 1
@@ -42,7 +48,7 @@ if [[ -z "$2" ]]; then
     BOX=$BOX_NAME.box
 else
     BOX="$2"
-    BOX_NAME=${BOX%.*}
+    BOX_NAME=$(basename ${BOX%.*})
 fi
 
 [[ -f "$BOX" ]] && error "'$BOX': Already exists"
@@ -94,8 +100,12 @@ EOF
 echo "==> Creating box, tarring and gzipping"
 
 tar cvzf $BOX --totals ./metadata.json ./Vagrantfile ./box.img
-mv $BOX $CWD
 
-echo "==> ${CWD}/${BOX} created"
+# if box is in tmpdir move it to CWD before removing tmpdir
+if ! isabspath $BOX; then
+    mv $BOX $CWD
+fi
+
+echo "==> ${BOX} created"
 echo "==> You can now add the box:"
 echo "==>   'vagrant box add ${BOX} --name ${BOX_NAME}'"
