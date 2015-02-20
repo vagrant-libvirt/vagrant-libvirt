@@ -107,11 +107,10 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
 
         # Storage
-        @disks             = UNSET_VALUE
+        @disks             = []
       end
 
       def _get_device(disks)
-        disks = [] if disks == UNSET_VALUE
         # skip existing devices and also the first one (vda)
         exist = disks.collect {|x| x[:device]}+[1.vdev.to_s]
         skip = 1		# we're 1 based, not 0 based...
@@ -133,9 +132,6 @@ module VagrantPlugins
           :path => nil,
           :bus => 'virtio'
         }.merge(options)
-
-        #puts "storage(#{storage_type} --- #{options.to_s})"
-        @disks = [] if @disks == UNSET_VALUE
 
         disk = {
           :device => options[:device],
@@ -237,9 +233,6 @@ module VagrantPlugins
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
-
-        # Storage
-        @disks = [] if @disks == UNSET_VALUE
       end
 
       def validate(machine)
@@ -254,7 +247,13 @@ module VagrantPlugins
          { "Libvirt Provider" => errors }
       end
 
+      def merge(other)
+        super.tap do |result|
+          c = disks.dup
+          c += other.disks
+          result.disks = c
+        end
+      end
     end
   end
 end
-
