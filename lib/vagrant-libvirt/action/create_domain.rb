@@ -26,11 +26,11 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
-          @cpus = config.cpus
+          @cpus = config.cpus.to_i
           @cpu_mode = config.cpu_mode
           @disk_bus = config.disk_bus
           @nested = config.nested
-          @memory_size = config.memory*1024
+          @memory_size = config.memory.to_i*1024
           @domain_volume_cache = config.volume_cache
           @kernel = config.kernel
           @cmd_line = config.cmd_line
