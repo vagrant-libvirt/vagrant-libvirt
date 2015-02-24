@@ -302,9 +302,7 @@ vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantu
 
 ## Forwarded Ports
 
-vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  For each
-`forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt
-will maintain an active ssh process for the lifetime of the VM.
+vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  Please note that due to a well known limitation only the TCP protocol is supported.  For each `forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt will maintain an active ssh process for the lifetime of the VM. 
 
 vagrant-libvirt supports an additional `forwarded_port` option
 `gateway_ports` which defaults to `false`, but can be set to `true` if
