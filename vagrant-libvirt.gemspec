@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.license       = 'MIT'
   gem.description   = %q{libvirt provider for Vagrant.}
   gem.summary       = %q{libvirt provider for Vagrant.}
-  gem.homepage      = 'https://github.com/pradels/vagrant-libvirt'
+  gem.homepage      = 'https://github.com/mperedim/vagrant-libvirt'
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
