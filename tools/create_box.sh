@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#set -xu
 
 error() {
     local msg="${1}"
@@ -59,6 +60,8 @@ TMP_IMG="$TMP_DIR/box.img"
 
 mkdir -p "$TMP_DIR"
 
+[[ ! -w "$IMG" ]] && error "'$IMG': Permission denied"
+
 # We move / copy (when the image has master) the image to the tempdir
 # ensure that it's moved back / removed again
 if [[ -n $(backing "$IMG") ]]; then
@@ -67,6 +70,7 @@ if [[ -n $(backing "$IMG") ]]; then
     cp "$IMG" "$TMP_IMG"
     rebase "$TMP_IMG"
 else
+    # move the image to get a speed-up and use less space on disk
     trap 'mv "$TMP_IMG" "$IMG"; rm -rf "$TMP_DIR"' EXIT
     mv "$IMG" "$TMP_IMG"
 fi
