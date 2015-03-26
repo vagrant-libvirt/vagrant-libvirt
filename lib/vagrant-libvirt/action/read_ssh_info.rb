@@ -32,7 +32,7 @@ module VagrantPlugins
 
           # Get IP address from dnsmasq lease file.
           ip_address = nil
-          domain.wait_for(2) {
+          domain.wait_for(60) {
             addresses.each_pair do |type, ip|
               ip_address = ip[0] if ip[0] != nil
             end
