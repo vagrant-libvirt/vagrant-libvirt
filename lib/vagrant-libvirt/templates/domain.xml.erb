@@ -14,7 +14,11 @@
   <% end %>
 
   <os>
+  <% if @machine_type %>
+    <type machine='<%= @machine_type %>'>hvm</type>
+  <% else %>
     <type>hvm</type>
+  <% end %>
     <boot dev='hd'/>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
