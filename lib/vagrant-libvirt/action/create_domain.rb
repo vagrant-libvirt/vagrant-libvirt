@@ -46,6 +46,7 @@ module VagrantPlugins
                               end
           @video_type = config.video_type
           @video_vram = config.video_vram
+          @keymap = config.keymap
 
           # Storage
           @storage_pool_name = config.storage_pool_name
@@ -111,6 +112,7 @@ module VagrantPlugins
           env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined': 'Defined'}")
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
+          env[:ui].info(" -- Keymap:            #{@keymap}")
 
           if @disks.length > 0
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")

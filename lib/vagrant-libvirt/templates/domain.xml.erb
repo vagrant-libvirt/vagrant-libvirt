@@ -52,7 +52,7 @@
     </console>
     <input type='mouse' bus='ps2'/>
     <%# Video device -%>
-    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='en-us' <%= @graphics_passwd%> />
+    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
       <video>
           <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
       </video>

@@ -156,6 +156,7 @@ end
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
+* `keymap` - Set keymap for vm. default: en-us
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 
 
@@ -302,7 +303,7 @@ vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantu
 
 ## Forwarded Ports
 
-vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  Please note that due to a well known limitation only the TCP protocol is supported.  For each `forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt will maintain an active ssh process for the lifetime of the VM. 
+vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  Please note that due to a well known limitation only the TCP protocol is supported.  For each `forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt will maintain an active ssh process for the lifetime of the VM.
 
 vagrant-libvirt supports an additional `forwarded_port` option
 `gateway_ports` which defaults to `false`, but can be set to `true` if

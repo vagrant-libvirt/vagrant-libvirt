@@ -69,6 +69,7 @@ module VagrantPlugins
       attr_accessor :graphics_ip
       attr_accessor :video_type
       attr_accessor :video_vram
+      attr_accessor :keymap
 
       # Storage
       attr_accessor :disks
@@ -105,6 +106,7 @@ module VagrantPlugins
         @graphics_passwd   = UNSET_VALUE
         @video_type        = UNSET_VALUE
         @video_vram        = UNSET_VALUE
+        @keymap            = UNSET_VALUE
 
         # Storage
         @disks             = UNSET_VALUE
@@ -237,6 +239,7 @@ module VagrantPlugins
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
+        @keymap = 'en-us' if @keymap == UNSET_VALUE
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
