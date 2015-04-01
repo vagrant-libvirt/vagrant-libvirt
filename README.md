@@ -249,6 +249,12 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:mac` - MAC address for the interface.
 * `model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
+When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
+whether the virtual network contains a DHCP server or not and vagrant-libvirt
+should not fail on it. The only situation where vagrant-libvirt should fail
+is when DHCP is requested but isn't configured on a matching already existing
+virtual network.
+
 ### Public Network Options
 * `:dev` - Physical device that the public interface should use. Default is 'eth0'.
 * `:mode` - The mode in which the public interface should operate in. Supported

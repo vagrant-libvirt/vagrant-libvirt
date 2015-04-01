@@ -100,8 +100,10 @@ module VagrantPlugins
         # match what was configured in the vagrantfile
         # since we always enable dhcp for the management network
         # this ensures we wont start a vm vagrant cant reach
+        # Allow the situation where DHCP is not requested (:libvirt__dhcp_enabled == false)
+        # but where it is enabled on the virtual network
         def verify_dhcp
-          unless @options[:dhcp_enabled] == @interface_network[:dhcp_enabled]
+          if @interface_network[:dhcp_enabled] == true && @options[:dhcp_enabled] == false
             raise Errors::DHCPMismatch,
                   network_name: @interface_network[:name],
                   requested: @options[:dhcp_enabled] ? 'enabled' : 'disabled'
