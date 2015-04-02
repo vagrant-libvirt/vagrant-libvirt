@@ -17,6 +17,8 @@ module VagrantPlugins
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @management_network_name = env[:machine].provider_config.management_network_name
+	  config = env[:machine].provider_config
+	  @nic_model_type = config.nic_model_type
           @app = app
         end
 
@@ -66,6 +68,7 @@ module VagrantPlugins
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
             @mac = iface_configuration.fetch(:mac, false)
+            @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
             template_name = 'interface'
 
             # Configuration for public interfaces which use the macvtap driver
@@ -73,14 +76,16 @@ module VagrantPlugins
               @device = iface_configuration.fetch(:dev, 'eth0')
               @type = iface_configuration.fetch(:type, 'direct')
               @mode = iface_configuration.fetch(:mode, 'bridge')
-              @model_type = iface_configuration.fetch(:model_type, 'e1000')
+              @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
+              @ovs = iface_configuration.fetch(:ovs, false)
             end
 
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
             if @mac
+              @mac = @mac.scan(/(\h{2})/).join(':')
               message << " Using MAC address: #{@mac}"
             end
             @logger.info(message)
@@ -105,10 +110,12 @@ module VagrantPlugins
             # It's used for provisioning and it has to be available during provisioning,
             # ifdown command is not acceptable here.
             next if slot_number == 0
+            next if options[:auto_config] === false
             @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
             network = {
-              :interface => slot_number,
+              :interface                       => slot_number,
+              :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
               #:mac => ...,
             }
 

@@ -130,6 +130,8 @@ en:
         pause
       short_shutoff: |-
         shutoff
+      long_shutoff: |-
+        The Libvirt domain is not running. Run `vagrant up` to start it.
       short_not_created: |-
         not created
       long_not_created: |-

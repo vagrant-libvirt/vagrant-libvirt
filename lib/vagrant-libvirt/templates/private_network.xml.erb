@@ -4,9 +4,9 @@
 
   <% if @network_forward_mode != 'none' %>
     <% if @network_forward_device %>
-  <forward mode="<%= @network_forward_mode %>" dev="<%= @network_forward_device %>" />
+      <forward mode="<%= @network_forward_mode %>" dev="<%= @network_forward_device %>" />
     <% else %>
-  <forward mode="<%= @network_forward_mode %>" />
+      <forward mode="<%= @network_forward_mode %>" />
     <% end %>
   <% end %>
 

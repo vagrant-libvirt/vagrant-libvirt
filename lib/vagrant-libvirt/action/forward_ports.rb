@@ -53,7 +53,8 @@ module VagrantPlugins
               fp[:host_ip] || 'localhost',
               fp[:host],
               fp[:guest_ip] || @env[:machine].provider.ssh_info[:host],
-              fp[:guest]
+              fp[:guest],
+              fp[:gateway_ports] || false
             )
             store_ssh_pid(fp[:host], ssh_pid)
           end
@@ -78,13 +79,16 @@ module VagrantPlugins
           mappings.values
         end
 
-        def redirect_port(machine, host_ip, host_port, guest_ip, guest_port)
+        def redirect_port(machine, host_ip, host_port, guest_ip, guest_port,
+                          gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
-            "-L #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}"
+            -L
+            #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
             -N
             #{ssh_info[:host]}
           ).join(' ')
+          params += ' -g' if gateway_ports
 
           options = (%W(
             User=#{ssh_info[:username]}
@@ -96,6 +100,8 @@ module VagrantPlugins
           ) + ssh_info[:private_key_path].map do |pk|
               "IdentityFile=#{pk}"
             end).map { |s| s.prepend('-o ') }.join(' ')
+
+          options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
 
           # TODO: instead of this, try and lock and get the stdin from spawn...
           ssh_cmd = ''
@@ -113,7 +119,20 @@ module VagrantPlugins
           ssh_cmd << "ssh #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
-          spawn(ssh_cmd,  [:out, :err] => '/dev/null')
+          log_file = ssh_forward_log_file(host_ip, host_port,
+                                          guest_ip, guest_port)
+          @logger.info "Logging to #{log_file}"
+          spawn(ssh_cmd,  [:out, :err] => [log_file, 'w'])
+        end
+
+        def ssh_forward_log_file(host_ip, host_port, guest_ip, guest_port)
+          log_dir = @env[:machine].data_dir.join('logs')
+          log_dir.mkdir unless log_dir.directory?
+          File.join(
+            log_dir,
+            'ssh-forwarding-%s_%s-%s_%s.log' %
+              [ host_ip, host_port, guest_ip, guest_port ]
+          )
         end
 
         def store_ssh_pid(host_port, ssh_pid)

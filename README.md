@@ -31,7 +31,7 @@ welcome and can help a lot :-)
 
 First, you should have libvirt installed if you plan to run VMs on your local system. For instructions, refer to your linux distribution's documentation,
 
-Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5 and 1.6.
+Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5, 1.6 and 1.7.
 
  Now you're ready to install vagrant-libvirt using standard [Vagrant plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
@@ -141,6 +141,7 @@ end
 ### Domain Specific Options
 
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
+* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
@@ -148,7 +149,16 @@ end
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems. Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent to qemu `-initrd`.
+* `random_hostname` - To create a domain name with extra information on the end to prevent hostname conflicts.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
+* `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", or "vnc".
+* `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900.
+* `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
+* `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
+* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
+* `keymap` - Set keymap for vm. default: en-us
+* `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
+* `machine` - Sets machine type. Equivalent to qemu `-machine`. Use `qemu-system-x86_64 -machine help` to get a list of supported machines.
 
 
 Specific domain settings can be set for each domain separately in multi-VM
@@ -237,6 +247,13 @@ starts with 'libvirt__' string. Here is a list of those options:
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
 * `:mac` - MAC address for the interface.
+* `model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+
+When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
+whether the virtual network contains a DHCP server or not and vagrant-libvirt
+should not fail on it. The only situation where vagrant-libvirt should fail
+is when DHCP is requested but isn't configured on a matching already existing
+virtual network.
 
 ### Public Network Options
 * `:dev` - Physical device that the public interface should use. Default is 'eth0'.
@@ -244,6 +261,7 @@ starts with 'libvirt__' string. Here is a list of those options:
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
 * `:mac` - MAC address for the interface.
+* `:ovs` - Support to connect to an open vSwitch bridge device. Default is 'false'.
 
 ### Management Network
 
@@ -272,6 +290,8 @@ You can create and attach additional disks to a VM via `libvirt.storage :file`. 
 * `device` - Name of the device node the disk image will have in the VM, e.g. *vdb*. If unspecified, the next available device is chosen.
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
+* `bus` - Type of bus to connect device to. Defaults to *virtio*.
+* `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks) or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation). Defaults to *default*.
 
 The following example creates two additional disks.
 
@@ -286,27 +306,17 @@ end
 
 ## SSH Access To VM
 
-There are some configuration options for ssh access to VM via `config.ssh.*` in
-Vagrantfile. Untill provider version 0.0.5, root user was hardcoded and used to
-access VMs ssh. Now, vagrant user is used by default, but it's configurable via
-`config.ssh.username` option in Vagrantfile now.
-
-If you are still using CentOS 6.4 box from example in this README, please set
-ssh username back to root, because user vagrant is not usable (I forgot to add
-necessary ssh key to his authorized_keys).
-
-Configurable ssh parameters in Vagrantfile after provider version 0.0.5 are:
-
-* `config.ssh.username` - Default is username vagrant.
-* `config.ssh.guest_port` - Default port is set to 22.
-* `config.ssh.forward_agent` - Default is false.
-* `config.ssh.forward_x11` - Default is false.
+vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html).
 
 ## Forwarded Ports
 
-vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  For each
-`forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt
-will maintain an active ssh process for the lifetime of the VM.
+vagrant-libvirt supports Forwarded Ports via ssh port forwarding.  Please note that due to a well known limitation only the TCP protocol is supported.  For each `forwarded_port` directive you specify in your Vagrantfile, vagrant-libvirt will maintain an active ssh process for the lifetime of the VM.
+
+vagrant-libvirt supports an additional `forwarded_port` option
+`gateway_ports` which defaults to `false`, but can be set to `true` if
+you want the forwarded port to be accessible from outside the Vagrant
+host.  In this case you should also set the `host_ip` option to `'*'`
+since it defaults to `'localhost'`.
 
 ## Synced Folders
 
@@ -320,6 +330,23 @@ it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
 
+## Customized Graphics
+
+vagrant-libvirt supports customizing the display and video settings of the
+managed guest.  This is probably most useful for VNC-type displays with multiple
+guests.  It lets you specify the exact port for each guest to use deterministically.
+
+Here is an example of using custom display options:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.graphics_port = 5901
+    libvirt.graphics_ip = '0.0.0.0'
+    libvirt.video_type = 'qxl'
+  end
+end
+```
 
 ## Box Format
 

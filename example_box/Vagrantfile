@@ -21,11 +21,10 @@ Vagrant.configure("2") do |config|
 
     # Interfaces for VM
     # 
-    # Networking features in the form of `config.vm.network` support private
-    # networks concept. No public network or port forwarding are supported in
-    # current version of provider. See README for more info. 
+    # Networking features in the form of `config.vm.network`
     #
     #test_vm.vm.network :private_network, :ip => '10.20.30.40'
+    #test_vm.vm.network :public_network, :ip => '10.20.30.41'
   #end
 
   # Options for libvirt vagrant provider.

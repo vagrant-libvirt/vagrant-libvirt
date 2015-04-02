@@ -6,7 +6,7 @@ module VagrantPlugins
       class MountP9
         extend Vagrant::Util::Retryable
 
-        def self.mount_p9_shared_folder(machine, folders, options)
+        def self.mount_p9_shared_folder(machine, folders)
           folders.each do |name, opts|
             # Expand the guest path so we can handle things like "~/vagrant"
             expanded_guest_path = machine.guest.capability(
@@ -19,9 +19,9 @@ module VagrantPlugins
             mount_tag = name.dup
 
             mount_opts="-o trans=virtio"
-            mount_opts += ",access=#{options[:owner]}" if options[:owner]
-            mount_opts += ",version=#{options[:version]}" if options[:version]
-            mount_opts += ",#{opts[:mount_options]}" if opts[:mount_options]
+            mount_opts += ",access=#{opts[:owner]}" if opts[:owner]
+            mount_opts += ",version=#{opts[:version]}" if opts[:version]
+            mount_opts += ",#{opts[:mount_opts]}" if opts[:mount_opts]
 
             mount_command = "mount -t 9p #{mount_opts} '#{mount_tag}' #{expanded_guest_path}"
             retryable(:on => Vagrant::Errors::LinuxMountFailed,

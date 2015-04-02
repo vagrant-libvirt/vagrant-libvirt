@@ -1,6 +1,6 @@
 <interface type='<%= @type %>'>
-	<% if @mac %>
-  	<mac address='<%= @mac %>'/>
+  <% if @mac %>
+  <mac address='<%= @mac %>'/>
   <% end %>
   <%if @type == 'direct'%>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
@@ -8,6 +8,7 @@
   <source bridge='<%=@device%>'/>
   <% end %>
   <model type='<%=@model_type%>'/>
+  <% if @ovs %>
+  <virtualport type='openvswitch'/>
+  <% end %>
 </interface>
-
-
