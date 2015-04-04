@@ -64,7 +64,11 @@ a `config.vm.provider` block. So first, add Libvirt box using any name you
 want. This is just an example of Libvirt CentOS 6.4 box available:
 
 ```
-$ vagrant box add centos64 http://kwok.cz/centos64.box
+vagrant box add centos64 http://kwok.cz/centos64.box
+```
+or
+```
+vagrant box add centos64 http://citozin.com/centos64.box
 ```
 
 ### Create Vagrantfile
