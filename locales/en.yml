@@ -46,6 +46,7 @@ en:
       Machine is booted and ready for use!
 
     errors:
+      package_not_supported: Not support package for libvirt. Create box manualy.
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:

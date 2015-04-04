@@ -6,7 +6,7 @@ module VagrantPlugins
     module Action
       # Include the built-in modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
-      @logger = Log4r::Logger.new('vagrant_libvirt::action') 
+      @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
       # This action is called to bring the box up from nothing.
       def self.action_up
@@ -38,7 +38,7 @@ module VagrantPlugins
               b2.use StartDomain
               b2.use WaitTillUp
 
-              
+
 
 
               b2.use ForwardPorts
@@ -142,6 +142,13 @@ module VagrantPlugins
             b2.use action_halt
             b2.use action_start
           end
+        end
+      end
+
+      # not implemented and looks like not require
+      def self.action_package
+        lambda do |env|
+          raise Errors::PackageNotSupported
         end
       end
 
@@ -332,8 +339,8 @@ module VagrantPlugins
       autoload :ReadState, action_root.join('read_state')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
-      
-      # I don't think we need it anymore 
+
+      # I don't think we need it anymore
       autoload :ShareFolders, action_root.join('share_folders')
       autoload :StartDomain, action_root.join('start_domain')
       autoload :SuspendDomain, action_root.join('suspend_domain')

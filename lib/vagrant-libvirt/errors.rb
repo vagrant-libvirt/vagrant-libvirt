@@ -7,6 +7,11 @@ module VagrantPlugins
         error_namespace('vagrant_libvirt.errors')
       end
 
+      # package not supported
+      class PackageNotSupported < VagrantLibvirtError
+        error_key(:package_not_supported)
+      end
+
       # Storage pools and volumes exceptions
       class NoStoragePool < VagrantLibvirtError
         error_key(:no_storage_pool)
