@@ -17,8 +17,8 @@ module VagrantPlugins
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @management_network_name = env[:machine].provider_config.management_network_name
-	  config = env[:machine].provider_config
-	  @nic_model_type = config.nic_model_type
+	        config = env[:machine].provider_config
+	        @nic_model_type = config.nic_model_type
           @app = app
         end
 
@@ -74,8 +74,8 @@ module VagrantPlugins
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
               @device = iface_configuration.fetch(:dev, 'eth0')
-              @type = iface_configuration.fetch(:type, 'direct')
               @mode = iface_configuration.fetch(:mode, 'bridge')
+              @type = iface_configuration.fetch(:type, 'direct')
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
@@ -156,9 +156,7 @@ module VagrantPlugins
           # Get list of all (active and inactive) libvirt networks.
           available_networks = libvirt_networks(libvirt_client)
 
-          if options[:iface_type] == :public_network
-            return 'public'
-          end
+          return 'public' if options[:iface_type] == :public_network
 
           if options[:ip]
             address = network_address(options[:ip], options[:netmask])

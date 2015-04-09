@@ -205,7 +205,10 @@ An examples of network interface definitions:
 
   # Public Network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge'
+    test_vm1.vm.network :public_network,
+          :dev => "virbr0",
+          :mode => "bridge",
+          :type => "bridge"
   end
 ```
 
@@ -264,6 +267,7 @@ virtual network.
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
+* `:type` - is type of interface.(`<interface type="#{@type}">`)
 * `:mac` - MAC address for the interface.
 * `:ovs` - Support to connect to an open vSwitch bridge device. Default is 'false'.
 
