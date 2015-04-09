@@ -244,11 +244,12 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
-* `:libvirt__forward_mode` - Specify one of `none`, `nat` or `route` options.
+* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `nat` or `route` options.
   This option is used only when creating new network. Mode `none` will create
   isolated network without NATing or routing outside. You will want to use
   NATed forwarding typically to reach networks outside of hypervisor. Routed
   forwarding is typically useful to reach other networks within hypervisor.
+  `veryisolated` described [here](https://libvirt.org/formatnetwork.html#examplesNoGateway).
   By default, option `nat` is used.
 * `:libvirt__forward_device` - Name of interface/device, where network should
   be forwarded (NATed or routed). Used only when creating new network. By
