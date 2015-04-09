@@ -367,6 +367,14 @@ The box is a tarball containing:
 * `metadata.json` file describing box image (provider, virtual_size, format).
 * `Vagrantfile` that does default settings for the provider-specific configuration for this provider.
 
+## Create Box
+This script creates a vagrant-libvirt box from a qcow2 file:
+
+Usage:
+
+```create_box.sh ubuntu14.qcow2```
+Used Packer to create the qcow2 images, templates available at https://github.com/jakobadam/packer-qemu-templates
+
 ## Development
 
 To work on the `vagrant-libvirt` plugin, clone this repository out, and use
