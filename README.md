@@ -315,7 +315,7 @@ end
 
 ## CDROMs
 
-You can attach up to four (4) CDROMs to a VM via `libvirt.storage :file, device: cdrom`. Available options are:
+You can attach up to four (4) CDROMs to a VM via `libvirt.storage :file, :device => :cdrom`. Available options are:
 
 * `path` - The path to the iso to be used for the CDROM drive.
 * `dev` - The device to use (`hda`, `hdb`, `hdc`, or `hdd`). This will be automatically determined if unspecified.
