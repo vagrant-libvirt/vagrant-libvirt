@@ -131,7 +131,7 @@ module VagrantPlugins
             env[:ui].info(" -- CDROMS:            #{_cdroms_print(@cdroms)}")
           end
           @cdroms.each do |cdrom|
-            env[:ui].info(" -- CDROM(#{cdrom[:dev]}):     #{cdrom[:path]}")
+            env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
