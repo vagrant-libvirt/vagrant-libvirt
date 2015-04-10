@@ -74,7 +74,7 @@ module VagrantPlugins
 
       # Storage
       attr_accessor :disks
-  	  attr_accessor :cdrom
+  	  attr_accessor :cdroms
 
       def initialize
         @uri               = UNSET_VALUE
@@ -113,7 +113,7 @@ module VagrantPlugins
 
         # Storage
         @disks             = []
-        @cdrom			       = UNSET_VALUE
+        @cdroms			       = []
       end
 
       def _get_device(disks)
@@ -129,18 +129,32 @@ module VagrantPlugins
         end
       end
 
+      def _get_cdrom_dev(cdroms)
+        exist = Hash[cdroms.collect{|x| [x[:dev],true]}]
+        # hda - hdc
+        curr = "a".ord
+        while curr <= "d".ord
+          dev = "hd" + curr.chr
+          if exist[dev]
+            curr += 1
+            next
+          else
+            return dev
+          end
+        end
+
+        # is it better to raise our own error, or let libvirt cause the exception?
+        raise "Only four cdroms may be attached at a time"
+      end
+
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options={})
         if storage_type == :file
-          _handle_file_storage(options)
-        end
-      end
-
-      def _handle_file_storage(options={})
-        if options[:device] == :cdrom
-          _handle_cdrom_storage(options)
-        else
-          _handle_disk_storage(options)
+          if options[:device] == :cdrom
+            _handle_cdrom_storage(options)
+          else
+            _handle_disk_storage(options)
+          end
         end
       end
 
@@ -149,19 +163,25 @@ module VagrantPlugins
         #   <source file="/home/user/virtio-win-0.1-100.iso"/>
         #   <target dev="hdc"/>
         #   <readonly/>
+        #   <address type='drive' controller='0' bus='1' target='0' unit='0'/>
         # </disk>
+        #
+        # note the target dev will need to be changed with each cdrom drive (hdc, hdd, etc),
+        # as will the address unit number (unit=0, unit=1, etc)
 
         options = {
-          :dev => "hdc",
+          :dev => self._get_cdrom_dev(@cdroms),
           :bus => "ide",
           :path => nil,
         }.merge(options)
 
-        @cdrom = {
+        cdrom = {
           :dev => options[:dev],
           :bus => options[:bus],
           :path => options[:path]
         }
+
+        @cdroms << cdrom
       end
 
       def _handle_disk_storage(options={})
@@ -276,7 +296,7 @@ module VagrantPlugins
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
-        @cdrom = nil if @cdrom == UNSET_VALUE
+        @cdroms = [] if @cdroms == UNSET_VALUE
       end
 
       def validate(machine)

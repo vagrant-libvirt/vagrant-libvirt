@@ -49,10 +49,10 @@
     </disk>
 <% end -%>
 
-<% if @cdrom %>
+<% @cdroms.each do |c| %>
     <disk type='file' device='cdrom'>
-      <source file='<%= @cdrom[:path] %>'/>
-      <target dev='<%= @cdrom[:dev] %>' bus='<%= @cdrom[:bus] %>'/>
+      <source file='<%= c[:path] %>'/>
+      <target dev='<%= c[:dev] %>' bus='<%= c[:bus] %>'/>
       <readonly/>
     </disk>
 <% end %>
