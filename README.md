@@ -313,6 +313,26 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## CDROMs
+
+You can attach up to four (4) CDROMs to a VM via `libvirt.storage :file, device: cdrom`. Available options are:
+
+* `path` - The path to the iso to be used for the CDROM drive.
+* `dev` - The device to use (`hda`, `hdb`, `hdc`, or `hdd`). This will be automatically determined if unspecified.
+* `bus` - The bus to use for the CDROM drive. Defaults to `ide`
+
+The following example creates three CDROM drives in the VM:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso1.iso'
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso2.iso'
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso3.iso'
+  end
+end
+```
+
 ## SSH Access To VM
 
 vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html).
