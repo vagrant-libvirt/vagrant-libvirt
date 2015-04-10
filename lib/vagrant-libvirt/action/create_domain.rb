@@ -52,6 +52,7 @@ module VagrantPlugins
           # Storage
           @storage_pool_name = config.storage_pool_name
           @disks = config.disks
+		  @cdrom = config.cdrom
 
           config = env[:machine].provider_config
           @domain_type = config.driver
@@ -121,6 +122,7 @@ module VagrantPlugins
           @disks.each do |disk|
             env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}")
           end
+          env[:ui].info(" -- CDROM:             #{@cdrom}")
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
           # Create libvirt domain.

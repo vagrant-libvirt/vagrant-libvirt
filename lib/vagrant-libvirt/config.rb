@@ -74,6 +74,7 @@ module VagrantPlugins
 
       # Storage
       attr_accessor :disks
+  	  attr_accessor :cdrom
 
       def initialize
         @uri               = UNSET_VALUE
@@ -112,6 +113,7 @@ module VagrantPlugins
 
         # Storage
         @disks             = []
+        @cdrom			       = UNSET_VALUE
       end
 
       def _get_device(disks)
@@ -129,6 +131,40 @@ module VagrantPlugins
 
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options={})
+        if storage_type == :file
+          _handle_file_storage(options)
+        end
+      end
+
+      def _handle_file_storage(options={})
+        if options[:device] == :cdrom
+          _handle_cdrom_storage(options)
+        else
+          _handle_disk_storage(options)
+        end
+      end
+
+      def _handle_cdrom_storage(options={})
+        # <disk type="file" device="cdrom">
+        #   <source file="/home/user/virtio-win-0.1-100.iso"/>
+        #   <target dev="hdc"/>
+        #   <readonly/>
+        # </disk>
+
+        options = {
+          :dev => "hdc",
+          :bus => "ide",
+          :path => nil,
+        }.merge(options)
+
+        @cdrom = {
+          :dev => options[:dev],
+          :bus => options[:bus],
+          :path => options[:path]
+        }
+      end
+
+      def _handle_disk_storage(options={})
         options = {
           :device => _get_device(@disks),
           :type => 'qcow2',
@@ -146,9 +182,7 @@ module VagrantPlugins
           :cache => options[:cache] || 'default',
         }
 
-        if storage_type == :file
-          @disks << disk	# append
-        end
+        @disks << disk	# append
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -242,6 +276,7 @@ module VagrantPlugins
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
+        @cdrom = nil if @cdrom == UNSET_VALUE
       end
 
       def validate(machine)

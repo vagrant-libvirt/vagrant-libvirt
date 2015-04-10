@@ -48,6 +48,15 @@
 -%>
     </disk>
 <% end -%>
+
+<% if @cdrom %>
+    <disk type='file' device='cdrom'>
+      <source file='<%= @cdrom[:path] %>'/>
+      <target dev='<%= @cdrom[:dev] %>' bus='<%= @cdrom[:bus] %>'/>
+      <readonly/>
+    </disk>
+<% end %>
+
     <serial type='pty'>
       <target port='0'/>
     </serial>
