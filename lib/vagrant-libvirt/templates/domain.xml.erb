@@ -48,6 +48,15 @@
 -%>
     </disk>
 <% end -%>
+
+<% @cdroms.each do |c| %>
+    <disk type='file' device='cdrom'>
+      <source file='<%= c[:path] %>'/>
+      <target dev='<%= c[:dev] %>' bus='<%= c[:bus] %>'/>
+      <readonly/>
+    </disk>
+<% end %>
+
     <serial type='pty'>
       <target port='0'/>
     </serial>
