@@ -92,6 +92,7 @@ $ vagrant up --provider=libvirt
 Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
 That's why there is `--provider=libvirt` option specified. Other way to tell
 Vagrant to use Libvirt provider is to setup environment variable
+
 `export VAGRANT_DEFAULT_PROVIDER=libvirt`.
 
 ### How Project Is Created
