@@ -49,17 +49,17 @@ module VagrantPlugins
         env[:machine_ssh_info]
       end
 
-	  def mac_addresses
-	  	# Run a custom action called "read_mac_addresses" which will return
-		# a list of mac addresses used by the machine. The returned data will
-		# be in the following format:
-		#
-		# {
-		# 	<ADAPTER_ID>: <MAC>
-		# }
-		env = @machine.action('read_mac_addresses')
-		env[:machine_mac_addresses]
-	  end
+      def mac_addresses
+        # Run a custom action called "read_mac_addresses" which will return
+        # a list of mac addresses used by the machine. The returned data will
+        # be in the following format:
+        #
+        # {
+        #   <ADAPTER_ID>: <MAC>
+        # }
+        env = @machine.action('read_mac_addresses')
+        env[:machine_mac_addresses]
+      end
 
       # This should return the state of the machine within this provider.
       # The state must be an instance of {MachineState}.
