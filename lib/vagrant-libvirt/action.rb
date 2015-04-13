@@ -286,6 +286,14 @@ module VagrantPlugins
         end
       end
 
+      def self.action_read_mac_addresses
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use ReadMacAddresses
+        end
+      end
+
       # This is the action that will run a single SSH command.
       def self.action_ssh_run
         Vagrant::Action::Builder.new.tap do |b|
@@ -336,6 +344,7 @@ module VagrantPlugins
       autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
 
       autoload :ReadSSHInfo, action_root.join('read_ssh_info')
+      autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
       autoload :ReadState, action_root.join('read_state')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
