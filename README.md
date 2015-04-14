@@ -252,7 +252,7 @@ starts with 'libvirt__' string. Here is a list of those options:
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
 * `:mac` - MAC address for the interface.
-* `model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+* `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
 When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
 whether the virtual network contains a DHCP server or not and vagrant-libvirt
