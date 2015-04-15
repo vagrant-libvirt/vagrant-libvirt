@@ -247,7 +247,7 @@ module VagrantPlugins
           # set ssh key for access to libvirt host
           uri << "\&keyfile="
           # if no slash, prepend $HOME/.ssh/
-          uri << "#{`echo ${HOME}`.chomp}/.ssh/" if @id_ssh_key_file !~ /\//
+          uri << "#{`echo ${HOME}`.chomp}/.ssh/" if @id_ssh_key_file !~ /\A\//
           uri << @id_ssh_key_file
         end
         # set path to libvirt socket
