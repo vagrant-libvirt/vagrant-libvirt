@@ -3,7 +3,6 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-
       class CreateDomain
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
@@ -13,15 +12,17 @@ module VagrantPlugins
         end
 
         def _disk_name(name, disk)
-          return "#{name}-#{disk[:device]}.#{disk[:type]}"	# disk name
+          "#{name}-#{disk[:device]}.#{disk[:type]}"	# disk name
         end
 
         def _disks_print(disks)
-          return disks.collect{ |x| x[:device]+'('+x[:type]+','+x[:size]+')' }.join(', ')
+          disks.collect do |x|
+            x[:device] + '(' + x[:type] + ',' + x[:size] + ')'
+          end.join(', ')
         end
 
         def _cdroms_print(cdroms)
-          return cdroms.collect{ |x| x[:dev] }.join(', ')
+          cdroms.collect { |x| x[:dev] }.join(', ')
         end
 
         def call(env)
@@ -35,7 +36,7 @@ module VagrantPlugins
           @machine_type = config.machine_type
           @disk_bus = config.disk_bus
           @nested = config.nested
-          @memory_size = config.memory.to_i*1024
+          @memory_size = config.memory.to_i * 1024
           @domain_volume_cache = config.volume_cache
           @kernel = config.kernel
           @cmd_line = config.cmd_line
@@ -70,10 +71,9 @@ module VagrantPlugins
           @domain_volume_path = domain_volume.path
 
           # the default storage prefix is typically: /var/lib/libvirt/images/
-          storage_prefix = File.dirname(@domain_volume_path)+'/'	# steal
+          storage_prefix = File.dirname(@domain_volume_path) + '/'	# steal
 
           @disks.each do |disk|
-
             disk[:path] ||= _disk_name(@name, disk)
 
             # On volume creation, the <path> element inside <target>
@@ -88,15 +88,15 @@ module VagrantPlugins
             # qemu-img create -f qcow2 <path> 5g
             begin
               domain_volume_disk = env[:libvirt_compute].volumes.create(
-                :name => disk[:name],
-                :format_type => disk[:type],
-                :path => disk[:absolute_path],
-                :capacity => disk[:size],
+                name: disk[:name],
+                format_type: disk[:type],
+                path: disk[:absolute_path],
+                capacity: disk[:size],
                 #:allocation => ?,
-                :pool_name => @storage_pool_name)
+                pool_name: @storage_pool_name)
             rescue Fog::Errors::Error => e
               raise Errors::FogDomainVolumeCreateError,
-                :error_message => e.message
+                  error_message:  e.message
             end
           end
 
@@ -105,7 +105,7 @@ module VagrantPlugins
           env[:ui].info(" -- Name:              #{@name}")
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
-          env[:ui].info(" -- Memory:            #{@memory_size/1024}M")
+          env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           env[:ui].info(" -- Image:             #{@domain_volume_path}")
@@ -115,7 +115,7 @@ module VagrantPlugins
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
           env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
           env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
-          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined': 'Defined'}")
+          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined' : 'Defined'}")
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
@@ -140,10 +140,9 @@ module VagrantPlugins
           # existing volume? Use domain creation from template..
           begin
             server = env[:libvirt_compute].servers.create(
-              :xml => to_xml('domain'))
+              xml: to_xml('domain'))
           rescue Fog::Errors::Error => e
-            raise Errors::FogCreateServerError,
-              :error_message => e.message
+            raise Errors::FogCreateServerError, error_message:  e.message
           end
 
           # Immediately save the ID since it is created at this point.
@@ -152,7 +151,6 @@ module VagrantPlugins
           @app.call(env)
         end
       end
-
     end
   end
 end

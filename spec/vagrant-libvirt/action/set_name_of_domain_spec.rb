@@ -10,12 +10,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain do
     dmn = VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain.new(Object.new, @env)
     first  = dmn.build_domain_name(@env)
     second = dmn.build_domain_name(@env)
-    first.should_not eq(second) 
+    first.should_not eq(second)
   end
 
   it "builds simple domain name" do
     @env.default_prefix= 'pre'
     dmn = VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain.new(Object.new, @env)
-    dmn.build_domain_name(@env).should eq('pre_') 
+    dmn.build_domain_name(@env).should eq('pre_')
   end
 end
