@@ -37,6 +37,11 @@ module VagrantPlugins
         Cap::MountP9
       end
 
+      provider_capability(:libvirt, :nic_mac_addresses) do
+        require_relative "cap/nic_mac_addresses"
+        Cap::NicMacAddresses
+      end
+
       # lower priority than nfs or rsync
       # https://github.com/pradels/vagrant-libvirt/pull/170
       synced_folder("9p", 4) do
