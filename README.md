@@ -121,7 +121,7 @@ Although it should work without any configuration for most people, this provider
 * `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
-* `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
+* `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt. Default is $HOME/.ssh/id_rsa. Prepends $HOME/.ssh/ if no directory.  
 * `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
 * `uri` - For advanced usage. Directly specifies what libvirt connection URI vagrant-libvirt should use. Overrides all other connection configuration options.
 
