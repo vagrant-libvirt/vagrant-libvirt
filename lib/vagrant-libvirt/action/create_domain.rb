@@ -84,26 +84,23 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            # make the disk. equivalent to:
-            # qemu-img create -f qcow2 <path> 5g
-            begin
-              domain_volume_disk = env[:libvirt_compute].volumes.create(
-                name: disk[:name],
-                format_type: disk[:type],
-                path: disk[:absolute_path],
-                capacity: disk[:size],
-                #:allocation => ?,
-                pool_name: @storage_pool_name)
-            rescue Fog::Errors::Error => e
-              raise Errors::FogDomainVolumeCreateError,
-                  error_message:  e.message
-            rescue Libvirt::Error => e
-              if disk[:allow_existing] &&
-                  e.message =~ /storage vol.* (already exists|exists already)/
-                disk[:preexisting] = true
-              else
-                raise
+            if env[:libvirt_compute].volumes.all.select {|x| x.name == disk[:name] }.empty?
+              # make the disk. equivalent to:
+              # qemu-img create -f qcow2 <path> 5g
+              begin
+                env[:libvirt_compute].volumes.create(
+                  name: disk[:name],
+                  format_type: disk[:type],
+                  path: disk[:absolute_path],
+                  capacity: disk[:size],
+                  #:allocation => ?,
+                  pool_name: @storage_pool_name)
+              rescue Fog::Errors::Error => e
+                raise Errors::FogDomainVolumeCreateError,
+                    error_message:  e.message
               end
+            else
+              disk[:preexisting] = true
             end
           end
 
@@ -134,6 +131,7 @@ module VagrantPlugins
           @disks.each do |disk|
             msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
             msg += " (shared. Remove only manualy)" if disk[:allow_existing]
+            msg += " Not created - using existed." if disk[:preexisting]
             env[:ui].info(msg)
           end
 

@@ -298,7 +298,7 @@ You can create and attach additional disks to a VM via `libvirt.storage :file`. 
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
 * `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks) or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation). Defaults to *default*.
-* `allow_existing` - Set to true if you want to allow the VM to use a pre-existing disk.  This is useful for sharing disks between VMs, e.g. in order to simulate shared SAN storage. Shared disks removed only manualy.
+* `allow_existing` - Set to true if you want to allow the VM to use a pre-existing disk.  This is useful for sharing disks between VMs, e.g. in order to simulate shared SAN storage. Shared disks removed only manualy.If not exists - will created. If exists - using existed.
 
 The following example creates two additional disks.
 
