@@ -28,7 +28,20 @@ module VagrantPlugins
           end
 
           domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
-          domain.destroy(destroy_volumes: true)
+
+
+          # if using default configuration of disks
+          domain.destroy(destroy_volumes: env[:machine].provider_config.disks.empty?)
+
+          env[:machine].provider_config.disks.each do |disk|
+            next if disk[:allow_existing] # shared disks remove only manualy or ???
+            diskname = libvirt_domain.name + "-" + disk[:device] + ".raw"
+            # diskname is uniq
+            env[:libvirt_compute].volumes.all.select{|x| x.name == diskname }.first.destroy
+          end
+
+          #remove root storage
+          env[:libvirt_compute].volumes.all.select{|x| x.name == libvirt_domain.name + ".img" }.first.destroy
 
           @app.call(env)
         end

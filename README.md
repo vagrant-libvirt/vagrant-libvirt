@@ -121,7 +121,7 @@ Although it should work without any configuration for most people, this provider
 * `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
-* `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt. Default is $HOME/.ssh/id_rsa. Prepends $HOME/.ssh/ if no directory.  
+* `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt. Default is $HOME/.ssh/id_rsa. Prepends $HOME/.ssh/ if no directory.
 * `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
 * `uri` - For advanced usage. Directly specifies what libvirt connection URI vagrant-libvirt should use. Overrides all other connection configuration options.
 
@@ -298,7 +298,7 @@ You can create and attach additional disks to a VM via `libvirt.storage :file`. 
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
 * `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks) or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation). Defaults to *default*.
-* `allow_existing` - Set to true if you want to allow the VM to use a pre-existing disk.  This is useful for sharing disks between VMs, e.g. in order to simulate shared SAN storage.
+* `allow_existing` - Set to true if you want to allow the VM to use a pre-existing disk.  This is useful for sharing disks between VMs, e.g. in order to simulate shared SAN storage. Shared disks removed only manualy.
 
 The following example creates two additional disks.
 

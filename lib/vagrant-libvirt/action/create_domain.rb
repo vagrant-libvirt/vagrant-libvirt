@@ -132,8 +132,8 @@ module VagrantPlugins
           end
 
           @disks.each do |disk|
-            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}")
-            msg += " (preexisting)" if disk[:preexisting]
+            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
+            msg += " (shared. Remove only manualy)" if disk[:allow_existing]
             env[:ui].info(msg)
           end
 
