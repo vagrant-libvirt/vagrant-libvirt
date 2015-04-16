@@ -97,6 +97,13 @@ module VagrantPlugins
             rescue Fog::Errors::Error => e
               raise Errors::FogDomainVolumeCreateError,
                   error_message:  e.message
+            rescue Libvirt::Error => e
+              if disk[:allow_existing] &&
+                  e.message =~ /storage vol.* (already exists|exists already)/
+                disk[:preexisting] = true
+              else
+                raise
+              end
             end
           end
 
@@ -123,16 +130,21 @@ module VagrantPlugins
           if @disks.length > 0
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
+
           @disks.each do |disk|
-            env[:ui].info(" -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}")
+            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}")
+            msg += " (preexisting)" if disk[:preexisting]
+            env[:ui].info(msg)
           end
 
           if @cdroms.length > 0
             env[:ui].info(" -- CDROMS:            #{_cdroms_print(@cdroms)}")
           end
+
           @cdroms.each do |cdrom|
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
+
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
           # Create libvirt domain.

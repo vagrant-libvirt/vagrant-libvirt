@@ -200,6 +200,7 @@ module VagrantPlugins
           :path => options[:path],
           :bus => options[:bus],
           :cache => options[:cache] || 'default',
+          :allow_existing => options[:allow_existing],
         }
 
         @disks << disk	# append
