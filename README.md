@@ -395,10 +395,12 @@ Used Packer to create the qcow2 images, templates available at https://github.co
 
 ## Development
 
-To work on the `vagrant-libvirt` plugin, clone this repository out, and use
-[Bundler](http://gembundler.com) to get the dependencies:
+To work on the `vagrant-libvirt` plugin, install
+[Bundler](http://gembundler.com), clone this repository out, and
+use Bundler to get the dependencies:
 
 ```
+$ sudo gem install bundler --version '<1.8.0'
 $ git clone https://github.com/pradels/vagrant-libvirt.git
 $ cd vagrant-libvirt
 $ bundle install
