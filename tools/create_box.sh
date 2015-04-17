@@ -3,7 +3,7 @@
 
 error() {
     local msg="${1}"
-    echo "==> ${msg}"
+    echo "==> ERROR: ${msg}"
     exit 1
 }
 
@@ -70,6 +70,10 @@ if [[ -n $(backing "$IMG") ]]; then
     cp "$IMG" "$TMP_IMG"
     rebase "$TMP_IMG"
 else
+    if fuser -s "$IMG"; then
+        error "Image '$IMG_BASENAME' is used by another process"
+    fi
+
     # move the image to get a speed-up and use less space on disk
     trap 'mv "$TMP_IMG" "$IMG"; rm -rf "$TMP_DIR"' EXIT
     mv "$IMG" "$TMP_IMG"
