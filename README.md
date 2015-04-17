@@ -390,12 +390,13 @@ The box is a tarball containing:
 * `Vagrantfile` that does default settings for the provider-specific configuration for this provider.
 
 ## Create Box
-This script creates a vagrant-libvirt box from a qcow2 file:
+To create a vagrant-libvirt box from a qcow2 image, run `create_box.sh` (located in the tools directory):
 
-Usage:
+```$ create_box.sh ubuntu14.qcow2```
 
-```create_box.sh ubuntu14.qcow2```
-Used Packer to create the qcow2 images, templates available at https://github.com/jakobadam/packer-qemu-templates
+You can also create a box by using [Packer](https://packer.io). Packer templates for use with vagrant-libvirt are available at https://github.com/jakobadam/packer-qemu-templates. After cloning that project you can build a vagrant-libvirt box by running:
+
+``` ~/packer-qemu-templates/ubuntu$ packer build ubuntu-14.04-server-amd64-vagrant.json```
 
 ## Development
 
