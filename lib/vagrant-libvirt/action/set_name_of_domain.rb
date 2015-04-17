@@ -43,7 +43,7 @@ module VagrantPlugins
         # @return [String] libvirt domain name
         def build_domain_name(env)
           config = env[:machine].provider_config
-          domain_name = 
+          domain_name =
             if config.default_prefix.nil?
               env[:root_path].basename.to_s.dup
             else
