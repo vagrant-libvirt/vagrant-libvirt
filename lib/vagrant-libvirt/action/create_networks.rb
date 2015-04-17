@@ -245,6 +245,8 @@ module VagrantPlugins
             stop_address = net.to_range.end & IPAddr.new('255.255.255.254')
 
             @network_dhcp_enabled = true
+            @network_dhcp_bootp_file = @options[:dhcp_bootp_file]
+            @network_dhcp_bootp_server = @options[:dhcp_bootp_server]
             @network_range_start = start_address
             @network_range_stop = stop_address
           else

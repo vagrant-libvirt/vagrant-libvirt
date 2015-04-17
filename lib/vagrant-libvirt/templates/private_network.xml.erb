@@ -15,6 +15,13 @@
     <% if @network_dhcp_enabled  %>
       <dhcp>
         <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>" />
+        <% if @network_dhcp_bootp_file  %>
+          <% if @network_dhcp_bootp_server  %>
+            <bootp file="<%= @network_dhcp_bootp_file %>" server="<%= @network_dhcp_bootp_server %>" />
+          <% else %>
+            <bootp file="<%= @network_dhcp_bootp_file %>" />
+          <% end %>
+        <% end %>
       </dhcp>
     <% end %>
     </ip>
