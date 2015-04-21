@@ -27,10 +27,17 @@ module VagrantPlugins
           end
           # Find the machine
           begin
+            # Wait for libvirt to shutdown the domain
+            while libvirt.servers.get(machine.id).state.to_sym == :'shutting-down' do
+              @logger.info('Waiting on the machine to shut down...')
+              sleep 1
+            end
+
             server = libvirt.servers.get(machine.id)
-            if server.nil? || [:'shutting-down', :terminated].include?(server.state.to_sym)
+
+            if server.nil? || server.state.to_sym == :terminated
               # The machine can't be found
-              @logger.info('Machine shutting down or terminated, assuming it got destroyed.')
+              @logger.info('Machine terminated, assuming it got destroyed.')
               machine.id = nil
               return :not_created
             end
