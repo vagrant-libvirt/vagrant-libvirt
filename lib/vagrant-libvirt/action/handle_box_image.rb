@@ -123,11 +123,7 @@ module VagrantPlugins
               :error_message => e.message
           end
 
-          if progress == image_size
-            return true
-          else
-            return false
-          end
+          return progress == image_size
         end
 
       end
