@@ -34,7 +34,6 @@ module VagrantPlugins
               b2.use CreateNetworks
               b2.use CreateNetworkInterfaces
 
-
               b2.use PrepareNFSValidIds
               b2.use SyncedFolderCleanup
               b2.use SyncedFolders
@@ -44,9 +43,6 @@ module VagrantPlugins
 
               b2.use StartDomain
               b2.use WaitTillUp
-
-
-
 
               b2.use ForwardPorts
 
@@ -90,7 +86,6 @@ module VagrantPlugins
               b3.use SyncedFolderCleanup
               b3.use SyncedFolders
 
-
               # Start it..
               b3.use StartDomain
 
@@ -98,11 +93,9 @@ module VagrantPlugins
               # so wait for dhcp lease and store IP into machines data_dir.
               b3.use WaitTillUp
 
-
               b3.use ForwardPorts
               b3.use PrepareNFSSettings
               b3.use ShareFolders
-
             end
           end
         end
