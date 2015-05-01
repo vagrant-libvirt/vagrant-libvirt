@@ -34,7 +34,9 @@ module VagrantPlugins
           ip_address = nil
           domain.wait_for(2) {
             addresses.each_pair do |type, ip|
-              ip_address = ip[0] if ip[0] != nil
+              # Multiple leases are separated with a newline, return only
+              # the most recent address
+              ip_address = ip[0].split("\n").first if ip[0] != nil
             end
             ip_address != nil
           }
