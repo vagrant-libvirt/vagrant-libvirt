@@ -8,6 +8,13 @@ module VagrantPlugins
       include Vagrant::Action::Builtin
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
+      # remove image from libvirt storage pool
+      def self.remove_libvirt_image
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use RemoveLibvirtImage
+        end
+      end
+
       # This action is called to bring the box up from nothing.
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
@@ -331,6 +338,7 @@ module VagrantPlugins
       autoload :HaltDomain, action_root.join('halt_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')
+      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
       autoload :IsCreated, action_root.join('is_created')
       autoload :IsRunning, action_root.join('is_running')
       autoload :IsSuspended, action_root.join('is_suspended')

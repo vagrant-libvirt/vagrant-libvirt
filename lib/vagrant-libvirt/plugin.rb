@@ -32,6 +32,11 @@ module VagrantPlugins
         Provider
       end
 
+      action_hook(:remove_libvirt_image) do |hook|
+        hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
+      end
+
+
       guest_capability('linux', 'mount_p9_shared_folder') do
         require_relative 'cap/mount_p9'
         Cap::MountP9
@@ -88,4 +93,3 @@ module VagrantPlugins
     end
   end
 end
-
