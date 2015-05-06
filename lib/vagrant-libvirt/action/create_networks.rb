@@ -121,7 +121,12 @@ module VagrantPlugins
           # Set IP address of network (actually bridge). It will be used as
           # gateway address for machines connected to this network.
           net = IPAddr.new(net_address)
-          @interface_network[:ip_address] = net.to_range.begin.succ
+          if @options[:host_ip].nil?
+            # Default to first address (after network name)
+            @interface_network[:ip_address] = net.to_range.begin.succ
+          else
+            @interface_network[:ip_address] = IPAddr.new @options[:host_ip]
+          end
 
           # Is there an available network matching to configured ip
           # address?
@@ -235,14 +240,13 @@ module VagrantPlugins
             network_address << "#{@interface_network[:netmask]}"
             net = IPAddr.new(network_address)
 
-            # First is address of network, second is gateway.
-            # Start the range two
-            # addresses after network address.
+            # First is address of network, second is gateway (by default).
+            # So start the range two addresses after network address by default.
             # TODO: Detect if this IP is not set on the interface.
-            start_address = net.to_range.begin.succ.succ
+            start_address = @options[:dhcp_start] || net.to_range.begin.succ
 
-            # Stop address must not be broadcast.
-            stop_address = net.to_range.end & IPAddr.new('255.255.255.254')
+            # Default to last possible address. (Stop address must not be broadcast address.)
+            stop_address = @options[:dhcp_stop] || (net.to_range.end & IPAddr.new('255.255.255.254'))
 
             @network_dhcp_enabled = true
             @network_dhcp_bootp_file = @options[:dhcp_bootp_file]
