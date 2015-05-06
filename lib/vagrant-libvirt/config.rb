@@ -287,7 +287,7 @@ module VagrantPlugins
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
-        if (@graphics_type != 'vnc' && @graphics_port != 'spice') ||
+        if (@graphics_type != 'vnc' && @graphics_type != 'spice') ||
             @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
