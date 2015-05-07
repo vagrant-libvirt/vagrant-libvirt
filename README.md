@@ -240,8 +240,14 @@ starts with 'libvirt__' string. Here is a list of those options:
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
+* `:libvirt__host_ip` - Adress to use for the host (not guest).
+  Default is first possible address (after network address).
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
+* `:libvirt__dhcp_start` - First address given out via DHCP.
+  Default is third address in range (after network name and gateway).
+* `:libvirt__dhcp_stop` - Last address given out via DHCP.
+  Default is last possible address in range (before broadcast address).
 * `:libvirt__dhcp_bootp_file` - The file to be used for the boot image.
   Used only when dhcp is enabled.
 * `:libvirt__dhcp_bootp_server` - The server that runs the DHCP server.
