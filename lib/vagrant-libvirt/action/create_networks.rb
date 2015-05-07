@@ -121,12 +121,8 @@ module VagrantPlugins
           # Set IP address of network (actually bridge). It will be used as
           # gateway address for machines connected to this network.
           net = IPAddr.new(net_address)
-          if @options[:host_ip].nil?
-            # Default to first address (after network name)
-            @interface_network[:ip_address] = net.to_range.begin.succ
-          else
-            @interface_network[:ip_address] = IPAddr.new @options[:host_ip]
-          end
+          # Default to first address (after network name)
+          @interface_network[:ip_address] = @options[:host_ip].nil? ? net.to_range.begin.succ : IPAddr.new @options[:host_ip]
 
           # Is there an available network matching to configured ip
           # address?
