@@ -44,7 +44,8 @@ module VagrantPlugins
               # Get a list of all (active and inactive) libvirt networks. This
               # list is used throughout this class and should be easier to
               # process than libvirt API calls.
-              @available_networks = libvirt_networks(env[:libvirt_compute].client)
+              @available_networks = libvirt_networks(
+                                      env[:libvirt_compute].client)
 
               # Prepare a hash describing network for this specific interface.
               @interface_network = {
@@ -56,7 +57,7 @@ module VagrantPlugins
                 created:          false,
                 active:           false,
                 autostart:        false,
-                libvirt_network:  nil,
+                libvirt_network:  nil
               }
 
               if @options[:ip]
@@ -122,7 +123,7 @@ module VagrantPlugins
           # gateway address for machines connected to this network.
           net = IPAddr.new(net_address)
           # Default to first address (after network name)
-          @interface_network[:ip_address] = @options[:host_ip].nil? ? net.to_range.begin.succ : IPAddr.new @options[:host_ip]
+          @interface_network[:ip_address] = @options[:host_ip].nil? ? net.to_range.begin.succ : IPAddr.new(@options[:host_ip])
 
           # Is there an available network matching to configured ip
           # address?
