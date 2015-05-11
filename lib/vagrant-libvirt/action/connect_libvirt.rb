@@ -1,4 +1,4 @@
-require 'fog'
+require 'fog/libvirt'
 require 'log4r'
 
 module VagrantPlugins
