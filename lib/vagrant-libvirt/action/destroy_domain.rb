@@ -4,7 +4,7 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class DestroyDomain
-        def initialize(app, env)
+        def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::destroy_domain')
           @app = app
         end
@@ -17,7 +17,8 @@ module VagrantPlugins
           # Fog libvirt currently doesn't support snapshots. Use
           # ruby-libvirt client directly. Note this is racy, see
           # http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames
-          libvirt_domain = env[:libvirt_compute].client.lookup_domain_by_uuid(env[:machine].id)
+          libvirt_domain =  env[:libvirt_compute].client.lookup_domain_by_uuid(
+                              env[:machine].id)
           libvirt_domain.list_snapshots.each do |name|
             @logger.info("Deleting snapshot '#{name}'")
             begin
@@ -36,14 +37,21 @@ module VagrantPlugins
             domain.destroy(destroy_volumes: false)
 
             env[:machine].provider_config.disks.each do |disk|
-              next if disk[:allow_existing] # shared disks remove only manualy or ???
-              diskname = libvirt_domain.name + "-" + disk[:device] + ".raw"
+              # shared disks remove only manualy or ???
+              next if disk[:allow_existing]
+              diskname = libvirt_domain.name + '-' + disk[:device] + '.' + disk[:type].to_s
               # diskname is uniq
-              env[:libvirt_compute].volumes.all.select{|x| x.name == diskname }.first.destroy
+              libvirt_disk = env[:libvirt_compute].volumes.all.select do |x|
+                x.name == diskname
+              end.first
+              libvirt_disk.destroy if libvirt_disk
             end
 
-            #remove root storage
-            env[:libvirt_compute].volumes.all.select{|x| x.name == libvirt_domain.name + ".img" }.first.destroy
+            # remove root storage
+            root_disk = env[:libvirt_compute].volumes.all.select do |x|
+              x.name == libvirt_domain.name + '.img'
+            end.first
+            root_disk.destroy if root_disk
           end
 
           @app.call(env)
