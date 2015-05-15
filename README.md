@@ -54,6 +54,13 @@ In RedHat, Centos, Fedora, ...
 # yum install libxslt-devel libxml2-devel libvirt-devel
 ```
 
+If have problem with installation - check your linker. It should be ld.gold:
+```
+sudo alternatives --set ld /usr/bin/ld.gold
+# OR
+sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
+```
+
 ## Vagrant Project Preparation
 
 ### Add Box
