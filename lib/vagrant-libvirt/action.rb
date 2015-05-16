@@ -41,9 +41,6 @@ module VagrantPlugins
               b2.use StartDomain
               b2.use WaitTillUp
 
-              b2.use StartDomain
-              b2.use WaitTillUp
-
               b2.use ForwardPorts
 
               b2.use PrepareNFSSettings
