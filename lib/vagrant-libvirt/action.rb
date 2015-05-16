@@ -144,8 +144,10 @@ module VagrantPlugins
 
       # not implemented and looks like not require
       def self.action_package
-        lambda do |env|
-          raise Errors::PackageNotSupported
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use PackageDomain
         end
       end
 
@@ -317,6 +319,7 @@ module VagrantPlugins
 
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
       autoload :ConnectLibvirt, action_root.join('connect_libvirt')
+      autoload :PackageDomain, action_root.join('package_domain')
       autoload :CreateDomain, action_root.join('create_domain')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')

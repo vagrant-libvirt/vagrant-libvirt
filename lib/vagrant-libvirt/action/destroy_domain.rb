@@ -41,14 +41,14 @@ module VagrantPlugins
               next if disk[:allow_existing]
               diskname = libvirt_domain.name + '-' + disk[:device] + '.' + disk[:type].to_s
               # diskname is uniq
-              libvirt_disk = env[:libvirt_compute].volumes.all.select do |x|
+              libvirt_disk = domain.volumes.select do |x|
                 x.name == diskname
               end.first
               if libvirt_disk
                 libvirt_disk.destroy
               elsif disk[:path]
                 poolname = env[:machine].provider_config.storage_pool_name
-                libvirt_disk = env[:libvirt_compute].volumes.all.select do |x|
+                libvirt_disk = domain.volumes.select do |x|
                   # FIXME can remove pool/target.img and pool/123/target.img
                   x.path =~ /\/#{disk[:path]}$/ && x.pool_name == poolname
                 end.first
@@ -57,7 +57,7 @@ module VagrantPlugins
             end
 
             # remove root storage
-            root_disk = env[:libvirt_compute].volumes.all.select do |x|
+            root_disk = domain.volumes.select do |x|
               x.name == libvirt_domain.name + '.img'
             end.first
             root_disk.destroy if root_disk
