@@ -56,7 +56,7 @@ module VagrantPlugins
           return ssh_host if ping(ssh_host)
 
           # check other ips
-          command = "LANG=en ifconfig |grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1 }'"
+          command = "ip addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
           result  = ""
           machine.communicate.execute(command) do |type, data|
             result << data if type == :stdout
