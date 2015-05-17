@@ -10,7 +10,7 @@ welcome and can help a lot :-)
 ## Features
 
 * Control local Libvirt hypervisors.
-* Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload` and `provision` commands.
+* Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload`, `package` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
 * Create private networks.
@@ -51,7 +51,7 @@ $ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
 
 In RedHat, Centos, Fedora, ...
 ```
-# yum install libxslt-devel libxml2-devel libvirt-devel
+# yum install libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
 ```
 
 If have problem with installation - check your linker. It should be ld.gold:
@@ -375,9 +375,9 @@ You can change the synced folder type for */vagrant* by explicity configuring
 it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
-    
-    or 
-    
+
+    or
+
     config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
 
 ## Customized Graphics

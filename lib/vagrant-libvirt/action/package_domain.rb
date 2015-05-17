@@ -35,6 +35,9 @@ module VagrantPlugins
           env[:ui].info('Image has backing image, copying image and rebasing ...')
           FileUtils.cp(root_disk.path, @tmp_img)
           `qemu-img rebase -p -b "" #{@tmp_img}`
+          # remove hw association with interface
+          # working for centos with lvs default disks
+          `virt-sysprep --no-logfile  -a #{@tmp_img} `
           Dir.chdir(@tmp_dir)
           img_size = `qemu-img info #{@tmp_img} | grep 'virtual size' | awk '{print $3;}' | tr -d 'G'`.chomp
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
