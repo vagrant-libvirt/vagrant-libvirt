@@ -31,20 +31,18 @@ module VagrantPlugins
               b2.use CreateDomain
 
               b2.use Provision
-              b2.use CreateNetworks
-              b2.use CreateNetworkInterfaces
-
               b2.use PrepareNFSValidIds
               b2.use SyncedFolderCleanup
               b2.use SyncedFolders
+              b2.use PrepareNFSSettings
+              b2.use ShareFolders
+              b2.use CreateNetworks
+              b2.use CreateNetworkInterfaces
 
               b2.use StartDomain
               b2.use WaitTillUp
 
               b2.use ForwardPorts
-
-              b2.use PrepareNFSSettings
-              b2.use ShareFolders
               b2.use SetHostname
               # b2.use SyncFolders
             else

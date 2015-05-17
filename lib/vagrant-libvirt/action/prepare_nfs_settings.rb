@@ -1,10 +1,13 @@
 require 'nokogiri'
+require 'socket'
+require 'timeout'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
         include Vagrant::Action::Builtin::MixinSyncedFolders
-        
+
         def initialize(app,env)
           @app = app
           @logger = Log4r::Logger.new("vagrant::action::vm::nfs")
@@ -16,8 +19,8 @@ module VagrantPlugins
 
           if using_nfs?
             @logger.info("Using NFS, preparing NFS settings by reading host IP and machine IP")
-            env[:nfs_host_ip]    = read_host_ip(env[:machine],env)
-            env[:nfs_machine_ip] = env[:machine].ssh_info[:host]
+            env[:nfs_host_ip]    = read_host_ip(env[:machine])
+            env[:nfs_machine_ip] = read_machine_ip(env[:machine])
 
             @logger.info("host IP: #{env[:nfs_host_ip]} machine IP: #{env[:nfs_machine_ip]}")
 
@@ -32,37 +35,54 @@ module VagrantPlugins
           !!synced_folders(@machine)[:nfs]
         end
 
-        # Returns the IP address of the first host only network adapter
+        # Returns the IP address of the host
         #
         # @param [Machine] machine
         # @return [String]
-        def read_host_ip(machine,env)
-          nets = env[:libvirt_compute].list_networks
-          if nets.size == 1
-            net = nets.first
-          else
-            domain = env[:libvirt_compute].servers.get(machine.id.to_s)
-            xml=Nokogiri::XML(domain.to_xml)
-            networkname = xml.xpath('/domain/devices/interface/source').first.attributes['network'].value.to_s
-            @logger.info("Using network named #{networkname}")
-            net = env[:libvirt_compute].list_networks.find {|netw| netw[:name] == networkname}
+        def read_host_ip(machine)
+          UDPSocket.open do |s|
+            s.connect(machine.ssh_info[:host], 1)
+            s.addr.last
           end
-          # FIXME better implement by libvirt xml parsing
-          `ip addr show | grep -A 2 #{net[:bridge_name]} | grep -i 'inet ' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1`.chomp
         end
 
-        # Returns the IP address of the guest by looking at the first
-        # enabled host only network.
+        # Returns the IP address of the guest
         #
+        # @param [Machine] machine
         # @return [String]
         def read_machine_ip(machine)
-          machine.config.vm.networks.each do |type, options|
-            if type == :private_network && options[:ip].is_a?(String)
-              return options[:ip]
-            end
+          # check host only ip
+          ssh_host = machine.ssh_info[:host]
+          return ssh_host if ping(ssh_host)
+
+          # check other ips
+          command = "ip addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
+          result  = ""
+          machine.communicate.execute(command) do |type, data|
+            result << data if type == :stdout
           end
 
-          nil
+          ips = result.chomp.split("\n")
+          @logger.info("guest IPs: #{ips.join(', ')}")
+          ips.each do |ip|
+            next if ip == ssh_host
+            return ip if ping(ip)
+          end
+        end
+
+        private
+
+        # Check if we can open a connection to the host
+        def ping(host, timeout = 3)
+          timeout(timeout) do
+            s = TCPSocket.new(host, 'echo')
+            s.close
+          end
+          true
+        rescue Errno::ECONNREFUSED
+          true
+        rescue Timeout::Error, StandardError
+          false
         end
       end
     end
