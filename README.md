@@ -378,7 +378,7 @@ it an setting the type, e.g.
     
     or 
     
-    config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped"
+    config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
 
 ## Customized Graphics
 
