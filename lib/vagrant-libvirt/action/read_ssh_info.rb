@@ -48,8 +48,8 @@ module VagrantPlugins
             :forward_agent => machine.config.ssh.forward_agent,
             :forward_x11   => machine.config.ssh.forward_x11,
           }
-          
-          ssh_info[:proxy_command] = "ssh '#{machine.provider_config.host}' -l '#{machine.provider_config.username}' nc %h %p" if machine.provider_config.connect_via_ssh
+
+          ssh_info[:proxy_command] = "ssh '#{machine.provider_config.host}' -l '#{machine.provider_config.username}' -i '#{machine.provider_config.id_ssh_key_file}' nc %h %p" if machine.provider_config.connect_via_ssh
 
           ssh_info
         end
