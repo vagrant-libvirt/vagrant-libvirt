@@ -375,6 +375,10 @@ You can change the synced folder type for */vagrant* by explicity configuring
 it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
+    
+    or 
+    
+    ```config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped"```
 
 ## Customized Graphics
 
