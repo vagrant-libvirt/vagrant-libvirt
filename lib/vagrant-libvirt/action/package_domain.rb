@@ -41,6 +41,7 @@ module VagrantPlugins
           File.write(@tmp_dir + '/Vagrantfile',vagrantfile_content)
           assebmle_box(boxname)
           FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
+          FileUtils.rm_rf(@tmp_dir)
           env[:ui].info('Box created')
           env[:ui].info('You can now add the box:')
           env[:ui].info("vagrant box add #{boxname} --name any_comfortable_name")
