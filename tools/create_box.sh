@@ -60,7 +60,7 @@ TMP_IMG="$TMP_DIR/box.img"
 
 mkdir -p "$TMP_DIR"
 
-[[ ! -w "$IMG" ]] && error "'$IMG': Permission denied"
+[[ ! -r "$IMG" ]] && error "'$IMG': Permission denied"
 
 # We move / copy (when the image has master) the image to the tempdir
 # ensure that it's moved back / removed again
