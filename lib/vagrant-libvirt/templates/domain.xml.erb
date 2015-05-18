@@ -14,11 +14,19 @@
   <% end %>
 
   <os>
-  <% if @machine_type %>
-    <type machine='<%= @machine_type %>'>hvm</type>
-  <% else %>
-    <type>hvm</type>
-  <% end %>
+    <% if @machine_type %>
+      <% if @machine_arch %>
+        <type arch='<%= @machine_arch %>' machine='<%= @machine_type %>'>hvm</type>
+      <% else %>
+        <type machine='<%= @machine_type %>'>hvm</type>
+      <% end %>
+    <% else %>
+      <% if @machine_arch %>
+        <type arch='<%= @machine_arch %>'>hvm</type>
+      <% else %>
+        <type>hvm</type>
+      <% end %>
+    <% end %>
     <boot dev='hd'/>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>

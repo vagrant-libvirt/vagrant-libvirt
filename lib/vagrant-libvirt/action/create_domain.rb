@@ -34,6 +34,7 @@ module VagrantPlugins
           @cpus = config.cpus.to_i
           @cpu_mode = config.cpu_mode
           @machine_type = config.machine_type
+          @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
