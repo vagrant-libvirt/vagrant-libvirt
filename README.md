@@ -380,6 +380,8 @@ it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
 
+**NOTE:** for remote libvirt, nfs synced folders requires a bridged public network interface and you must connect to libvirt via ssh.
+
 ## Customized Graphics
 
 vagrant-libvirt supports customizing the display and video settings of the
@@ -459,4 +461,3 @@ IMPORTANT NOTE: bundle is crucial. You need to use bundled vagrant.
 3. Commit your changes (`git commit -am 'Add some feature'`).
 4. Push to the branch (`git push origin my-new-feature`).
 5. Create new Pull Request.
-
