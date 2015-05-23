@@ -156,7 +156,14 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
-              b2.use MessageNotCreated
+              # Try to remove stale volumes anyway
+              b2.use ConnectLibvirt
+              b2.use SetNameOfDomain
+              b2.use RemoveStaleVolume
+              if !env[:result]
+                b2.use MessageNotCreated
+              end
+
               next
             end
 
@@ -337,6 +344,8 @@ module VagrantPlugins
       autoload :MessageNotCreated, action_root.join('message_not_created')
       autoload :MessageNotRunning, action_root.join('message_not_running')
       autoload :MessageNotSuspended, action_root.join('message_not_suspended')
+
+      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
 
       autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
