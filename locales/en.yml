@@ -44,6 +44,8 @@ en:
       Rsyncing folder: %{hostpath} => %{guestpath}
     ready: |-
       Machine is booted and ready for use!
+    remove_stale_volume: |-
+      Remove stale volume...
 
     errors:
       package_not_supported: Not support package for libvirt. Create box manualy.
