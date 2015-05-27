@@ -20,6 +20,7 @@ module VagrantPlugins
 
         def read_ssh_info(libvirt, machine)
           return nil if machine.id.nil?
+          return nil if machine.state.id != :running
 
           # Find the machine
           domain = libvirt.servers.get(machine.id)
@@ -32,15 +33,23 @@ module VagrantPlugins
 
           # Get IP address from dnsmasq lease file.
           ip_address = nil
-          domain.wait_for(2) {
-            addresses.each_pair do |type, ip|
-              # Multiple leases are separated with a newline, return only
-              # the most recent address
-              ip_address = ip[0].split("\n").first if ip[0] != nil
+          begin
+            domain.wait_for(2) do
+              addresses.each_pair do |type, ip|
+                # Multiple leases are separated with a newline, return only
+                # the most recent address
+                ip_address = ip[0].split("\n").first if ip[0] != nil
+              end
+              ip_address != nil
             end
-            ip_address != nil
-          }
-          raise Errors::NoIpAddressError if not ip_address
+          rescue Fog::Errors::TimeoutError
+            @logger.info("Timeout at waiting for an ip address for machine %s" % machine.name)
+          end
+
+          if not ip_address
+            @logger.info("No lease found for machine %s" % machine.name)
+            return nil
+          end
 
           ssh_info = {
             :host          => ip_address,
