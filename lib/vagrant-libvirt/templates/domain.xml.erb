@@ -27,7 +27,9 @@
         <type>hvm</type>
       <% end %>
     <% end %>
-    <boot dev='hd'/>
+    <% @boot_order.each do |b| %>
+    <boot dev='<%= b[:dev] %>'/>
+    <% end %> 
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>

@@ -55,6 +55,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :boot_order
       attr_accessor :machine_type
       attr_accessor :machine_arch
       attr_accessor :disk_bus
@@ -113,9 +114,22 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
         @keymap            = UNSET_VALUE
 
+        # Boot order
+        @boot_order = []
         # Storage
         @disks             = []
         @cdroms			       = []
+      end
+      
+      def _handle_boot_order(options={})
+        boot_order = {
+          :dev => options[:dev]
+        }
+        @boot_order << boot_order	# append
+      end
+      
+      def boot(options={})
+        _handle_boot_order(options)
       end
 
       def _get_device(disks)
@@ -299,6 +313,9 @@ module VagrantPlugins
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
+        
+        # Boot order
+        @boot_order = [] if @boot_order == UNSET_VALUE
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
