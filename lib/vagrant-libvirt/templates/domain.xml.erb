@@ -27,11 +27,13 @@
         <type>hvm</type>
       <% end %>
     <% end %>
-    <% @boot_order.each do |b| %>
-    <boot dev='<%= b %>'/>
-    <% end %> 
     <% if @boot_order.count >= 1 %>
+      <% @boot_order.each do |b| %>
+    <boot dev='<%= b %>'/>
+      <% end %> 
     <bootmenu enable='yes'/>
+    <% else %>
+    <boot dev='hd' />
     <% end %>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
