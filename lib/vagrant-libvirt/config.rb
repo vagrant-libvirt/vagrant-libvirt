@@ -121,15 +121,8 @@ module VagrantPlugins
         @cdroms			       = []
       end
       
-      def _handle_boot_order(options={})
-        boot_order = {
-          :dev => options[:dev]
-        }
-        @boot_order << boot_order	# append
-      end
-      
-      def boot(options={})
-        _handle_boot_order(options)
+      def boot(device)
+        @boot_order << device	# append
       end
 
       def _get_device(disks)

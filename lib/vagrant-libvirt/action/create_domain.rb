@@ -157,7 +157,6 @@ module VagrantPlugins
           # Is there a way to tell fog to create new domain with already
           # existing volume? Use domain creation from template..
           begin
-            print to_xml('domain')
             server = env[:libvirt_compute].servers.create(
               xml: to_xml('domain'))
           rescue Fog::Errors::Error => e

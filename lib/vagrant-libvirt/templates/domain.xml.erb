@@ -28,8 +28,11 @@
       <% end %>
     <% end %>
     <% @boot_order.each do |b| %>
-    <boot dev='<%= b[:dev] %>'/>
+    <boot dev='<%= b %>'/>
     <% end %> 
+    <% if @boot_order.count >= 1 %>
+    <bootmenu enable='yes'/>
+    <% end %>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
