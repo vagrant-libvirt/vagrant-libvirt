@@ -19,8 +19,8 @@ module VagrantPlugins
 
           if using_nfs?
             @logger.info("Using NFS, preparing NFS settings by reading host IP and machine IP")
-            env[:nfs_host_ip]    = read_host_ip(env[:machine])
             env[:nfs_machine_ip] = read_machine_ip(env[:machine])
+            env[:nfs_host_ip]    = read_host_ip(env[:nfs_machine_ip])
 
             @logger.info("host IP: #{env[:nfs_host_ip]} machine IP: #{env[:nfs_machine_ip]}")
 
@@ -39,9 +39,9 @@ module VagrantPlugins
         #
         # @param [Machine] machine
         # @return [String]
-        def read_host_ip(machine)
+        def read_host_ip(ip)
           UDPSocket.open do |s|
-            s.connect(machine.ssh_info[:host], 1)
+            s.connect(ip, 1)
             s.addr.last
           end
         end
