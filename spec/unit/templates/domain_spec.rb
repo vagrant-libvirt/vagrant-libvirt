@@ -95,4 +95,21 @@ describe 'templates/domain' do
       expect(domain.to_xml('domain')).to eq xml_expected
     end
   end
+
+  context "when storage is scsi based" do
+    before do
+      domain.disk_bus = 'scsi'
+      domain.disk_controller_model = 'virtio-scsi'
+      domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
+      domain.instance_variable_set('@domain_volume_cache', 'unsafe')
+      domain.disks.each do |disk|
+        disk[:absolute_path] = '/var/lib/libvirt/images/' + disk[:path]
+      end
+    end
+    let(:test_file) { 'domain_scsi_storage.xml' }
+    it "renders template" do
+      domain.finalize!
+      expect(domain.to_xml('domain')).to eq xml_expected
+    end
+  end
 end

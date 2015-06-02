@@ -287,6 +287,9 @@ end
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
   option applies only to disks associated with a box image. To set the bus type
   on additional disks, see the [Additional Disks](#additional-disks) section.
+* `disk_controller_model` - the type of disk controller model to use. Possible
+  values are documented in Libvirt's [document for controllers
+  ](https://libvirt.org/formatdomain.html#elementsControllers).
 * `disk_device` - The disk device to emulate. Defaults to vda if not
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to

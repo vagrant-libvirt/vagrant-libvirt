@@ -104,6 +104,9 @@
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
     </disk>
+      <% if @disk_bus == "scsi" and @disk_controller_model == 'virtio-scsi' %>
+    <controller type='scsi' model='virtio-scsi' index='0'/>
+      <% end %>
     <% end %>
 <%# additional disks -%>
 <% @disks.each do |d| -%>
