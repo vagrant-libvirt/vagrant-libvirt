@@ -122,6 +122,11 @@
       <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
     </disk>
 <%- end -%>
+<%- if @disk_bus == "scsi" and @disk_controller_model != nil %>
+  <%- for idx in 0..(@domain_volumes.length / 7) do %>
+    <controller type='scsi' model='<%= @disk_controller_model %>' index='<%= idx -%>'/>
+  <%- end -%>
+<%- end -%>
 <%# additional disks -%>
 <%- @disks.each_with_index do |d, index| -%>
     <disk type='file' device='disk'>
