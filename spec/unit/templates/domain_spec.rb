@@ -235,4 +235,68 @@ describe 'templates/domain' do
       end
     end
   end
+
+  context 'scsi controller' do
+    context 'when disk device suggests scsi' do
+      let(:test_file) { 'domain_scsi_device_storage.xml' }
+
+      before do
+        domain.disk_device = 'sda'
+      end
+
+      it 'renders scsi controller in template' do
+        domain.finalize!
+        domain.domain_volumes.push({
+          :cache => 'unsafe',
+          :bus => domain.disk_bus,
+          :absolute_path => '/var/lib/libvirt/images/test.qcow2'
+        })
+
+        resolve
+        expect(domain.to_xml('domain')).to eq xml_expected
+      end
+    end
+
+    context 'when disk bus is scsi' do
+      let(:test_file) { 'domain_scsi_bus_storage.xml' }
+
+      before do
+        domain.disk_bus = 'scsi'
+      end
+
+      it 'renders scsi controller in template based on bus' do
+        domain.finalize!
+        domain.domain_volumes.push({
+          :dev => 'vda',
+          :cache => 'unsafe',
+          :bus => domain.disk_bus,
+          :absolute_path => '/var/lib/libvirt/images/test.qcow2'
+        })
+        resolve
+        expect(domain.to_xml('domain')).to eq xml_expected
+      end
+    end
+
+    context 'when enough scsi disks are added' do
+      let(:test_file) { 'domain_scsi_multiple_controllers_storage.xml' }
+
+      before do
+        domain.disk_bus = 'scsi'
+        domain.disk_controller_model = 'virtio-scsi'
+      end
+
+      it 'should render with multiple scsi controllers' do
+        domain.finalize!
+        for idx in 1..15 do
+          domain.domain_volumes.push({
+            :cache => 'unsafe',
+            :bus => domain.disk_bus,
+            :absolute_path => "/var/lib/libvirt/images/test-#{idx}.img"
+          })
+        end
+        resolve
+        expect(domain.to_xml('domain')).to eq xml_expected
+      end
+    end
+  end
 end

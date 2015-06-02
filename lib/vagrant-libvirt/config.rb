@@ -99,6 +99,7 @@ module VagrantPlugins
       attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :disk_device
+      attr_accessor :disk_controller_model
       attr_accessor :disk_driver_opts
       attr_accessor :nic_model_type
       attr_accessor :nested
@@ -256,6 +257,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
+        @disk_controller_model = UNSET_VALUE
         @disk_driver_opts  = {}
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
@@ -871,8 +873,15 @@ module VagrantPlugins
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
-        @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
-        @disk_device = 'vda' if @disk_device == UNSET_VALUE
+        @disk_device = @disk_bus == 'scsi' ? 'sda' : 'vda' if @disk_device == UNSET_VALUE
+        @disk_bus = @disk_device.start_with?('sd') ? 'scsi' : 'virtio' if @disk_bus == UNSET_VALUE
+        if @disk_controller_model == UNSET_VALUE
+          if @disk_bus == 'scsi' or @disk_device.start_with?('sd') == 'sd'
+            @disk_controller_model = 'virtio-scsi'
+          else
+            @disk_controller_model = nil
+          end
+        end
         @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
