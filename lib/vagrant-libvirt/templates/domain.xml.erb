@@ -29,11 +29,11 @@
     <% end %>
     <% if @boot_order.count >= 1 %>
       <% @boot_order.each do |b| %>
-    <boot dev='<%= b %>'/>
+        <boot dev='<%= b %>'/>
       <% end %> 
-    <bootmenu enable='yes'/>
+      <bootmenu enable='yes'/>
     <% else %>
-    <boot dev='hd' />
+      <boot dev='hd' />
     <% end %>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
