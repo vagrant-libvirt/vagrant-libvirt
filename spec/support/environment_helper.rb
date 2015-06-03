@@ -19,7 +19,7 @@ class EnvironmentHelper
     1024
   end
 
-  %w(cpus cpu_mode machine_type disk_bus nested volume_cache kernel cmd_line initrd graphics_type graphics_autoport graphics_port graphics_ip graphics_passwd video_type video_vram keymap storage_pool_name disks cdroms driver).each do |name|
+  %w(cpus cpu_mode boot_order machine_type disk_bus nested volume_cache kernel cmd_line initrd graphics_type graphics_autoport graphics_port graphics_ip graphics_passwd video_type video_vram keymap storage_pool_name disks cdroms driver).each do |name|
     define_method(name.to_sym) do
       nil
     end

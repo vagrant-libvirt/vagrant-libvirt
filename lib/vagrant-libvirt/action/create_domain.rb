@@ -54,6 +54,9 @@ module VagrantPlugins
           @video_type = config.video_type
           @video_vram = config.video_vram
           @keymap = config.keymap
+          
+          # Boot order
+          @boot_order = config.boot_order
 
           # Storage
           @storage_pool_name = config.storage_pool_name
@@ -124,6 +127,10 @@ module VagrantPlugins
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
+          
+          @boot_order.each do |device|
+            env[:ui].info(" -- Boot device:        #{device}")
+          end
 
           if @disks.length > 0
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
