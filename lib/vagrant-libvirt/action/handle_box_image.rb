@@ -37,9 +37,12 @@ module VagrantPlugins
           env[:box_volume_name] = env[:machine].box.name.to_s.dup.gsub("/", "-VAGRANTSLASH-")
           env[:box_volume_name] << "_vagrant_box_image_#{env[:machine].box.version.to_s rescue ''}.img"
 
+          # while inside the synchronize block take care not to call the next
+          # action in the chain, as must exit this block first to prevent
+          # locking all subsequent actions as well.
           @@lock.synchronize do
             # Don't continue if image already exists in storage pool.
-            return @app.call(env) if ProviderLibvirt::Util::Collection.find_matching(
+            break if ProviderLibvirt::Util::Collection.find_matching(
               env[:libvirt_compute].volumes.all, env[:box_volume_name])
 
             # Box is not available as a storage pool volume. Create and upload
