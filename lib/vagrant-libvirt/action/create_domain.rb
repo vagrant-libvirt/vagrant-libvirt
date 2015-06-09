@@ -68,9 +68,10 @@ module VagrantPlugins
 
           @os_type = 'hvm'
 
-          # Get path to domain image.
+          # Get path to domain image from the storage pool selected.
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].volumes.all, "#{@name}.img")
+            env[:libvirt_compute].volumes.all.select { |x| x.pool_name == @storage_pool_name },
+            "#{@name}.img")
           raise Errors::DomainVolumeExists if domain_volume.nil?
           @domain_volume_path = domain_volume.path
 
@@ -88,7 +89,8 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:libvirt_compute].volumes.all.select {|x| x.name == disk[:name] }.empty?
+            if env[:libvirt_compute].volumes.select {
+                |x| x.name == disk[:name] and x.pool_name == @storage_pool_name}.empty?
               # make the disk. equivalent to:
               # qemu-img create -f qcow2 <path> 5g
               begin
