@@ -17,7 +17,7 @@ module VagrantPlugins
 
         def _disks_print(disks)
           disks.collect do |x|
-            x[:device] + '(' + x[:type] + ',' + x[:size] + ')'
+            "#{x[:device]}(#{x[:type]},#{x[:size]})"
           end.join(', ')
         end
 
@@ -69,9 +69,11 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image from the storage pool selected.
+          actual_volumes = env[:libvirt_compute].volumes.all.select do |x|
+            x.pool_name == @storage_pool_name
+          end
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].volumes.all.select { |x| x.pool_name == @storage_pool_name },
-            "#{@name}.img")
+            actual_volumes,"#{@name}.img")
           raise Errors::DomainVolumeExists if domain_volume.nil?
           @domain_volume_path = domain_volume.path
 
