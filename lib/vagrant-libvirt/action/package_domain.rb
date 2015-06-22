@@ -37,7 +37,7 @@ module VagrantPlugins
           `qemu-img rebase -p -b "" #{@tmp_img}`
           # remove hw association with interface
           # working for centos with lvs default disks
-          `virt-sysprep --no-logfile  -a #{@tmp_img} `
+          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img} `
           Dir.chdir(@tmp_dir)
           img_size = `qemu-img info #{@tmp_img} | grep 'virtual size' | awk '{print $3;}' | tr -d 'G'`.chomp
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
