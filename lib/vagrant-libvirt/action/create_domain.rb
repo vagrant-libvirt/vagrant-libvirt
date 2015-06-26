@@ -120,7 +120,7 @@ module VagrantPlugins
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
-          env[:ui].info(" -- Image:             #{@domain_volume_path}")
+          env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
           env[:ui].info(" -- Volume Cache:      #{@domain_volume_cache}")
           env[:ui].info(" -- Kernel:            #{@kernel}")
           env[:ui].info(" -- Initrd:            #{@initrd}")
