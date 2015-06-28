@@ -37,6 +37,23 @@ module VagrantPlugins
           env[:box_volume_name] = env[:machine].box.name.to_s.dup.gsub("/", "-VAGRANTSLASH-")
           env[:box_volume_name] << "_vagrant_box_image_#{env[:machine].box.version.to_s rescue ''}.img"
 
+          # Override box_virtual_size
+          if config.machine_virtual_size
+            if config.machine_virtual_size < box_virtual_size
+              # Warn that a virtual size less than the box metadata size
+              # is not supported and will be ignored
+              env[:ui].warn I18n.t(
+                'vagrant_libvirt.warnings.ignoring_virtual_size_too_small',
+                requested: config.machine_virtual_size, minimum: box_virtual_size
+              )
+            else
+              env[:ui].info I18n.t('vagrant_libvirt.manual_resize_required')
+              box_virtual_size = config.machine_virtual_size
+            end
+          end
+          # save for use by later actions
+          env[:box_virtual_size] = box_virtual_size
+
           # while inside the synchronize block take care not to call the next
           # action in the chain, as must exit this block first to prevent
           # locking all subsequent actions as well.

@@ -12,6 +12,9 @@ en:
       Checking if volume is available.
     creating_domain: |-
       Creating domain with the following settings...
+    manual_resize_required: |-
+      Created volume larger than box defaults, will require manual resizing of
+      filesystems to utilize.
     uploading_volume: |-
       Uploading base box image as volume into libvirt storage...
     creating_domain_volume: |-
@@ -46,6 +49,11 @@ en:
       Machine is booted and ready for use!
     remove_stale_volume: |-
       Remove stale volume...
+
+    warnings:
+      ignoring_virtual_size_too_small: |-
+        Ignoring requested virtual disk size of '%{requested}' as it is below
+        the minimum box image size of '%{box_virtual_size}'.
 
     errors:
       package_not_supported: Not support package for libvirt. Create box manualy.
