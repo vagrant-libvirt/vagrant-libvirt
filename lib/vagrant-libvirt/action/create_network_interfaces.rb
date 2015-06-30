@@ -96,6 +96,21 @@ module VagrantPlugins
               raise Errors::AttachDeviceError,
                 :error_message => e.message
             end
+
+            # Re-read the network configuration and grab the MAC address
+            if !@mac
+              xml = Nokogiri::XML(domain.xml_desc)
+              if iface_configuration[:iface_type] == :public_network
+                if @type == 'direct'
+                  @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
+                else
+                  @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
+                end
+              else
+                @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
+              end
+              iface_configuration[:mac] = @mac.to_s
+            end
           end
 
           # Continue the middleware chain.
@@ -116,7 +131,7 @@ module VagrantPlugins
             network = {
               :interface                       => slot_number,
               :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
-              #:mac => ...,
+              :mac_address => options[:mac],
             }
 
             if options[:ip]
