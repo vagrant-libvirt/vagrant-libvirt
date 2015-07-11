@@ -135,6 +135,8 @@ en:
         Error while removing network %{network_name}. %{error_message}.
       delete_snapshot_error: |-
         Error while deleting snapshot: %{error_message}.
+      tcp_tunnel_port_not_defined: |-
+        TCP tunnel port not defined.
 
     states:
       short_paused: |-

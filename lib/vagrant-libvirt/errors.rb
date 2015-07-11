@@ -106,6 +106,10 @@ module VagrantPlugins
         error_key(:activate_network_error)
       end
 
+      class TcpTunnelPortNotDefined < VagrantLibvirtError
+        error_key(:tcp_tunnel_port_not_defined)
+      end
+
       # Other exceptions
       class InterfaceSlotNotAvailable < VagrantLibvirtError
         error_key(:interface_slot_not_available)
