@@ -35,7 +35,8 @@ module VagrantPlugins
             # available, create it if possible. Otherwise raise an error.
             configured_networks(env, @logger).each do |options|
               # Only need to create private networks
-              next if options[:iface_type] != :private_network
+              next if options[:iface_type] != :private_network or
+                options.fetch(:tcp_tunnel_type, nil)
               @logger.debug "Searching for network with options #{options}"
 
               # should fix other methods so this doesn't have to be instance var
