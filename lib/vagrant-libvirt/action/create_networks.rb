@@ -116,13 +116,16 @@ module VagrantPlugins
         # @available_networks should be filled before calling this function.
         def handle_ip_option(env)
           return if !@options[:ip]
+          net_address = nil
+          if @options[:forward_mode] != 'veryisolated'
+            net_address = network_address(@options[:ip], @options[:netmask])
+            # Set IP address of network (actually bridge). It will be used as
+            # gateway address for machines connected to this network.
+            net = IPAddr.new(net_address)
+          end
 
-          net_address = network_address(@options[:ip], @options[:netmask])
           @interface_network[:network_address] = net_address
 
-          # Set IP address of network (actually bridge). It will be used as
-          # gateway address for machines connected to this network.
-          net = IPAddr.new(net_address)
           # Default to first address (after network name)
           @interface_network[:ip_address] = @options[:host_ip].nil? ? net.to_range.begin.succ : IPAddr.new(@options[:host_ip])
 
