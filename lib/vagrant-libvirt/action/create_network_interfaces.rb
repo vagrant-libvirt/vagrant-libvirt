@@ -19,6 +19,7 @@ module VagrantPlugins
           @management_network_name = env[:machine].provider_config.management_network_name
 	        config = env[:machine].provider_config
 	        @nic_model_type = config.nic_model_type
+          @nic_adapter_count = config.nic_adapter_count
           @app = app
         end
 
@@ -165,7 +166,7 @@ module VagrantPlugins
 
         private
 
-        def find_empty(array, start=0, stop=8)
+        def find_empty(array, start=0, stop=@nic_adapter_count)
           (start..stop).each do |i|
             return i if !array[i]
           end

@@ -75,6 +75,11 @@ module VagrantPlugins
       attr_accessor :video_vram
       attr_accessor :keymap
 
+      # Sets the max number of NICs that can be created
+      # Default set to 8. Don't change the default unless you know
+      # what are doing
+      attr_accessor :nic_adapter_count
+
       # Storage
       attr_accessor :disks
   	  attr_accessor :cdroms
@@ -116,13 +121,15 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
         @keymap            = UNSET_VALUE
 
+        @nic_adapter_count = UNSET_VALUE
+
         # Boot order
         @boot_order = []
         # Storage
         @disks             = []
         @cdroms			       = []
       end
-      
+
       def boot(device)
         @boot_order << device	# append
       end
@@ -309,7 +316,8 @@ module VagrantPlugins
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
-        
+        @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
+
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
 
