@@ -45,7 +45,7 @@ module VagrantPlugins
         #  :username => "mitchellh",
         #  :private_key_path => "/path/to/my/key"
         #}
-        env = @machine.action('read_ssh_info')
+        env = @machine.action('read_ssh_info', :lock => false)
         env[:machine_ssh_info]
       end
 
@@ -67,7 +67,7 @@ module VagrantPlugins
         # Run a custom action we define called "read_state" which does
         # what it says. It puts the state in the `:machine_state_id`
         # key in the environment.
-        env = @machine.action('read_state')
+        env = @machine.action('read_state', :lock => false)
 
         state_id = env[:machine_state_id]
 
