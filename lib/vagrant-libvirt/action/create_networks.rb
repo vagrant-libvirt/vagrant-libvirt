@@ -63,9 +63,6 @@ module VagrantPlugins
 
               if @options[:ip]
                 handle_ip_option(env)
-              # in vagrant 1.2.3 and later it is not possible to take this branch
-              # because cannot have name without ip
-              # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
               elsif @options[:network_name]
                 handle_network_name_option(env)
               end
