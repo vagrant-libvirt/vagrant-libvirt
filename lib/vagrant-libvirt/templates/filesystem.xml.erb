@@ -1,7 +1,7 @@
     <filesystem type='mount' accessmode='<%= accessmode %>'>
       <driver type='path' wrpolicy='immediate'/>
       <source dir='<%= hostpath %>'/>
-      <target dir='<%= target %>'/>
+      <target dir='<%= mount_tag %>'/>
       <% unless readonly.nil? %>
          <readonly /> 
       <% end %>
