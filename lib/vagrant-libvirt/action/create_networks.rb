@@ -133,27 +133,27 @@ module VagrantPlugins
             # Set IP address of network (actually bridge). It will be used as
             # gateway address for machines connected to this network.
             net = IPAddr.new(net_address)
+            
+            # Default to first address (after network name)
+            @interface_network[:ip_address] = @options[:host_ip].nil? ? \
+              net.to_range.begin.succ : \
+              IPAddr.new(@options[:host_ip])
           end
 
           @interface_network[:network_address] = net_address
 
-          # Default to first address (after network name)
-          @interface_network[:ip_address] = @options[:host_ip].nil? ? \
-            net.to_range.begin.succ : \
-            IPAddr.new(@options[:host_ip])
-  
-          # Is there an available network matching to configured ip
-          # address?
-          if net_address
-            network = lookup_network_by_ip(net_address)
-            @interface_network = network if network
-          end
-
-          # if network is veryisolated, search by name instead
-          if !@interface_network and @options[:libvirt__forward_mode] == "veryisolated"
+          # if network is veryisolated, search by name
+          if @options[:libvirt__forward_mode] == "veryisolated"
             network = lookup_network_by_name(@options[:network_name])
-            @interface_network = network if network
+          elsif net_address
+            # otherwise, search by ip (if set)
+            network = lookup_network_by_ip(net_address)
+          else
+            # leaving this here to mimic prior behavior. If we get
+            # here, something's probably broken.
+            network = lookup_network_by_name(@options[:network_name])
           end
+          @interface_network = network if network
 
           if @interface_network[:created]
             verify_dhcp
