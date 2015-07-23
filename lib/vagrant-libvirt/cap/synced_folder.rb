@@ -1,6 +1,7 @@
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'
+require "digest/md5"
 
 require 'vagrant/util/subprocess'
 require 'vagrant/errors'
@@ -38,7 +39,12 @@ module VagrantPlugins
             folder_opts.merge!({  target: id,
                                   accessmode: 'passthrough',
                                   readonly: nil }) { |_k, ov, _nv| ov }
+
+            mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0,31]
+            folder_opts[:mount_tag] = mount_tag
+            
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
+            
             xml =  to_xml('filesystem', folder_opts)
             # puts "<<<<< XML:\n #{xml}\n >>>>>"
             @conn.lookup_domain_by_uuid(machine.id).attach_device(xml, 0)
