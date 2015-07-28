@@ -19,7 +19,6 @@ module VagrantPlugins
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use Call, IsCreated do |env, b2|
             # Create VM if not yet created.
             if !env[:result]
@@ -58,7 +57,6 @@ module VagrantPlugins
       def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use Call, IsRunning do |env, b2|
             # If the VM is running, then our work here is done, exit
             next if env[:result]
@@ -101,7 +99,6 @@ module VagrantPlugins
       def self.action_halt
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use ClearForwardedPorts
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
@@ -144,7 +141,6 @@ module VagrantPlugins
       def self.action_package
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use PackageDomain
         end
       end
@@ -157,7 +153,6 @@ module VagrantPlugins
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
               # Try to remove stale volumes anyway
-              b2.use ConnectLibvirt
               b2.use SetNameOfDomain
               b2.use RemoveStaleVolume
               if !env[:result]
@@ -167,7 +162,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use ClearForwardedPorts
             # b2.use PruneNFSExports
             b2.use DestroyDomain
@@ -186,7 +180,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -209,7 +202,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -234,7 +226,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -257,7 +248,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsSuspended do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotSuspended
@@ -274,7 +264,6 @@ module VagrantPlugins
       def self.action_read_state
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use ReadState
         end
       end
@@ -285,7 +274,6 @@ module VagrantPlugins
       def self.action_read_ssh_info
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use ReadSSHInfo
         end
       end
@@ -293,7 +281,6 @@ module VagrantPlugins
       def self.action_read_mac_addresses
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use ReadMacAddresses
         end
       end
@@ -308,7 +295,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -323,7 +309,6 @@ module VagrantPlugins
       end
 
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
-      autoload :ConnectLibvirt, action_root.join('connect_libvirt')
       autoload :PackageDomain, action_root.join('package_domain')
       autoload :CreateDomain, action_root.join('create_domain')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')

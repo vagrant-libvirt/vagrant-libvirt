@@ -23,7 +23,7 @@ module VagrantPlugins
           @@lock.synchronize do
             # Check for storage pool, where box image should be created
             break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:libvirt_compute].pools.all, config.storage_pool_name)
+              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name)
 
             @logger.info("No storage pool '#{config.storage_pool_name}' is available.")
 
@@ -36,7 +36,7 @@ module VagrantPlugins
             # Fog libvirt currently doesn't support creating pools. Use
             # ruby-libvirt client directly.
             begin
-              libvirt_pool = env[:libvirt_compute].client.define_storage_pool_xml(
+              libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
                 to_xml('default_storage_pool'))
               libvirt_pool.build
               libvirt_pool.create

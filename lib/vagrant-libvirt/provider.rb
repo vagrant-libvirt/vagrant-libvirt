@@ -2,6 +2,7 @@ require 'vagrant'
 
 module VagrantPlugins
   module ProviderLibvirt
+    autoload :Driver, 'vagrant-libvirt/driver'
 
     # This is the base class for a provider for the V2 API. A provider
     # is responsible for creating compute resources to match the
@@ -20,6 +21,12 @@ module VagrantPlugins
         action_method = "action_#{name}"
         return Action.send(action_method) if Action.respond_to?(action_method)
         nil
+      end
+
+      def driver
+        return @driver if @driver
+
+        @driver = Driver.new(@machine)
       end
 
       # This method is called if the underying machine ID changes. Providers

@@ -12,7 +12,7 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:machine_state_id] = read_state(env[:libvirt_compute], env[:machine])
+          env[:machine_state_id] = read_state(env[:machine].provider.driver.connection, env[:machine])
           @app.call(env)
         end
 

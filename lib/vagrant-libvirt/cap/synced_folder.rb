@@ -25,13 +25,13 @@ module VagrantPlugins
 
         # <filesystem/> support in device attach/detach introduced in 1.2.2
         # version number format is major * 1,000,000 + minor * 1,000 + release
-        libvirt_version = ProviderLibvirt.libvirt_connection.client.libversion
+        libvirt_version = machine.provider.driver.connection.client.libversion
         libvirt_version >= 1_002_002
       end
 
       def prepare(machine, folders, _opts)
-        raise Vagrant::Errors::Error('No libvirt connection') if ProviderLibvirt.libvirt_connection.nil?
-        @conn = ProviderLibvirt.libvirt_connection.client
+        raise Vagrant::Errors::Error('No libvirt connection') if machine.provider.driver.connection.nil?
+        @conn = machine.provider.driver.connection.client
 
         begin
           # loop through folders
@@ -73,10 +73,10 @@ module VagrantPlugins
       end
 
       def cleanup(machine, _opts)
-        if ProviderLibvirt.libvirt_connection.nil?
+        if machine.provider.driver.connection.nil?
           raise Vagrant::Errors::Error('No libvirt connection')
         end
-        @conn = ProviderLibvirt.libvirt_connection.client
+        @conn = machine.provider.driver.connection.client
         begin
           if machine.id && machine.id != ''
             dom = @conn.lookup_domain_by_uuid(machine.id)

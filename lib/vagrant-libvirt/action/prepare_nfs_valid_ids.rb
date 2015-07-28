@@ -8,7 +8,7 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:nfs_valid_ids] = env[:libvirt_compute].servers.all.map(&:id)
+          env[:nfs_valid_ids] = env[:machine].provider.driver.connection.servers.all.map(&:id)
           @app.call(env)
         end
       end

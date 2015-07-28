@@ -14,9 +14,9 @@ module VagrantPlugins
 
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.package_domain'))
-          libvirt_domain =  env[:libvirt_compute].client.lookup_domain_by_uuid(
+          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
                               env[:machine].id)
-          domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           root_disk = domain.volumes.select do |x|
             x.name == libvirt_domain.name + '.img'
           end.first

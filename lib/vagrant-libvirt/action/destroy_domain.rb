@@ -17,7 +17,7 @@ module VagrantPlugins
           # Fog libvirt currently doesn't support snapshots. Use
           # ruby-libvirt client directly. Note this is racy, see
           # http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames
-          libvirt_domain =  env[:libvirt_compute].client.lookup_domain_by_uuid(
+          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
                               env[:machine].id)
           libvirt_domain.list_snapshots.each do |name|
             @logger.info("Deleting snapshot '#{name}'")
@@ -28,7 +28,7 @@ module VagrantPlugins
             end
           end
 
-          domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
 
           if env[:machine].provider_config.disks.empty?
             # if using default configuration of disks
