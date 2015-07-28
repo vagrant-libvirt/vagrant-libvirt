@@ -109,8 +109,8 @@ module VagrantPlugins
         state_id = :preparing if @machine.id == "preparing"
 
         # Get the short and long description
-        short = I18n.t("vagrant_libvirt.states.short_#{state_id}")
-        long  = I18n.t("vagrant_libvirt.states.long_#{state_id}")
+        short = state_id.to_s.gsub("_", " ")
+        long  = I18n.t("vagrant_libvirt.states.#{state_id}")
 
         # If we're not created, then specify the special ID flag
         if state_id == :not_created
