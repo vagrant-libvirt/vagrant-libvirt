@@ -290,6 +290,14 @@ module VagrantPlugins
         end
       end
 
+      def self.action_forward_ports
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use ForwardPorts
+        end
+      end
+
       def self.action_read_mac_addresses
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate

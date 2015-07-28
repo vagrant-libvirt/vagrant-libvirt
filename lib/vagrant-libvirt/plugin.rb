@@ -47,6 +47,11 @@ module VagrantPlugins
         Cap::NicMacAddresses
       end
 
+      provider_capability(:libvirt, :forwarded_ports) do
+        require_relative "cap/forwarded_ports"
+        Cap::ForwardedPorts
+      end
+
       # lower priority than nfs or rsync
       # https://github.com/pradels/vagrant-libvirt/pull/170
       synced_folder("9p", 4) do

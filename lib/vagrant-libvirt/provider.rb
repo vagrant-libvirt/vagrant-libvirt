@@ -61,6 +61,11 @@ module VagrantPlugins
         env[:machine_mac_addresses]
       end
 
+      def forwarded_ports
+        env = @machine.action('forward_ports')
+        env[:forwarded_ports]
+      end
+
       # This should return the state of the machine within this provider.
       # The state must be an instance of {MachineState}.
       def state
