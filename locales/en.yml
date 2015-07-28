@@ -155,3 +155,8 @@ en:
       long_running: |-
         The Libvirt domain is running. To stop this machine, you can run
         `vagrant halt`. To destroy the machine, you can run `vagrant destroy`.
+      short_preparing: |-
+        preparing
+      long_preparing: |-
+        The vagrant machine is being prepared for creation, please wait for
+        it to reach a steady state before issuing commands on it.

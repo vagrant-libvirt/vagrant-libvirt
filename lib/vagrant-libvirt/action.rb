@@ -259,25 +259,6 @@ module VagrantPlugins
         end
       end
 
-      # This action is called to read the state of the machine. The resulting
-      # state is expected to be put into the `:machine_state_id` key.
-      def self.action_read_state
-        Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
-          b.use ReadState
-        end
-      end
-
-      # This action is called to read the SSH info of the machine. The
-      # resulting state is expected to be put into the `:machine_ssh_info`
-      # key.
-      def self.action_read_ssh_info
-        Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
-          b.use ReadSSHInfo
-        end
-      end
-
       def self.action_read_mac_addresses
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
@@ -336,9 +317,7 @@ module VagrantPlugins
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
       autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
 
-      autoload :ReadSSHInfo, action_root.join('read_ssh_info')
       autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
-      autoload :ReadState, action_root.join('read_state')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
 
