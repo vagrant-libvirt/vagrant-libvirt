@@ -141,6 +141,9 @@ en:
     states:
       paused: |-
         The Libvirt domain is suspended. Run `vagrant resume` to resume it.
+      shutting_down: |-
+        The Libvirt domain is shutting down. Wait for it to complete and
+        then run `vagrant up` to start it or `vagrant destroy` to remove.
       shutoff: |-
         The Libvirt domain is not running. Run `vagrant up` to start it.
       not_created: |-

@@ -101,10 +101,6 @@ module VagrantPlugins
       end
 
       def state(machine)
-        # TODO: while this currently matches the previous behaviour in actions
-        # read_state, it shouldn't be necessary to loop and wait for the
-        # machine to reach a state other than shutting-down, before returning
-
         # may be other error states with initial retreival we can't handle
         begin
           domain = get_domain(machine.id)
@@ -113,21 +109,12 @@ module VagrantPlugins
           return :not_created
         end
 
-        # need to wait for the shutting-down state to stablize to a another
-        loop do
-          if domain.nil? || domain.state.to_sym == :terminated
-            return :not_created
-          end
-
-          if domain.state.to_sym != :'shutting-down'
-            # Return the state
-            return domain.state.to_sym
-          end
-
-          @logger.info('Waiting on the machine %s to shut down...' % machine.name)
-          sleep 1
-          domain = get_domain(machine.id)
+        # TODO: terminated no longer appears to be a valid fog state, remove?
+        if domain.nil? || domain.state.to_sym == :terminated
+          return :not_created
         end
+
+        return domain.state.gsub("-", "_").to_sym
       end
     end
   end
