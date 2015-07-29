@@ -20,6 +20,7 @@ module VagrantPlugins
 	        config = env[:machine].provider_config
 	        @nic_model_type = config.nic_model_type
           @nic_adapter_count = config.nic_adapter_count
+          @boot_order = config.boot_order
           @app = app
         end
 
