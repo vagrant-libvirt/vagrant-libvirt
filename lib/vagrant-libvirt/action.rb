@@ -172,6 +172,7 @@ module VagrantPlugins
             # b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
+            b2.use ProvisionerCleanup
           end
         end
       end
@@ -370,6 +371,7 @@ module VagrantPlugins
       autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
+      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
     end
   end
 end
