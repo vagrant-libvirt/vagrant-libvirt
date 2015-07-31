@@ -24,10 +24,6 @@ module VagrantPlugins
       end
 
       provider('libvirt', parallel: true) do
-        # Setup logging and i18n
-        setup_logging
-        setup_i18n
-
         require_relative 'provider'
         Provider
       end
@@ -89,6 +85,12 @@ module VagrantPlugins
           logger = nil
         end
       end
+
+      # Setup logging and i18n before any autoloading loads other classes
+      # with logging configured as this prevents inheritance of the log level
+      # from the parent logger.
+      setup_logging
+      setup_i18n
 
     end
   end

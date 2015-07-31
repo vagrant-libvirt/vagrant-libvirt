@@ -1,5 +1,4 @@
 require 'pathname'
-require 'vagrant-libvirt/plugin'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -27,3 +26,6 @@ module VagrantPlugins
     end
   end
 end
+
+# make sure base module class defined before loading plugin
+require 'vagrant-libvirt/plugin'
