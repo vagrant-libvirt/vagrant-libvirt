@@ -83,26 +83,19 @@ module VagrantPlugins
       def get_ipaddress(machine)
         # Find the machine
         domain = get_domain(machine.id)
-        if @machine.provider_config.qemu_use_session
-          return get_ipaddress_system domain.mac
-        end
 
         if domain.nil?
           # The machine can't be found
           return nil
         end
 
+        if @machine.provider_config.qemu_use_session
+          return get_ipaddress_system domain.mac
+        end
+
         # Get IP address from arp table
-        ip_address = nil
         begin
-          domain.wait_for(2) do
-            addresses.each_pair do |_type, ip|
-              # Multiple leases are separated with a newline, return only
-              # the most recent address
-              ip_address = ip[0].split("\n").first unless ip[0].nil?
-            end
-            !ip_address.nil?
-          end
+          ip_address = get_domain_ipaddress(domain)
         rescue Fog::Errors::TimeoutError
           @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
         end
@@ -125,7 +118,22 @@ module VagrantPlugins
           break if ip_address
         end
 
-        return ip_address
+        ip_address
+      end
+
+      def get_ipaddress_domain(domain)
+        ip_address = nil
+        domain.wait_for(2) do
+          addresses.each_pair do |type, ip|
+            # Multiple leases are separated with a newline, return only
+            # the most recent address
+            ip_address = ip[0].split("\n").first if ip[0] != nil
+          end
+
+          ip_address != nil
+        end
+
+        ip_address
       end
 
       def state(machine)
