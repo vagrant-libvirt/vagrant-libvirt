@@ -27,6 +27,9 @@
         <type>hvm</type>
       <% end %>
     <% end %>
+    <% if @loader %>
+      <loader readonly='yes' type='rom'><%= @loader %></loader>
+    <% end %>
     <% if @boot_order.count >= 1 %>
       <bootmenu enable='yes'/>
     <% end %>

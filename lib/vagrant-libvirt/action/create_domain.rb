@@ -33,6 +33,7 @@ module VagrantPlugins
           @name = env[:domain_name]
           @cpus = config.cpus.to_i
           @cpu_mode = config.cpu_mode
+          @loader = config.loader
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
@@ -118,6 +119,7 @@ module VagrantPlugins
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          env[:ui].info(" -- Loader:            #{@loader}")
           env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
