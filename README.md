@@ -198,7 +198,7 @@ Vagrant.configure("2") do |config|
 
 The following example shows part of a Vagrantfile that enables the VM to
 boot from a network interface first and a hard disk second. This could be
-used to run VMs that are meant to be a PXE booted machines. Be aware that 
+used to run VMs that are meant to be a PXE booted machines. Be aware that
 if `hd` is not specified as a boot option, it will never be tried.
 
 ```ruby
@@ -218,10 +218,15 @@ Vagrant.configure("2") do |config|
 
 Networking features in the form of `config.vm.network` support private networks
 concept. It supports both the virtual network switch routing types and the point to
-point Guest OS to Guest OS setting using TCP tunnel interfaces.
+point Guest OS to Guest OS setting using UDP/Mcast/TCP tunnel interfaces.
 
 http://wiki.libvirt.org/page/VirtualNetworking
+
 https://libvirt.org/formatdomain.html#elementsNICSTCP
+
+http://libvirt.org/formatdomain.html#elementsNICSMulticast
+
+http://libvirt.org/formatdomain.html#elementsNICSUDP _(in libvirt v1.2.20 and higher)_
 
 Public Network interfaces are currently implemented using the macvtap driver. The macvtap
 driver is only available with the Linux Kernel version >= 2.6.24. See the following libvirt
@@ -242,18 +247,18 @@ An examples of network interface definitions:
   # Guest 1
   config.vm.define :test_vm1 do |test_vm1|
     test_vm1.vm.network :private_network,
-          :libvirt__tcp_tunnel_type => 'server',
+          :libvirt__tunnel_type => 'server',
           # default is 127.0.0.1 if omitted
-          # :libvirt__tcp_tunnel_ip => '127.0.0.1',
-          :libvirt__tcp_tunnel_port => '11111'
+          # :libvirt__tunnel_ip => '127.0.0.1',
+          :libvirt__tunnel_port => '11111'
 
   # Guest 2
   config.vm.define :test_vm2 do |test_vm2|
     test_vm2.vm.network :private_network,
-          :libvirt__tcp_tunnel_type => 'client',
+          :libvirt__tunnel_type => 'client',
           # default is 127.0.0.1 if omitted
-          # :libvirt__tcp_tunnel_ip => '127.0.0.1',
-          :libvirt__tcp_tunnel_port => '11111'
+          # :libvirt__tunnel_ip => '127.0.0.1',
+          :libvirt__tunnel_port => '11111'
 
 
   # Public Network
@@ -317,15 +322,25 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:libvirt__forward_device` - Name of interface/device, where network should
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
-* `:libvirt_tcp_tunnel_type` - Set it to "server" or "client" to enable TCP
-  tunnel interface configuration. This configuration type uses TCP tunnels to
+* `:libvirt__tunnel_type` - Set to 'udp' if using UDP unicast tunnel mode (libvirt v1.2.20 or higher).
+  Set this to either "server" or "client" for tcp tunneling. Set this to 'mcast' if using multicast
+  tunneling. This configuration type uses tunnels to
   generate point to point connections between Guests. Useful for Switch VMs like
-  Cumulus Linux. No virtual switch setting like "libvirt__network_name" applies with TCP
+  Cumulus Linux. No virtual switch setting like "libvirt__network_name" applies with
   tunnel interfaces and will be ignored if configured.
-* `:libvirt_tcp_tunnel_ip` - Sets the source IP of the TCP Tunnel interface. By
-  default this is `127.0.0.1`
-* `:libvirt_tcp_tunnel_port` - Sets the TCP Tunnel interface port that either
-  the client will connect to, or the server will listen on.
+* `:libvirt__tunnel_ip` - Sets the source IP of the libvirt tunnel interface. By
+  default this is `127.0.0.1` for TCP and UDP tunnels and `239.255.1.1` for Multicast
+  tunnels. It populates the address field in the `<source address="XXX">` of the
+  interface xml configuration.
+* `:libvirt__tunnel_port` - Sets the source port the tcp/udp/mcast tunnel
+    with use. This port information is placed in the `<source port=XXX/>` section of
+    interface xml configuration.
+* `:libvirt__tunnel_local_port` - Sets the local port used by the udp tunnel
+    interface type. It populates the port field in the `<local port=XXX">` section of the
+    interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
+* `:libvirt__tunnel_local_ip` - Sets the local IP used by the udp tunnel
+    interface type. It populates the ip entry of the `<local address=XXX">` section of
+    the interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
 * `:mac` - MAC address for the interface.
 * `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
@@ -435,7 +450,7 @@ There is support for PXE booting VMs with no disks as well as PXE booting VMs wi
 * No provisioning scripts are ran
 * No network configuration is being applied to the VM
 * No SSH connection can be made
-* ```vagrant halt``` will only work cleanly if the VM handles ACPI shutdown signals 
+* ```vagrant halt``` will only work cleanly if the VM handles ACPI shutdown signals
 
 In short, VMs without a box can be created, halted and destroyed but all other functionality cannot be used.
 

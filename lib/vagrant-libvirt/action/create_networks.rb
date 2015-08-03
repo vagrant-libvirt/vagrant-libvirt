@@ -36,7 +36,7 @@ module VagrantPlugins
             configured_networks(env, @logger).each do |options|
               # Only need to create private networks
               next if options[:iface_type] != :private_network or
-                options.fetch(:tcp_tunnel_type, nil)
+                options.fetch(:tunnel_type, nil)
               @logger.debug "Searching for network with options #{options}"
 
               # should fix other methods so this doesn't have to be instance var
@@ -133,7 +133,7 @@ module VagrantPlugins
             # Set IP address of network (actually bridge). It will be used as
             # gateway address for machines connected to this network.
             net = IPAddr.new(net_address)
-            
+
             # Default to first address (after network name)
             @interface_network[:ip_address] = @options[:host_ip].nil? ? \
               net.to_range.begin.succ : \
@@ -158,7 +158,7 @@ module VagrantPlugins
           if @interface_network[:created]
             verify_dhcp
           end
-  
+
           if @options[:network_name]
             @logger.debug "Checking that network name does not clash with ip"
             if @interface_network[:created]
@@ -177,13 +177,13 @@ module VagrantPlugins
                       ip_address:   @options[:ip],
                       network_name: @options[:network_name]
               end
-  
+
               # Network with 'name' doesn't exist. Set it as name for new
               # network.
               @interface_network[:name] = @options[:network_name]
             end
           end
-  
+
           # Do we need to create new network?
           if !@interface_network[:created]
 
@@ -235,7 +235,7 @@ module VagrantPlugins
           @interface_network = network if network
 
           # if this interface has a network address, something's wrong.
-          if @interface_network[:network_address] 
+          if @interface_network[:network_address]
             raise Errors::NetworkNotAvailableError,
                   network_name: @options[:network_name]
           end

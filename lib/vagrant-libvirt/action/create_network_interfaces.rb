@@ -79,15 +79,27 @@ module VagrantPlugins
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
               @ovs = iface_configuration.fetch(:ovs, false)
-            # configuration for tcp tunnel interfaces (p2p conn btwn guest OSes)
-            elsif iface_configuration.fetch(:tcp_tunnel_type, nil)
-              @tcp_tunnel_port = iface_configuration.fetch(:tcp_tunnel_port, nil)
-              raise Errors::TcpTunnelPortNotDefined if @tcp_tunnel_port.nil?
-              @tcp_tunnel_ip = iface_configuration.fetch(:tcp_tunnel_address, '127.0.0.1')
-              @type = iface_configuration.fetch(:tcp_tunnel_type)
+            # configuration for udp or tcp tunnel interfaces (p2p conn btwn guest OSes)
+            elsif iface_configuration.fetch(:tunnel_type, nil)
+              @type = iface_configuration.fetch(:tunnel_type)
+              @tunnel_port = iface_configuration.fetch(:tunnel_port, nil)
+              raise Errors::TunnelPortNotDefined if @tunnel_port.nil?
+              if @type == 'udp'
+                # default udp tunnel source to 127.0.0.1
+                @udp_tunnel_local_ip = iface_configuration.fetch(:tunnel_local_ip, '127.0.0.1')
+                @udp_tunnel_local_port = iface_configuration.fetch(:tunnel_local_port)
+              end
+              # default mcast tunnel to 239.255.1.1. Web search says this
+              # 239.255.x.x is a safe range to use for general use mcast
+              if @type == 'mcast'
+                default_ip = '239.255.1.1'
+              else
+                default_ip = '127.0.0.1'
+              end
+              @tunnel_ip = iface_configuration.fetch(:tunnel_address, default_ip)
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
-              template_name = 'tcp_tunnel_interface'
-              @logger.info("Setting up #{@type} tunnel interface using  #{@tcp_tunnel_ip} port #{@tcp_tunnel_port}")
+              template_name = 'tunnel_interface'
+              @logger.info("Setting up #{@type} tunnel interface using  #{@tunnel_ip} port #{@tunnel_port}")
             end
 
 
@@ -130,7 +142,7 @@ module VagrantPlugins
             # Configure interfaces that user requested. Machine should be up and
             # running now.
             networks_to_configure = []
-  
+
             adapters.each_with_index do |options, slot_number|
               # Skip configuring the management network, which is on the first interface.
               # It's used for provisioning and it has to be available during provisioning,
@@ -138,13 +150,13 @@ module VagrantPlugins
               next if slot_number == 0
               next if options[:auto_config] === false
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
-  
+
               network = {
                 :interface                       => slot_number,
                 :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
                 :mac_address => options[:mac],
               }
-  
+
               if options[:ip]
                 network = {
                   :type    => :static,
@@ -154,16 +166,17 @@ module VagrantPlugins
               else
                 network[:type] = :dhcp
               end
-  
+
               # do not run configure_networks for tcp tunnel interfaces
-              next if options.fetch(:tcp_tunnel_type, nil)
-  
+              next if options.fetch(:tunnel_type, nil)
+
               networks_to_configure << network
             end
-  
+
             env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
             env[:machine].guest.capability(
               :configure_networks, networks_to_configure)
+
           end
         end
 
@@ -179,7 +192,7 @@ module VagrantPlugins
         # Return network name according to interface options.
         def interface_network(libvirt_client, options)
           # no need to get interface network for tcp tunnel config
-          return 'tcp_tunnel' if options.fetch(:tcp_tunnel_type, nil)
+          return 'tunnel_interface' if options.fetch(:tunnel_type, nil)
 
           if options[:network_name]
             @logger.debug "Found network by name"
