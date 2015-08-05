@@ -406,7 +406,7 @@ end
 
 ## Input
 
-You can multiple inputs to the VM via `libvirt.input`. Available options are
+You can specify multiple inputs to the VM via `libvirt.input`. Available options are
 listed below. Note that both options are required:
 
 * `type` - The type of the input
