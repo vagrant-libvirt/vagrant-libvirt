@@ -404,6 +404,26 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Input
+
+You can specify multiple inputs to the VM via `libvirt.input`. Available options are
+listed below. Note that both options are required:
+
+* `type` - The type of the input
+* `bus` - The bust of the input
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # this is the default
+    # libvirt.input :type => "mouse", :bus => "ps2"
+
+    # very useful when having mouse issues when viewing VM via VNC
+    libvirt.input :type => "tablet", :bus => "usb"
+  end
+end
+```
+
 ## SSH Access To VM
 
 vagrant-libvirt supports vagrant's [standard ssh settings](https://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html).
