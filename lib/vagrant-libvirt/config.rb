@@ -168,12 +168,12 @@ module VagrantPlugins
         end
 
         # is it better to raise our own error, or let libvirt cause the exception?
-        raise "Only four cdroms may be attached at a time"
+        raise 'Only four cdroms may be attached at a time'
       end
 
       def input(options={})
-        if options[:type] == nil or options[:bus] == nil
-          raise "Input type AND bus must be specified"
+        if options[:type].nil? || options[:bus].nil?
+          raise 'Input type AND bus must be specified'
         end
 
         if @inputs == UNSET_VALUE
@@ -181,8 +181,8 @@ module VagrantPlugins
         end
 
         @inputs.push({
-          :type => options[:type],
-          :bus => options[:bus]
+          type: options[:type],
+          bus:  options[:bus]
         })
       end
 
