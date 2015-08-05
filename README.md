@@ -348,7 +348,7 @@ Vagrant.configure("2") do |config|
     # libvirt.input :type => "mouse", :bus => "ps2"
 
     # very useful when having mouse issues when viewing VM via VNC
-	libvirt.input :type => "tablet", :bus => "usb"
+    libvirt.input :type => "tablet", :bus => "usb"
   end
 end
 ```
