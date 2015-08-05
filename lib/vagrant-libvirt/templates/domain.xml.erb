@@ -63,7 +63,11 @@
     <console type='pty'>
       <target port='0'/>
     </console>
-    <input type='mouse' bus='ps2'/>
+
+	<% @inputs.each do |input| %>
+		<input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
+	<% end %>
+
     <%# Video device -%>
     <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
       <video>

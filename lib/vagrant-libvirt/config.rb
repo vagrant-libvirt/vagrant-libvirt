@@ -76,6 +76,9 @@ module VagrantPlugins
       attr_accessor :disks
   	  attr_accessor :cdroms
 
+	  # Inputs
+	  attr_accessor :inputs
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -113,7 +116,10 @@ module VagrantPlugins
 
         # Storage
         @disks             = []
-        @cdroms			       = []
+        @cdroms			   = []
+
+        # Inputs
+        @inputs            = UNSET_VALUE
       end
 
       def _get_device(disks)
@@ -145,6 +151,21 @@ module VagrantPlugins
 
         # is it better to raise our own error, or let libvirt cause the exception?
         raise "Only four cdroms may be attached at a time"
+      end
+
+      def input(options={})
+        if options[:type] == nil or options[:bus] == nil:
+          raise "Input type AND bus must be specified"
+        end
+
+        if @inputs == UNSET_VALUE
+          @inputs = []
+        end
+
+        @inputs.push({
+          :type => options[:type],
+          :bus => options[:bus]
+        })
       end
 
       # NOTE: this will run twice for each time it's needed- keep it idempotent
@@ -297,6 +318,7 @@ module VagrantPlugins
         # Storage
         @disks = [] if @disks == UNSET_VALUE
         @cdroms = [] if @cdroms == UNSET_VALUE
+        @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
       end
 
       def validate(machine)

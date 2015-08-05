@@ -58,6 +58,9 @@ module VagrantPlugins
           @disks = config.disks
           @cdroms = config.cdroms
 
+		      # Input
+          @inputs = config.inputs
+
           config = env[:machine].provider_config
           @domain_type = config.driver
 
@@ -132,6 +135,9 @@ module VagrantPlugins
           end
           @cdroms.each do |cdrom|
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
+          end
+          @inputs.each do |input|
+            env[:ui].info(" -- INPUT(type=#{input[:type]}, bus=#{input[:bus]})")
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
