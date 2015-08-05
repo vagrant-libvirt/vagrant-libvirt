@@ -139,19 +139,18 @@ en:
         TCP tunnel port not defined.
 
     states:
-      short_paused: |-
-        pause
-      short_shutoff: |-
-        shutoff
-      long_shutoff: |-
+      paused: |-
+        The Libvirt domain is suspended. Run `vagrant resume` to resume it.
+      shutting_down: |-
+        The Libvirt domain is shutting down. Wait for it to complete and
+        then run `vagrant up` to start it or `vagrant destroy` to remove.
+      shutoff: |-
         The Libvirt domain is not running. Run `vagrant up` to start it.
-      short_not_created: |-
-        not created
-      long_not_created: |-
+      not_created: |-
         The Libvirt domain is not created. Run `vagrant up` to create it.
-
-      short_running: |-
-        running
-      long_running: |-
+      running: |-
         The Libvirt domain is running. To stop this machine, you can run
         `vagrant halt`. To destroy the machine, you can run `vagrant destroy`.
+      preparing: |-
+        The vagrant machine is being prepared for creation, please wait for
+        it to reach a steady state before issuing commands on it.

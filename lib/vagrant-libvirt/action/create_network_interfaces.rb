@@ -27,7 +27,7 @@ module VagrantPlugins
         def call(env)
           # Get domain first.
           begin
-            domain = env[:libvirt_compute].client.lookup_domain_by_uuid(
+            domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
               env[:machine].id.to_s)
           rescue => e
             raise Errors::NoDomainError,
@@ -61,7 +61,7 @@ module VagrantPlugins
             # We have slot for interface, fill it with interface configuration.
             adapters[free_slot] = options
             adapters[free_slot][:network_name] = interface_network(
-              env[:libvirt_compute].client, adapters[free_slot])
+              env[:machine].provider.driver.connection.client, adapters[free_slot])
           end
 
           # Create each interface as new domain device.

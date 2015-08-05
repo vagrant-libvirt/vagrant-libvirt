@@ -12,7 +12,7 @@ module VagrantPlugins
           if env[:host]
             uuid = env[:machine].id
             # get all uuids
-            uuids = env[:libvirt_compute].servers.all.map(&:id)
+            uuids = env[:machine].provider.driver.connection.servers.all.map(&:id)
             # not exiisted in array will removed from nfs
             uuids.delete(uuid)
             env[:host].capability(

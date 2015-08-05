@@ -10,7 +10,7 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:machine_mac_addresses] = read_mac_addresses(env[:libvirt_compute], env[:machine])
+          env[:machine_mac_addresses] = read_mac_addresses(env[:machine].provider.driver.connection, env[:machine])
         end
 
         def read_mac_addresses(libvirt, machine)

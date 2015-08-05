@@ -72,7 +72,7 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image from the storage pool selected.
-          actual_volumes = env[:libvirt_compute].volumes.all.select do |x|
+          actual_volumes = env[:machine].provider.driver.connection.volumes.all.select do |x|
             x.pool_name == @storage_pool_name
           end
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
@@ -94,12 +94,12 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:libvirt_compute].volumes.select {
+            if env[:machine].provider.driver.connection.volumes.select {
                 |x| x.name == disk[:name] and x.pool_name == @storage_pool_name}.empty?
               # make the disk. equivalent to:
               # qemu-img create -f qcow2 <path> 5g
               begin
-                env[:libvirt_compute].volumes.create(
+                env[:machine].provider.driver.connection.volumes.create(
                   name: disk[:name],
                   format_type: disk[:type],
                   path: disk[:absolute_path],
@@ -166,7 +166,7 @@ module VagrantPlugins
           # Is there a way to tell fog to create new domain with already
           # existing volume? Use domain creation from template..
           begin
-            server = env[:libvirt_compute].servers.create(
+            server = env[:machine].provider.driver.connection.servers.create(
               xml: to_xml('domain'))
           rescue Fog::Errors::Error => e
             raise Errors::FogCreateServerError, error_message:  e.message

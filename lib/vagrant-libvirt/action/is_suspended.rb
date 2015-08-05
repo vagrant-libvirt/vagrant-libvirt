@@ -9,7 +9,7 @@ module VagrantPlugins
         end
 
         def call(env)
-          domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
           env[:result] = domain.state.to_s == 'paused'
 

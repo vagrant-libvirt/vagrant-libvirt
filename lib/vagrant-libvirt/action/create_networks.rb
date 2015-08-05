@@ -23,7 +23,7 @@ module VagrantPlugins
 
           @available_networks = []
           @options = {}
-          @libvirt_client = env[:libvirt_compute].client
+          @libvirt_client = env[:machine].provider.driver.connection.client
         end
 
         def call(env)
@@ -46,7 +46,7 @@ module VagrantPlugins
               # list is used throughout this class and should be easier to
               # process than libvirt API calls.
               @available_networks = libvirt_networks(
-                                      env[:libvirt_compute].client)
+                                      env[:machine].provider.driver.connection.client)
 
               # Prepare a hash describing network for this specific interface.
               @interface_network = {

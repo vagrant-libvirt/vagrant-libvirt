@@ -60,7 +60,7 @@ module VagrantPlugins
           @@lock.synchronize do
             # Don't continue if image already exists in storage pool.
             break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:libvirt_compute].volumes.all, env[:box_volume_name])
+              env[:machine].provider.driver.connection.volumes.all, env[:box_volume_name])
 
             # Box is not available as a storage pool volume. Create and upload
             # it as a copy of local box image.
@@ -73,7 +73,7 @@ module VagrantPlugins
             message << " in storage pool #{config.storage_pool_name}."
             @logger.info(message)
             begin
-              fog_volume = env[:libvirt_compute].volumes.create(
+              fog_volume = env[:machine].provider.driver.connection.volumes.create(
                 name:         env[:box_volume_name],
                 allocation:   "#{box_image_size/1024/1024}M",
                 capacity:     "#{box_virtual_size}G",
@@ -117,10 +117,10 @@ module VagrantPlugins
           image_size = File.size(image_file) # B
 
           begin
-            pool = env[:libvirt_compute].client.lookup_storage_pool_by_name(
+            pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(
               pool_name)
             volume = pool.lookup_volume_by_name(volume_name)
-            stream = env[:libvirt_compute].client.stream
+            stream = env[:machine].provider.driver.connection.client.stream
             volume.upload(stream, offset=0, length=image_size)
 
             # Exception ProviderLibvirt::RetrieveError can be raised if buffer is

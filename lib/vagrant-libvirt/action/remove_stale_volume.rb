@@ -22,7 +22,7 @@ module VagrantPlugins
           config = env[:machine].provider_config
           # Check for storage pool, where box image should be created
           fog_pool = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].pools.all, config.storage_pool_name)
+            env[:machine].provider.driver.connection.pools.all, config.storage_pool_name)
           @logger.debug("**** Pool #{fog_pool.name}")
 
           # This is name of newly created image for vm.
@@ -31,7 +31,7 @@ module VagrantPlugins
 
           # remove root storage
           box_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].volumes.all, name)
+            env[:machine].provider.driver.connection.volumes.all, name)
           if box_volume && box_volume.pool_name == fog_pool.name
             @logger.info("Deleting volume #{box_volume.key}")
             box_volume.destroy

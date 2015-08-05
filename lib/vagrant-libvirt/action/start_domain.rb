@@ -14,7 +14,7 @@ module VagrantPlugins
         def call(env)
           env[:ui].info(I18n.t("vagrant_libvirt.starting_domain"))
 
-          domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
 
           begin

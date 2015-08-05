@@ -21,7 +21,7 @@ module VagrantPlugins
           env[:metrics] ||= {}
 
           # Get domain object
-          domain = env[:libvirt_compute].servers.get(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise NoDomainError if domain == nil
 
           # Wait for domain to obtain an ip address. Ip address is searched

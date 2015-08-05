@@ -26,12 +26,12 @@ module VagrantPlugins
 
           # Verify the volume doesn't exist already.
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].volumes.all, @name)
+            env[:machine].provider.driver.connection.volumes.all, @name)
           raise Errors::DomainVolumeExists if domain_volume
 
           # Get path to backing image - box volume.
           box_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:libvirt_compute].volumes.all, env[:box_volume_name])
+            env[:machine].provider.driver.connection.volumes.all, env[:box_volume_name])
           @backing_file = box_volume.path
 
           # Virtual size of image. Take value worked out by HandleBoxImage
@@ -40,7 +40,7 @@ module VagrantPlugins
           # Create new volume from xml template. Fog currently doesn't support
           # volume snapshots directly.
           begin
-            domain_volume = env[:libvirt_compute].volumes.create(
+            domain_volume = env[:machine].provider.driver.connection.volumes.create(
               :xml       => to_xml('volume_snapshot'),
               :pool_name => config.storage_pool_name)
           rescue Fog::Errors::Error => e
