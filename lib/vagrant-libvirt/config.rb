@@ -172,7 +172,7 @@ module VagrantPlugins
       end
 
       def input(options={})
-        if options[:type] == nil or options[:bus] == nil:
+        if options[:type] == nil or options[:bus] == nil
           raise "Input type AND bus must be specified"
         end
 
