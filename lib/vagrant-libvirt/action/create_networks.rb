@@ -35,7 +35,8 @@ module VagrantPlugins
             # available, create it if possible. Otherwise raise an error.
             configured_networks(env, @logger).each do |options|
               # Only need to create private networks
-              next if options[:iface_type] != :private_network
+              next if options[:iface_type] != :private_network or
+                options.fetch(:tcp_tunnel_type, nil)
               @logger.debug "Searching for network with options #{options}"
 
               # should fix other methods so this doesn't have to be instance var
@@ -44,7 +45,8 @@ module VagrantPlugins
               # Get a list of all (active and inactive) libvirt networks. This
               # list is used throughout this class and should be easier to
               # process than libvirt API calls.
-              @available_networks = libvirt_networks(env[:libvirt_compute].client)
+              @available_networks = libvirt_networks(
+                                      env[:libvirt_compute].client)
 
               # Prepare a hash describing network for this specific interface.
               @interface_network = {
@@ -56,19 +58,16 @@ module VagrantPlugins
                 created:          false,
                 active:           false,
                 autostart:        false,
-                libvirt_network:  nil,
+                libvirt_network:  nil
               }
 
               if @options[:ip]
                 handle_ip_option(env)
-              # in vagrant 1.2.3 and later it is not possible to take this branch
-              # because cannot have name without ip
-              # https://github.com/mitchellh/vagrant/commit/cf2f6da4dbcb4f57c9cdb3b94dcd0bba62c5f5fd
               elsif @options[:network_name]
-                handle_network_name_option
+                handle_network_name_option(env)
               end
 
-              autostart_network if !@interface_network[:autostart]
+              autostart_network if @interface_network[:autostart]
               activate_network if !@interface_network[:active]
             end
           end
@@ -78,11 +77,25 @@ module VagrantPlugins
 
         private
 
+        def lookup_network_by_ip(ip)
+          @logger.debug "looking up network with ip == #{ip}"
+          @available_networks.each do |network|
+            if network[:network_address] == ip
+              @logger.debug "found existing network by ip: #{network}"
+              return network
+            end
+          end
+          nil
+        end
+
         # Return hash of network for specified name, or nil if not found.
         def lookup_network_by_name(network_name)
           @logger.debug "looking up network named #{network_name}"
           @available_networks.each do |network|
-            return network if network[:name] == network_name
+            if network[:name] == network_name
+              @logger.debug "found existing network by name: #{network}"
+              return network
+            end
           end
           nil
         end
@@ -114,31 +127,38 @@ module VagrantPlugins
         # @available_networks should be filled before calling this function.
         def handle_ip_option(env)
           return if !@options[:ip]
+          net_address = nil
+          if @options[:forward_mode] != 'veryisolated'
+            net_address = network_address(@options[:ip], @options[:netmask])
+            # Set IP address of network (actually bridge). It will be used as
+            # gateway address for machines connected to this network.
+            net = IPAddr.new(net_address)
+            
+            # Default to first address (after network name)
+            @interface_network[:ip_address] = @options[:host_ip].nil? ? \
+              net.to_range.begin.succ : \
+              IPAddr.new(@options[:host_ip])
+          end
 
-          net_address = network_address(@options[:ip], @options[:netmask])
           @interface_network[:network_address] = net_address
 
-          # Set IP address of network (actually bridge). It will be used as
-          # gateway address for machines connected to this network.
-          net = IPAddr.new(net_address)
-          @interface_network[:ip_address] = net.to_range.begin.succ
-
-          # Is there an available network matching to configured ip
-          # address?
-          @available_networks.each do |available_network|
-            if available_network[:network_address] == \
-            @interface_network[:network_address]
-              @interface_network = available_network
-              @logger.debug "found existing network by ip, values are"
-              @logger.debug @interface_network
-              break
-            end
+          # if network is veryisolated, search by name
+          if @options[:libvirt__forward_mode] == "veryisolated"
+            network = lookup_network_by_name(@options[:network_name])
+          elsif net_address
+            # otherwise, search by ip (if set)
+            network = lookup_network_by_ip(net_address)
+          else
+            # leaving this here to mimic prior behavior. If we get
+            # here, something's probably broken.
+            network = lookup_network_by_name(@options[:network_name])
           end
+          @interface_network = network if network
 
           if @interface_network[:created]
             verify_dhcp
           end
-
+  
           if @options[:network_name]
             @logger.debug "Checking that network name does not clash with ip"
             if @interface_network[:created]
@@ -157,13 +177,13 @@ module VagrantPlugins
                       ip_address:   @options[:ip],
                       network_name: @options[:network_name]
               end
-
+  
               # Network with 'name' doesn't exist. Set it as name for new
               # network.
               @interface_network[:name] = @options[:network_name]
             end
           end
-
+  
           # Do we need to create new network?
           if !@interface_network[:created]
 
@@ -206,15 +226,39 @@ module VagrantPlugins
         # Handle network_name option, if ip was not specified. Variables
         # @options and @available_networks should be filled before calling this
         # function.
-        def handle_network_name_option
-          return if @options[:ip] || !@options[:network_name]
+        def handle_network_name_option(env)
+          return if @options[:ip] || \
+                    !@options[:network_name] || \
+                    !@options[:libvirt__forward_mode] == "veryisolated"
 
-          @interface_network = lookup_network_by_name(@options[:network_name])
-          if !@interface_network
+          network = lookup_network_by_name(@options[:network_name])
+          @interface_network = network if network
+
+          # if this interface has a network address, something's wrong.
+          if @interface_network[:network_address] 
             raise Errors::NetworkNotAvailableError,
                   network_name: @options[:network_name]
-          else
-            verify_dhcp
+          end
+
+          # Do we need to create new network?
+          if !@interface_network[:created]
+            @interface_network[:name] = @options[:network_name]
+
+            # Generate a unique name for network bridge.
+            count = 0
+            while @interface_network[:bridge_name].nil?
+              @logger.debug "generating name for bridge"
+              bridge_name = 'virbr'
+              bridge_name << count.to_s
+              count += 1
+
+              next if lookup_bridge_by_name(bridge_name)
+
+              @interface_network[:bridge_name] = bridge_name
+            end
+
+            # Create a private network.
+            create_private_network(env)
           end
         end
 
@@ -233,18 +277,19 @@ module VagrantPlugins
             # Find out DHCP addresses pool range.
             network_address = "#{@interface_network[:network_address]}/"
             network_address << "#{@interface_network[:netmask]}"
-            net = IPAddr.new(network_address)
+            net = @interface_network[:network_address] ? IPAddr.new(network_address) : nil
 
-            # First is address of network, second is gateway.
-            # Start the range two
-            # addresses after network address.
+            # First is address of network, second is gateway (by default).
+            # So start the range two addresses after network address by default.
             # TODO: Detect if this IP is not set on the interface.
-            start_address = net.to_range.begin.succ.succ
+            start_address = @options[:dhcp_start] || net.to_range.begin.succ
 
-            # Stop address must not be broadcast.
-            stop_address = net.to_range.end & IPAddr.new('255.255.255.254')
+            # Default to last possible address. (Stop address must not be broadcast address.)
+            stop_address = @options[:dhcp_stop] || (net.to_range.end & IPAddr.new('255.255.255.254'))
 
             @network_dhcp_enabled = true
+            @network_dhcp_bootp_file = @options[:dhcp_bootp_file]
+            @network_dhcp_bootp_server = @options[:dhcp_bootp_server]
             @network_range_start = start_address
             @network_range_stop = stop_address
           else

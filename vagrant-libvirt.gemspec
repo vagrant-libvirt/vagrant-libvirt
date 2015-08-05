@@ -20,10 +20,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "rspec-expectations", "~> 2.12.1"
   gem.add_development_dependency "rspec-mocks", "~> 2.12.1"
 
-  gem.add_runtime_dependency 'fog', '~> 1.15'
-  gem.add_runtime_dependency 'ruby-libvirt', '~> 0.4'
+  gem.add_runtime_dependency 'fog-libvirt', '~> 0.0.1'
   gem.add_runtime_dependency 'nokogiri', '~> 1.6.0'
 
   gem.add_development_dependency 'rake'
 end
-

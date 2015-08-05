@@ -55,7 +55,10 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :boot_order
       attr_accessor :machine_type
+      attr_accessor :machine_arch
+      attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :nic_model_type
       attr_accessor :nested
@@ -71,6 +74,11 @@ module VagrantPlugins
       attr_accessor :video_type
       attr_accessor :video_vram
       attr_accessor :keymap
+
+      # Sets the max number of NICs that can be created
+      # Default set to 8. Don't change the default unless you know
+      # what are doing
+      attr_accessor :nic_adapter_count
 
       # Storage
       attr_accessor :disks
@@ -98,6 +106,8 @@ module VagrantPlugins
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @machine_type      = UNSET_VALUE
+        @machine_arch      = UNSET_VALUE
+        @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
@@ -114,12 +124,20 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
         @keymap            = UNSET_VALUE
 
+        @nic_adapter_count = UNSET_VALUE
+
+        # Boot order
+        @boot_order = []
         # Storage
         @disks             = []
         @cdroms			   = []
 
         # Inputs
         @inputs            = UNSET_VALUE
+      end
+
+      def boot(device)
+        @boot_order << device	# append
       end
 
       def _get_device(disks)
@@ -221,6 +239,7 @@ module VagrantPlugins
           :path => options[:path],
           :bus => options[:bus],
           :cache => options[:cache] || 'default',
+          :allow_existing => options[:allow_existing],
         }
 
         @disks << disk	# append
@@ -266,8 +285,10 @@ module VagrantPlugins
 
         if @id_ssh_key_file
           # set ssh key for access to libvirt host
-          home_dir = `echo ${HOME}`.chomp
-          uri << "\&keyfile=#{home_dir}/.ssh/"+@id_ssh_key_file
+          uri << "\&keyfile="
+          # if no slash, prepend $HOME/.ssh/
+          @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
+          uri << @id_ssh_key_file
         end
         # set path to libvirt socket
         uri << "\&socket="+@socket if @socket
@@ -295,6 +316,8 @@ module VagrantPlugins
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
+        @machine_arch = nil if @machine_arch == UNSET_VALUE
+        @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @nic_model_type = 'virtio' if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
@@ -305,7 +328,7 @@ module VagrantPlugins
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
-        if (@graphics_type != 'vnc' && @graphics_port != 'spice') ||
+        if (@graphics_type != 'vnc' && @graphics_type != 'spice') ||
             @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
@@ -314,6 +337,10 @@ module VagrantPlugins
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
+        @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
+
+        # Boot order
+        @boot_order = [] if @boot_order == UNSET_VALUE
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE

@@ -34,8 +34,8 @@ module VagrantPlugins
             env[:libvirt_compute].volumes.all, env[:box_volume_name])
           @backing_file = box_volume.path
 
-          # Virtual size of image. Same as box image size.
-          @capacity = env[:machine].box.metadata['virtual_size'] #G
+          # Virtual size of image. Take value worked out by HandleBoxImage
+          @capacity = env[:box_virtual_size] #G
 
           # Create new volume from xml template. Fog currently doesn't support
           # volume snapshots directly.

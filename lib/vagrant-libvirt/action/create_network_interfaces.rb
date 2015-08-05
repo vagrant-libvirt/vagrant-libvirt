@@ -19,6 +19,8 @@ module VagrantPlugins
           @management_network_name = env[:machine].provider_config.management_network_name
 	        config = env[:machine].provider_config
 	        @nic_model_type = config.nic_model_type
+          @nic_adapter_count = config.nic_adapter_count
+          @boot_order = config.boot_order
           @app = app
         end
 
@@ -36,7 +38,6 @@ module VagrantPlugins
           adapters = []
 
           # Vagrant gives you adapter 0 by default
-
           # Assign interfaces to slots.
           configured_networks(env, @logger).each do |options|
 
@@ -70,7 +71,6 @@ module VagrantPlugins
             @mac = iface_configuration.fetch(:mac, false)
             @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
             template_name = 'interface'
-
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
               @device = iface_configuration.fetch(:dev, 'eth0')
@@ -80,7 +80,17 @@ module VagrantPlugins
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
               @ovs = iface_configuration.fetch(:ovs, false)
+            # configuration for tcp tunnel interfaces (p2p conn btwn guest OSes)
+            elsif iface_configuration.fetch(:tcp_tunnel_type, nil)
+              @tcp_tunnel_port = iface_configuration.fetch(:tcp_tunnel_port, nil)
+              raise Errors::TcpTunnelPortNotDefined if @tcp_tunnel_port.nil?
+              @tcp_tunnel_ip = iface_configuration.fetch(:tcp_tunnel_address, '127.0.0.1')
+              @type = iface_configuration.fetch(:tcp_tunnel_type)
+              @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+              template_name = 'tcp_tunnel_interface'
+              @logger.info("Setting up #{@type} tunnel interface using  #{@tcp_tunnel_ip} port #{@tcp_tunnel_port}")
             end
+
 
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
@@ -95,6 +105,21 @@ module VagrantPlugins
             rescue => e
               raise Errors::AttachDeviceError,
                 :error_message => e.message
+            end
+
+            # Re-read the network configuration and grab the MAC address
+            if !@mac
+              xml = Nokogiri::XML(domain.xml_desc)
+              if iface_configuration[:iface_type] == :public_network
+                if @type == 'direct'
+                  @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
+                else
+                  @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
+                end
+              else
+                @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
+              end
+              iface_configuration[:mac] = @mac.to_s
             end
           end
 
@@ -116,7 +141,7 @@ module VagrantPlugins
             network = {
               :interface                       => slot_number,
               :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
-              #:mac => ...,
+              :mac_address => options[:mac],
             }
 
             if options[:ip]
@@ -129,6 +154,9 @@ module VagrantPlugins
               network[:type] = :dhcp
             end
 
+            # do not run configure_networks for tcp tunnel interfaces
+            next if options.fetch(:tcp_tunnel_type, nil)
+
             networks_to_configure << network
           end
 
@@ -139,7 +167,7 @@ module VagrantPlugins
 
         private
 
-        def find_empty(array, start=0, stop=8)
+        def find_empty(array, start=0, stop=@nic_adapter_count)
           (start..stop).each do |i|
             return i if !array[i]
           end
@@ -148,6 +176,9 @@ module VagrantPlugins
 
         # Return network name according to interface options.
         def interface_network(libvirt_client, options)
+          # no need to get interface network for tcp tunnel config
+          return 'tcp_tunnel' if options.fetch(:tcp_tunnel_type, nil)
+
           if options[:network_name]
             @logger.debug "Found network by name"
             return options[:network_name]

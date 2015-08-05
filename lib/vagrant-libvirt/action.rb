@@ -8,6 +8,13 @@ module VagrantPlugins
       include Vagrant::Action::Builtin
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
+      # remove image from libvirt storage pool
+      def self.remove_libvirt_image
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use RemoveLibvirtImage
+        end
+      end
+
       # This action is called to bring the box up from nothing.
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
@@ -24,27 +31,18 @@ module VagrantPlugins
               b2.use CreateDomain
 
               b2.use Provision
-              b2.use CreateNetworks
-              b2.use CreateNetworkInterfaces
-
-
               b2.use PrepareNFSValidIds
               b2.use SyncedFolderCleanup
               b2.use SyncedFolders
-
-              b2.use StartDomain
-              b2.use WaitTillUp
-
-              b2.use StartDomain
-              b2.use WaitTillUp
-
-
-
-
-              b2.use ForwardPorts
-
               b2.use PrepareNFSSettings
               b2.use ShareFolders
+              b2.use CreateNetworks
+              b2.use CreateNetworkInterfaces
+
+              b2.use StartDomain
+              b2.use WaitTillUp
+
+              b2.use ForwardPorts
               b2.use SetHostname
               # b2.use SyncFolders
             else
@@ -83,7 +81,6 @@ module VagrantPlugins
               b3.use SyncedFolderCleanup
               b3.use SyncedFolders
 
-
               # Start it..
               b3.use StartDomain
 
@@ -91,11 +88,9 @@ module VagrantPlugins
               # so wait for dhcp lease and store IP into machines data_dir.
               b3.use WaitTillUp
 
-
               b3.use ForwardPorts
               b3.use PrepareNFSSettings
               b3.use ShareFolders
-
             end
           end
         end
@@ -147,8 +142,10 @@ module VagrantPlugins
 
       # not implemented and looks like not require
       def self.action_package
-        lambda do |env|
-          raise Errors::PackageNotSupported
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use ConnectLibvirt
+          b.use PackageDomain
         end
       end
 
@@ -159,7 +156,14 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
-              b2.use MessageNotCreated
+              # Try to remove stale volumes anyway
+              b2.use ConnectLibvirt
+              b2.use SetNameOfDomain
+              b2.use RemoveStaleVolume
+              if !env[:result]
+                b2.use MessageNotCreated
+              end
+
               next
             end
 
@@ -168,6 +172,7 @@ module VagrantPlugins
             # b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
+            b2.use ProvisionerCleanup
           end
         end
       end
@@ -320,6 +325,7 @@ module VagrantPlugins
 
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
       autoload :ConnectLibvirt, action_root.join('connect_libvirt')
+      autoload :PackageDomain, action_root.join('package_domain')
       autoload :CreateDomain, action_root.join('create_domain')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
@@ -331,6 +337,7 @@ module VagrantPlugins
       autoload :HaltDomain, action_root.join('halt_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')
+      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
       autoload :IsCreated, action_root.join('is_created')
       autoload :IsRunning, action_root.join('is_running')
       autoload :IsSuspended, action_root.join('is_suspended')
@@ -338,6 +345,8 @@ module VagrantPlugins
       autoload :MessageNotCreated, action_root.join('message_not_created')
       autoload :MessageNotRunning, action_root.join('message_not_running')
       autoload :MessageNotSuspended, action_root.join('message_not_suspended')
+
+      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
 
       autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
@@ -362,6 +371,7 @@ module VagrantPlugins
       autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
+      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
     end
   end
 end
