@@ -6,7 +6,7 @@ module VagrantPlugins
       class CreateDomain
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
-        def initialize(app, env)
+        def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_domain')
           @app = app
         end
@@ -49,12 +49,12 @@ module VagrantPlugins
           @graphics_passwd =  if config.graphics_passwd.to_s.empty?
                                 ''
                               else
-                                "passwd='#{config.graphics_passwd.to_s}'"
+                                "passwd='#{config.graphics_passwd}'"
                               end
           @video_type = config.video_type
           @video_vram = config.video_vram
           @keymap = config.keymap
-          
+
           # Boot order
           @boot_order = config.boot_order
 
@@ -63,7 +63,7 @@ module VagrantPlugins
           @disks = config.disks
           @cdroms = config.cdroms
 
-		      # Input
+          # Input
           @inputs = config.inputs
 
           config = env[:machine].provider_config
@@ -72,11 +72,12 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image from the storage pool selected.
-          actual_volumes = env[:machine].provider.driver.connection.volumes.all.select do |x|
-            x.pool_name == @storage_pool_name
-          end
+          actual_volumes =
+            env[:machine].provider.driver.connection.volumes.all.select do |x|
+              x.pool_name == @storage_pool_name
+            end
           domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            actual_volumes,"#{@name}.img")
+            actual_volumes, "#{@name}.img")
           raise Errors::DomainVolumeExists if domain_volume.nil?
           @domain_volume_path = domain_volume.path
 
@@ -94,8 +95,9 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:machine].provider.driver.connection.volumes.select {
-                |x| x.name == disk[:name] and x.pool_name == @storage_pool_name}.empty?
+            if env[:machine].provider.driver.connection.volumes.select do |x|
+              x.name == disk[:name] && x.pool_name == @storage_pool_name
+            end.empty?
               # make the disk. equivalent to:
               # qemu-img create -f qcow2 <path> 5g
               begin
@@ -134,7 +136,7 @@ module VagrantPlugins
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
-          
+
           @boot_order.each do |device|
             env[:ui].info(" -- Boot device:        #{device}")
           end
@@ -145,8 +147,8 @@ module VagrantPlugins
 
           @disks.each do |disk|
             msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
-            msg += " (shared. Remove only manualy)" if disk[:allow_existing]
-            msg += " Not created - using existed." if disk[:preexisting]
+            msg += ' (shared. Remove only manualy)' if disk[:allow_existing]
+            msg += ' Not created - using existed.' if disk[:preexisting]
             env[:ui].info(msg)
           end
 
@@ -158,7 +160,7 @@ module VagrantPlugins
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
           @inputs.each do |input|
-            env[:ui].info(" -- INPUT(type=#{input[:type]}, bus=#{input[:bus]})")
+            env[:ui].info(" -- INPUT : type=#{input[:type]}, bus=#{input[:bus]}")
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
