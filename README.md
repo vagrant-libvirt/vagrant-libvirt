@@ -22,6 +22,7 @@ welcome and can help a lot :-)
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara).
 * Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
 * Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate).
+* Support VMs with no box for PXE boot purposes
 
 ## Future work
 
@@ -424,6 +425,26 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+
+## No box and PXE boot
+
+There is support for PXE booting VMs with no disks as well as PXE booting VMs with blank disks. There are some limitations:
+
+* No provisioning scripts are ran
+* No network configuration is being applied to the VM
+* No SSH connection can be made
+* ```vagrant halt``` will only work cleanly if the VM handles ACPI shutdown signals 
+
+In short, VMs without a box can be created, halted and destroyed but all other functionality cannot be used.
+
+An example for a PXE booted VM with no disks whatsoever:
+
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.provider :libvirt do |domain|
+      domain.boot 'network'
+    end
+  end
 
 ## SSH Access To VM
 

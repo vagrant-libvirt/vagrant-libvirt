@@ -23,7 +23,7 @@ module VagrantPlugins
         Config
       end
 
-      provider('libvirt', parallel: true) do
+      provider('libvirt', parallel: true, box_optional: true) do
         require_relative 'provider'
         Provider
       end

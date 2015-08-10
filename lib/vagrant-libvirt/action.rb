@@ -23,27 +23,34 @@ module VagrantPlugins
             # Create VM if not yet created.
             if !env[:result]
               b2.use SetNameOfDomain
-              b2.use HandleStoragePool
-              b2.use HandleBox
-              b2.use HandleBoxImage
-              b2.use CreateDomainVolume
-              b2.use CreateDomain
+              if !env[:machine].box
+                b2.use CreateDomain
+                b2.use CreateNetworks
+                b2.use CreateNetworkInterfaces
+                b2.use StartDomain
+              else
+                b2.use HandleStoragePool
+                b2.use HandleBox
+                b2.use HandleBoxImage
+                b2.use CreateDomainVolume
+                b2.use CreateDomain
 
-              b2.use Provision
-              b2.use PrepareNFSValidIds
-              b2.use SyncedFolderCleanup
-              b2.use SyncedFolders
-              b2.use PrepareNFSSettings
-              b2.use ShareFolders
-              b2.use CreateNetworks
-              b2.use CreateNetworkInterfaces
+                b2.use Provision
+                b2.use PrepareNFSValidIds
+                b2.use SyncedFolderCleanup
+                b2.use SyncedFolders
+                b2.use PrepareNFSSettings
+                b2.use ShareFolders
+                b2.use CreateNetworks
+                b2.use CreateNetworkInterfaces
 
-              b2.use StartDomain
-              b2.use WaitTillUp
+                b2.use StartDomain
+                b2.use WaitTillUp
 
-              b2.use ForwardPorts
-              b2.use SetHostname
-              # b2.use SyncFolders
+                b2.use ForwardPorts
+                b2.use SetHostname
+                # b2.use SyncFolders
+              end
             else
               b2.use action_start
             end
@@ -68,27 +75,33 @@ module VagrantPlugins
                 next
               end
 
-              # VM is not running or suspended.
+              if !env[:machine].box
+                # With no box, we just care about network creation and starting it
+                b3.use CreateNetworks
+                b3.use StartDomain
+              else
+                # VM is not running or suspended.
 
-              b3.use Provision
+                b3.use Provision
 
-              # Ensure networks are created and active
-              b3.use CreateNetworks
+                # Ensure networks are created and active
+                b3.use CreateNetworks
 
-              b3.use PrepareNFSValidIds
-              b3.use SyncedFolderCleanup
-              b3.use SyncedFolders
+                b3.use PrepareNFSValidIds
+                b3.use SyncedFolderCleanup
+                b3.use SyncedFolders
 
-              # Start it..
-              b3.use StartDomain
+                # Start it..
+                b3.use StartDomain
 
-              # Machine should gain IP address when comming up,
-              # so wait for dhcp lease and store IP into machines data_dir.
-              b3.use WaitTillUp
+                # Machine should gain IP address when comming up,
+                # so wait for dhcp lease and store IP into machines data_dir.
+                b3.use WaitTillUp
 
-              b3.use ForwardPorts
-              b3.use PrepareNFSSettings
-              b3.use ShareFolders
+                b3.use ForwardPorts
+                b3.use PrepareNFSSettings
+                b3.use ShareFolders
+             end
             end
           end
         end
@@ -154,7 +167,9 @@ module VagrantPlugins
             if !env[:result]
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
-              b2.use RemoveStaleVolume
+	      if env[:machine].box
+                b2.use RemoveStaleVolume
+              end
               if !env[:result]
                 b2.use MessageNotCreated
               end
