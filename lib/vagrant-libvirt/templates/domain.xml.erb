@@ -31,7 +31,12 @@
       <loader readonly='yes' type='rom'><%= @loader %></loader>
     <% end %>
     <% if @boot_order.count >= 1 %>
+      <% @boot_order.each do |b| %>
+        <boot dev='<%= b %>'/>
+      <% end %> 
       <bootmenu enable='yes'/>
+    <% else %>
+      <boot dev='hd' />
     <% end %>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
@@ -49,11 +54,6 @@
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='vda' bus='<%= @disk_bus %>'/>
-      <% if @boot_order[0] == 'hd' %>
-        <boot order='1'/>
-      <% elsif @boot_order.count >= 1 %> 
-        <boot order='9'/>
-      <% end %>
     </disk>
 <%# additional disks -%>
 <% @disks.each do |d| -%>
