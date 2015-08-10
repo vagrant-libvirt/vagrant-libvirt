@@ -27,6 +27,7 @@ module VagrantPlugins
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
+                b2.use SetBootOrder
                 b2.use StartDomain
               else
                 b2.use HandleStoragePool
@@ -43,6 +44,7 @@ module VagrantPlugins
                 b2.use ShareFolders
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
+                b2.use SetBootOrder
 
                 b2.use StartDomain
                 b2.use WaitTillUp
@@ -78,6 +80,7 @@ module VagrantPlugins
               if !env[:machine].box
                 # With no box, we just care about network creation and starting it
                 b3.use CreateNetworks
+                b3.use SetBootOrder
                 b3.use StartDomain
               else
                 # VM is not running or suspended.
@@ -86,6 +89,7 @@ module VagrantPlugins
 
                 # Ensure networks are created and active
                 b3.use CreateNetworks
+                b3.use SetBootOrder
 
                 b3.use PrepareNFSValidIds
                 b3.use SyncedFolderCleanup
@@ -167,7 +171,7 @@ module VagrantPlugins
             if !env[:result]
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
-	      if env[:machine].box
+              if env[:machine].box
                 b2.use RemoveStaleVolume
               end
               if !env[:result]
@@ -336,6 +340,7 @@ module VagrantPlugins
       autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
+      autoload :SetBootOrder, action_root.join('set_boot_order')
 
       # I don't think we need it anymore
       autoload :ShareFolders, action_root.join('share_folders')

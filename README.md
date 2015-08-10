@@ -173,7 +173,7 @@ end
 * `machine` - Sets machine type. Equivalent to qemu `-machine`. Use `qemu-system-x86_64 -machine help` to get a list of supported machines.
 * `machine_arch` - Sets machine architecture. This helps libvirt to determine the correct emulator type. Possible values depend on your version of qemu. For possible values, see which emulator executable `qemu-system-*` your system provides. Common examples are `aarch64`, `alpha`, `arm`, `cris`, `i386`, `lm32`, `m68k`, `microblaze`, `microblazeel`, `mips`, `mips64`, `mips64el`, `mipsel`, `moxie`, `or32`, `ppc`, `ppc64`, `ppcemb`, `s390x`, `sh4`, `sh4eb`, `sparc`, `sparc64`, `tricore`, `unicore32`, `x86_64`, `xtensa`, `xtensaeb`.
 * `machine_virtual_size` - Sets the disk size in GB for the machine overriding the default specified in the box. Allows boxes to defined with a minimal size disk by default and to be grown to a larger size at creation time. Will ignore sizes smaller than the size specified by the box metadata. Note that currently there is no support for automatically resizing the filesystem to take advantage of the larger disk.
-* `boot` - Change the boot order and enables the boot menu. Possible options are "hd" or "network". Defaults to "hd" with boot menu disabled. When "network" is set first, *all* NICs will be tried before the first disk is tried.
+* `boot` - Change the boot order and enables the boot menu. Possible options are "hd", "network", "cdrom". Defaults to "hd" with boot menu disabled. When "network" is set without "hd", only all NICs will be tried; see below for more detail.
 * `nic_adapter_count` - Defaults to '8'. Only use case for increasing this count is for VMs that virtualize switches such as Cumulus Linux. Max value for Cumulus Linux VMs is 33.
 
 
@@ -198,7 +198,8 @@ Vagrant.configure("2") do |config|
 
 The following example shows part of a Vagrantfile that enables the VM to
 boot from a network interface first and a hard disk second. This could be
-used to run VMs that are meant to be a PXE booted machines.
+used to run VMs that are meant to be a PXE booted machines. Be aware that 
+if `hd` is not specified as a boot option, it will never be tried.
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -443,6 +444,17 @@ Vagrant.configure("2") do |config|
   config.vm.define :pxeclient do |pxeclient|
     pxeclient.vm.provider :libvirt do |domain|
       domain.boot 'network'
+    end
+  end
+
+And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot::
+
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.provider :libvirt do |domain|
+      domain.storage :file, :size => '100G', :type => 'qcow2'
+      domain.boot 'network'
+      domain.boot 'hd'
     end
   end
 
