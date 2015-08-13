@@ -70,6 +70,27 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
           expect(subject.call(env)).to be_nil
         end
       end
+
+      context "when has CDROMs attached" do
+        let(:vagrantfile) { <<-EOF
+          Vagrant.configure('2') do |config|
+            config.vm.define :test
+            config.vm.provider :libvirt do |libvirt|
+              libvirt.storage :file, :device => :cdrom
+            end
+          end
+          EOF
+        }
+
+        it "uses explicit removal of disks" do
+          allow(libvirt_domain).to receive(:name).and_return("test")
+          allow(domain).to receive(:volumes).and_return([root_disk])
+
+          expect(domain).to_not receive(:destroy).with(:destroy_volumes => true)
+          expect(root_disk).to receive(:destroy)  # root disk remove
+          expect(subject.call(env)).to be_nil
+        end
+      end
     end
   end
 end
