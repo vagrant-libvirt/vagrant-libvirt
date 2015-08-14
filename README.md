@@ -22,7 +22,7 @@ welcome and can help a lot :-)
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara).
 * Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
 * Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate).
-* Support VMs with no box for PXE boot purposes
+* Support VMs with no box for PXE boot purposes (Vagrant 1.6 and up)
 
 ## Future work
 
@@ -431,6 +431,7 @@ end
 
 There is support for PXE booting VMs with no disks as well as PXE booting VMs with blank disks. There are some limitations:
 
+* Requires Vagrant 1.6.0 or newer
 * No provisioning scripts are ran
 * No network configuration is being applied to the VM
 * No SSH connection can be made
