@@ -20,7 +20,6 @@ module VagrantPlugins
 	        config = env[:machine].provider_config
 	        @nic_model_type = config.nic_model_type
           @nic_adapter_count = config.nic_adapter_count
-          @boot_order = config.boot_order
           @app = app
         end
 
@@ -126,43 +125,46 @@ module VagrantPlugins
           # Continue the middleware chain.
           @app.call(env)
 
-          # Configure interfaces that user requested. Machine should be up and
-          # running now.
-          networks_to_configure = []
 
-          adapters.each_with_index do |options, slot_number|
-            # Skip configuring the management network, which is on the first interface.
-            # It's used for provisioning and it has to be available during provisioning,
-            # ifdown command is not acceptable here.
-            next if slot_number == 0
-            next if options[:auto_config] === false
-            @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
-
-            network = {
-              :interface                       => slot_number,
-              :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
-              :mac_address => options[:mac],
-            }
-
-            if options[:ip]
+          if env[:machine].box
+            # Configure interfaces that user requested. Machine should be up and
+            # running now.
+            networks_to_configure = []
+  
+            adapters.each_with_index do |options, slot_number|
+              # Skip configuring the management network, which is on the first interface.
+              # It's used for provisioning and it has to be available during provisioning,
+              # ifdown command is not acceptable here.
+              next if slot_number == 0
+              next if options[:auto_config] === false
+              @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
+  
               network = {
-                :type    => :static,
-                :ip      => options[:ip],
-                :netmask => options[:netmask],
-              }.merge(network)
-            else
-              network[:type] = :dhcp
+                :interface                       => slot_number,
+                :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
+                :mac_address => options[:mac],
+              }
+  
+              if options[:ip]
+                network = {
+                  :type    => :static,
+                  :ip      => options[:ip],
+                  :netmask => options[:netmask],
+                }.merge(network)
+              else
+                network[:type] = :dhcp
+              end
+  
+              # do not run configure_networks for tcp tunnel interfaces
+              next if options.fetch(:tcp_tunnel_type, nil)
+  
+              networks_to_configure << network
             end
-
-            # do not run configure_networks for tcp tunnel interfaces
-            next if options.fetch(:tcp_tunnel_type, nil)
-
-            networks_to_configure << network
+  
+            env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
+            env[:machine].guest.capability(
+              :configure_networks, networks_to_configure)
           end
-
-          env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
-          env[:machine].guest.capability(
-            :configure_networks, networks_to_configure)
         end
 
         private

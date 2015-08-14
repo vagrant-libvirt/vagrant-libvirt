@@ -6,10 +6,5 @@
   <target dev='vnet<%= @iface_number %>'/>
   <alias name='net<%= @iface_number %>'/>
   <model type='<%=@model_type%>'/>
-  <% if @boot_order[0] == 'network' %>
-    <boot order='<%= @iface_number+1 %>'/>
-  <% elsif @boot_order.include?('network') %> 
-    <boot order='<%= @iface_number+2 %>'/>
-  <% end %>
 </interface>
 

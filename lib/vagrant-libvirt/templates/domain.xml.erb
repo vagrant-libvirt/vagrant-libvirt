@@ -44,17 +44,14 @@
   </features>
   <clock offset='utc'/>
   <devices>
+    <% if @domain_volume_path %>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='vda' bus='<%= @disk_bus %>'/>
-      <% if @boot_order[0] == 'hd' %>
-        <boot order='1'/>
-      <% elsif @boot_order.count >= 1 %> 
-        <boot order='9'/>
-      <% end %>
     </disk>
+    <% end %>
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>

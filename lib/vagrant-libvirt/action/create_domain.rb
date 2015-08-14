@@ -72,18 +72,29 @@ module VagrantPlugins
 
           @os_type = 'hvm'
 
-          # Get path to domain image from the storage pool selected.
-          actual_volumes =
-            env[:machine].provider.driver.connection.volumes.all.select do |x|
-              x.pool_name == @storage_pool_name
-            end
-          domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            actual_volumes, "#{@name}.img")
-          raise Errors::DomainVolumeExists if domain_volume.nil?
-          @domain_volume_path = domain_volume.path
+          # Get path to domain image from the storage pool selected if we have a box.
+          if env[:machine].box
+            actual_volumes = 
+              env[:machine].provider.driver.connection.volumes.all.select do |x|
+                x.pool_name == @storage_pool_name
+              end
+            domain_volume = ProviderLibvirt::Util::Collection.find_matching(
+              actual_volumes,"#{@name}.img")
+            raise Errors::DomainVolumeExists if domain_volume.nil?
+            @domain_volume_path = domain_volume.path
+          end
 
+          # If we have a box, take the path from the domain volume and set our storage_prefix.
+          # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
-          storage_prefix = File.dirname(@domain_volume_path) + '/'	# steal
+          if env[:machine].box
+            storage_prefix = File.dirname(@domain_volume_path) + '/'        # steal
+          else
+            storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
+            raise Errors::NoStoragePool if storage_pool.nil?
+            xml = Nokogiri::XML(storage_pool.xml_desc)
+            storage_prefix = xml.xpath("/pool/target/path").inner_text.to_s + '/'
+          end
 
           @disks.each do |disk|
             disk[:path] ||= _disk_name(@name, disk)
@@ -125,7 +136,9 @@ module VagrantPlugins
           env[:ui].info(" -- Cpus:              #{@cpus}")
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Loader:            #{@loader}")
-          env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
+          if env[:machine].box
+            env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
+          end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
           env[:ui].info(" -- Volume Cache:      #{@domain_volume_cache}")
