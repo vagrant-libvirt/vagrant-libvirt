@@ -37,10 +37,10 @@ module VagrantPlugins
             domain.destroy(destroy_volumes: false)
 
             env[:machine].provider_config.disks.each do |disk|
-              # shared disks remove only manualy or ???
+              # shared disks remove only manually or ???
               next if disk[:allow_existing]
               diskname = libvirt_domain.name + '-' + disk[:device] + '.' + disk[:type].to_s
-              # diskname is uniq
+              # diskname is unique
               libvirt_disk = domain.volumes.select do |x|
                 x.name == diskname
               end.first
