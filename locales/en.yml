@@ -56,7 +56,7 @@ en:
         the minimum box image size of '%{box_virtual_size}'.
 
     errors:
-      package_not_supported: Not support package for libvirt. Create box manualy.
+      package_not_supported: No support for package with libvirt. Create box manually.
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:
@@ -79,7 +79,7 @@ en:
         Interface adapter number is already in use. Please specify other adapter
         number.
       rsync_error: |-
-        There was an error when attemping to rsync a share folder.
+        There was an error when attempting to rsync a share folder.
         Please inspect the error message below for more info.
 
         Host path: %{hostpath}
@@ -123,7 +123,7 @@ en:
         Network %{network_name} exists but does not have dhcp %{requested}.
         Please fix your configuration and run vagrant again.
       create_network_error: |-
-        Error occured while creating new network: %{error_message}.
+        Error occurred while creating new network: %{error_message}.
       network_not_available_error: |-
         Network %{network_name} is not available. Specify available network
         name, or an ip address if you want to create a new network.
