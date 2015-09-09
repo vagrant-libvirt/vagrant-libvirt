@@ -1,0 +1,11 @@
+<interface type='<%= @type %>'>
+  <% if @mac %>
+  <mac address='<%= @mac %>'/>
+  <% end %>
+  <source address='<%=@tunnel_ip%>' port='<%= @tunnel_port %>'>
+  <% if @type == 'udp' %>
+    <local address='<%=@udp_tunnel_local_ip%>' port='<%=@udp_tunnel_local_port%>' />
+  <% end %>
+  </source>
+  <model type='<%=@model_type%>'/>
+</interface>
