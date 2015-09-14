@@ -47,6 +47,7 @@ module VagrantPlugins
       attr_accessor :management_network_name
       attr_accessor :management_network_address
       attr_accessor :management_network_mode
+      attr_accessor :management_network_mac
 
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
@@ -112,6 +113,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @nic_model_type    = UNSET_VALUE
+        @management_network_mac          = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
         @kernel            = UNSET_VALUE
