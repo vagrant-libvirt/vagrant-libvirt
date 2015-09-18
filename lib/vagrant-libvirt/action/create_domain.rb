@@ -39,6 +39,7 @@ module VagrantPlugins
           @disk_bus = config.disk_bus
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
+          @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache
           @kernel = config.kernel
           @cmd_line = config.cmd_line
@@ -74,7 +75,7 @@ module VagrantPlugins
 
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].box
-            actual_volumes = 
+            actual_volumes =
               env[:machine].provider.driver.connection.volumes.all.select do |x|
                 x.pool_name == @storage_pool_name
               end
@@ -135,6 +136,7 @@ module VagrantPlugins
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
           if env[:machine].box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
