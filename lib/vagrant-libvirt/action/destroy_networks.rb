@@ -66,7 +66,7 @@ module VagrantPlugins
               libvirt_network.undefine
               @logger.info "Undefined it"
             rescue => e
-              raise Error::DestroyNetworkError,
+              raise Errors::DestroyNetworkError,
                 network_name: libvirt_network.name,
                 error_message: e.message
             end
