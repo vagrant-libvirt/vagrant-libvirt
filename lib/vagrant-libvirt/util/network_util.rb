@@ -59,6 +59,11 @@ module VagrantPlugins
               dhcp_enabled: true,
               forward_mode: 'nat',
             }.merge(options)
+
+            if options[:type] == :dhcp && !options[:ip]
+              options[:network_name] = "vagrant-private-dhcp"
+            end
+
             # add to list of networks to check
             networks.push(options)
           end
