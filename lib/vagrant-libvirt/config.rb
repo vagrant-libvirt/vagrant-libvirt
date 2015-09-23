@@ -84,10 +84,10 @@ module VagrantPlugins
 
       # Storage
       attr_accessor :disks
-  	  attr_accessor :cdroms
+      attr_accessor :cdroms
 
-	  # Inputs
-	  attr_accessor :inputs
+      # Inputs
+      attr_accessor :inputs
 
       def initialize
         @uri               = UNSET_VALUE
@@ -102,6 +102,7 @@ module VagrantPlugins
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_network_mode = UNSET_VALUE
+        @management_network_mac  = UNSET_VALUE
 
         # Domain specific settings.
         @memory            = UNSET_VALUE
@@ -113,7 +114,6 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @nic_model_type    = UNSET_VALUE
-        @management_network_mac          = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
         @kernel            = UNSET_VALUE
@@ -311,6 +311,7 @@ module VagrantPlugins
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
+        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri() if @uri == UNSET_VALUE
