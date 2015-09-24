@@ -119,7 +119,7 @@ module VagrantPlugins
             end
 
             # Re-read the network configuration and grab the MAC address
-            if !@mac
+            unless @mac
               xml = Nokogiri::XML(domain.xml_desc)
               if iface_configuration[:iface_type] == :public_network
                 if @type == 'direct'
@@ -184,7 +184,7 @@ module VagrantPlugins
 
         def find_empty(array, start=0, stop=@nic_adapter_count)
           (start..stop).each do |i|
-            return i if !array[i]
+            return i unless array[i]
           end
           return nil
         end

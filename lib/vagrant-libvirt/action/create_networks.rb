@@ -35,7 +35,7 @@ module VagrantPlugins
             # available, create it if possible. Otherwise raise an error.
             configured_networks(env, @logger).each do |options|
               # Only need to create private networks
-              next if options[:iface_type] != :private_network or
+              next if options[:iface_type] != :private_network ||
                 options.fetch(:tunnel_type, nil)
               @logger.debug "Searching for network with options #{options}"
 
@@ -63,12 +63,16 @@ module VagrantPlugins
 
               if @options[:ip]
                 handle_ip_option(env)
+              elsif @options[:type] == :dhcp
+                handle_dhcp_private_network(env)
               elsif @options[:network_name]
                 handle_network_name_option(env)
+              else
+                raise Errors::CreateNetworkError, error_message: @options
               end
 
               autostart_network if @interface_network[:autostart]
-              activate_network if !@interface_network[:active]
+              activate_network unless @interface_network[:active]
             end
           end
 
@@ -79,34 +83,19 @@ module VagrantPlugins
 
         def lookup_network_by_ip(ip)
           @logger.debug "looking up network with ip == #{ip}"
-          @available_networks.each do |network|
-            if network[:network_address] == ip
-              @logger.debug "found existing network by ip: #{network}"
-              return network
-            end
-          end
-          nil
+          @available_networks.find { |network| network[:network_address] == ip }
         end
 
         # Return hash of network for specified name, or nil if not found.
         def lookup_network_by_name(network_name)
           @logger.debug "looking up network named #{network_name}"
-          @available_networks.each do |network|
-            if network[:name] == network_name
-              @logger.debug "found existing network by name: #{network}"
-              return network
-            end
-          end
-          nil
+          @available_networks.find { |network| network[:name] == network_name }
         end
 
         # Return hash of network for specified bridge, or nil if not found.
         def lookup_bridge_by_name(bridge_name)
           @logger.debug "looking up bridge named #{bridge_name}"
-          @available_networks.each do |network|
-            return network if network[:bridge_name] == bridge_name
-          end
-          nil
+          @available_networks.find { |network| network[:bridge_name] == bridge_name }
         end
 
         # Throw an error if dhcp setting for an existing network does not
@@ -126,18 +115,14 @@ module VagrantPlugins
         # Handle only situations, when ip is specified. Variables @options and
         # @available_networks should be filled before calling this function.
         def handle_ip_option(env)
-          return if !@options[:ip]
+          return unless @options[:ip]
           net_address = nil
-          if @options[:forward_mode] != 'veryisolated'
+          unless @options[:forward_mode] == 'veryisolated'
             net_address = network_address(@options[:ip], @options[:netmask])
+
             # Set IP address of network (actually bridge). It will be used as
             # gateway address for machines connected to this network.
-            net = IPAddr.new(net_address)
-
-            # Default to first address (after network name)
-            @interface_network[:ip_address] = @options[:host_ip].nil? ? \
-              net.to_range.begin.succ : \
-              IPAddr.new(@options[:host_ip])
+            @interface_network[:ip_address] = get_host_ip_addr(net_address)
           end
 
           @interface_network[:network_address] = net_address
@@ -185,7 +170,7 @@ module VagrantPlugins
           end
 
           # Do we need to create new network?
-          if !@interface_network[:created]
+          unless @interface_network[:created]
 
             # TODO: stop after some loops. Don't create infinite loops.
 
@@ -206,17 +191,7 @@ module VagrantPlugins
             end
 
             # Generate a unique name for network bridge.
-            count = 0
-            while @interface_network[:bridge_name].nil?
-              @logger.debug "generating name for bridge"
-              bridge_name = 'virbr'
-              bridge_name << count.to_s
-              count += 1
-
-              next if lookup_bridge_by_name(bridge_name)
-
-              @interface_network[:bridge_name] = bridge_name
-            end
+            @interface_network[:bridge_name] = generate_bridge_name
 
             # Create a private network.
             create_private_network(env)
@@ -241,25 +216,53 @@ module VagrantPlugins
           end
 
           # Do we need to create new network?
-          if !@interface_network[:created]
+          unless @interface_network[:created]
             @interface_network[:name] = @options[:network_name]
 
             # Generate a unique name for network bridge.
-            count = 0
-            while @interface_network[:bridge_name].nil?
-              @logger.debug "generating name for bridge"
-              bridge_name = 'virbr'
-              bridge_name << count.to_s
-              count += 1
-
-              next if lookup_bridge_by_name(bridge_name)
-
-              @interface_network[:bridge_name] = bridge_name
-            end
+            @interface_network[:bridge_name] = generate_bridge_name
 
             # Create a private network.
             create_private_network(env)
           end
+        end
+
+        def handle_dhcp_private_network(env)
+          net_address = '172.28.128.0'
+          network = lookup_network_by_ip(net_address)
+          @interface_network = network if network
+
+          # Do we need to create new network?
+          unless @interface_network[:created]
+            @interface_network[:name] = 'vagrant-private-dhcp'
+            @interface_network[:network_address] = net_address
+
+            # Set IP address of network (actually bridge). It will be used as
+            # gateway address for machines connected to this network.
+            @interface_network[:ip_address] = get_host_ip_addr(net_address)
+
+            # Generate a unique name for network bridge.
+            @interface_network[:bridge_name] = generate_bridge_name
+
+            # Create a private network.
+            create_private_network(env)
+          end
+        end
+
+        # Return provided address or first address of network otherwise
+        def get_host_ip_addr(network)
+          @options[:host_ip] ? IPAddr.new(@options[:host_ip]) : IPAddr.new(network).succ
+        end
+
+        # Return the first available virbr interface name
+        def generate_bridge_name
+          @logger.debug "generating name for bridge"
+          count = 0
+          while lookup_bridge_by_name(bridge_name = "virbr#{count}")
+            count += 1
+          end
+          @logger.debug "found available bridge name #{bridge_name}"
+          bridge_name
         end
 
         def create_private_network(env)
