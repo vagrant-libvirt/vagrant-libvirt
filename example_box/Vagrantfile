@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
     libvirt.driver = "kvm"
 
     # The name of the server, where libvirtd is running.
-    libvirt.host = "localhost"
+    # libvirt.host = "localhost"
 
     # If use ssh tunnel to connect to Libvirt.
     libvirt.connect_via_ssh = false
