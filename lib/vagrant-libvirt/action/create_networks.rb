@@ -63,7 +63,7 @@ module VagrantPlugins
 
               if @options[:ip]
                 handle_ip_option(env)
-              elsif @options[:type] == :dhcp
+              elsif @options[:type].to_s == 'dhcp'
                 handle_dhcp_private_network(env)
               elsif @options[:network_name]
                 handle_network_name_option(env)
