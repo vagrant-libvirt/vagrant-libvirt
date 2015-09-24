@@ -60,7 +60,7 @@ module VagrantPlugins
               forward_mode: 'nat',
             }.merge(options)
 
-            if options[:type] == :dhcp && !options[:ip]
+            if options[:type] == :dhcp && options[:ip].nil?
               options[:network_name] = "vagrant-private-dhcp"
             end
 
