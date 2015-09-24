@@ -54,8 +54,6 @@ rm -f ~root/${EPEL_PKG}
 yum -y install openssh-server openssh-clients sudo \
 ruby ruby-devel make gcc rubygems rsync
 chkconfig sshd on
-gem install puppet
-gem install chef
 
 
 # Users, groups, passwords and sudoers.
@@ -118,3 +116,4 @@ rm -f ~root/.bash_history
 rm -r "$(gem env gemdir)"/doc/*
 yum clean all
 
+halt
