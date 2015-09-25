@@ -7,6 +7,35 @@ control and provision machines via Libvirt toolkit.
 **Note:** Actual version is still a development one. Feedback is
 welcome and can help a lot :-)
 
+- [Features](#)
+- [Future work](#)
+- [Installation](#)
+  - [Possible problems with plugin installation on Linux](#)
+- [Vagrant Project Preparation](#)
+  - [Add Box](#)
+  - [Create Vagrantfile](#)
+  - [Start VM](#)
+  - [How Project Is Created](#)
+  - [Libvirt Configuration](#)
+  - [Provider Options](#)
+  - [Domain Specific Options](#)
+- [Networks](#)
+  - [Private Network Options](#)
+  - [Public Network Options](#)
+  - [Management Network](#)
+- [Additional Disks](#)
+- [CDROMs](#)
+- [Input](#)
+- [No box and PXE boot](#)
+- [SSH Access To VM](#)
+- [Forwarded Ports](#)
+- [Synced Folders](#)
+- [Customized Graphics](#)
+- [Box Format](#)
+- [Create Box](#)
+- [Development](#)
+- [Contributing](#)
+
 ## Features
 
 * Control local Libvirt hypervisors.
