@@ -3,15 +3,17 @@
   <memory><%= @memory_size %></memory>
   <vcpu><%= @cpus %></vcpu>
 
-  <% if @nested %>
-    <cpu mode='<%= @cpu_mode %>'>
-      <% if @cpu_mode != 'host-passthrough' %>
-        <model fallback='allow'>qemu64</model>
+
+  <cpu mode='<%= @cpu_mode %>'>
+    <% if @cpu_mode != 'host-passthrough' %>
+      <model fallback='allow'>qemu64</model>
+      <% if @nested %>
         <feature policy='optional' name='vmx'/>
         <feature policy='optional' name='svm'/>
       <% end %>
-    </cpu>
-  <% end %>
+    <% end %>
+  </cpu>
+
 
   <os>
     <% if @machine_type %>
@@ -79,9 +81,9 @@
       <target port='0'/>
     </console>
 
-	<% @inputs.each do |input| %>
-		<input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
-	<% end %>
+<% @inputs.each do |input| %>
+    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
+<% end %>
 
     <%# Video device -%>
     <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
