@@ -456,15 +456,19 @@ In short, VMs without a box can be created, halted and destroyed but all other f
 
 An example for a PXE booted VM with no disks whatsoever:
 
+```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :pxeclient do |pxeclient|
     pxeclient.vm.provider :libvirt do |domain|
       domain.boot 'network'
     end
   end
+end
+```
 
-And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot::
+And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot:
 
+```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :pxeclient do |pxeclient|
     pxeclient.vm.provider :libvirt do |domain|
@@ -473,6 +477,8 @@ Vagrant.configure("2") do |config|
       domain.boot 'hd'
     end
   end
+end
+```
 
 ## SSH Access To VM
 
