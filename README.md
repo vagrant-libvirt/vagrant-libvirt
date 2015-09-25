@@ -156,7 +156,7 @@ end
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
-* `cpu_mode` - What cpu mode to use for nested virtualization. Defaults to 'host-model' if not set.
+* `cpu_mode` - [What cpu type to emulate](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to 'host-model' if not set. Allowed values: host-model, host-passthrough.
 * `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems. Equivalent to qemu `-kernel`.
