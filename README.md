@@ -7,6 +7,35 @@ control and provision machines via Libvirt toolkit.
 **Note:** Actual version is still a development one. Feedback is
 welcome and can help a lot :-)
 
+- [Features](#)
+- [Future work](#)
+- [Installation](#)
+  - [Possible problems with plugin installation on Linux](#)
+- [Vagrant Project Preparation](#)
+  - [Add Box](#)
+  - [Create Vagrantfile](#)
+  - [Start VM](#)
+  - [How Project Is Created](#)
+  - [Libvirt Configuration](#)
+  - [Provider Options](#)
+  - [Domain Specific Options](#)
+- [Networks](#)
+  - [Private Network Options](#)
+  - [Public Network Options](#)
+  - [Management Network](#)
+- [Additional Disks](#)
+- [CDROMs](#)
+- [Input](#)
+- [No box and PXE boot](#)
+- [SSH Access To VM](#)
+- [Forwarded Ports](#)
+- [Synced Folders](#)
+- [Customized Graphics](#)
+- [Box Format](#)
+- [Create Box](#)
+- [Development](#)
+- [Contributing](#)
+
 ## Features
 
 * Control local Libvirt hypervisors.
@@ -456,15 +485,19 @@ In short, VMs without a box can be created, halted and destroyed but all other f
 
 An example for a PXE booted VM with no disks whatsoever:
 
+```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :pxeclient do |pxeclient|
     pxeclient.vm.provider :libvirt do |domain|
       domain.boot 'network'
     end
   end
+end
+```
 
-And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot::
+And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot:
 
+```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :pxeclient do |pxeclient|
     pxeclient.vm.provider :libvirt do |domain|
@@ -473,6 +506,8 @@ Vagrant.configure("2") do |config|
       domain.boot 'hd'
     end
   end
+end
+```
 
 ## SSH Access To VM
 
