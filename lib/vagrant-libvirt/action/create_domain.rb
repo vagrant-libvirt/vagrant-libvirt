@@ -31,6 +31,7 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
+          @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpu_mode = config.cpu_mode
           @loader = config.loader
@@ -133,6 +134,9 @@ module VagrantPlugins
           # Output the settings we're going to use to the user
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
           env[:ui].info(" -- Name:              #{@name}")
+          if @uuid != ''
+            env[:ui].info(" -- Forced UUID:       #{@uuid}")
+          end
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
@@ -177,7 +181,7 @@ module VagrantPlugins
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
           @inputs.each do |input|
-            env[:ui].info(" -- INPUT : type=#{input[:type]}, bus=#{input[:bus]}")
+            env[:ui].info(" -- INPUT:             type=#{input[:type]}, bus=#{input[:bus]}")
           end
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
