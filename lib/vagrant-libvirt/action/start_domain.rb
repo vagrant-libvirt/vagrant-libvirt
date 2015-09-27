@@ -164,7 +164,7 @@ module VagrantPlugins
                 end
               end
             rescue => e
-              env[:ui].info("Error when updating domain settings: #{e.message}")
+              env[:ui].error("Error when updating domain settings: #{e.message}")
             end
             # Actually start the domain
             domain.start
