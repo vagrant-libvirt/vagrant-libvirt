@@ -20,7 +20,12 @@ module VagrantPlugins
           config = env[:machine].provider_config
           if config.suspend_mode == 'managedsave'
             libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
-            libvirt_domain.managed_save
+            begin
+              libvirt_domain.managed_save
+            rescue => e
+              env[:ui].error("Error doing a managed save for domain. It may have entered a paused state.
+                Check the output of `virsh managedsave DOMAIN_NAME --verbose` on the VM host, error: #{e.message}")
+            end
           else
             domain.suspend
           end
