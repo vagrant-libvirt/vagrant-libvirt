@@ -11,8 +11,29 @@ module VagrantPlugins
         def call(env)
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
-          env[:result] = domain.state.to_s == 'paused'
 
+          config = env[:machine].provider_config
+          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
+          if config.suspend_mode == 'managedsave'
+            if libvirt_domain.has_managed_save?
+              env[:result] = libvirt_domain.has_managed_save?
+            else
+              env[:result] = domain.state.to_s == 'paused'
+              if env[:result]
+                env[:ui].warn('One time switching to pause suspend mode, found a paused VM.')
+                config.suspend_mode = 'pause'
+              end
+            end
+          else
+            if libvirt_domain.has_managed_save?
+              env[:ui].warn('One time switching to managedsave suspend mode, state found.')
+              env[:result] = true
+              config.suspend_mode = 'managedsave'
+            else
+              env[:result] = domain.state.to_s == 'paused'
+            end
+          end
+          
           @app.call(env)
         end
       end

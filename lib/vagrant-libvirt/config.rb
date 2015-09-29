@@ -90,6 +90,9 @@ module VagrantPlugins
       # Inputs
       attr_accessor :inputs
 
+      # Suspend mode
+      attr_accessor :suspend_mode
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -140,6 +143,9 @@ module VagrantPlugins
 
         # Inputs
         @inputs            = UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode      = UNSET_VALUE
       end
 
       def boot(device)
@@ -354,7 +360,13 @@ module VagrantPlugins
         # Storage
         @disks = [] if @disks == UNSET_VALUE
         @cdroms = [] if @cdroms == UNSET_VALUE
+
+        # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
+
       end
 
       def validate(machine)
