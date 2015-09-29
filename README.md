@@ -7,34 +7,35 @@ control and provision machines via Libvirt toolkit.
 **Note:** Actual version is still a development one. Feedback is
 welcome and can help a lot :-)
 
-- [Features](#)
-- [Future work](#)
-- [Installation](#)
-  - [Possible problems with plugin installation on Linux](#)
-- [Vagrant Project Preparation](#)
-  - [Add Box](#)
-  - [Create Vagrantfile](#)
-  - [Start VM](#)
-  - [How Project Is Created](#)
-  - [Libvirt Configuration](#)
-  - [Provider Options](#)
-  - [Domain Specific Options](#)
-- [Networks](#)
-  - [Private Network Options](#)
-  - [Public Network Options](#)
-  - [Management Network](#)
-- [Additional Disks](#)
-- [CDROMs](#)
-- [Input](#)
-- [No box and PXE boot](#)
-- [SSH Access To VM](#)
-- [Forwarded Ports](#)
-- [Synced Folders](#)
-- [Customized Graphics](#)
-- [Box Format](#)
-- [Create Box](#)
-- [Development](#)
-- [Contributing](#)
+- [Features](#features)
+- [Future work](#future-work)
+- [Installation](#installation)
+  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+- [Vagrant Project Preparation](#vagrant-project-preparation)
+  - [Add Box](#add-box)
+  - [Create Vagrantfile](#create-vagrantfile)
+  - [Start VM](#start-vm)
+  - [How Project Is Created](#how-project-is-created)
+  - [Libvirt Configuration](#libvirt-configuration)
+  - [Provider Options](#provider-options)
+  - [Domain Specific Options](#domain-specific-options)
+  	- [Reload behavior](#reload-behavior)
+- [Networks](#networks)
+  - [Private Network Options](#private-network-options)
+  - [Public Network Options](#public-network-options)
+  - [Management Network](#management-network)
+- [Additional Disks](#additional-disks)
+- [CDROMs](#cdroms)
+- [Input](#input)
+- [No box and PXE boot](#no-box-and-pxe-boot)
+- [SSH Access To VM](#ssh-access-to-vm)
+- [Forwarded Ports](#forwarded-ports)
+- [Synced Folders](#synced-folders)
+- [Customized Graphics](#customized-graphics)
+- [Box Format](#box-format)
+- [Create Box](#create-box)
+- [Development](#development)
+- [Contributing](#contributing)
 
 ## Features
 
@@ -157,7 +158,7 @@ Although it should work without any configuration for most people, this provider
 
 * `driver` - A hypervisor name to access. For now only kvm and qemu are supported.
 * `host` - The name of the server, where libvirtd is running.
-* `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
+* `connect_via_ssh` - If use ssh tunnel to connect to Libvirt. Absolutely needed to access libvirt on remote host. It will not be able to get the IP address of a started VM otherwise.
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
 * `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt. Default is $HOME/.ssh/id_rsa. Prepends $HOME/.ssh/ if no directory.
@@ -181,11 +182,11 @@ end
 ### Domain Specific Options
 
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
-* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the [documentation for libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
-* `cpu_mode` - [What cpu type to emulate](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to 'host-model' if not set. Allowed values: host-model, host-passthrough.
+* `cpu_mode` - [CPU emulation mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to 'host-model' if not set. Allowed values: host-model, host-passthrough.
 * `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems. Equivalent to qemu `-kernel`.
@@ -196,14 +197,16 @@ end
 * `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900.
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
-* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
+* `graphics_autoport` - Sets autoport for graphics, libvirt in this case ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and "no"
 * `keymap` - Set keymap for vm. default: en-us
+* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 * `machine` - Sets machine type. Equivalent to qemu `-machine`. Use `qemu-system-x86_64 -machine help` to get a list of supported machines.
 * `machine_arch` - Sets machine architecture. This helps libvirt to determine the correct emulator type. Possible values depend on your version of qemu. For possible values, see which emulator executable `qemu-system-*` your system provides. Common examples are `aarch64`, `alpha`, `arm`, `cris`, `i386`, `lm32`, `m68k`, `microblaze`, `microblazeel`, `mips`, `mips64`, `mips64el`, `mipsel`, `moxie`, `or32`, `ppc`, `ppc64`, `ppcemb`, `s390x`, `sh4`, `sh4eb`, `sparc`, `sparc64`, `tricore`, `unicore32`, `x86_64`, `xtensa`, `xtensaeb`.
 * `machine_virtual_size` - Sets the disk size in GB for the machine overriding the default specified in the box. Allows boxes to defined with a minimal size disk by default and to be grown to a larger size at creation time. Will ignore sizes smaller than the size specified by the box metadata. Note that currently there is no support for automatically resizing the filesystem to take advantage of the larger disk.
 * `boot` - Change the boot order and enables the boot menu. Possible options are "hd", "network", "cdrom". Defaults to "hd" with boot menu disabled. When "network" is set without "hd", only all NICs will be tried; see below for more detail.
 * `nic_adapter_count` - Defaults to '8'. Only use case for increasing this count is for VMs that virtualize switches such as Cumulus Linux. Max value for Cumulus Linux VMs is 33.
+* `uuid` - Force a domain UUID. Defaults to autogenerated value by libvirt if not set.
 
 
 Specific domain settings can be set for each domain separately in multi-VM
@@ -242,6 +245,25 @@ Vagrant.configure("2") do |config|
 
   # ...
 ```
+
+#### Reload behavior
+On vagrant reload the following domain specific attributes are updated in defined domain:
+
+* `disk_bus` - Is updated only on disks. It skips cdroms.
+* `nic_model_type` - Updated.
+* `memory` - Updated.
+* `cpus` - Updated.
+* `nested` - Updated.
+* `cpu_mode` - Updated. Pay attention that custom mode is not supported.
+* `graphics_type` - Updated.
+* `graphics_port` - Updated.
+* `graphics_ip` - Updated.
+* `graphics_passwd` - Updated.
+* `graphics_autoport` - Updated.
+* `keymap` - Updated.
+* `video_type` - Updated.
+* `video_vram` - Updated.
+
 
 ## Networks
 

@@ -53,6 +53,7 @@ module VagrantPlugins
       attr_accessor :default_prefix
 
       # Domain specific settings used while creating new domain.
+      attr_accessor :uuid
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
@@ -105,6 +106,7 @@ module VagrantPlugins
         @management_network_mac  = UNSET_VALUE
 
         # Domain specific settings.
+        @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -317,6 +319,7 @@ module VagrantPlugins
         @uri = _generate_uri() if @uri == UNSET_VALUE
 
         # Domain specific settings.
+        @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
