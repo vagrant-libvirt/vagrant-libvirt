@@ -28,6 +28,11 @@ module VagrantPlugins
             end
           end
 
+          # must remove managed saves
+          if libvirt_domain.has_managed_save?
+            libvirt_domain.managed_save_remove
+          end
+
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
 
           if env[:machine].provider_config.disks.empty?

@@ -1,5 +1,6 @@
 <domain type='<%= @domain_type %>'>
   <name><%= @name %></name>
+  <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
   <vcpu><%= @cpus %></vcpu>
 
@@ -87,9 +88,9 @@
 
     <%# Video device -%>
     <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
-      <video>
-          <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-      </video>
+    <video>
+      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+    </video>
     <%#End Video -%>
   </devices>
 </domain>

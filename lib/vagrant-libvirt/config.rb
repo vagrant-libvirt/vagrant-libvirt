@@ -53,6 +53,7 @@ module VagrantPlugins
       attr_accessor :default_prefix
 
       # Domain specific settings used while creating new domain.
+      attr_accessor :uuid
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
@@ -89,6 +90,9 @@ module VagrantPlugins
       # Inputs
       attr_accessor :inputs
 
+      # Suspend mode
+      attr_accessor :suspend_mode
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -105,6 +109,7 @@ module VagrantPlugins
         @management_network_mac  = UNSET_VALUE
 
         # Domain specific settings.
+        @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -138,6 +143,9 @@ module VagrantPlugins
 
         # Inputs
         @inputs            = UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode      = UNSET_VALUE
       end
 
       def boot(device)
@@ -317,6 +325,7 @@ module VagrantPlugins
         @uri = _generate_uri() if @uri == UNSET_VALUE
 
         # Domain specific settings.
+        @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
@@ -351,7 +360,13 @@ module VagrantPlugins
         # Storage
         @disks = [] if @disks == UNSET_VALUE
         @cdroms = [] if @cdroms == UNSET_VALUE
+
+        # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
+
       end
 
       def validate(machine)

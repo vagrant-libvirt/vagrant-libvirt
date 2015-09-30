@@ -16,7 +16,14 @@ module VagrantPlugins
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain == nil
 
-          domain.resume
+          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
+          config = env[:machine].provider_config
+          if config.suspend_mode == 'managedsave'
+            domain.start
+          else
+            domain.resume
+          end
+
           @logger.info("Machine #{env[:machine].id} is resumed.")
 
           @app.call(env)
