@@ -75,7 +75,7 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image from the storage pool selected if we have a box.
-          if env[:machine].box
+          if env[:machine].config.vm.box
             actual_volumes =
               env[:machine].provider.driver.connection.volumes.all.select do |x|
                 x.pool_name == @storage_pool_name
@@ -89,7 +89,7 @@ module VagrantPlugins
           # If we have a box, take the path from the domain volume and set our storage_prefix.
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
-          if env[:machine].box
+          if env[:machine].config.vm.box
             storage_prefix = File.dirname(@domain_volume_path) + '/'        # steal
           else
             storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
@@ -142,7 +142,7 @@ module VagrantPlugins
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
-          if env[:machine].box
+          if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
