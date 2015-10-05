@@ -81,8 +81,7 @@ fi
 
 cd "$TMP_DIR"
 
-IMG_SIZE=$(qemu-img info "$TMP_IMG" | grep 'virtual size' | awk '{print int($3);}' | tr -d 'G')
-echo "IMAGE SIZE ====> ${IMG_SIZE}"
+IMG_SIZE=$(qemu-img info "$TMP_IMG" | awk '/virtual size/{print int($3);}' | tr -d 'G')
 
 cat > metadata.json <<EOF
 {
