@@ -138,7 +138,7 @@ module VagrantPlugins
           @app.call(env)
 
 
-          if env[:machine].box
+          if env[:machine].config.vm.box
             # Configure interfaces that user requested. Machine should be up and
             # running now.
             networks_to_configure = []
