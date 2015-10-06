@@ -23,7 +23,7 @@ module VagrantPlugins
             # Create VM if not yet created.
             if !env[:result]
               b2.use SetNameOfDomain
-              if !env[:machine].box
+              if !env[:machine].config.vm.box
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
@@ -77,7 +77,7 @@ module VagrantPlugins
                 next
               end
 
-              if !env[:machine].box
+              if !env[:machine].config.vm.box
                 # With no box, we just care about network creation and starting it
                 b3.use CreateNetworks
                 b3.use SetBootOrder
@@ -171,7 +171,7 @@ module VagrantPlugins
             if !env[:result]
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
-              if env[:machine].box
+              if env[:machine].config.vm.box
                 b2.use RemoveStaleVolume
               end
               if !env[:result]

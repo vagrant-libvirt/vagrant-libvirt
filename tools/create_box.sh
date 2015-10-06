@@ -81,7 +81,10 @@ fi
 
 cd "$TMP_DIR"
 
-IMG_SIZE=$(qemu-img info "$TMP_IMG" | grep 'virtual size' | awk '{print $3;}' | tr -d 'G')
+#Using the awk int function here to truncate the virtual image size to an
+#integer since the fog-libvirt library does not seem to properly handle
+#floating point.
+IMG_SIZE=$(qemu-img info "$TMP_IMG" | awk '/virtual size/{print int($3);}' | tr -d 'G')
 
 cat > metadata.json <<EOF
 {
