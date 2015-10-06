@@ -25,6 +25,7 @@ welcome and can help a lot :-)
   - [Public Network Options](#public-network-options)
   - [Management Network](#management-network)
 - [Additional Disks](#additional-disks)
+  	- [Reload behavior](#reload-behavior-1)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [No box and PXE boot](#no-box-and-pxe-boot)
@@ -454,6 +455,12 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+
+### Reload behavior
+
+On vagrant reload the following additional disk attributes are updated in defined domain:
+
+* `bus` - Updated. Uses `device` as a search marker. It is not required to define `device`, but it's recommended. If `device` is defined then the order of addtitional disk definition becomes irrelevant.
 
 ## CDROMs
 

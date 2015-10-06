@@ -33,12 +33,25 @@ module VagrantPlugins
               xml_descr = REXML::Document.new descr
               descr_changed = false
 
+              # additional disk bus
+              config.disks.each {|disk|
+                device = disk[:device]
+                bus = disk[:bus]
+                REXML::XPath.each(xml_descr,'/domain/devices/disk[@device="disk"]/target[@dev="'+device+'"]') {|disk_target|
+                  if disk_target.attributes['bus'] != bus
+                    descr_changed = true
+                    disk_target.attributes['bus'] = bus
+                    disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
+                  end
+                }
+              }
+
               # disk_bus
-              REXML::XPath.each(xml_descr,'/domain/devices/disk[@device="disk"]/target') {|disk_target|
+              REXML::XPath.each(xml_descr,'/domain/devices/disk[@device="disk"]/target[@dev="vda"]') {|disk_target|
                 if disk_target.attributes['bus'] != config.disk_bus
                   descr_changed = true
                   disk_target.attributes['bus'] = config.disk_bus
-                  disk_target.parent.delete_element('//address')
+                  disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
                 end
               }
 
