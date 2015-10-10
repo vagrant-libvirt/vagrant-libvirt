@@ -40,14 +40,14 @@ module VagrantPlugins
         # @param [Machine] machine
         # @return [String]
 	def read_host_ip(ip)
-      UDPSocket.open do |s|
-        if(ip.kind_of?(Array))
-            s.connect(ip.last, 1)
-        else
-            s.connect(ip, 1)
+          UDPSocket.open do |s|
+            if(ip.kind_of?(Array))
+              s.connect(ip.last, 1)
+            else
+              s.connect(ip, 1)
+            end
+          s.addr.last
         end
-        s.addr.last
-      end
     end
         # Returns the IP address of the guest
         #
