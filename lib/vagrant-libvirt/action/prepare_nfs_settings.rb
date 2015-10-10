@@ -46,9 +46,9 @@ module VagrantPlugins
             else
               s.connect(ip, 1)
             end
-          s.addr.last
+            s.addr.last
+          end
         end
-    end
         # Returns the IP address of the guest
         #
         # @param [Machine] machine
