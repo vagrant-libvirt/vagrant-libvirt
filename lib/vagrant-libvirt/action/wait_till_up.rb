@@ -36,7 +36,7 @@ module VagrantPlugins
             env[:ui].info(I18n.t("vagrant_libvirt.waiting_for_ip"))
             retryable(:on => Fog::Errors::TimeoutError, :tries => 300) do
               # If we're interrupted don't worry about waiting
-              next if env[:interrupted]
+              return terminate(env) if env[:interrupted]
 
               # Wait for domain to obtain an ip address
               domain.wait_for(2) {
@@ -47,7 +47,6 @@ module VagrantPlugins
               }
             end
           end
-          terminate(env) if env[:interrupted]
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]["instance_ip_time"]}")
           
@@ -68,7 +67,8 @@ module VagrantPlugins
               end            
             end
           end
-          terminate(env) if env[:interrupted]
+          # if interrupted above, just terminate immediately
+          return terminate(env) if env[:interrupted]
           @logger.info("Time for SSH ready: #{env[:metrics]["instance_ssh_time"]}")
 
           # Booted and ready for use.
@@ -80,18 +80,21 @@ module VagrantPlugins
         def recover(env)
           return if env["vagrant.error"].is_a?(Vagrant::Errors::VagrantError)
 
-          if env[:machine].provider.state.id != :not_created
-            # Undo the import
-            terminate(env)
-          end
+          # Undo the import
+          terminate(env)
         end
 
         def terminate(env)
-          destroy_env = env.dup
-          destroy_env.delete(:interrupted)
-          destroy_env[:config_validate] = false
-          destroy_env[:force_confirm_destroy] = true
-          env[:action_runner].run(Action.action_destroy, destroy_env)        
+          if env[:machine].provider.state.id != :not_created
+            # If we're not supposed to destroy on error then just return
+            return if !env[:destroy_on_error]
+
+            destroy_env = env.dup
+            destroy_env.delete(:interrupted)
+            destroy_env[:config_validate] = false
+            destroy_env[:force_confirm_destroy] = true
+            env[:action_runner].run(Action.action_destroy, destroy_env)
+          end
         end
       end
     end
