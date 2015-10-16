@@ -47,15 +47,21 @@ module VagrantPlugins
       attr_accessor :management_network_name
       attr_accessor :management_network_address
       attr_accessor :management_network_mode
+      attr_accessor :management_network_mac
 
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
 
       # Domain specific settings used while creating new domain.
+      attr_accessor :uuid
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :loader
+      attr_accessor :boot_order
       attr_accessor :machine_type
+      attr_accessor :machine_arch
+      attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :nic_model_type
       attr_accessor :nested
@@ -72,8 +78,20 @@ module VagrantPlugins
       attr_accessor :video_vram
       attr_accessor :keymap
 
+      # Sets the max number of NICs that can be created
+      # Default set to 8. Don't change the default unless you know
+      # what are doing
+      attr_accessor :nic_adapter_count
+
       # Storage
       attr_accessor :disks
+      attr_accessor :cdroms
+
+      # Inputs
+      attr_accessor :inputs
+
+      # Suspend mode
+      attr_accessor :suspend_mode
 
       def initialize
         @uri               = UNSET_VALUE
@@ -88,12 +106,17 @@ module VagrantPlugins
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_network_mode = UNSET_VALUE
+        @management_network_mac  = UNSET_VALUE
 
         # Domain specific settings.
+        @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
+        @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
+        @machine_arch      = UNSET_VALUE
+        @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
@@ -110,8 +133,23 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
         @keymap            = UNSET_VALUE
 
+        @nic_adapter_count = UNSET_VALUE
+
+        # Boot order
+        @boot_order = []
         # Storage
         @disks             = []
+        @cdroms			   = []
+
+        # Inputs
+        @inputs            = UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode      = UNSET_VALUE
+      end
+
+      def boot(device)
+        @boot_order << device	# append
       end
 
       def _get_device(disks)
@@ -127,8 +165,77 @@ module VagrantPlugins
         end
       end
 
+      def _get_cdrom_dev(cdroms)
+        exist = Hash[cdroms.collect{|x| [x[:dev],true]}]
+        # hda - hdc
+        curr = "a".ord
+        while curr <= "d".ord
+          dev = "hd" + curr.chr
+          if exist[dev]
+            curr += 1
+            next
+          else
+            return dev
+          end
+        end
+
+        # is it better to raise our own error, or let libvirt cause the exception?
+        raise 'Only four cdroms may be attached at a time'
+      end
+
+      def input(options={})
+        if options[:type].nil? || options[:bus].nil?
+          raise 'Input type AND bus must be specified'
+        end
+
+        if @inputs == UNSET_VALUE
+          @inputs = []
+        end
+
+        @inputs.push({
+          type: options[:type],
+          bus:  options[:bus]
+        })
+      end
+
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options={})
+        if storage_type == :file
+          if options[:device] == :cdrom
+            _handle_cdrom_storage(options)
+          else
+            _handle_disk_storage(options)
+          end
+        end
+      end
+
+      def _handle_cdrom_storage(options={})
+        # <disk type="file" device="cdrom">
+        #   <source file="/home/user/virtio-win-0.1-100.iso"/>
+        #   <target dev="hdc"/>
+        #   <readonly/>
+        #   <address type='drive' controller='0' bus='1' target='0' unit='0'/>
+        # </disk>
+        #
+        # note the target dev will need to be changed with each cdrom drive (hdc, hdd, etc),
+        # as will the address unit number (unit=0, unit=1, etc)
+
+        options = {
+          :dev => self._get_cdrom_dev(@cdroms),
+          :bus => "ide",
+          :path => nil,
+        }.merge(options)
+
+        cdrom = {
+          :dev => options[:dev],
+          :bus => options[:bus],
+          :path => options[:path]
+        }
+
+        @cdroms << cdrom
+      end
+
+      def _handle_disk_storage(options={})
         options = {
           :device => _get_device(@disks),
           :type => 'qcow2',
@@ -144,11 +251,10 @@ module VagrantPlugins
           :path => options[:path],
           :bus => options[:bus],
           :cache => options[:cache] || 'default',
+          :allow_existing => options[:allow_existing],
         }
 
-        if storage_type == :file
-          @disks << disk	# append
-        end
+        @disks << disk	# append
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -191,8 +297,10 @@ module VagrantPlugins
 
         if @id_ssh_key_file
           # set ssh key for access to libvirt host
-          home_dir = `echo ${HOME}`.chomp
-          uri << "\&keyfile=#{home_dir}/.ssh/"+@id_ssh_key_file
+          uri << "\&keyfile="
+          # if no slash, prepend $HOME/.ssh/
+          @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
+          uri << @id_ssh_key_file
         end
         # set path to libvirt socket
         uri << "\&socket="+@socket if @socket
@@ -211,15 +319,20 @@ module VagrantPlugins
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
+        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri() if @uri == UNSET_VALUE
 
         # Domain specific settings.
+        @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
+        @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
+        @machine_arch = nil if @machine_arch == UNSET_VALUE
+        @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @nic_model_type = 'virtio' if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
@@ -230,7 +343,7 @@ module VagrantPlugins
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
-        if (@graphics_type != 'vnc' && @graphics_port != 'spice') ||
+        if (@graphics_type != 'vnc' && @graphics_type != 'spice') ||
             @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
@@ -239,9 +352,21 @@ module VagrantPlugins
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
+        @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
+
+        # Boot order
+        @boot_order = [] if @boot_order == UNSET_VALUE
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
+        @cdroms = [] if @cdroms == UNSET_VALUE
+
+        # Inputs
+        @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+
+        # Suspend mode
+        @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
+
       end
 
       def validate(machine)

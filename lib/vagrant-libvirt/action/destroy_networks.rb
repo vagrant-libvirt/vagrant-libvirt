@@ -36,7 +36,7 @@ module VagrantPlugins
             # lookup_network_by_uuid throws same exception
             # if there is an error or if the network just doesn't exist
             begin
-              libvirt_network = env[:libvirt_compute].client.lookup_network_by_uuid(
+              libvirt_network = env[:machine].provider.driver.connection.client.lookup_network_by_uuid(
                 network_uuid)
             rescue Libvirt::RetrieveError => e
               # this network is already destroyed, so move on
@@ -66,7 +66,7 @@ module VagrantPlugins
               libvirt_network.undefine
               @logger.info "Undefined it"
             rescue => e
-              raise Error::DestroyNetworkError,
+              raise Errors::DestroyNetworkError,
                 network_name: libvirt_network.name,
                 error_message: e.message
             end

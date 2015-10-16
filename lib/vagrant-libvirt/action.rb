@@ -6,47 +6,53 @@ module VagrantPlugins
     module Action
       # Include the built-in modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
-      @logger = Log4r::Logger.new('vagrant_libvirt::action') 
+      @logger = Log4r::Logger.new('vagrant_libvirt::action')
+
+      # remove image from libvirt storage pool
+      def self.remove_libvirt_image
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use RemoveLibvirtImage
+        end
+      end
 
       # This action is called to bring the box up from nothing.
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use Call, IsCreated do |env, b2|
             # Create VM if not yet created.
             if !env[:result]
               b2.use SetNameOfDomain
-              b2.use HandleStoragePool
-              b2.use HandleBox
-              b2.use HandleBoxImage
-              b2.use CreateDomainVolume
-              b2.use CreateDomain
+              if !env[:machine].config.vm.box
+                b2.use CreateDomain
+                b2.use CreateNetworks
+                b2.use CreateNetworkInterfaces
+                b2.use SetBootOrder
+                b2.use StartDomain
+              else
+                b2.use HandleStoragePool
+                b2.use HandleBox
+                b2.use HandleBoxImage
+                b2.use CreateDomainVolume
+                b2.use CreateDomain
 
-              b2.use Provision
-              b2.use CreateNetworks
-              b2.use CreateNetworkInterfaces
+                b2.use Provision
+                b2.use PrepareNFSValidIds
+                b2.use SyncedFolderCleanup
+                b2.use SyncedFolders
+                b2.use PrepareNFSSettings
+                b2.use ShareFolders
+                b2.use CreateNetworks
+                b2.use CreateNetworkInterfaces
+                b2.use SetBootOrder
 
+                b2.use StartDomain
+                b2.use WaitTillUp
 
-              b2.use PrepareNFSValidIds
-              b2.use SyncedFolderCleanup
-              b2.use SyncedFolders
-
-              b2.use StartDomain
-              b2.use WaitTillUp
-
-              b2.use StartDomain
-              b2.use WaitTillUp
-
-              
-
-
-              b2.use ForwardPorts
-
-              b2.use PrepareNFSSettings
-              b2.use ShareFolders
-              b2.use SetHostname
-              # b2.use SyncFolders
+                b2.use ForwardPorts
+                b2.use SetHostname
+                # b2.use SyncFolders
+              end
             else
               b2.use action_start
             end
@@ -60,7 +66,6 @@ module VagrantPlugins
       def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use Call, IsRunning do |env, b2|
             # If the VM is running, then our work here is done, exit
             next if env[:result]
@@ -72,30 +77,35 @@ module VagrantPlugins
                 next
               end
 
-              # VM is not running or suspended.
+              if !env[:machine].config.vm.box
+                # With no box, we just care about network creation and starting it
+                b3.use CreateNetworks
+                b3.use SetBootOrder
+                b3.use StartDomain
+              else
+                # VM is not running or suspended.
 
-              b3.use Provision
+                b3.use Provision
 
-              # Ensure networks are created and active
-              b3.use CreateNetworks
+                # Ensure networks are created and active
+                b3.use CreateNetworks
+                b3.use SetBootOrder
 
-              b3.use PrepareNFSValidIds
-              b3.use SyncedFolderCleanup
-              b3.use SyncedFolders
+                b3.use PrepareNFSValidIds
+                b3.use SyncedFolderCleanup
+                b3.use SyncedFolders
 
+                # Start it..
+                b3.use StartDomain
 
-              # Start it..
-              b3.use StartDomain
+                # Machine should gain IP address when comming up,
+                # so wait for dhcp lease and store IP into machines data_dir.
+                b3.use WaitTillUp
 
-              # Machine should gain IP address when comming up,
-              # so wait for dhcp lease and store IP into machines data_dir.
-              b3.use WaitTillUp
-
-
-              b3.use ForwardPorts
-              b3.use PrepareNFSSettings
-              b3.use ShareFolders
-
+                b3.use ForwardPorts
+                b3.use PrepareNFSSettings
+                b3.use ShareFolders
+             end
             end
           end
         end
@@ -106,7 +116,6 @@ module VagrantPlugins
       def self.action_halt
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
           b.use ClearForwardedPorts
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
@@ -145,6 +154,14 @@ module VagrantPlugins
         end
       end
 
+      # not implemented and looks like not require
+      def self.action_package
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use PackageDomain
+        end
+      end
+
       # This is the action that is primarily responsible for completely
       # freeing the resources of the underlying virtual machine.
       def self.action_destroy
@@ -152,15 +169,23 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             if !env[:result]
-              b2.use MessageNotCreated
+              # Try to remove stale volumes anyway
+              b2.use SetNameOfDomain
+              if env[:machine].config.vm.box
+                b2.use RemoveStaleVolume
+              end
+              if !env[:result]
+                b2.use MessageNotCreated
+              end
+
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use ClearForwardedPorts
             # b2.use PruneNFSExports
             b2.use DestroyDomain
             b2.use DestroyNetworks
+            b2.use ProvisionerCleanup
           end
         end
       end
@@ -175,7 +200,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -198,7 +222,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -223,7 +246,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -246,7 +268,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsSuspended do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotSuspended
@@ -258,24 +279,10 @@ module VagrantPlugins
         end
       end
 
-      # This action is called to read the state of the machine. The resulting
-      # state is expected to be put into the `:machine_state_id` key.
-      def self.action_read_state
+      def self.action_read_mac_addresses
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use ConnectLibvirt
-          b.use ReadState
-        end
-      end
-
-      # This action is called to read the SSH info of the machine. The
-      # resulting state is expected to be put into the `:machine_ssh_info`
-      # key.
-      def self.action_read_ssh_info
-        Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
-          b.use ConnectLibvirt
-          b.use ReadSSHInfo
+          b.use ReadMacAddresses
         end
       end
 
@@ -289,7 +296,6 @@ module VagrantPlugins
               next
             end
 
-            b2.use ConnectLibvirt
             b2.use Call, IsRunning do |env2, b3|
               if !env2[:result]
                 b3.use MessageNotRunning
@@ -304,7 +310,7 @@ module VagrantPlugins
       end
 
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
-      autoload :ConnectLibvirt, action_root.join('connect_libvirt')
+      autoload :PackageDomain, action_root.join('package_domain')
       autoload :CreateDomain, action_root.join('create_domain')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
@@ -316,6 +322,7 @@ module VagrantPlugins
       autoload :HaltDomain, action_root.join('halt_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')
+      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
       autoload :IsCreated, action_root.join('is_created')
       autoload :IsRunning, action_root.join('is_running')
       autoload :IsSuspended, action_root.join('is_suspended')
@@ -324,16 +331,18 @@ module VagrantPlugins
       autoload :MessageNotRunning, action_root.join('message_not_running')
       autoload :MessageNotSuspended, action_root.join('message_not_suspended')
 
+      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
+
       autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
       autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
 
-      autoload :ReadSSHInfo, action_root.join('read_ssh_info')
-      autoload :ReadState, action_root.join('read_state')
+      autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
-      
-      # I don't think we need it anymore 
+      autoload :SetBootOrder, action_root.join('set_boot_order')
+
+      # I don't think we need it anymore
       autoload :ShareFolders, action_root.join('share_folders')
       autoload :StartDomain, action_root.join('start_domain')
       autoload :SuspendDomain, action_root.join('suspend_domain')
@@ -346,6 +355,7 @@ module VagrantPlugins
       autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
+      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
     end
   end
 end

@@ -10,7 +10,8 @@ module VagrantPlugins
         def configured_networks(env, logger)
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
-          management_network_mode = env[:machine].provider_config.management_network_mode 
+          management_network_mode = env[:machine].provider_config.management_network_mode
+          management_network_mac = env[:machine].provider_config.management_network_mac
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -37,6 +38,10 @@ module VagrantPlugins
             forward_mode: management_network_mode,
           }
 
+          unless management_network_mac.nil?
+            management_network_options[:mac] = management_network_mac
+          end
+
           # add management network to list of networks to check
           networks = [ management_network_options ]
 
@@ -54,6 +59,11 @@ module VagrantPlugins
               dhcp_enabled: true,
               forward_mode: 'nat',
             }.merge(options)
+
+            if options[:type].to_s == 'dhcp' && options[:ip].nil?
+              options[:network_name] = "vagrant-private-dhcp"
+            end
+
             # add to list of networks to check
             networks.push(options)
           end

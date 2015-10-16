@@ -7,10 +7,41 @@ control and provision machines via Libvirt toolkit.
 **Note:** Actual version is still a development one. Feedback is
 welcome and can help a lot :-)
 
+- [Features](#features)
+- [Future work](#future-work)
+- [Installation](#installation)
+  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+- [Vagrant Project Preparation](#vagrant-project-preparation)
+  - [Add Box](#add-box)
+  - [Create Vagrantfile](#create-vagrantfile)
+  - [Start VM](#start-vm)
+  - [How Project Is Created](#how-project-is-created)
+  - [Libvirt Configuration](#libvirt-configuration)
+  - [Provider Options](#provider-options)
+  - [Domain Specific Options](#domain-specific-options)
+  	- [Reload behavior](#reload-behavior)
+- [Networks](#networks)
+  - [Private Network Options](#private-network-options)
+  - [Public Network Options](#public-network-options)
+  - [Management Network](#management-network)
+- [Additional Disks](#additional-disks)
+  	- [Reload behavior](#reload-behavior-1)
+- [CDROMs](#cdroms)
+- [Input](#input)
+- [No box and PXE boot](#no-box-and-pxe-boot)
+- [SSH Access To VM](#ssh-access-to-vm)
+- [Forwarded Ports](#forwarded-ports)
+- [Synced Folders](#synced-folders)
+- [Customized Graphics](#customized-graphics)
+- [Box Format](#box-format)
+- [Create Box](#create-box)
+- [Development](#development)
+- [Contributing](#contributing)
+
 ## Features
 
 * Control local Libvirt hypervisors.
-* Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload` and `provision` commands.
+* Vagrant `up`, `destroy`, `suspend`, `resume`, `halt`, `ssh`, `reload`, `package` and `provision` commands.
 * Upload box image (qcow2 format) to Libvirt storage pool.
 * Create volume as COW diff image for domains.
 * Create private networks.
@@ -22,6 +53,7 @@ welcome and can help a lot :-)
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara).
 * Package caching via [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
 * Use boxes from other Vagrant providers via [vagrant-mutate](https://github.com/sciurus/vagrant-mutate).
+* Support VMs with no box for PXE boot purposes (Vagrant 1.6 and up)
 
 ## Future work
 
@@ -46,12 +78,19 @@ missing development libraries for libxslt, libxml2 and libvirt.
 
 In Ubuntu, Debian, ...
 ```
-$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev
+$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
 ```
 
 In RedHat, Centos, Fedora, ...
 ```
-# yum install libxslt-devel libxml2-devel libvirt-devel
+# yum install libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+```
+
+If have problem with installation - check your linker. It should be ld.gold:
+```
+sudo alternatives --set ld /usr/bin/ld.gold
+# OR
+sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
 ```
 
 ## Vagrant Project Preparation
@@ -64,7 +103,9 @@ a `config.vm.provider` block. So first, add Libvirt box using any name you
 want. This is just an example of Libvirt CentOS 6.4 box available:
 
 ```
-$ vagrant box add centos64 http://kwok.cz/centos64.box
+vagrant box add fedora21 http://citozin.com/fedora21.box
+# or
+vagrant box add centos64 http://citozin.com/centos64.box
 ```
 
 ### Create Vagrantfile
@@ -92,6 +133,7 @@ $ vagrant up --provider=libvirt
 Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
 That's why there is `--provider=libvirt` option specified. Other way to tell
 Vagrant to use Libvirt provider is to setup environment variable
+
 `export VAGRANT_DEFAULT_PROVIDER=libvirt`.
 
 ### How Project Is Created
@@ -117,10 +159,10 @@ Although it should work without any configuration for most people, this provider
 
 * `driver` - A hypervisor name to access. For now only kvm and qemu are supported.
 * `host` - The name of the server, where libvirtd is running.
-* `connect_via_ssh` - If use ssh tunnel to connect to Libvirt.
+* `connect_via_ssh` - If use ssh tunnel to connect to Libvirt. Absolutely needed to access libvirt on remote host. It will not be able to get the IP address of a started VM otherwise.
 * `username` - Username and password to access Libvirt.
 * `password` - Password to access Libvirt.
-* `id_ssh_key_file` - The id ssh key file name to access Libvirt (eg: id_dsa or id_rsa or ... in the user .ssh directory)
+* `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt. Default is $HOME/.ssh/id_rsa. Prepends $HOME/.ssh/ if no directory.
 * `socket` - Path to the libvirt unix socket (eg: /var/run/libvirt/libvirt-sock)
 * `uri` - For advanced usage. Directly specifies what libvirt connection URI vagrant-libvirt should use. Overrides all other connection configuration options.
 
@@ -141,24 +183,33 @@ end
 ### Domain Specific Options
 
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
-* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the [documentation for libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `nested` - [Enable nested virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt). Default is false.
-* `cpu_mode` - What cpu mode to use for nested virtualization. Defaults to 'host-model' if not set.
+* `cpu_mode` - [CPU emulation mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to 'host-model' if not set. Allowed values: host-model, host-passthrough.
+* `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe". [See driver->cache in libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems. Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent to qemu `-initrd`.
 * `random_hostname` - To create a domain name with extra information on the end to prevent hostname conflicts.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
-* `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", or "vnc".
+* `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", "vnc" or "spice".
 * `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900.
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
-* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
+* `graphics_autoport` - Sets autoport for graphics, libvirt in this case ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and "no"
 * `keymap` - Set keymap for vm. default: en-us
+* `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 * `machine` - Sets machine type. Equivalent to qemu `-machine`. Use `qemu-system-x86_64 -machine help` to get a list of supported machines.
+* `machine_arch` - Sets machine architecture. This helps libvirt to determine the correct emulator type. Possible values depend on your version of qemu. For possible values, see which emulator executable `qemu-system-*` your system provides. Common examples are `aarch64`, `alpha`, `arm`, `cris`, `i386`, `lm32`, `m68k`, `microblaze`, `microblazeel`, `mips`, `mips64`, `mips64el`, `mipsel`, `moxie`, `or32`, `ppc`, `ppc64`, `ppcemb`, `s390x`, `sh4`, `sh4eb`, `sparc`, `sparc64`, `tricore`, `unicore32`, `x86_64`, `xtensa`, `xtensaeb`.
+* `machine_virtual_size` - Sets the disk size in GB for the machine overriding the default specified in the box. Allows boxes to defined with a minimal size disk by default and to be grown to a larger size at creation time. Will ignore sizes smaller than the size specified by the box metadata. Note that currently there is no support for automatically resizing the filesystem to take advantage of the larger disk.
+* `boot` - Change the boot order and enables the boot menu. Possible options are "hd", "network", "cdrom". Defaults to "hd" with boot menu disabled. When "network" is set without "hd", only all NICs will be tried; see below for more detail.
+* `nic_adapter_count` - Defaults to '8'. Only use case for increasing this count is for VMs that virtualize switches such as Cumulus Linux. Max value for Cumulus Linux VMs is 33.
+* `uuid` - Force a domain UUID. Defaults to autogenerated value by libvirt if not set.
+* `suspend_mode` - What is done on vagrant suspend. Possible values: 'pause', 'managedsave'. Pause mode executes a la `virsh suspend`, which just pauses execution of a VM, not freeing resources. Managed save mode does a la `virsh managedsave` which frees resources suspending a domain.
+
 
 
 Specific domain settings can be set for each domain separately in multi-VM
@@ -180,10 +231,56 @@ Vagrant.configure("2") do |config|
   # ...
 ```
 
+The following example shows part of a Vagrantfile that enables the VM to
+boot from a network interface first and a hard disk second. This could be
+used to run VMs that are meant to be a PXE booted machines. Be aware that
+if `hd` is not specified as a boot option, it will never be tried.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.box = "centos64"
+    pxeclient.vm.provider :libvirt do |domain|
+      domain.boot 'network'
+      domain.boot 'hd'
+    end
+  end
+
+  # ...
+```
+
+#### Reload behavior
+On vagrant reload the following domain specific attributes are updated in defined domain:
+
+* `disk_bus` - Is updated only on disks. It skips cdroms.
+* `nic_model_type` - Updated.
+* `memory` - Updated.
+* `cpus` - Updated.
+* `nested` - Updated.
+* `cpu_mode` - Updated. Pay attention that custom mode is not supported.
+* `graphics_type` - Updated.
+* `graphics_port` - Updated.
+* `graphics_ip` - Updated.
+* `graphics_passwd` - Updated.
+* `graphics_autoport` - Updated.
+* `keymap` - Updated.
+* `video_type` - Updated.
+* `video_vram` - Updated.
+
+
 ## Networks
 
 Networking features in the form of `config.vm.network` support private networks
-concept.
+concept. It supports both the virtual network switch routing types and the point to
+point Guest OS to Guest OS setting using UDP/Mcast/TCP tunnel interfaces.
+
+http://wiki.libvirt.org/page/VirtualNetworking
+
+https://libvirt.org/formatdomain.html#elementsNICSTCP
+
+http://libvirt.org/formatdomain.html#elementsNICSMulticast
+
+http://libvirt.org/formatdomain.html#elementsNICSUDP _(in libvirt v1.2.20 and higher)_
 
 Public Network interfaces are currently implemented using the macvtap driver. The macvtap
 driver is only available with the Linux Kernel version >= 2.6.24. See the following libvirt
@@ -191,17 +288,39 @@ documentation for the details of the macvtap usage.
 
 http://www.libvirt.org/formatdomain.html#elementsNICSDirect
 
+
 An examples of network interface definitions:
 
 ```ruby
-  # Private network
+  # Private network using virtual network switching
   config.vm.define :test_vm1 do |test_vm1|
     test_vm1.vm.network :private_network, :ip => "10.20.30.40"
   end
 
+  # Private network. Point to Point between 2 Guest OS using a TCP tunnel
+  # Guest 1
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :private_network,
+          :libvirt__tunnel_type => 'server',
+          # default is 127.0.0.1 if omitted
+          # :libvirt__tunnel_ip => '127.0.0.1',
+          :libvirt__tunnel_port => '11111'
+
+  # Guest 2
+  config.vm.define :test_vm2 do |test_vm2|
+    test_vm2.vm.network :private_network,
+          :libvirt__tunnel_type => 'client',
+          # default is 127.0.0.1 if omitted
+          # :libvirt__tunnel_ip => '127.0.0.1',
+          :libvirt__tunnel_port => '11111'
+
+
   # Public Network
   config.vm.define :test_vm1 do |test_vm1|
-    test_vm1.vm.network :public_network, :dev => "eth0", :mode => 'bridge'
+    test_vm1.vm.network :public_network,
+          :dev => "virbr0",
+          :mode => "bridge",
+          :type => "bridge"
   end
 ```
 
@@ -234,20 +353,51 @@ starts with 'libvirt__' string. Here is a list of those options:
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
+* `:libvirt__host_ip` - Adress to use for the host (not guest).
+  Default is first possible address (after network address).
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
+* `:libvirt__dhcp_start` - First address given out via DHCP.
+  Default is third address in range (after network name and gateway).
+* `:libvirt__dhcp_stop` - Last address given out via DHCP.
+  Default is last possible address in range (before broadcast address).
+* `:libvirt__dhcp_bootp_file` - The file to be used for the boot image.
+  Used only when dhcp is enabled.
+* `:libvirt__dhcp_bootp_server` - The server that runs the DHCP server.
+  Used only when dhcp is enabled.By default is the same host that runs the DHCP server.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
-* `:libvirt__forward_mode` - Specify one of `none`, `nat` or `route` options.
+* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `nat` or `route` options.
   This option is used only when creating new network. Mode `none` will create
   isolated network without NATing or routing outside. You will want to use
   NATed forwarding typically to reach networks outside of hypervisor. Routed
   forwarding is typically useful to reach other networks within hypervisor.
+  `veryisolated` described [here](https://libvirt.org/formatnetwork.html#examplesNoGateway).
   By default, option `nat` is used.
 * `:libvirt__forward_device` - Name of interface/device, where network should
   be forwarded (NATed or routed). Used only when creating new network. By
   default, all physical interfaces are used.
+* `:libvirt__tunnel_type` - Set to 'udp' if using UDP unicast tunnel mode (libvirt v1.2.20 or higher).
+  Set this to either "server" or "client" for tcp tunneling. Set this to 'mcast' if using multicast
+  tunneling. This configuration type uses tunnels to
+  generate point to point connections between Guests. Useful for Switch VMs like
+  Cumulus Linux. No virtual switch setting like "libvirt__network_name" applies with
+  tunnel interfaces and will be ignored if configured.
+* `:libvirt__tunnel_ip` - Sets the source IP of the libvirt tunnel interface. By
+  default this is `127.0.0.1` for TCP and UDP tunnels and `239.255.1.1` for Multicast
+  tunnels. It populates the address field in the `<source address="XXX">` of the
+  interface xml configuration.
+* `:libvirt__tunnel_port` - Sets the source port the tcp/udp/mcast tunnel
+    with use. This port information is placed in the `<source port=XXX/>` section of
+    interface xml configuration.
+* `:libvirt__tunnel_local_port` - Sets the local port used by the udp tunnel
+    interface type. It populates the port field in the `<local port=XXX">` section of the
+    interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
+* `:libvirt__tunnel_local_ip` - Sets the local IP used by the udp tunnel
+    interface type. It populates the ip entry of the `<local address=XXX">` section of
+    the interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
 * `:mac` - MAC address for the interface.
-* `model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+* `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
+
 
 When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
 whether the virtual network contains a DHCP server or not and vagrant-libvirt
@@ -260,6 +410,7 @@ virtual network.
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default mode is 'bridge'.
+* `:type` - is type of interface.(`<interface type="#{@type}">`)
 * `:mac` - MAC address for the interface.
 * `:ovs` - Support to connect to an open vSwitch bridge device. Default is 'false'.
 
@@ -292,6 +443,7 @@ You can create and attach additional disks to a VM via `libvirt.storage :file`. 
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
 * `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks) or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation). Defaults to *default*.
+* `allow_existing` - Set to true if you want to allow the VM to use a pre-existing disk.  This is useful for sharing disks between VMs, e.g. in order to simulate shared SAN storage. Shared disks removed only manually. If not exists - will created. If exists - using existed.
 
 The following example creates two additional disks.
 
@@ -300,6 +452,90 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
     libvirt.storage :file, :size => '40G', :type => 'raw'
+  end
+end
+```
+
+### Reload behavior
+
+On vagrant reload the following additional disk attributes are updated in defined domain:
+
+* `bus` - Updated. Uses `device` as a search marker. It is not required to define `device`, but it's recommended. If `device` is defined then the order of addtitional disk definition becomes irrelevant.
+
+## CDROMs
+
+You can attach up to four (4) CDROMs to a VM via `libvirt.storage :file, :device => :cdrom`. Available options are:
+
+* `path` - The path to the iso to be used for the CDROM drive.
+* `dev` - The device to use (`hda`, `hdb`, `hdc`, or `hdd`). This will be automatically determined if unspecified.
+* `bus` - The bus to use for the CDROM drive. Defaults to `ide`
+
+The following example creates three CDROM drives in the VM:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso1.iso'
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso2.iso'
+    libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso3.iso'
+  end
+end
+```
+
+## Input
+
+You can specify multiple inputs to the VM via `libvirt.input`. Available options are
+listed below. Note that both options are required:
+
+* `type` - The type of the input
+* `bus` - The bust of the input
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # this is the default
+    # libvirt.input :type => "mouse", :bus => "ps2"
+
+    # very useful when having mouse issues when viewing VM via VNC
+    libvirt.input :type => "tablet", :bus => "usb"
+  end
+end
+```
+
+## No box and PXE boot
+
+There is support for PXE booting VMs with no disks as well as PXE booting VMs with blank disks. There are some limitations:
+
+* Requires Vagrant 1.6.0 or newer
+* No provisioning scripts are ran
+* No network configuration is being applied to the VM
+* No SSH connection can be made
+* ```vagrant halt``` will only work cleanly if the VM handles ACPI shutdown signals
+
+In short, VMs without a box can be created, halted and destroyed but all other functionality cannot be used.
+
+An example for a PXE booted VM with no disks whatsoever:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.provider :libvirt do |domain|
+      domain.boot 'network'
+    end
+  end
+end
+```
+
+And an example for a PXE booted VM with no box but a blank disk which will boot from this HD if the NICs fail to PXE boot:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.provider :libvirt do |domain|
+      domain.storage :file, :size => '100G', :type => 'qcow2'
+      domain.boot 'network'
+      domain.boot 'hd'
+    end
   end
 end
 ```
@@ -330,6 +566,13 @@ it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
 
+    or
+
+    config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
+
+**SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged public network interface and you must connect to libvirt via ssh.
+
+
 ## Customized Graphics
 
 vagrant-libvirt supports customizing the display and video settings of the
@@ -357,6 +600,15 @@ The box is a tarball containing:
 * qcow2 image file named `box.img`.
 * `metadata.json` file describing box image (provider, virtual_size, format).
 * `Vagrantfile` that does default settings for the provider-specific configuration for this provider.
+
+## Create Box
+To create a vagrant-libvirt box from a qcow2 image, run `create_box.sh` (located in the tools directory):
+
+```$ create_box.sh ubuntu14.qcow2```
+
+You can also create a box by using [Packer](https://packer.io). Packer templates for use with vagrant-libvirt are available at https://github.com/jakobadam/packer-qemu-templates. After cloning that project you can build a vagrant-libvirt box by running:
+
+``` ~/packer-qemu-templates/ubuntu$ packer build ubuntu-14.04-server-amd64-vagrant.json```
 
 ## Development
 
@@ -400,4 +652,3 @@ IMPORTANT NOTE: bundle is crucial. You need to use bundled vagrant.
 3. Commit your changes (`git commit -am 'Add some feature'`).
 4. Push to the branch (`git push origin my-new-feature`).
 5. Create new Pull Request.
-

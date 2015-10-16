@@ -14,14 +14,16 @@ module VagrantPlugins
         end
 
         def call(env)
-          @@lock.synchronize do
-            # Get config options.
-            config = env[:machine].provider_config
+          # Get config options.
+          config = env[:machine].provider_config
 
+          # while inside the synchronize block take care not to call the next
+          # action in the chain, as must exit this block first to prevent
+          # locking all subsequent actions as well.
+          @@lock.synchronize do
             # Check for storage pool, where box image should be created
-            fog_pool = ProviderLibvirt::Util::Collection.find_matching(
-              env[:libvirt_compute].pools.all, config.storage_pool_name)
-            return @app.call(env) if fog_pool
+            break if ProviderLibvirt::Util::Collection.find_matching(
+              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name)
 
             @logger.info("No storage pool '#{config.storage_pool_name}' is available.")
 
@@ -34,7 +36,7 @@ module VagrantPlugins
             # Fog libvirt currently doesn't support creating pools. Use
             # ruby-libvirt client directly.
             begin
-              libvirt_pool = env[:libvirt_compute].client.define_storage_pool_xml(
+              libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
                 to_xml('default_storage_pool'))
               libvirt_pool.build
               libvirt_pool.create

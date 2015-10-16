@@ -12,6 +12,9 @@ en:
       Checking if volume is available.
     creating_domain: |-
       Creating domain with the following settings...
+    manual_resize_required: |-
+      Created volume larger than box defaults, will require manual resizing of
+      filesystems to utilize.
     uploading_volume: |-
       Uploading base box image as volume into libvirt storage...
     creating_domain_volume: |-
@@ -44,8 +47,16 @@ en:
       Rsyncing folder: %{hostpath} => %{guestpath}
     ready: |-
       Machine is booted and ready for use!
+    remove_stale_volume: |-
+      Remove stale volume...
+
+    warnings:
+      ignoring_virtual_size_too_small: |-
+        Ignoring requested virtual disk size of '%{requested}' as it is below
+        the minimum box image size of '%{box_virtual_size}'.
 
     errors:
+      package_not_supported: No support for package with libvirt. Create box manually.
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:
@@ -68,7 +79,7 @@ en:
         Interface adapter number is already in use. Please specify other adapter
         number.
       rsync_error: |-
-        There was an error when attemping to rsync a share folder.
+        There was an error when attempting to rsync a share folder.
         Please inspect the error message below for more info.
 
         Host path: %{hostpath}
@@ -112,7 +123,7 @@ en:
         Network %{network_name} exists but does not have dhcp %{requested}.
         Please fix your configuration and run vagrant again.
       create_network_error: |-
-        Error occured while creating new network: %{error_message}.
+        Error occurred while creating new network: %{error_message}.
       network_not_available_error: |-
         Network %{network_name} is not available. Specify available network
         name, or an ip address if you want to create a new network.
@@ -124,21 +135,22 @@ en:
         Error while removing network %{network_name}. %{error_message}.
       delete_snapshot_error: |-
         Error while deleting snapshot: %{error_message}.
+      tunnel_port_not_defined: |-
+         tunnel UDP or TCP port not defined.
 
     states:
-      short_paused: |-
-        pause
-      short_shutoff: |-
-        shutoff
-      long_shutoff: |-
+      paused: |-
+        The Libvirt domain is suspended. Run `vagrant resume` to resume it.
+      shutting_down: |-
+        The Libvirt domain is shutting down. Wait for it to complete and
+        then run `vagrant up` to start it or `vagrant destroy` to remove.
+      shutoff: |-
         The Libvirt domain is not running. Run `vagrant up` to start it.
-      short_not_created: |-
-        not created
-      long_not_created: |-
+      not_created: |-
         The Libvirt domain is not created. Run `vagrant up` to create it.
-
-      short_running: |-
-        running
-      long_running: |-
+      running: |-
         The Libvirt domain is running. To stop this machine, you can run
         `vagrant halt`. To destroy the machine, you can run `vagrant destroy`.
+      preparing: |-
+        The vagrant machine is being prepared for creation, please wait for
+        it to reach a steady state before issuing commands on it.

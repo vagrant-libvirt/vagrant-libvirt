@@ -1,25 +1,41 @@
 <domain type='<%= @domain_type %>'>
   <name><%= @name %></name>
+  <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
   <vcpu><%= @cpus %></vcpu>
 
-  <% if @nested %>
-    <cpu mode='<%= @cpu_mode %>'>
-      <% if @cpu_mode != 'host-passthrough' %>
-        <model fallback='allow'>qemu64</model>
+
+  <cpu mode='<%= @cpu_mode %>'>
+    <% if @cpu_mode != 'host-passthrough' %>
+      <model fallback='allow'>qemu64</model>
+      <% if @nested %>
         <feature policy='optional' name='vmx'/>
         <feature policy='optional' name='svm'/>
       <% end %>
-    </cpu>
-  <% end %>
+    <% end %>
+  </cpu>
+
 
   <os>
-  <% if @machine_type %>
-    <type machine='<%= @machine_type %>'>hvm</type>
-  <% else %>
-    <type>hvm</type>
-  <% end %>
-    <boot dev='hd'/>
+    <% if @machine_type %>
+      <% if @machine_arch %>
+        <type arch='<%= @machine_arch %>' machine='<%= @machine_type %>'>hvm</type>
+      <% else %>
+        <type machine='<%= @machine_type %>'>hvm</type>
+      <% end %>
+    <% else %>
+      <% if @machine_arch %>
+        <type arch='<%= @machine_arch %>'>hvm</type>
+      <% else %>
+        <type>hvm</type>
+      <% end %>
+    <% end %>
+    <% if @loader %>
+      <loader readonly='yes' type='rom'><%= @loader %></loader>
+    <% end %>
+    <% if @boot_order.count >= 1 %>
+      <bootmenu enable='yes'/>
+    <% end %>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
@@ -31,12 +47,14 @@
   </features>
   <clock offset='utc'/>
   <devices>
+    <% if @domain_volume_path %>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='vda' bus='<%= @disk_bus %>'/>
     </disk>
+    <% end %>
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>
@@ -48,18 +66,31 @@
 -%>
     </disk>
 <% end -%>
+
+<% @cdroms.each do |c| %>
+    <disk type='file' device='cdrom'>
+      <source file='<%= c[:path] %>'/>
+      <target dev='<%= c[:dev] %>' bus='<%= c[:bus] %>'/>
+      <readonly/>
+    </disk>
+<% end %>
+
     <serial type='pty'>
       <target port='0'/>
     </serial>
     <console type='pty'>
       <target port='0'/>
     </console>
-    <input type='mouse' bus='ps2'/>
+
+<% @inputs.each do |input| %>
+    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
+<% end %>
+
     <%# Video device -%>
     <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
-      <video>
-          <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-      </video>
+    <video>
+      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+    </video>
     <%#End Video -%>
   </devices>
 </domain>

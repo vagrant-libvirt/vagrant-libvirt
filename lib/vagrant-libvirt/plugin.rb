@@ -23,18 +23,24 @@ module VagrantPlugins
         Config
       end
 
-      provider('libvirt', parallel: true) do
-        # Setup logging and i18n
-        setup_logging
-        setup_i18n
-
+      provider('libvirt', parallel: true, box_optional: true) do
         require_relative 'provider'
         Provider
       end
 
+      action_hook(:remove_libvirt_image) do |hook|
+        hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
+      end
+
+
       guest_capability('linux', 'mount_p9_shared_folder') do
         require_relative 'cap/mount_p9'
         Cap::MountP9
+      end
+
+      provider_capability(:libvirt, :nic_mac_addresses) do
+        require_relative "cap/nic_mac_addresses"
+        Cap::NicMacAddresses
       end
 
       # lower priority than nfs or rsync
@@ -80,7 +86,12 @@ module VagrantPlugins
         end
       end
 
+      # Setup logging and i18n before any autoloading loads other classes
+      # with logging configured as this prevents inheritance of the log level
+      # from the parent logger.
+      setup_logging
+      setup_i18n
+
     end
   end
 end
-
