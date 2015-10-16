@@ -1,4 +1,3 @@
-require 'securerandom'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -53,7 +52,11 @@ module VagrantPlugins
           domain_name << '_'
           domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_]/i, '')
-          domain_name << "_#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}" if config.random_hostname
+          if config.random_hostname
+            domain_name_hash = domain_name.hash
+            domain_name_hash << "_#{Time.now.utc.to_i}"
+            domain_name = domain_name_hash
+          end
           domain_name
         end
 
