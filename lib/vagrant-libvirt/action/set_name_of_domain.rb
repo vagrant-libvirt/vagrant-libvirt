@@ -46,11 +46,13 @@ module VagrantPlugins
           config = env[:machine].provider_config
           domain_name =
             if config.default_prefix.nil?
-              env[:root_path].basename.to_s.dup
+              env[:root_path].basename.to_s.dup.concat("_")
+            elsif config.default_prefix.empty?
+              # don't have any prefix, not even "_"
+              ""
             else
-              config.default_prefix.to_s
+              config.default_prefix.to_s.concat("_")
             end
-          domain_name << '_'
           domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_]/i, '')
           domain_name << "_#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}" if config.random_hostname
