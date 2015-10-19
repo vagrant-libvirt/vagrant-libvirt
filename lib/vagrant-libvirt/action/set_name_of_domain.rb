@@ -53,7 +53,7 @@ module VagrantPlugins
           domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_]/i, '')
           if config.random_hostname
-            domain_name_hash = domain_name.hash
+            domain_name_hash = domain_name.hash.to_s
             domain_name_hash << "_#{Time.now.utc.to_i}"
             domain_name = domain_name_hash
           end
