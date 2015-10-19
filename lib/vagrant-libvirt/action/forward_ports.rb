@@ -98,7 +98,7 @@ module VagrantPlugins
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
           ) + ssh_info[:private_key_path].map do |pk|
-              "IdentityFile=#{pk}"
+              "IdentityFile='\"#{pk}\"'"
             end).map { |s| s.prepend('-o ') }.join(' ')
 
           options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
