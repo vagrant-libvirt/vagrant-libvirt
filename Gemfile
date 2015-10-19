@@ -17,6 +17,6 @@ group :development do
 end
 
 group :plugins do
-  gem 'sendgrid-vagrant-libvirt', :path => '.'
+  gem 'vagrant-libvirt', :path => '.'
 end
 
