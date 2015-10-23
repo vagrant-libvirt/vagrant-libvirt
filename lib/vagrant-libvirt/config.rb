@@ -90,6 +90,9 @@ module VagrantPlugins
       # Inputs
       attr_accessor :inputs
 
+      # PCI device passthrough
+      attr_accessor :pcis
+
       # Suspend mode
       attr_accessor :suspend_mode
 
@@ -144,6 +147,9 @@ module VagrantPlugins
         # Inputs
         @inputs            = UNSET_VALUE
 
+        # PCI device passthrough
+        @pcis              = UNSET_VALUE
+
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
       end
@@ -195,6 +201,22 @@ module VagrantPlugins
         @inputs.push({
           type: options[:type],
           bus:  options[:bus]
+        })
+      end
+
+      def pci(options={})
+        if options[:bus].nil? || options[:slot].nil? || options[:function].nil?
+          raise 'Bus AND slot AND function must be specified. Check `lspci` for that numbers.'
+        end
+
+        if @pcis == UNSET_VALUE
+          @pcis = []
+        end
+
+        @pcis.push({
+          bus:       options[:bus],
+          slot:      options[:slot],
+          function:  options[:function]
         })
       end
 

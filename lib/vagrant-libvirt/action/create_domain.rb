@@ -69,6 +69,9 @@ module VagrantPlugins
           # Input
           @inputs = config.inputs
 
+          # PCI device passthrough
+          @pcis = config.pcis
+
           config = env[:machine].provider_config
           @domain_type = config.driver
 
@@ -180,9 +183,15 @@ module VagrantPlugins
           @cdroms.each do |cdrom|
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
+
           @inputs.each do |input|
             env[:ui].info(" -- INPUT:             type=#{input[:type]}, bus=#{input[:bus]}")
           end
+
+          @pcis.each do |pci|
+            env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+          end
+
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
           # Create libvirt domain.

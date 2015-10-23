@@ -28,6 +28,7 @@ welcome and can help a lot :-)
   	- [Reload behavior](#reload-behavior-1)
 - [CDROMs](#cdroms)
 - [Input](#input)
+- [PCI device passthrough](#pci)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
 - [Forwarded Ports](#forwarded-ports)
@@ -498,6 +499,34 @@ Vagrant.configure("2") do |config|
 
     # very useful when having mouse issues when viewing VM via VNC
     libvirt.input :type => "tablet", :bus => "usb"
+  end
+end
+```
+
+## PCI device passthrough
+
+You can specify multiple PCI devices to passthrough to the VM via `libvirt.pci`. Available options are listed below. Note that all options are required:
+
+* `bus` - The bus of the PCI device
+* `slot` - The slot of the PCI device
+* `function` - The function of the PCI device
+
+You can extract that information from output of `lspci` command. First characters of each line are in format "[<bus>]:[<slot>].[<func>]". Example
+
+```
+$ lspci| grep NVIDIA
+03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+```
+
+In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.input :bus => '0x06', slot => '0x12', function => '0x5'
+
+    # Add another one if it is neccessary
+    libvirt.input :bus => '0x03', slot => '0x00', function => '0x0'
   end
 end
 ```
