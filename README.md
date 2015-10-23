@@ -28,7 +28,7 @@ welcome and can help a lot :-)
   	- [Reload behavior](#reload-behavior-1)
 - [CDROMs](#cdroms)
 - [Input](#input)
-- [PCI device passthrough](#pci)
+- [PCI device passthrough](#pci-device-passthrough)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
 - [Forwarded Ports](#forwarded-ports)
@@ -511,7 +511,7 @@ You can specify multiple PCI devices to passthrough to the VM via `libvirt.pci`.
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
-You can extract that information from output of `lspci` command. First characters of each line are in format "[<bus>]:[<slot>].[<func>]". Example
+You can extract that information from output of `lspci` command. First characters of each line are in format `[<bus>]:[<slot>].[<func>]`. Example
 
 ```
 $ lspci| grep NVIDIA
