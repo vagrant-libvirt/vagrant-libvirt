@@ -621,10 +621,10 @@ $ cd vagrant-libvirt
 $ bundle install
 ```
 
-Once you have the dependencies, verify the unit tests pass with `rake`:
+Once you have the dependencies, verify the unit tests pass with `rspec`:
 
 ```
-$ bundle exec rake
+$ bundle exec rspec spec/
 ```
 
 If those pass, you're ready to start developing the plugin. You can test
