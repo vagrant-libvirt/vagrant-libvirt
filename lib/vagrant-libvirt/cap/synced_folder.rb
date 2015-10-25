@@ -63,9 +63,11 @@ module VagrantPlugins
         # Only mount folders that have a guest path specified.
         mount_folders = {}
         folders.each do |id, opts|
-          mount_folders[id] = opts.dup if opts[:guestpath]
-          # merge common options if not given
-          mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
+          if opts[:guestpath] && ! opts[:guestpath].empty?
+            mount_folders[id] = opts.dup
+            # merge common options if not given
+            mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
+          end
         end
         # Mount the actual folder
         machine.guest.capability(
