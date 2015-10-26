@@ -38,6 +38,7 @@ module VagrantPlugins
           folders.each do |id, folder_opts|
             folder_opts.merge!({  target: id,
                                   accessmode: 'passthrough',
+                                  mount: true,
                                   readonly: nil }) { |_k, ov, _nv| ov }
 
             mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0,31]
@@ -63,9 +64,11 @@ module VagrantPlugins
         # Only mount folders that have a guest path specified.
         mount_folders = {}
         folders.each do |id, opts|
-          mount_folders[id] = opts.dup if opts[:guestpath]
-          # merge common options if not given
-          mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
+          if opts[:mount] && opts[:guestpath] && ! opts[:guestpath].empty?
+            mount_folders[id] = opts.dup
+            # merge common options if not given
+            mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
+          end
         end
         # Mount the actual folder
         machine.guest.capability(

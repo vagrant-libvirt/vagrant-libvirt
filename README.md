@@ -599,6 +599,12 @@ it an setting the type, e.g.
 
     config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
 
+    or
+
+    config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped", mount: false
+
+For 9p shares, a `mount: false` option allows to define synced folders without mounting them at boot.
+
 **SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged public network interface and you must connect to libvirt via ssh.
 
 
