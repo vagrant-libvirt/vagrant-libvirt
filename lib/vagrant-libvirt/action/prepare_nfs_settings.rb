@@ -39,7 +39,7 @@ module VagrantPlugins
         #
         # @param [Machine] machine
         # @return [String]
-	def read_host_ip(ip)
+        def read_host_ip(ip)
           UDPSocket.open do |s|
             if(ip.kind_of?(Array))
               s.connect(ip.last, 1)
@@ -54,9 +54,11 @@ module VagrantPlugins
         # @param [Machine] machine
         # @return [String]
         def read_machine_ip(machine)
-          # check host only ip
-          ssh_host = machine.ssh_info[:host]
-          return ssh_host if ping(ssh_host)
+          # check host only ip when ssh_info is ready
+          if machine.ssh_info
+            ssh_host = machine.ssh_info[:host]
+            return ssh_host if ping(ssh_host)
+          end
 
           # check other ips
           command = "ip addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
