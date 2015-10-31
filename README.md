@@ -302,26 +302,26 @@ An examples of network interface definitions:
   # Guest 1
   config.vm.define :test_vm1 do |test_vm1|
     test_vm1.vm.network :private_network,
-          :libvirt__tunnel_type => 'server',
-          # default is 127.0.0.1 if omitted
-          # :libvirt__tunnel_ip => '127.0.0.1',
-          :libvirt__tunnel_port => '11111'
+      :libvirt__tunnel_type => 'server',
+      # default is 127.0.0.1 if omitted
+      # :libvirt__tunnel_ip => '127.0.0.1',
+      :libvirt__tunnel_port => '11111'
 
   # Guest 2
   config.vm.define :test_vm2 do |test_vm2|
     test_vm2.vm.network :private_network,
-          :libvirt__tunnel_type => 'client',
-          # default is 127.0.0.1 if omitted
-          # :libvirt__tunnel_ip => '127.0.0.1',
-          :libvirt__tunnel_port => '11111'
+      :libvirt__tunnel_type => 'client',
+      # default is 127.0.0.1 if omitted
+      # :libvirt__tunnel_ip => '127.0.0.1',
+      :libvirt__tunnel_port => '11111'
 
 
   # Public Network
   config.vm.define :test_vm1 do |test_vm1|
     test_vm1.vm.network :public_network,
-          :dev => "virbr0",
-          :mode => "bridge",
-          :type => "bridge"
+      :dev => "virbr0",
+      :mode => "bridge",
+      :type => "bridge"
   end
 ```
 
