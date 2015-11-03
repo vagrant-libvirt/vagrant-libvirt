@@ -7,5 +7,11 @@
     <local address='<%=@udp_tunnel_local_ip%>' port='<%=@udp_tunnel_local_port%>' />
   <% end %>
   </source>
+  <% if @device_name %>
+    <target dev='<%= @device_name %>'/>
+  <% else %>
+    <target dev='tnet<%= @iface_number %>'/>
+  <% end %>
+  <alias name='net<%= @iface_number %>'/>
   <model type='<%=@model_type%>'/>
 </interface>
