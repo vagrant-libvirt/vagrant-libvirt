@@ -54,7 +54,7 @@ module VagrantPlugins
               config.default_prefix.to_s.concat("_")
             end
           domain_name << env[:machine].name.to_s
-          domain_name.gsub!(/[^-a-z0-9_]/i, '')
+          domain_name.gsub!(/[^-a-z0-9_\.]/i, '')
           domain_name << "_#{Time.now.utc.to_i}_#{SecureRandom.hex(10)}" if config.random_hostname
           domain_name
         end
