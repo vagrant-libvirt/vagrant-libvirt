@@ -58,6 +58,7 @@ module VagrantPlugins
                 created:          false,
                 active:           false,
                 autostart:        false,
+                guest_ipv6:       @options[:guest_ipv6] || 'yes',
                 libvirt_network:  nil
               }
 
@@ -270,6 +271,7 @@ module VagrantPlugins
           @network_bridge_name = @interface_network[:bridge_name]
           @network_address = @interface_network[:ip_address]
           @network_netmask = @interface_network[:netmask]
+          @guest_ipv6 = @interface_network[:guest_ipv6]
 
           @network_forward_mode = @options[:forward_mode]
           if @options[:forward_device]

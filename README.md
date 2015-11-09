@@ -396,6 +396,8 @@ starts with 'libvirt__' string. Here is a list of those options:
 * `:libvirt__tunnel_local_ip` - Sets the local IP used by the udp tunnel
     interface type. It populates the ip entry of the `<local address=XXX">` section of
     the interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
+* `:libvirt__guest_ipv6` - Enable or disable guest-to-guest IPv6 communication.
+    See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8) for for more information.
 * `:mac` - MAC address for the interface.
 * `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
@@ -425,6 +427,7 @@ configurable at the provider level.
 
 * `management_network_name` - Name of libvirt network to which all VMs will be connected. If not specified the default is 'vagrant-libvirt'.
 * `management_network_address` - Address of network to which all VMs will be connected. Must include the address and subnet mask. If not specified the default is '192.168.121.0/24'.
+* `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6 communication. See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8) for for more information.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.
 Libvirt doesn't provide a standard way to find out the IP address of a running
