@@ -12,6 +12,7 @@ module VagrantPlugins
           management_network_address = env[:machine].provider_config.management_network_address
           management_network_mode = env[:machine].provider_config.management_network_mode
           management_network_mac = env[:machine].provider_config.management_network_mac
+          management_network_guest_ipv6 = env[:machine].provider_config.management_network_guest_ipv6
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -36,6 +37,7 @@ module VagrantPlugins
             netmask: $2,
             dhcp_enabled: true,
             forward_mode: management_network_mode,
+            guest_ipv6: management_network_guest_ipv6,
           }
 
           unless management_network_mac.nil?
