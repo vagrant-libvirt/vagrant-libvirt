@@ -197,7 +197,7 @@ end
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to use. Equivalent to qemu `-append`.
 * `graphics_type` - Sets the protocol used to expose the guest display.  Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", "vnc" or "spice".
 * `graphics_port` - Sets the port for the display protocol to bind to.  Defaults to 5900.
-* `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.0.1".
+* `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to "127.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
 * `graphics_autoport` - Sets autoport for graphics, libvirt in this case ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and "no"
 * `keymap` - Set keymap for vm. default: en-us
