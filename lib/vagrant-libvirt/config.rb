@@ -94,6 +94,9 @@ module VagrantPlugins
       # PCI device passthrough
       attr_accessor :pcis
 
+      # USB device passthrough
+      attr_accessor :usbs
+
       # Suspend mode
       attr_accessor :suspend_mode
 
@@ -151,6 +154,9 @@ module VagrantPlugins
 
         # PCI device passthrough
         @pcis              = UNSET_VALUE
+
+        # USB device passthrough
+        @usbs              = UNSET_VALUE
 
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
@@ -219,6 +225,24 @@ module VagrantPlugins
           bus:       options[:bus],
           slot:      options[:slot],
           function:  options[:function]
+        })
+      end
+
+      def usb(options={})
+        if (options[:bus].nil? || options[:device].nil?) && options[:vendor].nil? && options[:product].nil?
+          raise 'Bus and device and/or vendor and/or product must be specified. Check `lsusb` for these.'
+        end
+
+        if @usbs == UNSET_VALUE
+          @usbs = []
+        end
+
+        @usbs.push({
+          bus:           options[:bus],
+          device:        options[:device],
+          vendor:        options[:vendor],
+          product:       options[:product],
+          startupPolicy: options[:startupPolicy],
         })
       end
 
@@ -388,6 +412,12 @@ module VagrantPlugins
 
         # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+
+        # PCI device passthrough
+        @pcis = [] if @pcis == UNSET_VALUE
+
+        # USB device passthrough
+        @usbs = [] if @usbs == UNSET_VALUE
 
         # Suspend mode
         @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
