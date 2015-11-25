@@ -389,9 +389,6 @@ module VagrantPlugins
         # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
 
-        # PCI device passthrough
-        @pcis = [] if @pcis == UNSET_VALUE
-
         # Suspend mode
         @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
 
