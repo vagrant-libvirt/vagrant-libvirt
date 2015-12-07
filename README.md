@@ -398,6 +398,7 @@ starts with 'libvirt__' string. Here is a list of those options:
     the interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
 * `:libvirt__guest_ipv6` - Enable or disable guest-to-guest IPv6 communication.
     See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8) for for more information.
+* `:libvirt__iface_name` - Define a name for the private network interface. With this feature one can [simulate physical link failures](https://github.com/pradels/vagrant-libvirt/pull/498)
 * `:mac` - MAC address for the interface.
 * `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
