@@ -691,12 +691,7 @@ $ bundle exec rspec spec/
 If those pass, you're ready to start developing the plugin. You can test
 the plugin without installing it into your Vagrant environment by just
 creating a `Vagrantfile` in the top level of this directory (it is gitignored)
-that uses it. Don't forget to add following line at the beginning of your
-`Vagrantfile` while in development mode:
-
-```ruby
-Vagrant.require_plugin "vagrant-libvirt"
-```
+that uses it.
 
 Now you can use bundler to execute Vagrant:
 
