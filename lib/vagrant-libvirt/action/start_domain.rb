@@ -23,8 +23,8 @@ module VagrantPlugins
 
             libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
 
-            if config.memory*1024 != libvirt_domain.max_memory
-              libvirt_domain.max_memory = config.memory*1024
+            if config.memory.to_i*1024 != libvirt_domain.max_memory
+              libvirt_domain.max_memory = config.memory.to_i*1024
               libvirt_domain.memory = libvirt_domain.max_memory
             end
             begin
