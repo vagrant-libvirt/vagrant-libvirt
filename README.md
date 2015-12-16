@@ -201,6 +201,7 @@ end
 * `graphics_passwd` - Sets the password for the display protocol. Working for vnc and spice. by default working without passsword.
 * `graphics_autoport` - Sets autoport for graphics, libvirt in this case ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and "no"
 * `keymap` - Set keymap for vm. default: en-us
+* `kvm_hidden` - [Hide the hypervisor from the guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for GPU passthrough on stubborn drivers. Default is false.
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to "cirrus".  [Possible values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga", "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM dedicated to video.  Defaults to 9216.
 * `machine` - Sets machine type. Equivalent to qemu `-machine`. Use `qemu-system-x86_64 -machine help` to get a list of supported machines.
