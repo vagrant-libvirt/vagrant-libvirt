@@ -44,6 +44,11 @@
     <acpi/>
     <apic/>
     <pae/>
+    <% if @kvm_hidden %>
+      <kvm>
+        <hidden state='on'/>
+      </kvm>
+    <% end %>
   </features>
   <clock offset='utc'/>
   <devices>

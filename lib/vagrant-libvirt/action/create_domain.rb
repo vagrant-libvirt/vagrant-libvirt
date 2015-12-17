@@ -57,6 +57,7 @@ module VagrantPlugins
           @video_type = config.video_type
           @video_vram = config.video_vram
           @keymap = config.keymap
+          @kvm_hidden = config.kvm_hidden
 
           # Boot order
           @boot_order = config.boot_order
