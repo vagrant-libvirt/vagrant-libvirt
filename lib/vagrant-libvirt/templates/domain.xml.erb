@@ -122,5 +122,14 @@
         </source>
       </hostdev>
     <% end %>
+
+    <% if @tpm_path -%>
+    <%# TPM Device -%>
+    <tpm model='<%= @tpm_model %>'>
+      <backend type='<%= @tpm_type %>'>
+        <device path='<%= @tpm_path %>'/>
+      </backend>
+    </tpm>
+    <% end -%>
   </devices>
 </domain>
