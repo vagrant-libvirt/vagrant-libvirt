@@ -59,6 +59,10 @@ module VagrantPlugins
           @keymap = config.keymap
           @kvm_hidden = config.kvm_hidden
 
+          @tpm_model = config.tpm_model
+          @tpm_type = config.tpm_type
+          @tpm_path = config.tpm_path
+
           # Boot order
           @boot_order = config.boot_order
 
@@ -164,6 +168,7 @@ module VagrantPlugins
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
+          env[:ui].info(" -- TPM Path:          #{@tpm_path}")
 
           @boot_order.each do |device|
             env[:ui].info(" -- Boot device:        #{device}")

@@ -155,6 +155,35 @@ module VagrantPlugins
                 end
               end
 
+              #TPM
+              if config.tpm_path
+                raise Errors::FogCreateServerError, "The TPM Path must be fully qualified" unless config.tpm_path[0].chr == '/'
+
+                tpm = REXML::XPath.first(xml_descr,'/domain/devices/tpm')
+                if tpm.nil?
+                  descr_changed = true
+                  tpm = REXML::Element.new('tpm', REXML::XPath.first(xml_descr,'/domain/devices/tpm/model'))
+                  tpm.attributes['model'] = config.tpm_model
+                  tpm_backend_type = tpm.add_element('backend')
+                  tpm_backend_type.attributes['type'] = config.tpm_type
+                  tpm_device_path = tpm_backend_type.add_element('device')
+                  tpm_device_path.attributes['path'] = config.tpm_path
+                else
+                  if tpm.attributes['model'] != config.tpm_model
+                    descr_changed = true
+                    tpm.attributes['model'] = config.tpm_model
+                  end
+                  if tpm.elements['backend'].attributes['type'] != config.tpm_type
+                    descr_changed = true
+                    tpm.elements['backend'].attributes['type'] = config.tpm_type
+                  end
+                  if tpm.elements['backend'].elements['device'].attributes['path'] != config.tpm_path
+                    descr_changed = true
+                    tpm.elements['backend'].elements['device'].attributes['path'] = config.tpm_path
+                  end
+                end
+              end
+
               # Video device
               video = REXML::XPath.first(xml_descr,'/domain/devices/video/model')
               if video.attributes['type'] != config.video_type || video.attributes['vram'] != config.video_vram

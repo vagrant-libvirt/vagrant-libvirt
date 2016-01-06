@@ -80,6 +80,12 @@ module VagrantPlugins
       attr_accessor :keymap
       attr_accessor :kvm_hidden
 
+      # Sets the information for connecting to a host TPM device
+      # Only supports socket-based TPMs
+      attr_accessor :tpm_model
+      attr_accessor :tpm_type
+      attr_accessor :tpm_path
+
       # Sets the max number of NICs that can be created
       # Default set to 8. Don't change the default unless you know
       # what are doing
@@ -142,6 +148,10 @@ module VagrantPlugins
         @video_vram        = UNSET_VALUE
         @keymap            = UNSET_VALUE
         @kvm_hidden        = UNSET_VALUE
+
+        @tpm_model         = UNSET_VALUE
+        @tpm_type          = UNSET_VALUE
+        @tpm_path          = UNSET_VALUE
 
         @nic_adapter_count = UNSET_VALUE
 
@@ -404,6 +414,9 @@ module VagrantPlugins
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
         @kvm_hidden = false if @kvm_hidden == UNSET_VALUE
+        @tpm_model = 'tpm-tis' if @tpm_model == UNSET_VALUE
+        @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
+        @tpm_path = nil if @tpm_path == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
 
         # Boot order
