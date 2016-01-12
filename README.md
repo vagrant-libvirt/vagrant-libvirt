@@ -615,6 +615,8 @@ you want the forwarded port to be accessible from outside the Vagrant
 host.  In this case you should also set the `host_ip` option to `'*'`
 since it defaults to `'localhost'`.
 
+You can also provide a custom adapter to forward from by 'adapter' option. Default is 'eth0'.
+
 ## Synced Folders
 
 vagrant-libvirt supports bidirectional synced folders via nfs or 9p and

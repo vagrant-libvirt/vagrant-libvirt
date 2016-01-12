@@ -38,7 +38,7 @@ module VagrantPlugins
         def forward_ports
           @env[:forwarded_ports].each do |fp|
             message_attributes = {
-              adapter: 'eth0',
+              adapter: fp[:adapter] || 'eth0',
               guest_port: fp[:guest],
               host_port: fp[:host]
             }
