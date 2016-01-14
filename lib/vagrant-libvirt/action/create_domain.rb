@@ -33,6 +33,7 @@ module VagrantPlugins
           @name = env[:domain_name]
           @uuid = config.uuid
           @cpus = config.cpus.to_i
+          @cpu_features = config.cpu_features
           @cpu_mode = config.cpu_mode
           @loader = config.loader
           @machine_type = config.machine_type
@@ -150,6 +151,9 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
+          @cpu_features.each do |cpu_feature|
+            env[:ui].info(" -- CPU Feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
+          end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
