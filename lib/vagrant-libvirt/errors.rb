@@ -143,6 +143,9 @@ module VagrantPlugins
         error_key(:delete_snapshot_error)
       end
 
+      class SerialCannotCreatePathError < VagrantLibvirtError
+        error_key(:serial_cannot_create_path_error)
+      end
     end
   end
 end

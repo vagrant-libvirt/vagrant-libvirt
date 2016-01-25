@@ -100,10 +100,19 @@
     </disk>
 <% end %>
 
-    <serial type='pty'>
-      <target port='0'/>
+    <% @serials.each_with_index do |serial, port| %>
+    <serial type='<%= serial[:type] %>'>
+      <% unless serial[:source].nil? %>
+      <source path='<%= serial[:source][:path] %>'/>
+      <% end %>
+      <target port='<%= port %>'/>
     </serial>
-    <console type='pty'>
+    <% end %>
+    <% console_log = @serials.first %>
+    <console type='<%= console_log[:type] %>'>
+      <% unless console_log[:source].nil? %>
+      <source path='<%= console_log[:source][:path] %>'/>
+      <% end %>
       <target port='0'/>
     </console>
 

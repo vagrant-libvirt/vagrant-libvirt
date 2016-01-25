@@ -54,10 +54,12 @@
       <readonly/>
     </disk>
 
-    <serial type='pty'>
+    <serial type='file'>
+      <source path='/var/log/vm_consoles/machine.log'/>
       <target port='0'/>
     </serial>
-    <console type='pty'>
+    <console type='file'>
+      <source path='/var/log/vm_consoles/machine.log'/>
       <target port='0'/>
     </console>
 

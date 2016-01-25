@@ -93,6 +93,9 @@ module VagrantPlugins
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
+          # serial and console
+          @serials = config.serials
+
           # RNG device passthrough
           @rng =config.rng
 
@@ -123,6 +126,18 @@ module VagrantPlugins
             raise Errors::NoStoragePool if storage_pool.nil?
             xml = Nokogiri::XML(storage_pool.xml_desc)
             storage_prefix = xml.xpath("/pool/target/path").inner_text.to_s + '/'
+          end
+
+          @serials.each do |serial|
+            if serial[:source] and serial[:source][:path]
+              dir = File.dirname(serial[:source][:path])
+              begin
+                FileUtils.mkdir_p(dir)
+              rescue ::Errno::EACCES
+                raise Errors::SerialCannotCreatePathError,
+                  path: dir
+              end
+            end
           end
 
           @disks.each do |disk|
@@ -260,6 +275,12 @@ module VagrantPlugins
             end
           end
 
+          @serials.each_with_index do |serial, port|
+            if serial[:source]
+              env[:ui].info(" -- SERIAL(COM#{port}:       redirect to #{serial[:source][:path]}")
+              env[:ui].warn(I18n.t('vagrant_libvirt.warnings.creating_domain_console_access_disabled'))
+            end
+          end
 
           env[:ui].info(" -- Command line : #{@cmd_line}")
 

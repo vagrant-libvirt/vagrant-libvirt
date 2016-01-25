@@ -54,6 +54,8 @@ en:
       ignoring_virtual_size_too_small: |-
         Ignoring requested virtual disk size of '%{requested}' as it is below
         the minimum box image size of '%{minimum}'.
+      creating_domain_console_access_disabled: |-
+        Serial console is being redirected, access via virsh will be disabled.
 
     errors:
       package_not_supported: No support for package with libvirt. Create box manually.
@@ -137,6 +139,8 @@ en:
         Error while deleting snapshot: %{error_message}.
       tunnel_port_not_defined: |-
          tunnel UDP or TCP port not defined.
+      serial_cannot_create_path_error: |-
+        Error creating path for serial port output log: %{path}
 
     states:
       paused: |-
