@@ -23,7 +23,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
 
       it "raises exception" do
         expect(app).to_not receive(:call)
-        expect{subject.call(env)}.to raise_error
+        expect{subject.call(env)}.to raise_error(::VagrantPlugins::ProviderLibvirt::Errors::NoDomainError,
+                                                 /No domain found. Domain dummy-vagrant_dummy not found/)
       end
     end
   end

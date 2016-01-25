@@ -1,4 +1,5 @@
 require 'log4r'
+require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/timer'
 require 'vagrant/util/retryable'
 
@@ -21,8 +22,11 @@ module VagrantPlugins
           env[:metrics] ||= {}
 
           # Get domain object
-          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
-          raise NoDomainError if domain == nil
+          domain = env[:machine].provider.driver.get_domain(env[:machine].id.to_s)
+          if domain == nil
+            raise Errors::NoDomainError,
+              :error_message => "Domain #{env[:machine].id} not found"
+          end
 
           # Wait for domain to obtain an ip address. Ip address is searched
           # from arp table, either localy or remotely via ssh, if libvirt
