@@ -15,16 +15,16 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
 
   describe "#call" do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(machine)
+      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).
+        to receive(:get_domain).and_return(domain)
       allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state).
         and_return(:running)
     end
 
     context "when machine does not exist" do
       before do
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(nil)
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state).
-          and_return(:not_created)
+        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).
+          to receive(:get_domain).and_return(nil)
       end
 
       it "raises exception" do
@@ -48,7 +48,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
 
       context "if interrupted waiting for SSH" do
         before do
-          allow(machine).to receive(:wait_for).and_return(true)
+          allow(domain).to receive(:wait_for).and_return(true)
           allow(env).to receive(:[]).and_call_original
           allow(env).to receive(:[]).with(:interrupted).and_return(false, true, true)
           allow(env).to receive(:[]).with(:ip_address).and_return("192.168.121.2")
@@ -68,7 +68,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
 
     context "when machine boots and ssh available" do
       before do
-        allow(machine).to receive(:wait_for).and_return(true)
+        allow(domain).to receive(:wait_for).and_return(true)
         allow(env).to receive(:[]).and_call_original
         allow(env).to receive(:[]).with(:interrupted).and_return(false)
         allow(env).to receive(:[]).with(:ip_address).and_return("192.168.121.2")
