@@ -14,6 +14,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
   include_context "unit"
 
   describe "#call" do
+    before do
+      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(machine)
+      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state).
+        and_return(:running)
+    end
+
     context "when machine does not exist" do
       before do
         allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(nil)
@@ -29,12 +35,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
     end
 
     context "when machine is booting" do
-      before do
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(machine)
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state).
-          and_return(:running)
-      end
-
       context "if interrupted looking for IP" do
         before do
           env[:interrupted] = true
@@ -63,6 +63,22 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           expect(env[:machine].communicate).to_not receive(:ready?)
           expect(subject.call(env)).to be_nil
         end
+      end
+    end
+
+    context "when machine boots and ssh available" do
+      before do
+        allow(machine).to receive(:wait_for).and_return(true)
+        allow(env).to receive(:[]).and_call_original
+        allow(env).to receive(:[]).with(:interrupted).and_return(false)
+        allow(env).to receive(:[]).with(:ip_address).and_return("192.168.121.2")
+      end
+      it "should call the next hook" do
+        expect(app).to receive(:call)
+        expect(ui).to receive(:info).with("Waiting for domain to get an IP address...")
+        expect(ui).to receive(:info).with("Waiting for SSH to become available...")
+        expect(env[:machine].communicate).to receive(:ready?).and_return(true)
+        expect(subject.call(env)).to be_nil
       end
     end
   end
