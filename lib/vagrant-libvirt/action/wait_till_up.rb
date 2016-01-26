@@ -33,6 +33,7 @@ module VagrantPlugins
           # connection was done via ssh.
           env[:ip_address] = nil
           env[:metrics]["instance_ip_time"] = Util::Timer.time do
+            @logger.debug("Searching for IP for MAC address: #{domain.mac}")
             env[:ui].info(I18n.t("vagrant_libvirt.waiting_for_ip"))
             retryable(:on => Fog::Errors::TimeoutError, :tries => 300) do
               # If we're interrupted don't worry about waiting

@@ -21,5 +21,8 @@ shared_context "libvirt" do
     # drivers also call vm_exists? during init;
     allow(connection).to receive(:servers).with(kind_of(String)).
       and_return(connection_result(result: nil))
+
+    # return some information for domain when needed
+    allow(domain).to receive(:mac).and_return("9C:D5:53:F1:5A:E7")
   end
 end
