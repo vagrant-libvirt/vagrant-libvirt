@@ -3,6 +3,7 @@ language: ruby
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libvirt-dev
+  - gem update --system 2.4.8
   - gem install bundler --version $BUNDLER_VERSION
 install: bundle _${BUNDLER_VERSION}_ install
 script: bundle _${BUNDLER_VERSION}_ exec rspec --color --format documentation
