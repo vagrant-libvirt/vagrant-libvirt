@@ -10,6 +10,9 @@ if Vagrant::VERSION < '1.5.0'
   raise 'The Vagrant Libvirt plugin is only compatible with Vagrant 1.5+'
 end
 
+# compatibility fix to define constant not available vagrant <1.6
+::Vagrant::MachineState::NOT_CREATED_ID ||= :not_created
+
 module VagrantPlugins
   module ProviderLibvirt
     class Plugin < Vagrant.plugin('2')
