@@ -1,4 +1,5 @@
 # Vagrant Libvirt Provider
+[![Build Status](https://travis-ci.org/pradels/vagrant-libvirt.svg)](https://travis-ci.org/pradels/vagrant-libvirt)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
