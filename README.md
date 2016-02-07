@@ -534,10 +534,10 @@ In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', slot => '0x12', function => '0x5'
+    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', slot => '0x00', function => '0x0'
+    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```
