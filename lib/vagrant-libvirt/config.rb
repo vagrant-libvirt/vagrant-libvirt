@@ -212,7 +212,7 @@ module VagrantPlugins
       end
 
       def cpu_feature(options={})
-        if options[:name].nil? || options.[:policy].nil?
+        if options[:name].nil? || options[:policy].nil?
           raise 'CPU Feature name AND policy must be specified'
         end
 
