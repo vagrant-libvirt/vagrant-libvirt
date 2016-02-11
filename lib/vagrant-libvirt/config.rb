@@ -58,6 +58,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :cpu_features
       attr_accessor :loader
       attr_accessor :boot_order
       attr_accessor :machine_type
@@ -128,6 +129,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
+        @cpu_features      = UNSET_VALUE
         @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
@@ -207,6 +209,21 @@ module VagrantPlugins
 
         # is it better to raise our own error, or let libvirt cause the exception?
         raise 'Only four cdroms may be attached at a time'
+      end
+
+      def cpu_feature(options={})
+        if options[:name].nil? || options[:policy].nil?
+          raise 'CPU Feature name AND policy must be specified'
+        end
+
+        if @cpu_features == UNSET_VALUE
+          @cpu_features = []
+        end
+
+        @cpu_features.push({
+          name:   options[:name],
+          policy: options[:policy]
+        })
       end
 
       def input(options={})
@@ -390,6 +407,7 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
+        @cpu_features = [] if @cpu_features == UNSET_VALUE
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE

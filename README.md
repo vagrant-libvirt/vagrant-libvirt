@@ -30,6 +30,7 @@ welcome and can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
+- [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
 - [Forwarded Ports](#forwarded-ports)
@@ -538,6 +539,27 @@ Vagrant.configure("2") do |config|
 
     # Add another one if it is neccessary
     libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+  end
+end
+```
+
+## CPU features
+
+You can specify CPU feature policies via `libvirt.cpu_feature`. Available options are
+listed below. Note that both options are required:
+
+* `name` - The name of the feature for the chosen CPU (see libvirts `cpu_map.xml`)
+* `policy` - The policy for this feature (one of `force`, `require`, `optional`, `disable` and `forbid` - see libvirt documentation)
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # The feature will not be supported by virtual CPU.
+    libvirt.cpu_feature :name => 'hypervisor', :policy => 'disable'
+    # Guest creation will fail unless the feature is supported by host CPU.
+    libvirt.cpu_feature :name => 'vmx', :policy => 'require'
+    # The virtual CPU will claim the feature is supported regardless of it being supported by host CPU.
+    libvirt.cpu_feature :name => 'pdpe1gb', :policy => 'force'
   end
 end
 ```
