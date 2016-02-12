@@ -216,6 +216,7 @@ end
 * `tpm_model` - The model of the TPM to which you wish to connect.
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
+* `autostart` - Automatically start the domain when the host boots. Defaults to 'false'.
 
 
 Specific domain settings can be set for each domain separately in multi-VM

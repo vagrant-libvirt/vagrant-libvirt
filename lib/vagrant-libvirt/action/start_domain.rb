@@ -208,6 +208,8 @@ module VagrantPlugins
             rescue => e
               env[:ui].error("Error when updating domain settings: #{e.message}")
             end
+            # Autostart with host if enabled in Vagrantfile
+            libvirt_domain.autostart = config.autostart
             # Actually start the domain
             domain.start
           rescue => e

@@ -108,6 +108,9 @@ module VagrantPlugins
       # Suspend mode
       attr_accessor :suspend_mode
 
+      # Autostart
+      attr_accessor :autostart
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -174,6 +177,9 @@ module VagrantPlugins
 
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
+
+        # Autostart
+        @autostart         = UNSET_VALUE
       end
 
       def boot(device)
@@ -456,6 +462,8 @@ module VagrantPlugins
         # Suspend mode
         @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
 
+        # Autostart
+        @autostart = false if @autostart == UNSET_VALUE
       end
 
       def validate(machine)
