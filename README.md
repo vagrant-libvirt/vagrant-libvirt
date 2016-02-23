@@ -103,12 +103,13 @@ sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
 After installing the plugin (instructions above), the quickest way to get
 started is to add Libvirt box and specify all the details manually within
 a `config.vm.provider` block. So first, add Libvirt box using any name you
-want. This is just an example of Libvirt CentOS 6.4 box available:
+want. This is just an example of Libvirt CentOS 7 box available in
+ https://atlas.hashicorp.com :
 
 ```
-vagrant box add fedora21 http://citozin.com/fedora21.box
+vagrant init fedora/23-cloud-base
 # or
-vagrant box add centos64 http://citozin.com/centos64.box
+vagrant init centos/7
 ```
 
 ### Create Vagrantfile
