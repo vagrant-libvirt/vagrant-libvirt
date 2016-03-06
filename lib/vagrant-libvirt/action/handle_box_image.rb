@@ -67,7 +67,9 @@ module VagrantPlugins
             env[:ui].info(I18n.t('vagrant_libvirt.uploading_volume'))
 
             # Create new volume in storage pool
-            raise Errors::BoxNotFound if !File.exists?(box_image_file)
+            unless File.exists?(box_image_file)
+              raise Vagrant::Errors::BoxNotFound.new(name: env[:machine].box.name)
+            end
             box_image_size = File.size(box_image_file) # B
             message = "Creating volume #{env[:box_volume_name]}"
             message << " in storage pool #{config.storage_pool_name}."
