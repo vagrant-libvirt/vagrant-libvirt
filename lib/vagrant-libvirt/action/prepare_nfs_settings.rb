@@ -66,6 +66,7 @@ module VagrantPlugins
           end
 
           ips = result.chomp.split("\n")
+          ips = ips.uniq
           @logger.info("guest IPs: #{ips.join(', ')}")
           ips.each do |ip|
             next if ip == ssh_host
