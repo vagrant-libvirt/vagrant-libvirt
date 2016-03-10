@@ -71,6 +71,7 @@ module VagrantPlugins
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
+      attr_accessor :emulator_path
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
       attr_accessor :graphics_port
@@ -144,6 +145,7 @@ module VagrantPlugins
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
         @cmd_line          = UNSET_VALUE
+        @emulator_path     = UNSET_VALUE
         @graphics_type     = UNSET_VALUE
         @graphics_autoport = UNSET_VALUE
         @graphics_port     = UNSET_VALUE
@@ -442,6 +444,7 @@ module VagrantPlugins
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
+        @emulator_path = nil if @emulator_path == UNSET_VALUE
 
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE

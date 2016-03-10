@@ -55,6 +55,9 @@
   </features>
   <clock offset='utc'/>
   <devices>
+    <% if @emulator_path %>
+    <emulator><%= @emulator_path %></emulator>
+    <% end %>
     <% if @domain_volume_path %>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>

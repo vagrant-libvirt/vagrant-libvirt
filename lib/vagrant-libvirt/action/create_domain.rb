@@ -45,6 +45,7 @@ module VagrantPlugins
           @domain_volume_cache = config.volume_cache
           @kernel = config.kernel
           @cmd_line = config.cmd_line
+          @emulator_path = config.emulator_path
           @initrd = config.initrd
           @graphics_type = config.graphics_type
           @graphics_autoport = config.graphics_autoport
