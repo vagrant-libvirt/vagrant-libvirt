@@ -81,12 +81,12 @@ missing development libraries for libxslt, libxml2 and libvirt.
 
 In Ubuntu, Debian, ...
 ```
-$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
+$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 ```
 
 In RedHat, Centos, Fedora, ...
 ```
-# yum install libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c
+# yum install libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c ruby-devel
 ```
 
 If have problem with installation - check your linker. It should be ld.gold:
