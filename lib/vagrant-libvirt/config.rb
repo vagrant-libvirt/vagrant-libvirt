@@ -444,6 +444,7 @@ module VagrantPlugins
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
+        @emulator_path = nil if @emulator_path == UNSET_VALUE
 
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
