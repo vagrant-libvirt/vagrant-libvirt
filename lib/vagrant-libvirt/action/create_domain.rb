@@ -49,6 +49,7 @@ module VagrantPlugins
           @cmd_line = config.cmd_line
           @emulator_path = config.emulator_path
           @initrd = config.initrd
+          @dtb = config.dtb
           @graphics_type = config.graphics_type
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port

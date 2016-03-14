@@ -202,6 +202,20 @@ module VagrantPlugins
                 video.attributes['vram'] = config.video_vram
               end
 
+              # dtb
+              if config.dtb
+                dtb = REXML::XPath.first(xml_descr,'/domain/os/dtb')
+                if dtb.nil?
+                  dtb = REXML::Element.new('dtb', REXML::XPath.first(xml_descr,'/domain/os'))
+                  dtb.text = config.dtb
+                else
+                  if dtb.text != config.dtb
+                    descr_changed = true
+                    dtb.text = config.dtb
+                  end
+                end
+              end
+
               # Apply
               if descr_changed
                 begin

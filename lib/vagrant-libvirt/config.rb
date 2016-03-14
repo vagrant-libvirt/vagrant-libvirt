@@ -73,6 +73,7 @@ module VagrantPlugins
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
+      attr_accessor :dtb
       attr_accessor :emulator_path
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
@@ -148,6 +149,7 @@ module VagrantPlugins
         @volume_cache      = UNSET_VALUE
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
+        @dtb               = UNSET_VALUE
         @cmd_line          = UNSET_VALUE
         @emulator_path     = UNSET_VALUE
         @graphics_type     = UNSET_VALUE
@@ -433,6 +435,7 @@ module VagrantPlugins
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
+        @dtb = nil if @dtb == UNSET_VALUE
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE

@@ -42,6 +42,9 @@
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
+    <% if @dtb %>
+      <dtb><%= @dtb %></dtb>
+    <% end %>
   </os>
   <features>
     <acpi/>
