@@ -88,7 +88,16 @@ module VagrantPlugins
                   descr_changed = true
                   cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr,'/domain/cpu'))
                   cpu_model.attributes['fallback'] = 'allow'
-                  cpu_model.text = 'qemu64'
+                  cpu_model.text = config.cpu_model
+                else
+                  if cpu_model.text != config.cpu_model
+                    descr_changed = true
+                    cpu_model.text = config.cpu_model
+                  end
+                  if cpu_model.attributes['fallback'] != config.cpu_fallback
+                    descr_changed = true
+                    cpu_model.attributes['fallback'] = config.cpu_fallback
+                  end
                 end
                 vmx_feature = REXML::XPath.first(xml_descr,'/domain/cpu/feature[@name="vmx"]')
                 svm_feature = REXML::XPath.first(xml_descr,'/domain/cpu/feature[@name="svm"]')

@@ -35,6 +35,8 @@ module VagrantPlugins
           @cpus = config.cpus.to_i
           @cpu_features = config.cpu_features
           @cpu_mode = config.cpu_mode
+          @cpu_model = config.cpu_model
+          @cpu_fallback = config.cpu_fallback
           @loader = config.loader
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
