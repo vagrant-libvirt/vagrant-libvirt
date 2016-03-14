@@ -58,6 +58,8 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :cpu_model
+      attr_accessor :cpu_fallback
       attr_accessor :cpu_features
       attr_accessor :loader
       attr_accessor :boot_order
@@ -133,6 +135,8 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
+        @cpu_model         = UNSET_VALUE
+        @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
@@ -415,6 +419,8 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
+        @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
+        @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
