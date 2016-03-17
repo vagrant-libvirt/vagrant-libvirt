@@ -135,33 +135,44 @@ module VagrantPlugins
 
               # Graphics
               graphics = REXML::XPath.first(xml_descr,'/domain/devices/graphics')
-              if graphics.attributes['type'] != config.graphics_type
-                descr_changed = true
-                graphics.attributes['type'] = config.graphics_type
-              end
-              if graphics.attributes['listen'] != config.graphics_ip
-                descr_changed = true
-                graphics.attributes['listen'] = config.graphics_ip
-                graphics.delete_element('//listen')
-              end
-              if graphics.attributes['autoport'] != config.graphics_autoport
-                descr_changed = true
-                graphics.attributes['autoport'] = config.graphics_autoport
-                if config.graphics_autoport == 'no'
-                  graphics.attributes['port'] = config.graphics_port
+              if config.graphics_type != 'none'
+                if graphics.nil? 
+                  descr_changed = true
+                  graphics = REXML::Element.new('graphics', REXML::XPath.first(xml_descr,'/domain/devices'))
                 end
-              end
-              if graphics.attributes['keymap'] != config.keymap
-                descr_changed = true
-                graphics.attributes['keymap'] = config.keymap
-              end
-              if graphics.attributes['passwd'] != config.graphics_passwd
-                descr_changed = true
-                if config.graphics_passwd.nil?
-                  graphics.attributes.delete 'passwd'
-                else
-                  graphics.attributes['passwd'] = config.graphics_passwd
+                if graphics.attributes['type'] != config.graphics_type
+                  descr_changed = true
+                  graphics.attributes['type'] = config.graphics_type
                 end
+                if graphics.attributes['listen'] != config.graphics_ip
+                  descr_changed = true
+                  graphics.attributes['listen'] = config.graphics_ip
+                  graphics.delete_element('//listen')
+                end
+                if graphics.attributes['autoport'] != config.graphics_autoport
+                  descr_changed = true
+                  graphics.attributes['autoport'] = config.graphics_autoport
+                  if config.graphics_autoport == 'no'
+                    graphics.attributes['port'] = config.graphics_port
+                  end
+                end
+                if graphics.attributes['keymap'] != config.keymap
+                  descr_changed = true
+                  graphics.attributes['keymap'] = config.keymap
+                end
+                if graphics.attributes['passwd'] != config.graphics_passwd
+                  descr_changed = true
+                  if config.graphics_passwd.nil?
+                    graphics.attributes.delete 'passwd'
+                  else
+                    graphics.attributes['passwd'] = config.graphics_passwd
+                  end
+                end
+              else 
+               # graphics_type = none, remove entire element
+               if !graphics.nil?
+                  graphics.parent.delete_element(graphics)
+               end
               end
 
               #TPM
@@ -194,12 +205,24 @@ module VagrantPlugins
               end
 
               # Video device
-              video = REXML::XPath.first(xml_descr,'/domain/devices/video/model')
-              if video.attributes['type'] != config.video_type || video.attributes['vram'] != config.video_vram
+              video = REXML::XPath.first(xml_descr,'/domain/devices/video')
+              if !video.nil? and config.graphics_type == 'none'
+                # graphics_type = none, video devices are removed since there is no possible output
                 descr_changed = true
-                video.attributes.each_attribute {|attr| video.attributes.delete attr}
-                video.attributes['type'] = config.video_type
-                video.attributes['vram'] = config.video_vram
+                video.parent.delete_element(video)
+              else
+                video_model = REXML::XPath.first(xml_descr,'/domain/devices/video/model')
+                if video_model.nil?
+                  video_model = REXML::Element.new('model', REXML::XPath.first(xml_descr,'/domain/devices/video'))
+                  video_model.attributes['type'] = config.video_type
+                  video_model.attributes['vram'] = config.video_vram
+                else
+                  if video_model.attributes['type'] != config.video_type || video_model.attributes['vram'] != config.video_vram
+                    descr_changed = true
+                    video_model.attributes['type'] = config.video_type
+                    video_model.attributes['vram'] = config.video_vram
+                  end
+                end
               end
 
               # dtb

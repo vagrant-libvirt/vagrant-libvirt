@@ -100,12 +100,14 @@
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
 <% end %>
 
-    <%# Video device -%>
-    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
-    <video>
-      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-    </video>
-    <%#End Video -%>
+    <% if @graphics_type != 'none' %>
+      <%# Video device -%>
+      <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
+      <video>
+        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+      </video>
+      <%#End Video -%>
+    <% end %>
     <% @pcis.each do |pci| %>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
