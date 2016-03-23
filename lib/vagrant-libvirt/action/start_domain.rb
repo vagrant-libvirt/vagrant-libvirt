@@ -229,6 +229,7 @@ module VagrantPlugins
               if config.dtb
                 dtb = REXML::XPath.first(xml_descr,'/domain/os/dtb')
                 if dtb.nil?
+                  descr_changed = true
                   dtb = REXML::Element.new('dtb', REXML::XPath.first(xml_descr,'/domain/os'))
                   dtb.text = config.dtb
                 else
