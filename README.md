@@ -220,6 +220,7 @@ end
 * `tpm_model` - The model of the TPM to which you wish to connect.
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
+* `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case the device tree isn't added in-line to the kernel, it can be manually specified here.
 * `autostart` - Automatically start the domain when the host boots. Defaults to 'false'.
 
 
