@@ -239,6 +239,34 @@ module VagrantPlugins
                 end
               end
 
+              # kernel and initrd
+              if config.kernel
+                kernel= REXML::XPath.first(xml_descr,'/domain/os/kernel')
+                if kernel.nil?
+                  descr_changed = true
+                  kernel = REXML::Element.new('kernel', REXML::XPath.first(xml_descr,'/domain/os'))
+                  kernel.text = config.kernel
+                else
+                  if kernel.text != config.kernel
+                    descr_changed = true
+                    kernel.text = config.kernel
+                  end
+                end
+              end
+              if config.initrd
+                initrd = REXML::XPath.first(xml_descr,'/domain/os/initrd')
+                if initrd.nil?
+                  descr_changed = true
+                  initrd = REXML::Element.new('initrd', REXML::XPath.first(xml_descr,'/domain/os'))
+                  initrd.text = config.initrd
+                else
+                  if initrd.text != config.initrd
+                    descr_changed = true
+                    initrd.text = config.initrd
+                  end
+                end
+              end
+
               # Apply
               if descr_changed
                 begin
