@@ -7,7 +7,7 @@
 
   <cpu mode='<%= @cpu_mode %>'>
     <% if @cpu_mode != 'host-passthrough' %>
-      <model fallback='allow'>qemu64</model>
+      <model fallback='<%= @cpu_fallback %>'><%= @cpu_model %></model>
       <% if @nested %>
         <feature policy='optional' name='vmx'/>
         <feature policy='optional' name='svm'/>
@@ -42,6 +42,9 @@
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
+    <% if @dtb %>
+      <dtb><%= @dtb %></dtb>
+    <% end %>
   </os>
   <features>
     <acpi/>
@@ -97,12 +100,14 @@
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
 <% end %>
 
-    <%# Video device -%>
-    <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
-    <video>
-      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-    </video>
-    <%#End Video -%>
+    <% if @graphics_type != 'none' %>
+      <%# Video device -%>
+      <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
+      <video>
+        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+      </video>
+      <%#End Video -%>
+    <% end %>
     <% @pcis.each do |pci| %>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>

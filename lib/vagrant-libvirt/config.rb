@@ -58,6 +58,8 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :cpus
       attr_accessor :cpu_mode
+      attr_accessor :cpu_model
+      attr_accessor :cpu_fallback
       attr_accessor :cpu_features
       attr_accessor :loader
       attr_accessor :boot_order
@@ -71,6 +73,7 @@ module VagrantPlugins
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
+      attr_accessor :dtb
       attr_accessor :emulator_path
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
@@ -133,6 +136,8 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
+        @cpu_model         = UNSET_VALUE
+        @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
@@ -144,6 +149,7 @@ module VagrantPlugins
         @volume_cache      = UNSET_VALUE
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
+        @dtb               = UNSET_VALUE
         @cmd_line          = UNSET_VALUE
         @emulator_path     = UNSET_VALUE
         @graphics_type     = UNSET_VALUE
@@ -415,6 +421,8 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
+        @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
+        @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
@@ -427,6 +435,7 @@ module VagrantPlugins
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
+        @dtb = nil if @dtb == UNSET_VALUE
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
