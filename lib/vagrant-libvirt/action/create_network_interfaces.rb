@@ -97,7 +97,7 @@ module VagrantPlugins
               else
                 default_ip = '127.0.0.1'
               end
-              @tunnel_ip = iface_configuration.fetch(:tunnel_address, default_ip)
+              @tunnel_ip = iface_configuration.fetch(:tunnel_ip, default_ip)
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'tunnel_interface'
               @logger.info("Setting up #{@type} tunnel interface using  #{@tunnel_ip} port #{@tunnel_port}")
