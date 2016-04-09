@@ -4,12 +4,6 @@ rescue LoadError
   raise 'The Vagrant Libvirt plugin must be run within Vagrant.'
 end
 
-# This is a sanity check to make sure no one is attempting to install
-# this into an early Vagrant version.
-if Vagrant::VERSION < '1.5.0'
-  raise 'The Vagrant Libvirt plugin is only compatible with Vagrant 1.5+'
-end
-
 # compatibility fix to define constant not available vagrant <1.6
 ::Vagrant::MachineState::NOT_CREATED_ID ||= :not_created
 
