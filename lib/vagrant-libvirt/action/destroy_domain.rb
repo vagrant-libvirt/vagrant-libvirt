@@ -35,8 +35,10 @@ module VagrantPlugins
 
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
 
-          if env[:machine].provider_config.disks.empty?
-            # if using default configuration of disks
+          if env[:machine].provider_config.disks.empty? and
+              env[:machine].provider_config.cdroms.empty?
+            # if using default configuration of disks and cdroms
+            # cdroms are consider volumes, but cannot be destroyed
             domain.destroy(destroy_volumes: true)
           else
             domain.destroy(destroy_volumes: false)
