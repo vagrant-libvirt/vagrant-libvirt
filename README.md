@@ -1,5 +1,5 @@
 # Vagrant Libvirt Provider
-[![Build Status](https://travis-ci.org/pradels/vagrant-libvirt.svg)](https://travis-ci.org/pradels/vagrant-libvirt)
+[![Build Status](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt.svg)](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
@@ -60,7 +60,7 @@ welcome and can help a lot :-)
 
 ## Future work
 
-* Take a look at [open issues](https://github.com/pradels/vagrant-libvirt/issues?state=open).
+* Take a look at [open issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
 
 ## Installation
 
@@ -412,7 +412,7 @@ starts with 'libvirt__' string. Here is a list of those options:
     the interface xml configuration. _(This feature only works in libvirt 1.2.20 and higher)_
 * `:libvirt__guest_ipv6` - Enable or disable guest-to-guest IPv6 communication.
     See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8) for for more information.
-* `:libvirt__iface_name` - Define a name for the private network interface. With this feature one can [simulate physical link failures](https://github.com/pradels/vagrant-libvirt/pull/498)
+* `:libvirt__iface_name` - Define a name for the private network interface. With this feature one can [simulate physical link failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
 * `:mac` - MAC address for the interface.
 * `:model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the documentation for libvirt
 
@@ -717,7 +717,7 @@ end
 
 ## Box Format
 
-You can view an example box in the [example_box/directory](https://github.com/pradels/vagrant-libvirt/tree/master/example_box). That directory also contains instructions on how to build a box.
+You can view an example box in the [example_box/directory](https://github.com/vagrant-libvirt/vagrant-libvirt/tree/master/example_box). That directory also contains instructions on how to build a box.
 
 The box is a tarball containing:
 
@@ -740,7 +740,7 @@ To work on the `vagrant-libvirt` plugin, clone this repository out, and use
 [Bundler](http://gembundler.com) to get the dependencies:
 
 ```
-$ git clone https://github.com/pradels/vagrant-libvirt.git
+$ git clone https://github.com/vagrant-libvirt/vagrant-libvirt.git
 $ cd vagrant-libvirt
 $ bundle install
 ```

@@ -8,7 +8,7 @@
 # After script has finished, nothing else than halting machine should be done.
 
 # For more info about creating custom box refer to
-# https://github.com/pradels/vagrant-libvirt/tree/master/example_box
+# https://github.com/vagrant-libvirt/vagrant-libvirt/tree/master/example_box
 
 # We need to set a hostname.
 if [ $# -ne 1 ]; then

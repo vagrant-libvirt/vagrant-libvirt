@@ -41,7 +41,7 @@ module VagrantPlugins
       end
 
       # lower priority than nfs or rsync
-      # https://github.com/pradels/vagrant-libvirt/pull/170
+      # https://github.com/vagrant-libvirt/vagrant-libvirt/pull/170
       synced_folder("9p", 4) do
         require_relative "cap/synced_folder"
         VagrantPlugins::SyncedFolder9p::SyncedFolder
