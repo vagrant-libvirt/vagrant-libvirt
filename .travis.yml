@@ -10,12 +10,23 @@ script: bundle _${BUNDLER_VERSION}_ exec rspec --color --format documentation
 notifications:
   email: false
 rvm:
-  - 2.0.0
+  - 2.2.3
 env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   matrix:
-    - VAGRANT_VERSION=v1.5.4 BUNDLER_VERSION=1.5.3
-    - VAGRANT_VERSION=v1.6.5 BUNDLER_VERSION=1.6.9
-    - VAGRANT_VERSION=v1.7.0 BUNDLER_VERSION=1.7.9
-    - VAGRANT_VERSION=       BUNDLER_VERSION=1.7.9
+    - VAGRANT_VERSION=v1.8.1 BUNDLER_VERSION=1.7.9
+matrix:
+  include:
+    - env: VAGRANT_VERSION=master BUNDLER_VERSION=1.7.9
+      rvm: 2.2.3
+    - env: VAGRANT_VERSION=v1.7.4 BUNDLER_VERSION=1.7.9
+      rvm: 2.0.0
+    - env: VAGRANT_VERSION=v1.6.5 BUNDLER_VERSION=1.6.9
+      rvm: 2.0.0
+    - env: VAGRANT_VERSION=v1.5.4 BUNDLER_VERSION=1.5.3
+      rvm: 2.0.0
+  allow_failures:
+    - env: VAGRANT_VERSION=master BUNDLER_VERSION=1.7.9
+      rvm: 2.2.3
+
