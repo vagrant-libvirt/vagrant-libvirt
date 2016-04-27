@@ -18,6 +18,8 @@ env:
     - VAGRANT_VERSION=v1.8.1 BUNDLER_VERSION=1.7.9
 matrix:
   include:
+    - env: VAGRANT_VERSION=master BUNDLER_VERSION=1.7.9
+      rvm: 2.2.3
     - env: VAGRANT_VERSION=v1.7.4 BUNDLER_VERSION=1.7.9
       rvm: 2.0.0
     - env: VAGRANT_VERSION=v1.6.5 BUNDLER_VERSION=1.6.9
