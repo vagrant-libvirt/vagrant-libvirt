@@ -77,7 +77,7 @@ module VagrantPlugins
 
         # Check if we can open a connection to the host
         def ping(host, timeout = 3)
-          timeout(timeout) do
+          ::Timeout.timeout(timeout) do
             s = TCPSocket.new(host, 'echo')
             s.close
           end
