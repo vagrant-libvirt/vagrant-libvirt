@@ -3,12 +3,13 @@ require 'spec_helper'
 shared_context "unit" do
   include_context 'vagrant-unit'
 
-  let(:test_env) do
-    vagrantfile ||= <<-EOF
+  let(:vagrantfile) do <<-EOF
     Vagrant.configure('2') do |config|
       config.vm.define :test
     end
     EOF
+  end
+  let(:test_env) do
     test_env = isolated_environment
     test_env.vagrantfile vagrantfile
     test_env
