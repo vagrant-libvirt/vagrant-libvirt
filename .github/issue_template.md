@@ -1,7 +1,9 @@
 <!--
-Thanks for reporting issues to vagrant-libvirt. To make it possible for us to help you, please fill out below information carefully.
+Thank you for reporting issues to vagrant-libvirt. 
 
-Please be aware that we are not actively testing with previous versions of both Vagrant and Vagrant-libvirt, so before reporting an issue, please install the latest Vagrant version from Vagrantup.com and run `vagrant plugin update`
+To make it possible for us to help you quickly, we kindly request that you use the template below to report issues. If the issue you are reporting does not fit the template (a feature request for example) please feel free to adapt it to your needs.
+
+Please be aware that we are not actively testing previous versions of both Vagrant and Vagrant-libvirt, so before reporting an issue, please install the latest Vagrant version from Vagrantup.com, run `vagrant plugin update` and reproduce the issue.
 --> 
 ### Steps to reproduce
 1.
@@ -22,16 +24,14 @@ Tell us what happens instead
 **Output of `vagrant version; vagrant plugin list`:**
 
 **Output of `VAGRANT_LOG=debug vagrant ... --provider=libvirt`**
-
 ```
-Replace ... with whatever command you use to trigger the issue
+Insert debug output inside quotes here (replace ... with whatever command you use to trigger the issue)
 ```
 
-**The Vagrantfile used to reproduce:**
-
+**A Vagrantfile to reproduce the issue:**
 ```
-Insert Vagrantfile here (remove sensitive data if needed)
+Insert Vagrantfile inside quotes here (remove sensitive data if needed)
 ```
 
 **Are you using upstream vagrant package or your distros package?**
-
+Upstream / Distro
