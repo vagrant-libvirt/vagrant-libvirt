@@ -103,6 +103,9 @@ module VagrantPlugins
       # Inputs
       attr_accessor :inputs
 
+      # Channels
+      attr_accessor :channels
+
       # PCI device passthrough
       attr_accessor :pcis
 
@@ -176,6 +179,9 @@ module VagrantPlugins
 
         # Inputs
         @inputs            = UNSET_VALUE
+
+        # Channels
+        @channels          = UNSET_VALUE
 
         # PCI device passthrough
         @pcis              = UNSET_VALUE
@@ -252,6 +258,32 @@ module VagrantPlugins
         @inputs.push({
           type: options[:type],
           bus:  options[:bus]
+        })
+      end
+
+      def channel(options={})
+        if options[:type].nil?
+            raise "Channel type must be specified."
+        elsif options[:type] == 'unix' && options[:target_type] == 'guestfwd'
+            # Guest forwarding requires a target (ip address) and a port
+            if options[:target_address].nil? || options[:target_port].nil? ||
+               options[:source_path].nil?
+              raise 'guestfwd requires target_address, target_port and source_path'
+            end
+        end
+
+        if @channels == UNSET_VALUE
+          @channels = []
+        end
+
+        @channels.push({
+          type: options[:type],
+          source_mode: options[:source_mode],
+          source_path: options[:source_path],
+          target_address: options[:target_address],
+          target_name: options[:target_name],
+          target_port: options[:target_port],
+          target_type: options[:target_type]
         })
       end
 
@@ -464,6 +496,9 @@ module VagrantPlugins
 
         # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+
+        # Channels
+        @channels = [{:target => "unix", :source_mode => "bind"}] if @channels == UNSET_VALUE
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE
