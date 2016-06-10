@@ -498,7 +498,7 @@ module VagrantPlugins
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
 
         # Channels
-        @channels = [{:target => "unix", :source_mode => "bind"}] if @channels == UNSET_VALUE
+        @channels = [ ] if @channels == UNSET_VALUE
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE
