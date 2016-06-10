@@ -56,6 +56,7 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :channel
       attr_accessor :cpus
       attr_accessor :cpu_mode
       attr_accessor :cpu_model
