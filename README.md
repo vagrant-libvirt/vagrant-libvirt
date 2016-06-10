@@ -222,7 +222,7 @@ end
 * `tpm_path` - The path to the TPM device on the host system.
 * `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case the device tree isn't added in-line to the kernel, it can be manually specified here.
 * `autostart` - Automatically start the domain when the host boots. Defaults to 'false'.
-
+* `channel` - [libvirt channels](https://libvirt.org/formatdomain.html#elementCharChannel). Configure a private communication channel between the host and guest, e.g. for use by the [qemu guest agent](http://wiki.libvirt.org/page/Qemu_guest_agent) and the Spice/QXL graphics type.
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -712,6 +712,68 @@ Vagrant.configure("2") do |config|
     libvirt.tpm_type = 'passthrough'
     libvirt.tpm_path = '/dev/tpm0'
   end
+end
+```
+
+## Libvirt communication channels
+
+For certain functionality to be available within a guest, a private
+communication channel must be established with the host. Two notable examples of
+this are the qemu guest agent, and the Spice/QXL graphics type.
+
+Below is a simple example which exposes a virtio serial channel to the guest. Note: in a multi-VM environment, the channel would be created for all VMs.
+
+```ruby
+vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+  end
+end
+```
+
+Below is the syntax for creating a spicevmc channel for use by a qxl graphics card.
+
+```ruby
+vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |libvirt|
+	libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+  end
+end
+```
+
+These settings can be specified on a per-VM basis, however the per-guest settings will OVERRIDE any global 'config' setting. In the following example, we create 3 VM with the following configuration:
+
+master: No channel settings specified, so we default to the provider setting of a single virtio guest agent channel.
+node1: Override the channel setting, setting both the guest agent channel, and a spicevmc channel
+node2: Override the channel setting, setting both the guest agent channel, and a 'guestfwd' channel. TCP traffic sent by the guest to the given IP address and port is forwarded to the host socket /tmp/foo. Note: this device must be unique for each VM.
+
+Example
+
+```ruby
+Vagrant.configure(2) do |config|
+  config.vm.box = "fedora/23-cloud-base"
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+  end 
+
+  config.vm.define "master" do |master|
+    master.vm.provider :libvirt do |domain|
+        domain.memory = 1024
+    end 
+  end 
+  config.vm.define "node1" do |node1|
+    node1.vm.provider :libvirt do |domain|
+      domain.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+      domain.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+    end 
+  end 
+  config.vm.define "node2" do |node2|
+    node2.vm.provider :libvirt do |domain|
+      domain.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+      domain.channel :type => 'unix', :target_type => 'guestfwd', :target_address => '192.0.2.42', :target_port => '4242',
+                     :source_path => '/tmp/foo'
+    end 
+  end 
 end
 ```
 
