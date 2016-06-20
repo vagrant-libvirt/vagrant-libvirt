@@ -96,6 +96,27 @@
       <target port='0'/>
     </console>
 
+<% @channels.each do |channel| %>
+  <channel type='<%= channel[:type] %>' >
+      <source mode='<%= channel[:source_mode] %>'
+          <% if channel[:source_path] %>
+               path="<%= channel[:source_path] %>"
+          <% end %>
+      />
+      <target type='<%= channel[:target_type] %>'
+          <% if channel[:target_name] %>
+               name="<%= channel[:target_name] %>"
+          <% end %>
+          <% if channel[:target_address] %>
+               address="<%= channel[:target_address] %>"
+          <% end %>
+          <% if channel[:target_port] %>
+               port="<%= channel[:target_port] %>"
+          <% end %>
+      />
+  </channel>
+<% end %>
+
 <% @inputs.each do |input| %>
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
 <% end %>

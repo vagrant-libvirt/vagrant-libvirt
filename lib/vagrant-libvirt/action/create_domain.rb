@@ -79,6 +79,9 @@ module VagrantPlugins
           # Input
           @inputs = config.inputs
 
+          # Channels
+          @channels = config.channels
+
           # PCI device passthrough
           @pcis = config.pcis
 
@@ -203,6 +206,11 @@ module VagrantPlugins
 
           @inputs.each do |input|
             env[:ui].info(" -- INPUT:             type=#{input[:type]}, bus=#{input[:bus]}")
+          end
+
+          @channels.each do |channel|
+            env[:ui].info(" -- CHANNEL:             type=#{channel[:type]}, mode=#{channel[:source_mode]}")
+            env[:ui].info(" -- CHANNEL:             target_type=#{channel[:target_type]}, target_name=#{channel[:target_name]}")
           end
 
           @pcis.each do |pci|
