@@ -186,7 +186,7 @@ end
 
 ### Domain Specific Options
 
-* `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks).
+* `disk_bus` - The type of disk device to emulate. Defaults to virtio if not set. Possible values are documented in libvirt's [description for _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this option applies only to disks associated with a box image. To set the bus type on additional disks, see the [Additional Disks](#additional-disks) section.
 * `nic_model_type` - parameter specifies the model of the network adapter when you create a domain value by default virtio KVM believe possible values, see the [documentation for libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
