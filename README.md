@@ -110,6 +110,8 @@ want. This is just an example of Libvirt CentOS 7 box available in
 vagrant init fedora/23-cloud-base
 # or
 vagrant init centos/7
+# or 
+vagrant init debian/jessie64
 ```
 
 ### Create Vagrantfile
