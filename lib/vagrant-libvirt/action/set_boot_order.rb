@@ -36,7 +36,7 @@ module VagrantPlugins
             # Parse the XML and find each defined drive and network interfacee
             hd = xml.search("/domain/devices/disk[@device='disk']")
             cdrom = xml.search("/domain/devices/disk[@device='cdrom']")
-            network = xml.search("/domain/devices/interface[@type='network']")
+            network = xml.search("/domain/devices/interface[@type='network' or @type='udp']")
 
             # Generate an array per device group and a flattened array from all of those
             devices = {"hd" => hd, "cdrom" => cdrom, "network" => network}
