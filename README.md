@@ -66,7 +66,7 @@ welcome and can help a lot :-)
 
 First, you should have both qemu and libvirt installed if you plan to run VMs on your local system. For instructions, refer to your linux distribution's documentation. *Before you start using Vagrant-libvirt, please make sure your libvirt and qemu installation is working correctly and you are able to create qemu or kvm type virtual machines with `virsh` or `virt-manager`.*
 
-Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5, 1.6 and 1.7.
+Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installation/index.html). Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
 
  Now you're ready to install vagrant-libvirt using standard [Vagrant plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
