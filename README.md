@@ -111,6 +111,8 @@ Some examples:
 vagrant init fedora/23-cloud-base
 # or
 vagrant init centos/7
+# or 
+vagrant init debian/jessie64
 ```
 
 ### Create Vagrantfile
