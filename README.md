@@ -71,7 +71,7 @@ Next, you must have [Vagrant installed](http://docs.vagrantup.com/v2/installatio
  Now you're ready to install vagrant-libvirt using standard [Vagrant plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
 ```
-$ vagrant plugin install vagrant-libvirt
+$ vagrant plugin install vagrant-libvirt --verbose
 ```
 
 ### Possible problems with plugin installation on Linux
@@ -89,8 +89,15 @@ In RedHat, Centos, Fedora, ...
 # yum install libxslt-devel libxml2-devel libvirt-devel libguestfs-tools-c ruby-devel
 ```
 
-If have problem with installation - check your linker. It should be ld.gold:
+In Arch ...
+```bash
+$ sudo pacman -S libxslt libxml2 libvirt
+$ meat -d libguestfs  # install from AUR
+$ export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib"
 ```
+
+Also try using the `ld.gold` linker if you have problems with installation:
+```bash
 sudo alternatives --set ld /usr/bin/ld.gold
 # OR
 sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
