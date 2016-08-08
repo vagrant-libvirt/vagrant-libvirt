@@ -523,6 +523,12 @@ module VagrantPlugins
           end
         end
 
+        machine.config.vm.networks.each do |_type, opts|
+          if opts[:mac] && !(opts[:mac] =~ /\A([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})\z/)
+            errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' format"
+          end
+        end
+
          { "Libvirt Provider" => errors }
       end
 
