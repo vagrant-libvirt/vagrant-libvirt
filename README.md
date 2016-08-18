@@ -431,6 +431,8 @@ virtual network.
   Default mode is 'bridge'.
 * `:type` - is type of interface.(`<interface type="#{@type}">`)
 * `:mac` - MAC address for the interface.
+* `:network_name` - Name of libvirt network to connect to.
+* `:portgroup` - Name of libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an open vSwitch bridge device. Default is 'false'.
 
 ### Management Network

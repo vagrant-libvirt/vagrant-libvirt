@@ -4,6 +4,8 @@
   <% end %>
   <%if @type == 'direct'%>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
+  <% elsif !@portgroup.nil? %>
+  <source network='<%=@network_name%>' portgroup='<%=@portgroup%>'/>
   <% else %>
   <source bridge='<%=@device%>'/>
   <% end %>
