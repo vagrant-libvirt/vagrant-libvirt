@@ -77,6 +77,8 @@ module VagrantPlugins
               @mode = iface_configuration.fetch(:mode, 'bridge')
               @type = iface_configuration.fetch(:type, 'direct')
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+              @portgroup = iface_configuration.fetch(:portgroup, nil)
+              @network_name = iface_configuration.fetch(:network_name, @network_name)
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
               @ovs = iface_configuration.fetch(:ovs, false)
@@ -125,6 +127,8 @@ module VagrantPlugins
               if iface_configuration[:iface_type] == :public_network
                 if @type == 'direct'
                   @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
+                elsif !@portgroup.nil?
+                  @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
                 else
                   @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
                 end
