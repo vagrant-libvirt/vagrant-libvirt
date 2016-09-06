@@ -111,7 +111,7 @@ module VagrantPlugins
               @env[:ui].info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
-                ssh_cmd << 'sudo '	# add sudo prefix
+                ssh_cmd << 'sudo '  # add sudo prefix
               end
             end
           end
@@ -175,7 +175,7 @@ module VagrantPlugins
               kill_cmd = ''
 
               if tag[:port] <= 1024
-                kill_cmd << 'sudo '	# add sudo prefix
+                kill_cmd << 'sudo '  # add sudo prefix
               end
 
               kill_cmd << "kill #{tag[:pid]}"

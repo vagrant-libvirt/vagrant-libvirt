@@ -12,7 +12,7 @@ module VagrantPlugins
         end
 
         def _disk_name(name, disk)
-          "#{name}-#{disk[:device]}.#{disk[:type]}"	# disk name
+          "#{name}-#{disk[:device]}.#{disk[:type]}"  # disk name
         end
 
         def _disks_print(disks)

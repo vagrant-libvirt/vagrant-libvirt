@@ -20,13 +20,13 @@ welcome and can help a lot :-)
   - [Libvirt Configuration](#libvirt-configuration)
   - [Provider Options](#provider-options)
   - [Domain Specific Options](#domain-specific-options)
-  	- [Reload behavior](#reload-behavior)
+    - [Reload behavior](#reload-behavior)
 - [Networks](#networks)
   - [Private Network Options](#private-network-options)
   - [Public Network Options](#public-network-options)
   - [Management Network](#management-network)
 - [Additional Disks](#additional-disks)
-  	- [Reload behavior](#reload-behavior-1)
+    - [Reload behavior](#reload-behavior-1)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
@@ -145,15 +145,15 @@ Vagrant to use Libvirt provider is to setup environment variable
 
 Vagrant goes through steps below when creating new project:
 
-1.	Connect to Libvirt localy or remotely via SSH.
-2.	Check if box image is available in Libvirt storage pool. If not, upload it to
-	remote Libvirt storage pool as new volume.
-3.	Create COW diff image of base box image for new Libvirt domain.
-4.	Create and start new domain on Libvirt host.
-5.	Check for DHCP lease from dnsmasq server.
-6.	Wait till SSH is available.
-7.	Sync folders and run Vagrant provisioner on new domain if
-	setup in Vagrantfile.
+1. Connect to Libvirt localy or remotely via SSH.
+2. Check if box image is available in Libvirt storage pool. If not, upload it to
+   remote Libvirt storage pool as new volume.
+3. Create COW diff image of base box image for new Libvirt domain.
+4. Create and start new domain on Libvirt host.
+5. Check for DHCP lease from dnsmasq server.
+6. Wait till SSH is available.
+7. Sync folders and run Vagrant provisioner on new domain if
+   setup in Vagrantfile.
 
 
 ### Libvirt Configuration
@@ -263,6 +263,7 @@ Vagrant.configure("2") do |config|
 ```
 
 #### Reload behavior
+
 On vagrant reload the following domain specific attributes are updated in defined domain:
 
 * `disk_bus` - Is updated only on disks. It skips cdroms.
@@ -739,7 +740,7 @@ Below is the syntax for creating a spicevmc channel for use by a qxl graphics ca
 ```ruby
 vagrant.configure(2) do |config|
   config.vm.provider :libvirt do |libvirt|
-	libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+    libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
   end
 end
 ```
