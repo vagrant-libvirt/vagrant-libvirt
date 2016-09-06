@@ -15,6 +15,14 @@
       <% @cpu_features.each do |cpu_feature| %>
         <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
       <% end %>
+    <% else %>
+      <% if @numa_nodes %>
+        <numa>
+          <% @numa_nodes.each do |node| %>
+            <cell id='<%= node[:id] %>' cpus='<%= node[:cpu] %>' memory='<%= node[:mem] %>'/>
+          <% end %>
+        </numa>
+      <% end %>
     <% end %>
   </cpu>
 
