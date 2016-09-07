@@ -12,17 +12,17 @@
 
 # We need to set a hostname.
 if [ $# -ne 1 ]; then
-	echo "Usage: $0 <hostname>"
-	echo "Hostname should be in format vagrant-[os-name], e.g. vagrant-redhat63."
-	exit 1
+    echo "Usage: $0 <hostname>"
+    echo "Hostname should be in format vagrant-[os-name], e.g. vagrant-redhat63."
+    exit 1
 fi
 
 
 # On which version of RedHet are we running?
 RHEL_MAJOR_VERSION=$(sed 's/.*release \([0-9]\)\..*/\1/' /etc/redhat-release)
 if [ $? -ne 0 ]; then
-	echo "Is this a RedHat distro?"
-	exit 1
+    echo "Is this a RedHat distro?"
+    exit 1
 fi
 echo "* Found RedHat ${RHEL_MAJOR_VERSION} version."
 
@@ -30,9 +30,9 @@ echo "* Found RedHat ${RHEL_MAJOR_VERSION} version."
 # Setup hostname vagrant-something.
 FQDN="$1.vagrantup.com"
 if grep '^HOSTNAME=' /etc/sysconfig/network > /dev/null; then
-	sed -i 's/HOSTNAME=\(.*\)/HOSTNAME='${FQDN}'/' /etc/sysconfig/network
+    sed -i 's/HOSTNAME=\(.*\)/HOSTNAME='${FQDN}'/' /etc/sysconfig/network
 else
-	echo "HOSTNAME=${FQDN}" >> /etc/sysconfig/network
+    echo "HOSTNAME=${FQDN}" >> /etc/sysconfig/network
 fi
 
 
@@ -40,11 +40,11 @@ fi
 yum -y install wget
 cd ~root
 if [ $RHEL_MAJOR_VERSION -eq 5 ]; then
-	wget http://ftp.astral.ro/mirrors/fedora/pub/epel/5/i386/epel-release-5-4.noarch.rpm
-	EPEL_PKG="epel-release-5-4.noarch.rpm"
+    wget http://ftp.astral.ro/mirrors/fedora/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+    EPEL_PKG="epel-release-5-4.noarch.rpm"
 else
-	wget http://ftp.astral.ro/mirrors/fedora/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-	EPEL_PKG="epel-release-6-8.noarch.rpm"
+    wget http://ftp.astral.ro/mirrors/fedora/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+    EPEL_PKG="epel-release-6-8.noarch.rpm"
 fi
 rpm -i ~root/${EPEL_PKG}
 rm -f ~root/${EPEL_PKG}
@@ -60,9 +60,9 @@ chkconfig sshd on
 echo 'vagrant' | passwd --stdin root
 grep 'vagrant' /etc/passwd > /dev/null
 if [ $? -ne 0 ]; then
-	echo '* Creating user vagrant.'
-	useradd vagrant
-	echo 'vagrant' | passwd --stdin vagrant
+    echo '* Creating user vagrant.'
+    useradd vagrant
+    echo 'vagrant' | passwd --stdin vagrant
 fi
 grep '^admin:' /etc/group > /dev/null || groupadd admin
 usermod -G admin vagrant

@@ -1,13 +1,13 @@
 <interface type='network'>
   <source network='<%= @network_name %>'/>
-	<% if @mac %>
-  	<mac address='<%= @mac %>'/>
-	<% end %>
-	<% if @device_name %>
-	<target dev='<%= @device_name %>'/>
-	<% else %>
-	<target dev='vnet<%= @iface_number %>'/>
-	<% end %>
+    <% if @mac %>
+      <mac address='<%= @mac %>'/>
+    <% end %>
+    <% if @device_name %>
+      <target dev='<%= @device_name %>'/>
+    <% else %>
+      <target dev='vnet<%= @iface_number %>'/>
+    <% end %>
   <alias name='net<%= @iface_number %>'/>
   <model type='<%=@model_type%>'/>
 </interface>

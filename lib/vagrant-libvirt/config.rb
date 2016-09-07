@@ -173,10 +173,10 @@ module VagrantPlugins
         @nic_adapter_count = UNSET_VALUE
 
         # Boot order
-        @boot_order = []
+        @boot_order        = []
         # Storage
         @disks             = []
-        @cdroms			   = []
+        @cdroms            = []
 
         # Inputs
         @inputs            = UNSET_VALUE
@@ -198,15 +198,15 @@ module VagrantPlugins
       end
 
       def boot(device)
-        @boot_order << device	# append
+        @boot_order << device  # append
       end
 
       def _get_device(disks)
         # skip existing devices and also the first one (vda)
         exist = disks.collect {|x| x[:device]}+[1.vdev.to_s]
-        skip = 1		# we're 1 based, not 0 based...
+        skip = 1  # we're 1 based, not 0 based...
         while true do
-          dev = skip.vdev	# get lettered device
+          dev = skip.vdev  # get lettered device
           if !exist.include?(dev)
             return dev
           end
@@ -363,7 +363,7 @@ module VagrantPlugins
         options = {
           :device => _get_device(@disks),
           :type => 'qcow2',
-          :size => '10G',	# matches the fog default
+          :size => '10G',  # matches the fog default
           :path => nil,
           :bus => 'virtio'
         }.merge(options)
@@ -378,7 +378,7 @@ module VagrantPlugins
           :allow_existing => options[:allow_existing],
         }
 
-        @disks << disk	# append
+        @disks << disk  # append
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -397,7 +397,7 @@ module VagrantPlugins
           raise "Require specify driver #{uri}"
         end
         if uri == 'kvm'
-          uri = 'qemu'	# use qemu uri for kvm domain type
+          uri = 'qemu'  # use qemu uri for kvm domain type
         end
 
         if @connect_via_ssh

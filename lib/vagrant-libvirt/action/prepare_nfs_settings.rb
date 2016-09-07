@@ -39,7 +39,7 @@ module VagrantPlugins
         #
         # @param [Machine] machine
         # @return [String]
-	def read_host_ip(ip)
+        def read_host_ip(ip)
           UDPSocket.open do |s|
             if(ip.kind_of?(Array))
               s.connect(ip.last, 1)
