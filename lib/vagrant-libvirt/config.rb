@@ -376,6 +376,7 @@ module VagrantPlugins
           :bus => options[:bus],
           :cache => options[:cache] || 'default',
           :allow_existing => options[:allow_existing],
+          :shareable => options[:shareable],
         }
 
         @disks << disk  # append

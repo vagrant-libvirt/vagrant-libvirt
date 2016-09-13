@@ -591,9 +591,9 @@ It has a number of options:
   [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html)
   for a fuller explanation). Defaults to *default*.
 * `allow_existing` - Set to true if you want to allow the VM to use a
-  pre-existing disk.  This is useful for sharing disks between VMs, e.g. in
-  order to simulate shared SAN storage. Shared disks removed only manually. If
-  not exists - will created. If exists - using existed.
+  pre-existing disk. If the disk doesn't exist it will be created.
+  Disks with this option set to true need to be removed manually.
+* `shareable` - Set to true if you want to simulate shared SAN storage.
 
 The following example creates two additional disks.
 
@@ -602,6 +602,15 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
     libvirt.storage :file, :size => '40G', :type => 'raw'
+  end
+end
+```
+
+For shared SAN storage to work the following example can be used:
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :size => '20G', :path => 'my_shared_disk.img', :allow_existing => true, :shareable => true, :type => 'raw'
   end
 end
 ```
