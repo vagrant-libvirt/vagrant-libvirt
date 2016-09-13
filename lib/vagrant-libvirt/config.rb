@@ -62,6 +62,7 @@ module VagrantPlugins
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
+      attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :boot_order
       attr_accessor :machine_type
@@ -143,6 +144,7 @@ module VagrantPlugins
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
+        @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
@@ -230,6 +232,29 @@ module VagrantPlugins
 
         # is it better to raise our own error, or let libvirt cause the exception?
         raise 'Only four cdroms may be attached at a time'
+      end
+
+      def _generate_numa
+        if @cpus % @numa_nodes != 0
+          raise 'NUMA nodes must be a factor of CPUs'
+        end
+
+        numa = []
+
+        (1..@numa_nodes).each do |node|
+          numa_cpu_start = (@cpus / @numa_nodes) * (node - 1)
+          numa_cpu_end = (@cpus / @numa_nodes) * node - 1
+          numa_cpu = Array(numa_cpu_start..numa_cpu_end).join(',')
+          numa_mem = @memory / @numa_nodes
+
+          numa.push({
+            id: node,
+            cpu: numa_cpu,
+            mem: numa_mem
+          })
+        end
+
+        @numa_nodes = numa
       end
 
       def cpu_feature(options={})
@@ -458,6 +483,7 @@ module VagrantPlugins
         @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
+        @numa_nodes = _generate_numa() if @numa_nodes != UNSET_VALUE
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE
