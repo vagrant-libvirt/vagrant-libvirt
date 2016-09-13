@@ -239,6 +239,10 @@ module VagrantPlugins
           raise 'NUMA nodes must be a factor of CPUs'
         end
 
+        if @memory % @numa_nodes != 0
+          raise 'NUMA nodes must be a factor of memory'
+        end
+
         numa = []
 
         (1..@numa_nodes).each do |node|
