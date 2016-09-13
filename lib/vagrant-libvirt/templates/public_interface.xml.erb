@@ -1,4 +1,4 @@
-<interface type='<%= @type %>'>
+<interface type='<%= @type %>'<% if @trust_guest_rx_filters %> trustGuestRxFilters='yes'<% end %>>
   <% if @mac %>
   <mac address='<%= @mac %>'/>
   <% end %>

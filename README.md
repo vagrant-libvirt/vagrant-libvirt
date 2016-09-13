@@ -546,6 +546,9 @@ virtual network.
 * `:portgroup` - Name of libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an Open vSwitch bridge device. Default is
   'false'.
+* `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
+  are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
+  Default is 'false'.
 
 ### Management Network
 
