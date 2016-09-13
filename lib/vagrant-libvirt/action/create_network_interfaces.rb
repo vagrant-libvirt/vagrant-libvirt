@@ -82,6 +82,7 @@ module VagrantPlugins
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
               @ovs = iface_configuration.fetch(:ovs, false)
+              @trust_guest_rx_filters = iface_configuration.fetch(:trust_guest_rx_filters, false)
             # configuration for udp or tcp tunnel interfaces (p2p conn btwn guest OSes)
             elsif iface_configuration.fetch(:tunnel_type, nil)
               @type = iface_configuration.fetch(:tunnel_type)
