@@ -210,10 +210,19 @@ module VagrantPlugins
           network = lookup_network_by_name(@options[:network_name])
           @interface_network = network if network
 
-          # if this interface has a network address, something's wrong.
-          if @interface_network[:network_address]
-            raise Errors::NetworkNotAvailableError,
-                  network_name: @options[:network_name]
+          if @options[:libvirt__forward_mode] == "veryisolated"
+            # if this interface has a network address, something's wrong.
+            if @interface_network[:network_address]
+              raise Errors::NetworkNotAvailableError,
+                    network_name: @options[:network_name]
+            end
+          else
+            if !@interface_network
+              raise Errors::NetworkNotAvailableError,
+                    network_name: @options[:network_name]
+            else
+              verify_dhcp
+            end
           end
 
           # Do we need to create new network?
