@@ -487,7 +487,7 @@ module VagrantPlugins
         @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
-        @numa_nodes = _generate_numa() if @numa_nodes != UNSET_VALUE
+        @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa()
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE
