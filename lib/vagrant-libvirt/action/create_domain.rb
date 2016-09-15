@@ -89,6 +89,9 @@ module VagrantPlugins
           # USB device passthrough
           @usbs = config.usbs
 
+          # RNG device passthrough
+          @rng =config.rng
+
           config = env[:machine].provider_config
           @domain_type = config.driver
 
@@ -217,6 +220,10 @@ module VagrantPlugins
 
           @pcis.each do |pci|
             env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+          end
+
+          if !@rng[:model].nil?
+            env[:ui].info(" -- RNG device model:  #{@rng[:model]}")
           end
 
           @usbs.each do |usb|

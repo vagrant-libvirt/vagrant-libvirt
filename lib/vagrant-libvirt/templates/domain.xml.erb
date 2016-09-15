@@ -140,6 +140,11 @@
       </video>
       <%#End Video -%>
     <% end %>
+    <% if @rng[:model] == "random"%>
+      <rng model='virtio'>
+        <backend model='random'>/dev/random</backend>
+      </rng>
+    <% end %>
     <% @pcis.each do |pci| %>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
