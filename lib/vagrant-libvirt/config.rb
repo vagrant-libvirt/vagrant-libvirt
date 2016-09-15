@@ -111,6 +111,9 @@ module VagrantPlugins
       # PCI device passthrough
       attr_accessor :pcis
 
+      # Random number device passthrough
+      attr_accessor :rng
+
       # USB device passthrough
       attr_accessor :usbs
 
@@ -188,6 +191,9 @@ module VagrantPlugins
 
         # PCI device passthrough
         @pcis              = UNSET_VALUE
+
+        # Random number device passthrough
+        @rng              = UNSET_VALUE
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
@@ -315,6 +321,18 @@ module VagrantPlugins
           target_port: options[:target_port],
           target_type: options[:target_type]
         })
+      end
+
+      def random(options={})
+        if !options[:model].nil? && options[:model] != "random"
+          raise 'The only supported rng backend is "random".'
+        end
+
+        if @rng == UNSET_VALUE
+          @rng = {}
+        end
+
+        @rng[:model] = options[:model]
       end
 
       def pci(options={})
@@ -534,6 +552,9 @@ module VagrantPlugins
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE
+
+        # Random number generator passthrough
+        @rng = {} if @rng == UNSET_VALUE
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE

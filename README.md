@@ -30,6 +30,7 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
+- [Random number generator passthrough](#random-number-generator-passthrough)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
@@ -700,6 +701,21 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+
+## Random number generator passthrough
+
+You can pass through `/dev/random` to your VM by configuring the domain like this:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Pass through /dev/random from the host to the VM
+    libvirt.random :model => 'random'
+  end
+end
+```
+
+At the moment only the `random` backend is supported.
 
 ## CPU features
 
