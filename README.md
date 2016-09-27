@@ -103,7 +103,7 @@ On RedHat, Centos, Fedora, ...
 
 ```shell
 $ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
-  libguestfs-tools-c ruby-devel
+  libguestfs-tools-c ruby-devel gcc
 ```
 
 If have problem with installation - check your linker. It should be `ld.gold`:
