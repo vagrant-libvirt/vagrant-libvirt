@@ -225,6 +225,12 @@ module VagrantPlugins
                 end
               end
 
+              # Sound device
+              if config.sound_type
+                sound = REXML::XPath.first(xml_descr,'/domain/devices/sound/model')
+              end
+                
+
               # dtb
               if config.dtb
                 dtb = REXML::XPath.first(xml_descr,'/domain/os/dtb')
