@@ -79,7 +79,27 @@ kvm type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
+Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8. 
+*We only test with the upstream version!* If you decide to install your distros
+version and you run into problems, as a first step you should switch to upstream.
+
+Now you need to make sure your have all the build dependencies installed for 
+vagrant-libvirt. This depends on your distro. An overview:
+
+* Ubuntu 12.04/14.04/16.04, Debian: 
+```shell
+apt-get build-dep vagrant ruby-libvirt; apt-get install qemu libvirt-bin ebtables dnsmasq
+```
+
+* CentOS 6, 7, Fedora 21:
+```shell
+yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+```
+
+* Fedora 22 and up:
+```shell
+dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+```
 
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
@@ -112,6 +132,11 @@ If have problem with installation - check your linker. It should be `ld.gold`:
 sudo alternatives --set ld /usr/bin/ld.gold
 # OR
 sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
+```
+
+If you have issues building ruby-libvirt, try the following:
+```shell
+CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems PATH=/opt/vagrant/embedded/bin:$PATH vagrant plugin install vagrant-libvirt
 ```
 
 ## Vagrant Project Preparation
