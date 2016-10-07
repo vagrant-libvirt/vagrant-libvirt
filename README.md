@@ -842,7 +842,7 @@ config.vm.synced_folder './', '/vagrant', type: 'rsync'
 or
 
 ```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
+config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "1000"
 ```
 
 or
@@ -853,6 +853,8 @@ config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmod
 
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
+
+Further documentation on using 9p can be found [here](https://www.kernel.org/doc/Documentation/filesystems/9p.txt). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
 
 **SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged
 public network interface and you must connect to libvirt via ssh.
