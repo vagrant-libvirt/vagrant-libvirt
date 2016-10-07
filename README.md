@@ -564,6 +564,9 @@ provider level.
 * `management_network_address` - Address of network to which all VMs will be
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
+* `management_network_mode` - Network mode for the libvirt management network.
+  Specify one of veryisolated, none, nat or route options. Further documentated
+  under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
