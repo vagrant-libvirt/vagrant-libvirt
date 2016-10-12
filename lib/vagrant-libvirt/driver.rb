@@ -81,10 +81,16 @@ module VagrantPlugins
         ip_address = nil
         begin
           domain.wait_for(2) do
-            addresses.each_pair do |type, ip|
-              # Multiple leases are separated with a newline, return only
-              # the most recent address
-              ip_address = ip[0].split("\n").first if ip[0] != nil
+            begin
+              addresses.each_pair do |type, ip|
+                # Multiple leases are separated with a newline, return only
+                # the most recent address
+                ip_address = ip[0].split("\n").first if ip[0] != nil
+              end
+            # Workaround for fog-libvirt terminating when mac is not found
+            rescue Libvirt::Error
+              sleep(2)
+              retry
             end
             ip_address != nil
           end
