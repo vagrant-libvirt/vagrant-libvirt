@@ -101,6 +101,12 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
 ```
 
+* Arch linux: look at tips and solutions from Arch wiki.
+```shell
+pacman -Sy vagrant
+```
+
+
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
@@ -125,6 +131,8 @@ On RedHat, Centos, Fedora, ...
 $ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
   libguestfs-tools-c ruby-devel gcc
 ```
+
+On Arch linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
 
 If have problem with installation - check your linker. It should be `ld.gold`:
 
