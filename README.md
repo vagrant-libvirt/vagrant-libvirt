@@ -292,7 +292,7 @@ end
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
   guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for
-  GPU passthrough on stubborn drivers. Default is false.
+  [GPU passthrough](#pci-device-passthrough) on stubborn drivers. Default is false.
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to
   "cirrus".  [Possible
   values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga",
@@ -729,6 +729,10 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+
+Note! Above options affect configuration only at domain creation. It won't change VM behaviour on `vagrant reload` after domain was created.
+
+Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
 
 ## Random number generator passthrough
 
