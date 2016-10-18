@@ -7,7 +7,7 @@
 
   <cpu mode='<%= @cpu_mode %>'>
     <% if @cpu_mode != 'host-passthrough' %>
-      <model fallback='<%= @cpu_fallback %>'><%= @cpu_model %></model>
+      <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
       <% if @nested %>
         <feature policy='optional' name='vmx'/>
         <feature policy='optional' name='svm'/>
@@ -169,6 +169,19 @@
           <% end %>
         </source>
       </hostdev>
+    <% end %>
+    <% unless @redirdevs.empty? %>
+      <% @redirdevs.each do |redirdev| %>
+        <redirdev bus='usb' type='<%= redirdev[:type] %>'>
+        </redirdev>
+      <% end %>
+      <% unless @redirfilters.empty? %>
+        <redirfilter>
+        <% @redirfilters.each do |usbdev| %>
+          <usbdev class='<%= usbdev[:class]  %>' vendor='<%= usbdev[:vendor] %>' product='<%= usbdev[:product] %>' version='<%= usbdev[:version] %>' allow='<%= usbdev[:allow] %>'/>
+        <% end %>
+        </redirfilter>
+      <% end %>
     <% end %>
 
     <% if @tpm_path -%>

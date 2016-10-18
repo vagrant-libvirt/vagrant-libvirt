@@ -30,6 +30,7 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
+- [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
@@ -79,7 +80,33 @@ kvm type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
+Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8. 
+*We only test with the upstream version!* If you decide to install your distros
+version and you run into problems, as a first step you should switch to upstream.
+
+Now you need to make sure your have all the build dependencies installed for 
+vagrant-libvirt. This depends on your distro. An overview:
+
+* Ubuntu 12.04/14.04/16.04, Debian: 
+```shell
+apt-get build-dep vagrant ruby-libvirt; apt-get install qemu libvirt-bin ebtables dnsmasq
+```
+
+* CentOS 6, 7, Fedora 21:
+```shell
+yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+```
+
+* Fedora 22 and up:
+```shell
+dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+```
+
+* Arch linux: look at tips and solutions from Arch wiki.
+```shell
+pacman -Sy vagrant
+```
+
 
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
@@ -106,12 +133,19 @@ $ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
   libguestfs-tools-c ruby-devel gcc
 ```
 
+On Arch linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
+
 If have problem with installation - check your linker. It should be `ld.gold`:
 
 ```shell
 sudo alternatives --set ld /usr/bin/ld.gold
 # OR
 sudo ln -fs /usr/bin/ld.gold /usr/bin/ld
+```
+
+If you have issues building ruby-libvirt, try the following:
+```shell
+CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems PATH=/opt/vagrant/embedded/bin:$PATH vagrant plugin install vagrant-libvirt
 ```
 
 ## Vagrant Project Preparation
@@ -233,8 +267,9 @@ end
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
   'host-model' if not set. Allowed values: host-model, host-passthrough,
   custom.
-* `cpu_model` - CPU Model. Defaults to 'qemu64' if not set. This can really
-  only be used when setting `cpu_mode` to `custom`.
+* `cpu_model` - CPU Model. Defaults to 'qemu64' if not set and `cpu_mode` is
+  `custom` and to '' otherwise. This can really only be used when setting
+  `cpu_mode` to `custom`.
 * `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
@@ -267,7 +302,7 @@ end
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
   guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for
-  GPU passthrough on stubborn drivers. Default is false.
+  [GPU passthrough](#pci-device-passthrough) on stubborn drivers. Default is false.
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to
   "cirrus".  [Possible
   values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga",
@@ -564,6 +599,9 @@ provider level.
 * `management_network_address` - Address of network to which all VMs will be
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
+* `management_network_mode` - Network mode for the libvirt management network.
+  Specify one of veryisolated, none, nat or route options. Further documentated
+  under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
@@ -657,7 +695,7 @@ You can specify multiple inputs to the VM via `libvirt.input`. Available
 options are listed below. Note that both options are required:
 
 * `type` - The type of the input
-* `bus` - The bust of the input
+* `bus` - The bus of the input
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -700,6 +738,63 @@ Vagrant.configure("2") do |config|
     libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
+```
+
+Note! Above options affect configuration only at domain creation. It won't change VM behaviour on `vagrant reload` after domain was created.
+
+Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
+
+## USB Redirector Devices
+You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.
+
+* `type` - The type of the USB redirector device. (`tcp` or `spicevmc`)
+* `host` - The host where the device is attached to. (mandatory for type `tcp`)
+* `port` - The port where the device is listening. (mandatory for type `tcp`)
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # add two devices using spicevmc channel
+    (1..2).each do
+      libvirt.redirdev :type => "spicevmc"
+    end
+    # add device, provided by localhost:4000
+    libvirt.redirdev :type => "tcp", :host => "localhost", :port => "4000"
+  end
+end
+```
+
+### Filter for USB Redirector Devices
+You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
+
+* `class` - The device class of the USB device. A list of device classes is available on [Wikipedia](https://en.wikipedia.org/wiki/USB#Device_classes).
+* `vendor` - The vendor of the USB device.
+* `product` - The product id of the USB device.
+* `version` - The version of the USB device. Note that this is the version of `bcdDevice`
+* `allow` - allow or disallow redirecting this device. (mandatory)
+
+You can extract that information from output of `lsusb` command. Every line contains the information in format `Bus [<bus>] Device [<device>]: ID [<vendor>:[<product>]`. The `version` can be extracted from the detailed output of the device using `lsusb -D /dev/usb/[<bus>]/[<device>]`. For example:
+
+```shell
+# get bcdDevice from 
+$: lsusb
+Bus 001 Device 009: ID 08e6:3437 Gemalto (was Gemplus) GemPC Twin SmartCard Reader
+
+$: lsusb -D /dev/bus/usb/001/009 | grep bcdDevice
+  bcdDevice            2.00
+```
+
+In this case, the USB device with `class 0x0b`, `vendor 0x08e6`, `product 0x3437` and `bcdDevice version 2.00` is allowed to be redirected to the guest. All other devices will be refused.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.redirdev :type => "spicevmc"
+    libvirt.redirfilter :class => "0x0b" :vendor => "0x08e6" :product => "0x3437" :version => "2.00" :allow => "yes"
+    libvirt.redirfilter :allow => "no"
+  end
+end
+
 ```
 
 ## Random number generator passthrough
@@ -842,7 +937,7 @@ config.vm.synced_folder './', '/vagrant', type: 'rsync'
 or
 
 ```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "vagrant"
+config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "1000"
 ```
 
 or
@@ -853,6 +948,8 @@ config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmod
 
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
+
+Further documentation on using 9p can be found [here](https://www.kernel.org/doc/Documentation/filesystems/9p.txt). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
 
 **SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged
 public network interface and you must connect to libvirt via ssh.

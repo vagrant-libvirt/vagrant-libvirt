@@ -117,6 +117,10 @@ module VagrantPlugins
       # USB device passthrough
       attr_accessor :usbs
 
+      # Redirected devices
+      attr_accessor :redirdevs
+      attr_accessor :redirfilters
+
       # Suspend mode
       attr_accessor :suspend_mode
 
@@ -197,6 +201,10 @@ module VagrantPlugins
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
+        
+        # Redirected devices
+        @redirdevs         = UNSET_VALUE
+        @redirfilters      = UNSET_VALUE
 
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
@@ -369,6 +377,38 @@ module VagrantPlugins
         })
       end
 
+      def redirdev(options={})
+        if options[:type].nil?
+          raise 'Type must be specified.'
+        end
+
+        if @redirdevs == UNSET_VALUE
+          @redirdevs = []
+        end
+
+        @redirdevs.push({
+          type: options[:type],
+        })
+      end
+
+      def redirfilter(options={})
+        if options[:allow].nil?
+          raise 'Option allow must be specified.'
+        end
+
+        if @redirfilters == UNSET_VALUE
+          @redirfilters = []
+        end
+
+        @redirfilters.push({
+          class: options[:class] || -1,
+          vendor: options[:class] || -1,
+          product: options[:class] || -1,
+          version: options[:class] || -1,
+          allow: options[:allow],
+        })
+      end
+
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options={})
         if storage_type == :file
@@ -502,7 +542,11 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
-        @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
+        @cpu_model = if (@cpu_model == UNSET_VALUE and @cpu_mode == 'custom')
+            'qemu64'
+          elsif (@cpu_mode != 'custom')
+            ''
+          end
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa()
@@ -558,6 +602,10 @@ module VagrantPlugins
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE
+        
+        # Redirected devices
+        @redirdevs = [] if @redirdevs == UNSET_VALUE
+        @redirfilters = [] if @redirfilters == UNSET_VALUE
 
         # Suspend mode
         @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
