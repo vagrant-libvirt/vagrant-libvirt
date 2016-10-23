@@ -266,8 +266,9 @@ end
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
   'host-model' if not set. Allowed values: host-model, host-passthrough,
   custom.
-* `cpu_model` - CPU Model. Defaults to 'qemu64' if not set. This can really
-  only be used when setting `cpu_mode` to `custom`.
+* `cpu_model` - CPU Model. Defaults to 'qemu64' if not set and `cpu_mode` is
+  `custom` and to '' otherwise. This can really only be used when setting
+  `cpu_mode` to `custom`.
 * `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
