@@ -693,7 +693,7 @@ You can specify multiple inputs to the VM via `libvirt.input`. Available
 options are listed below. Note that both options are required:
 
 * `type` - The type of the input
-* `bus` - The bust of the input
+* `bus` - The bus of the input
 
 ```ruby
 Vagrant.configure("2") do |config|
