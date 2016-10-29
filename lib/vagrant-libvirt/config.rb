@@ -502,7 +502,11 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
-        @cpu_model = 'qemu64' if @cpu_model == UNSET_VALUE
+        @cpu_model = if (@cpu_model == UNSET_VALUE and @cpu_mode == 'custom')
+            'qemu64'
+          elsif (@cpu_mode != 'custom')
+            ''
+          end
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa()
