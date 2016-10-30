@@ -88,8 +88,12 @@ vagrant-libvirt. This depends on your distro. An overview:
 
 * Ubuntu 12.04/14.04/16.04, Debian: 
 ```shell
-apt-get build-dep vagrant ruby-libvirt; apt-get install qemu libvirt-bin ebtables dnsmasq
+apt-get build-dep vagrant ruby-libvirt
+apt-get install qemu libvirt-bin ebtables dnsmasq
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 ```
+
+(It is possible some users will already have libraries from the third line installed, but this is the way to make it work OOTB.)
 
 * CentOS 6, 7, Fedora 21:
 ```shell
@@ -106,7 +110,6 @@ dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
 pacman -Sy vagrant
 ```
 
-
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
@@ -119,11 +122,9 @@ $ vagrant plugin install vagrant-libvirt
 In case of problems with building nokogiri and ruby-libvirt gem, install
 missing development libraries for libxslt, libxml2 and libvirt.
 
-On Ubuntu, Debian, ...
 
-```shell
-$ sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
-```
+On Ubuntu, Debian, make sure you are running all three of the `apt` commands above with `sudo`.
+
 
 On RedHat, Centos, Fedora, ...
 
