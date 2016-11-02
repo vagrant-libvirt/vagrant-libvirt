@@ -794,7 +794,6 @@ Vagrant.configure("2") do |config|
     libvirt.redirfilter :allow => "no"
   end
 end
-
 ```
 
 ## Random number generator passthrough
