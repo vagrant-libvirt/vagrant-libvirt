@@ -88,6 +88,10 @@ module VagrantPlugins
 
           # USB device passthrough
           @usbs = config.usbs
+        
+          # Redirected devices
+          @redirdevs = config.redirdevs
+          @redirfilters = config.redirfilters
 
           # RNG device passthrough
           @rng =config.rng
@@ -234,6 +238,28 @@ module VagrantPlugins
             usb_dev.push("product=#{usb[:product]}") if usb[:product]
             env[:ui].info(" -- USB passthrough:   #{usb_dev.join(', ')}")
           end
+
+          if not @redirdevs.empty?
+            env[:ui].info(" -- Redirected Devices: ")
+            @redirdevs.each do |redirdev|
+              msg = "    -> bus=usb, type=#{redirdev[:type]}"
+              env[:ui].info(msg)
+            end
+          end
+
+
+          if not @redirfilters.empty?
+            env[:ui].info(" -- USB Device filter for Redirected Devices: ")
+            @redirfilters.each do |redirfilter|
+              msg = "    -> class=#{redirfilter[:class]}, "
+              msg += "vendor=#{redirfilter[:vendor]}, "
+              msg += "product=#{redirfilter[:product]}, "
+              msg += "version=#{redirfilter[:version]}, "
+              msg += "allow=#{redirfilter[:allow]}"
+              env[:ui].info(msg)
+            end
+          end
+
 
           env[:ui].info(" -- Command line : #{@cmd_line}")
 

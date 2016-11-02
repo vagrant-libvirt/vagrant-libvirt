@@ -117,6 +117,10 @@ module VagrantPlugins
       # USB device passthrough
       attr_accessor :usbs
 
+      # Redirected devices
+      attr_accessor :redirdevs
+      attr_accessor :redirfilters
+
       # Suspend mode
       attr_accessor :suspend_mode
 
@@ -197,6 +201,10 @@ module VagrantPlugins
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
+        
+        # Redirected devices
+        @redirdevs         = UNSET_VALUE
+        @redirfilters      = UNSET_VALUE
 
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
@@ -366,6 +374,38 @@ module VagrantPlugins
           vendor:        options[:vendor],
           product:       options[:product],
           startupPolicy: options[:startupPolicy],
+        })
+      end
+
+      def redirdev(options={})
+        if options[:type].nil?
+          raise 'Type must be specified.'
+        end
+
+        if @redirdevs == UNSET_VALUE
+          @redirdevs = []
+        end
+
+        @redirdevs.push({
+          type: options[:type],
+        })
+      end
+
+      def redirfilter(options={})
+        if options[:allow].nil?
+          raise 'Option allow must be specified.'
+        end
+
+        if @redirfilters == UNSET_VALUE
+          @redirfilters = []
+        end
+
+        @redirfilters.push({
+          class: options[:class] || -1,
+          vendor: options[:class] || -1,
+          product: options[:class] || -1,
+          version: options[:class] || -1,
+          allow: options[:allow],
         })
       end
 
@@ -562,6 +602,10 @@ module VagrantPlugins
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE
+        
+        # Redirected devices
+        @redirdevs = [] if @redirdevs == UNSET_VALUE
+        @redirfilters = [] if @redirfilters == UNSET_VALUE
 
         # Suspend mode
         @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE

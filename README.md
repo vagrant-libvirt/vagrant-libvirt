@@ -30,6 +30,7 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
+- [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
@@ -743,6 +744,58 @@ end
 Note! Above options affect configuration only at domain creation. It won't change VM behaviour on `vagrant reload` after domain was created.
 
 Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
+
+## USB Redirector Devices
+You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.
+
+* `type` - The type of the USB redirector device. (`tcp` or `spicevmc`)
+* `host` - The host where the device is attached to. (mandatory for type `tcp`)
+* `port` - The port where the device is listening. (mandatory for type `tcp`)
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # add two devices using spicevmc channel
+    (1..2).each do
+      libvirt.redirdev :type => "spicevmc"
+    end
+    # add device, provided by localhost:4000
+    libvirt.redirdev :type => "tcp", :host => "localhost", :port => "4000"
+  end
+end
+```
+
+### Filter for USB Redirector Devices
+You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
+
+* `class` - The device class of the USB device. A list of device classes is available on [Wikipedia](https://en.wikipedia.org/wiki/USB#Device_classes).
+* `vendor` - The vendor of the USB device.
+* `product` - The product id of the USB device.
+* `version` - The version of the USB device. Note that this is the version of `bcdDevice`
+* `allow` - allow or disallow redirecting this device. (mandatory)
+
+You can extract that information from output of `lsusb` command. Every line contains the information in format `Bus [<bus>] Device [<device>]: ID [<vendor>:[<product>]`. The `version` can be extracted from the detailed output of the device using `lsusb -D /dev/usb/[<bus>]/[<device>]`. For example:
+
+```shell
+# get bcdDevice from 
+$: lsusb
+Bus 001 Device 009: ID 08e6:3437 Gemalto (was Gemplus) GemPC Twin SmartCard Reader
+
+$: lsusb -D /dev/bus/usb/001/009 | grep bcdDevice
+  bcdDevice            2.00
+```
+
+In this case, the USB device with `class 0x0b`, `vendor 0x08e6`, `product 0x3437` and `bcdDevice version 2.00` is allowed to be redirected to the guest. All other devices will be refused.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.redirdev :type => "spicevmc"
+    libvirt.redirfilter :class => "0x0b" :vendor => "0x08e6" :product => "0x3437" :version => "2.00" :allow => "yes"
+    libvirt.redirfilter :allow => "no"
+  end
+end
+```
 
 ## Random number generator passthrough
 

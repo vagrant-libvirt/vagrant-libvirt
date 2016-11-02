@@ -170,6 +170,19 @@
         </source>
       </hostdev>
     <% end %>
+    <% unless @redirdevs.empty? %>
+      <% @redirdevs.each do |redirdev| %>
+        <redirdev bus='usb' type='<%= redirdev[:type] %>'>
+        </redirdev>
+      <% end %>
+      <% unless @redirfilters.empty? %>
+        <redirfilter>
+        <% @redirfilters.each do |usbdev| %>
+          <usbdev class='<%= usbdev[:class]  %>' vendor='<%= usbdev[:vendor] %>' product='<%= usbdev[:product] %>' version='<%= usbdev[:version] %>' allow='<%= usbdev[:allow] %>'/>
+        <% end %>
+        </redirfilter>
+      <% end %>
+    <% end %>
 
     <% if @tpm_path -%>
     <%# TPM Device -%>
