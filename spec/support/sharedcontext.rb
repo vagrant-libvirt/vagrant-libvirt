@@ -29,7 +29,6 @@ shared_context "unit" do
   before (:each) do
     machine.stub(:guest => guest)
     machine.stub(:communicator => communicator)
-    machine.stub(:id => id)
   end
 
 end
