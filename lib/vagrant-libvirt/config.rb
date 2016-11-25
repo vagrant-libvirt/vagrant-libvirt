@@ -637,6 +637,9 @@ module VagrantPlugins
           c = disks.dup
           c += other.disks
           result.disks = c
+          c = cdroms.dup
+          c += other.cdroms
+          result.cdroms = c
         end
       end
     end

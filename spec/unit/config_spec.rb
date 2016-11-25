@@ -87,7 +87,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
       context "with cdroms only" do
         context "assigned specific devs" do
-          xit "should merge disks with specific devices" do
+          it "should merge disks with specific devices" do
             one.storage(:file, :device => :cdrom, :dev => "hda")
             two.storage(:file, :device => :cdrom, :dev => "hdb")
             subject.finalize!
