@@ -74,8 +74,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
 
         context "without devices given" do
-          xit "pending device assignment in finalize " +
-              "should merge disks with different devices assigned automatically" do
+          it "should merge disks with different devices assigned automatically" do
             one.storage(:file)
             two.storage(:file)
             subject.finalize!
@@ -97,8 +96,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
 
         context "without devs given" do
-          xit "pending cdroms merging support and device assignment in finalize " +
-              "should merge cdroms with different devs assigned automatically" do
+          it "should merge cdroms with different devs assigned automatically" do
             one.storage(:file, :device => :cdrom)
             two.storage(:file, :device => :cdrom)
             subject.finalize!
