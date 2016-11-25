@@ -553,7 +553,7 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:libvirt__guest_ipv6` - Enable or disable guest-to-guest IPv6 communication.
   See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
   [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8)
-  for for more information.
+  for for more information. *Note: takes either 'yes' or 'no' for value*
 * `:libvirt__iface_name` - Define a name for the private network interface.
   With this feature one can [simulate physical link
   failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
