@@ -24,5 +24,7 @@ shared_context "libvirt" do
 
     # return some information for domain when needed
     allow(domain).to receive(:mac).and_return("9C:D5:53:F1:5A:E7")
+
+    machine.stub(:id => id)
   end
 end
