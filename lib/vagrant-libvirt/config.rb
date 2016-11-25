@@ -432,7 +432,6 @@ module VagrantPlugins
         # as will the address unit number (unit=0, unit=1, etc)
 
         options = {
-          :dev => self._get_cdrom_dev(@cdroms),
           :bus => "ide",
           :path => nil,
         }.merge(options)
@@ -448,7 +447,6 @@ module VagrantPlugins
 
       def _handle_disk_storage(options={})
         options = {
-          :device => _get_device(@disks),
           :type => 'qcow2',
           :size => '10G',  # matches the fog default
           :path => nil,
@@ -586,7 +584,15 @@ module VagrantPlugins
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
+        @disks.map! do |disk|
+          disk[:device] = _get_device(@disks) if disk[:device].nil?
+          disk
+        end
         @cdroms = [] if @cdroms == UNSET_VALUE
+        @cdroms.map! do |cdrom|
+          cdrom[:dev] = _get_cdrom_dev(@cdroms) if cdrom[:dev].nil?
+          cdrom
+        end
 
         # Inputs
         @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
@@ -637,6 +643,9 @@ module VagrantPlugins
           c = disks.dup
           c += other.disks
           result.disks = c
+          c = cdroms.dup
+          c += other.cdroms
+          result.cdroms = c
         end
       end
     end
