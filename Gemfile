@@ -24,3 +24,4 @@ group :plugins do
   gem 'vagrant-libvirt', :path => '.'
 end
 
+gem 'coveralls', require: false
