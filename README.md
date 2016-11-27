@@ -2,6 +2,7 @@
 
 [![Join the chat at https://gitter.im/vagrant-libvirt/vagrant-libvirt](https://badges.gitter.im/vagrant-libvirt/vagrant-libvirt.svg)](https://gitter.im/vagrant-libvirt/vagrant-libvirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt.svg)](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt)
+[![Coverage Status](https://coveralls.io/repos/github/vagrant-libvirt/vagrant-libvirt/badge.svg?branch=master)](https://coveralls.io/github/vagrant-libvirt/vagrant-libvirt?branch=master)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds an
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
