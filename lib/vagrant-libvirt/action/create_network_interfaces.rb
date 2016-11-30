@@ -158,6 +158,7 @@ module VagrantPlugins
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
               network = {
+                :gateway                         => nil || options[:gateway],
                 :interface                       => slot_number,
                 :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
                 :mac_address => options[:mac],
