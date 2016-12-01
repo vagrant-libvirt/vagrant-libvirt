@@ -8,7 +8,7 @@ error() {
 }
 
 usage() {
-    echo "Usage: ${0} IMAGE [BOX]"
+    echo "Usage: ${0} IMAGE [BOX] [Vagrantfile.add]"
     echo
     echo "Package a qcow2 image into a vagrant-libvirt reusable box"
 }
@@ -62,6 +62,10 @@ mkdir -p "$TMP_DIR"
 
 [[ ! -r "$IMG" ]] && error "'$IMG': Permission denied"
 
+if [ -n "$3" ] && [ -r "$3" ]; then
+  VAGRANTFILE_ADD="$(cat $3)"
+fi
+
 # We move / copy (when the image has master) the image to the tempdir
 # ensure that it's moved back / removed again
 if [[ -n $(backing "$IMG") ]]; then
@@ -107,6 +111,8 @@ Vagrant.configure("2") do |config|
     libvirt.storage_pool_name = "default"
 
   end
+
+${VAGRANTFILE_ADD:-}
 end
 EOF
 
