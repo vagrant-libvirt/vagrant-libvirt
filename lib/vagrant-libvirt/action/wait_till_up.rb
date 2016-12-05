@@ -41,8 +41,14 @@ module VagrantPlugins
 
               # Wait for domain to obtain an ip address
               domain.wait_for(2) {
-                addresses.each_pair do |type, ip|
-                  env[:ip_address] = ip[0] if ip[0] != nil
+                begin
+                  addresses.each_pair do |type, ip|
+                    env[:ip_address] = ip[0] if ip[0] != nil
+                  end
+                # Workaround for fog-libvirt terminating when mac is not found
+                rescue Libvirt::Error
+                  sleep(2)
+                  retry
                 end
                 env[:ip_address] != nil
               }
