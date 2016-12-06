@@ -3,8 +3,7 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PruneNFSExports
-
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
         end
 
@@ -16,7 +15,8 @@ module VagrantPlugins
             # not exiisted in array will removed from nfs
             uuids.delete(uuid)
             env[:host].capability(
-              :nfs_prune, env[:machine].ui, uuids)
+              :nfs_prune, env[:machine].ui, uuids
+            )
           end
 
           @app.call(env)

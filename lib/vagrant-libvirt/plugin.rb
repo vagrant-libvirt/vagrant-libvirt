@@ -29,21 +29,20 @@ module VagrantPlugins
         hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
       end
 
-
       guest_capability('linux', 'mount_p9_shared_folder') do
         require_relative 'cap/mount_p9'
         Cap::MountP9
       end
 
       provider_capability(:libvirt, :nic_mac_addresses) do
-        require_relative "cap/nic_mac_addresses"
+        require_relative 'cap/nic_mac_addresses'
         Cap::NicMacAddresses
       end
 
       # lower priority than nfs or rsync
       # https://github.com/vagrant-libvirt/vagrant-libvirt/pull/170
-      synced_folder("9p", 4) do
-        require_relative "cap/synced_folder"
+      synced_folder('9p', 4) do
+        require_relative 'cap/synced_folder'
         VagrantPlugins::SyncedFolder9p::SyncedFolder
       end
 
@@ -71,7 +70,7 @@ module VagrantPlugins
         # Some constants, such as "true" resolve to booleans, so the
         # above error checking doesn't catch it. This will check to make
         # sure that the log level is an integer, as Log4r requires.
-        level = nil if !level.is_a?(Integer)
+        level = nil unless level.is_a?(Integer)
 
         # Set the logging level on all "vagrant" namespaced
         # logs as long as we have a valid level.
@@ -88,7 +87,6 @@ module VagrantPlugins
       # from the parent logger.
       setup_logging
       setup_i18n
-
     end
   end
 end

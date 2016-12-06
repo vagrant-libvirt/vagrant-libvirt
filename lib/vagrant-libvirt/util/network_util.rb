@@ -19,25 +19,25 @@ module VagrantPlugins
             management_network_ip = IPAddr.new(management_network_address)
           rescue ArgumentError
             raise Errors::ManagementNetworkError,
-              error_message: "#{management_network_address} is not a valid IP address"
+                  error_message: "#{management_network_address} is not a valid IP address"
           end
 
           # capture address into $1 and mask into $2
           management_network_ip.inspect =~ /IPv4:(.*)\/(.*)>/
 
-          if $2 == '255.255.255.255'
+          if Regexp.last_match(2) == '255.255.255.255'
             raise Errors::ManagementNetworkError,
-              error_message: "#{management_network_address} does not include both an address and subnet mask"
+                  error_message: "#{management_network_address} does not include both an address and subnet mask"
           end
 
           management_network_options = {
             iface_type: :private_network,
             network_name: management_network_name,
-            ip: $1,
-            netmask: $2,
+            ip: Regexp.last_match(1),
+            netmask: Regexp.last_match(2),
             dhcp_enabled: true,
             forward_mode: management_network_mode,
-            guest_ipv6: management_network_guest_ipv6,
+            guest_ipv6: management_network_guest_ipv6
           }
 
           unless management_network_mac.nil?
@@ -45,7 +45,7 @@ module VagrantPlugins
           end
 
           # add management network to list of networks to check
-          networks = [ management_network_options ]
+          networks = [management_network_options]
 
           env[:machine].config.vm.networks.each do |type, original_options|
             logger.debug "In config found network type #{type} options #{original_options}"
@@ -59,18 +59,18 @@ module VagrantPlugins
               iface_type:  type,
               netmask:      '255.255.255.0',
               dhcp_enabled: true,
-              forward_mode: 'nat',
+              forward_mode: 'nat'
             }.merge(options)
 
             if options[:type].to_s == 'dhcp' && options[:ip].nil?
-              options[:network_name] = "vagrant-private-dhcp"
+              options[:network_name] = 'vagrant-private-dhcp'
             end
 
             # add to list of networks to check
             networks.push(options)
           end
 
-          return networks
+          networks
         end
 
         # Return a list of all (active and inactive) libvirt networks as a list
@@ -84,7 +84,8 @@ module VagrantPlugins
           # Iterate over all (active and inactive) networks.
           active.concat(inactive).each do |network_name|
             libvirt_network = libvirt_client.lookup_network_by_name(
-              network_name)
+              network_name
+            )
 
             # Parse ip address and netmask from the network xml description.
             xml = Nokogiri::XML(libvirt_network.xml_desc)
@@ -93,19 +94,15 @@ module VagrantPlugins
             netmask = xml.xpath('/network/ip/@netmask').first
             netmask = netmask.value if netmask
 
-            if xml.at_xpath('//network/ip/dhcp')
-              dhcp_enabled = true
-            else
-              dhcp_enabled = false
-            end
+            dhcp_enabled = if xml.at_xpath('//network/ip/dhcp')
+                             true
+                           else
+                             false
+                           end
 
             # Calculate network address of network from ip address and
             # netmask.
-            if ip && netmask
-              network_address = network_address(ip, netmask)
-            else
-              network_address = nil
-            end
+            network_address = (network_address(ip, netmask) if ip && netmask)
 
             libvirt_networks << {
               name:             network_name,
@@ -123,7 +120,6 @@ module VagrantPlugins
 
           libvirt_networks
         end
-
       end
     end
   end

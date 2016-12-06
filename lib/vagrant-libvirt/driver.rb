@@ -4,7 +4,6 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     class Driver
-
       # store the connection at the process level
       #
       # possibly this should be a connection pool using the connection
@@ -34,7 +33,7 @@ module VagrantPlugins
 
         # Setup command for retrieving IP address for newly created machine
         # with some MAC address. Get it from dnsmasq leases table
-        ip_command = %q[ awk "/$mac/ {print \$1}" /proc/net/arp ]
+        ip_command = %q( awk "/$mac/ {print \$1}" /proc/net/arp )
         conn_attr[:libvirt_ip_command] = ip_command
 
         @logger.info("Connecting to Libvirt (#{uri}) ...")
@@ -42,7 +41,7 @@ module VagrantPlugins
           @@connection = Fog::Compute.new(conn_attr)
         rescue Fog::Errors::Error => e
           raise Errors::FogLibvirtConnectionError,
-            :error_message => e.message
+                error_message: e.message
         end
 
         @@connection
@@ -81,19 +80,19 @@ module VagrantPlugins
         ip_address = nil
         begin
           domain.wait_for(2) do
-            addresses.each_pair do |type, ip|
+            addresses.each_pair do |_type, ip|
               # Multiple leases are separated with a newline, return only
               # the most recent address
-              ip_address = ip[0].split("\n").first if ip[0] != nil
+              ip_address = ip[0].split("\n").first unless ip[0].nil?
             end
-            ip_address != nil
+            !ip_address.nil?
           end
         rescue Fog::Errors::TimeoutError
-          @logger.info("Timeout at waiting for an ip address for machine %s" % machine.name)
+          @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
         end
 
-        if not ip_address
-          @logger.info("No arp table entry found for machine %s" % machine.name)
+        unless ip_address
+          @logger.info('No arp table entry found for machine %s' % machine.name)
           return nil
         end
 
@@ -110,11 +109,9 @@ module VagrantPlugins
         end
 
         # TODO: terminated no longer appears to be a valid fog state, remove?
-        if domain.nil? || domain.state.to_sym == :terminated
-          return :not_created
-        end
+        return :not_created if domain.nil? || domain.state.to_sym == :terminated
 
-        return domain.state.gsub("-", "_").to_sym
+        domain.state.tr('-', '_').to_sym
       end
     end
   end

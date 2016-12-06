@@ -7,7 +7,7 @@ module VagrantPlugins
           # and the mac as uppercase string without colons as value
           nic_macs = {}
           machine.provider.mac_addresses.each do |index, mac|
-            nic_macs[index+1] = mac.upcase.gsub(':','')
+            nic_macs[index + 1] = mac.upcase.delete(':')
           end
           nic_macs
         end

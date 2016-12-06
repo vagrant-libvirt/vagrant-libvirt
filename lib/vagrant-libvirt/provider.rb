@@ -33,8 +33,7 @@ module VagrantPlugins
       # can use this method to load in new data for the actual backing
       # machine or to realize that the machine is now gone (the ID can
       # become `nil`).
-      def machine_id_changed
-      end
+      def machine_id_changed; end
 
       # This should return a hash of information that explains how to
       # SSH into the machine. If the machine is not at a point where
@@ -45,12 +44,12 @@ module VagrantPlugins
         #
         # Ssh info has following format..
         #
-        #{
+        # {
         #  :host => "1.2.3.4",
         #  :port => "22",
         #  :username => "mitchellh",
         #  :private_key_path => "/path/to/my/key"
-        #}
+        # }
         # note that modifing @machine.id or accessing @machine.state is not
         # thread safe, so be careful to avoid these here as this method may
         # be called from other threads of execution.
@@ -60,21 +59,23 @@ module VagrantPlugins
 
         # if can't determine the IP, just return nil and let the core
         # deal with it, similar to the docker provider
-        return nil if !ip
+        return nil unless ip
 
         ssh_info = {
-          :host          => ip,
-          :port          => @machine.config.ssh.guest_port,
-          :forward_agent => @machine.config.ssh.forward_agent,
-          :forward_x11   => @machine.config.ssh.forward_x11,
+          host: ip,
+          port: @machine.config.ssh.guest_port,
+          forward_agent: @machine.config.ssh.forward_agent,
+          forward_x11: @machine.config.ssh.forward_x11
         }
 
-        ssh_info[:proxy_command] = (
-          "ssh '#{@machine.provider_config.host}' " +
-          "-l '#{@machine.provider_config.username}' " +
-          "-i '#{@machine.provider_config.id_ssh_key_file}' " +
-          "nc %h %p"
-        ) if @machine.provider_config.connect_via_ssh
+        if @machine.provider_config.connect_via_ssh
+          ssh_info[:proxy_command] =
+            "ssh '#{@machine.provider_config.host}' " \
+            "-l '#{@machine.provider_config.username}' " \
+            "-i '#{@machine.provider_config.id_ssh_key_file}' " \
+            'nc %h %p'
+
+        end
 
         ssh_info
       end
@@ -94,22 +95,21 @@ module VagrantPlugins
       # This should return the state of the machine within this provider.
       # The state must be an instance of {MachineState}.
       def state
-
         state_id = nil
-        state_id = :not_created if !@machine.id
-        state_id = :not_created if (
-          !state_id && (!@machine.id || !driver.created?(@machine.id)))
+        state_id = :not_created unless @machine.id
+        state_id = :not_created if
+          !state_id && (!@machine.id || !driver.created?(@machine.id))
         # Query the driver for the current state of the machine
         state_id = driver.state(@machine) if @machine.id && !state_id
-        state_id = :unknown if !state_id
+        state_id = :unknown unless state_id
 
         # This is a special pseudo-state so that we don't set the
         # NOT_CREATED_ID while we're setting up the machine. This avoids
         # clearing the data dir.
-        state_id = :preparing if @machine.id == "preparing"
+        state_id = :preparing if @machine.id == 'preparing'
 
         # Get the short and long description
-        short = state_id.to_s.gsub("_", " ")
+        short = state_id.to_s.tr('_', ' ')
         long  = I18n.t("vagrant_libvirt.states.#{state_id}")
 
         # If we're not created, then specify the special ID flag
@@ -122,10 +122,9 @@ module VagrantPlugins
       end
 
       def to_s
-        id = @machine.id.nil? ? "new" : @machine.id
+        id = @machine.id.nil? ? 'new' : @machine.id
         "Libvirt (#{id})"
       end
     end
   end
 end
-

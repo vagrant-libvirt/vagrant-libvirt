@@ -14,14 +14,15 @@ module VagrantPlugins
 
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.package_domain'))
-          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
-                              env[:machine].id)
+          libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
+            env[:machine].id
+          )
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           root_disk = domain.volumes.select do |x|
             x.name == libvirt_domain.name + '.img'
           end.first
           boxname = env['package.output']
-          raise "#{boxname}: Already exists" if File.exists?(boxname)
+          raise "#{boxname}: Already exists" if File.exist?(boxname)
           @tmp_dir = Dir.pwd + '/_tmp_package'
           @tmp_img = @tmp_dir + '/box.img'
           Dir.mkdir(@tmp_dir)
@@ -37,11 +38,11 @@ module VagrantPlugins
           `qemu-img rebase -p -b "" #{@tmp_img}`
           # remove hw association with interface
           # working for centos with lvs default disks
-          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img} `
+          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img}`
           Dir.chdir(@tmp_dir)
           img_size = `qemu-img info #{@tmp_img} | grep 'virtual size' | awk '{print $3;}' | tr -d 'G'`.chomp
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
-          File.write(@tmp_dir + '/Vagrantfile',vagrantfile_content)
+          File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
           assebmle_box(boxname)
           FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
           FileUtils.rm_rf(@tmp_dir)

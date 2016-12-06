@@ -3,9 +3,10 @@ require 'vagrant'
 class Numeric
   Alphabet = ('a'..'z').to_a
   def vdev
-    s, q = '', self
+    s = ''
+    q = self
     (q, r = (q - 1).divmod(26)) && s.prepend(Alphabet[r]) until q.zero?
-    'vd'+s
+    'vd' + s
   end
 end
 
@@ -141,7 +142,7 @@ module VagrantPlugins
         @management_network_address = UNSET_VALUE
         @management_network_mode = UNSET_VALUE
         @management_network_mac  = UNSET_VALUE
-        @management_network_guest_ipv6  = UNSET_VALUE
+        @management_network_guest_ipv6 = UNSET_VALUE
 
         # Domain specific settings.
         @uuid              = UNSET_VALUE
@@ -197,11 +198,11 @@ module VagrantPlugins
         @pcis              = UNSET_VALUE
 
         # Random number device passthrough
-        @rng              = UNSET_VALUE
+        @rng = UNSET_VALUE
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
-        
+
         # Redirected devices
         @redirdevs         = UNSET_VALUE
         @redirfilters      = UNSET_VALUE
@@ -214,28 +215,26 @@ module VagrantPlugins
       end
 
       def boot(device)
-        @boot_order << device  # append
+        @boot_order << device # append
       end
 
       def _get_device(disks)
         # skip existing devices and also the first one (vda)
-        exist = disks.collect {|x| x[:device]}+[1.vdev.to_s]
-        skip = 1  # we're 1 based, not 0 based...
-        while true do
-          dev = skip.vdev  # get lettered device
-          if !exist.include?(dev)
-            return dev
-          end
-          skip+=1
+        exist = disks.collect { |x| x[:device] } + [1.vdev.to_s]
+        skip = 1 # we're 1 based, not 0 based...
+        loop do
+          dev = skip.vdev # get lettered device
+          return dev unless exist.include?(dev)
+          skip += 1
         end
       end
 
       def _get_cdrom_dev(cdroms)
-        exist = Hash[cdroms.collect{|x| [x[:dev],true]}]
+        exist = Hash[cdroms.collect { |x| [x[:dev], true] }]
         # hda - hdc
-        curr = "a".ord
-        while curr <= "d".ord
-          dev = "hd" + curr.chr
+        curr = 'a'.ord
+        while curr <= 'd'.ord
+          dev = 'hd' + curr.chr
           if exist[dev]
             curr += 1
             next
@@ -249,9 +248,7 @@ module VagrantPlugins
       end
 
       def _generate_numa
-        if @cpus % @numa_nodes != 0
-          raise 'NUMA nodes must be a factor of CPUs'
-        end
+        raise 'NUMA nodes must be a factor of CPUs' if @cpus % @numa_nodes != 0
 
         if @memory % @numa_nodes != 0
           raise 'NUMA nodes must be a factor of memory'
@@ -265,152 +262,116 @@ module VagrantPlugins
           numa_cpu = Array(numa_cpu_start..numa_cpu_end).join(',')
           numa_mem = @memory / @numa_nodes
 
-          numa.push({
-            id: node,
-            cpu: numa_cpu,
-            mem: numa_mem
-          })
+          numa.push(id: node,
+                    cpu: numa_cpu,
+                    mem: numa_mem)
         end
 
         @numa_nodes = numa
       end
 
-      def cpu_feature(options={})
+      def cpu_feature(options = {})
         if options[:name].nil? || options[:policy].nil?
           raise 'CPU Feature name AND policy must be specified'
         end
 
-        if @cpu_features == UNSET_VALUE
-          @cpu_features = []
-        end
+        @cpu_features = [] if @cpu_features == UNSET_VALUE
 
-        @cpu_features.push({
-          name:   options[:name],
-          policy: options[:policy]
-        })
+        @cpu_features.push(name:   options[:name],
+                           policy: options[:policy])
       end
 
-      def input(options={})
+      def input(options = {})
         if options[:type].nil? || options[:bus].nil?
           raise 'Input type AND bus must be specified'
         end
 
-        if @inputs == UNSET_VALUE
-          @inputs = []
-        end
+        @inputs = [] if @inputs == UNSET_VALUE
 
-        @inputs.push({
-          type: options[:type],
-          bus:  options[:bus]
-        })
+        @inputs.push(type: options[:type],
+                     bus:  options[:bus])
       end
 
-      def channel(options={})
+      def channel(options = {})
         if options[:type].nil?
-            raise "Channel type must be specified."
+          raise 'Channel type must be specified.'
         elsif options[:type] == 'unix' && options[:target_type] == 'guestfwd'
-            # Guest forwarding requires a target (ip address) and a port
-            if options[:target_address].nil? || options[:target_port].nil? ||
-               options[:source_path].nil?
-              raise 'guestfwd requires target_address, target_port and source_path'
-            end
+          # Guest forwarding requires a target (ip address) and a port
+          if options[:target_address].nil? || options[:target_port].nil? ||
+             options[:source_path].nil?
+            raise 'guestfwd requires target_address, target_port and source_path'
+          end
         end
 
-        if @channels == UNSET_VALUE
-          @channels = []
-        end
+        @channels = [] if @channels == UNSET_VALUE
 
-        @channels.push({
-          type: options[:type],
-          source_mode: options[:source_mode],
-          source_path: options[:source_path],
-          target_address: options[:target_address],
-          target_name: options[:target_name],
-          target_port: options[:target_port],
-          target_type: options[:target_type]
-        })
+        @channels.push(type: options[:type],
+                       source_mode: options[:source_mode],
+                       source_path: options[:source_path],
+                       target_address: options[:target_address],
+                       target_name: options[:target_name],
+                       target_port: options[:target_port],
+                       target_type: options[:target_type])
       end
 
-      def random(options={})
-        if !options[:model].nil? && options[:model] != "random"
+      def random(options = {})
+        if !options[:model].nil? && options[:model] != 'random'
           raise 'The only supported rng backend is "random".'
         end
 
-        if @rng == UNSET_VALUE
-          @rng = {}
-        end
+        @rng = {} if @rng == UNSET_VALUE
 
         @rng[:model] = options[:model]
       end
 
-      def pci(options={})
+      def pci(options = {})
         if options[:bus].nil? || options[:slot].nil? || options[:function].nil?
           raise 'Bus AND slot AND function must be specified. Check `lspci` for that numbers.'
         end
 
-        if @pcis == UNSET_VALUE
-          @pcis = []
-        end
+        @pcis = [] if @pcis == UNSET_VALUE
 
-        @pcis.push({
-          bus:       options[:bus],
-          slot:      options[:slot],
-          function:  options[:function]
-        })
+        @pcis.push(bus:       options[:bus],
+                   slot:      options[:slot],
+                   function:  options[:function])
       end
 
-      def usb(options={})
+      def usb(options = {})
         if (options[:bus].nil? || options[:device].nil?) && options[:vendor].nil? && options[:product].nil?
           raise 'Bus and device and/or vendor and/or product must be specified. Check `lsusb` for these.'
         end
 
-        if @usbs == UNSET_VALUE
-          @usbs = []
-        end
+        @usbs = [] if @usbs == UNSET_VALUE
 
-        @usbs.push({
-          bus:           options[:bus],
-          device:        options[:device],
-          vendor:        options[:vendor],
-          product:       options[:product],
-          startupPolicy: options[:startupPolicy],
-        })
+        @usbs.push(bus:           options[:bus],
+                   device:        options[:device],
+                   vendor:        options[:vendor],
+                   product:       options[:product],
+                   startupPolicy: options[:startupPolicy])
       end
 
-      def redirdev(options={})
-        if options[:type].nil?
-          raise 'Type must be specified.'
-        end
+      def redirdev(options = {})
+        raise 'Type must be specified.' if options[:type].nil?
 
-        if @redirdevs == UNSET_VALUE
-          @redirdevs = []
-        end
+        @redirdevs = [] if @redirdevs == UNSET_VALUE
 
-        @redirdevs.push({
-          type: options[:type],
-        })
+        @redirdevs.push(type: options[:type])
       end
 
-      def redirfilter(options={})
-        if options[:allow].nil?
-          raise 'Option allow must be specified.'
-        end
+      def redirfilter(options = {})
+        raise 'Option allow must be specified.' if options[:allow].nil?
 
-        if @redirfilters == UNSET_VALUE
-          @redirfilters = []
-        end
+        @redirfilters = [] if @redirfilters == UNSET_VALUE
 
-        @redirfilters.push({
-          class: options[:class] || -1,
-          vendor: options[:class] || -1,
-          product: options[:class] || -1,
-          version: options[:class] || -1,
-          allow: options[:allow],
-        })
+        @redirfilters.push(class: options[:class] || -1,
+                           vendor: options[:class] || -1,
+                           product: options[:class] || -1,
+                           version: options[:class] || -1,
+                           allow: options[:allow])
       end
 
       # NOTE: this will run twice for each time it's needed- keep it idempotent
-      def storage(storage_type, options={})
+      def storage(storage_type, options = {})
         if storage_type == :file
           if options[:device] == :cdrom
             _handle_cdrom_storage(options)
@@ -420,7 +381,7 @@ module VagrantPlugins
         end
       end
 
-      def _handle_cdrom_storage(options={})
+      def _handle_cdrom_storage(options = {})
         # <disk type="file" device="cdrom">
         #   <source file="/home/user/virtio-win-0.1-100.iso"/>
         #   <target dev="hdc"/>
@@ -432,39 +393,39 @@ module VagrantPlugins
         # as will the address unit number (unit=0, unit=1, etc)
 
         options = {
-          :bus => "ide",
-          :path => nil,
+          bus: 'ide',
+          path: nil
         }.merge(options)
 
         cdrom = {
-          :dev => options[:dev],
-          :bus => options[:bus],
-          :path => options[:path]
+          dev: options[:dev],
+          bus: options[:bus],
+          path: options[:path]
         }
 
         @cdroms << cdrom
       end
 
-      def _handle_disk_storage(options={})
+      def _handle_disk_storage(options = {})
         options = {
-          :type => 'qcow2',
-          :size => '10G',  # matches the fog default
-          :path => nil,
-          :bus => 'virtio'
+          type: 'qcow2',
+          size: '10G', # matches the fog default
+          path: nil,
+          bus: 'virtio'
         }.merge(options)
 
         disk = {
-          :device => options[:device],
-          :type => options[:type],
-          :size => options[:size],
-          :path => options[:path],
-          :bus => options[:bus],
-          :cache => options[:cache] || 'default',
-          :allow_existing => options[:allow_existing],
-          :shareable => options[:shareable],
+          device: options[:device],
+          type: options[:type],
+          size: options[:size],
+          path: options[:path],
+          bus: options[:bus],
+          cache: options[:cache] || 'default',
+          allow_existing: options[:allow_existing],
+          shareable: options[:shareable]
         }
 
-        @disks << disk  # append
+        @disks << disk # append
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -473,30 +434,28 @@ module VagrantPlugins
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
-        when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
-          '/system'
-        when '@en', 'esx'
-          '/'
-        when 'vbox', 'vmwarews', 'hyperv'
-          '/session'
-        else
-          raise "Require specify driver #{uri}"
+                    when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
+                      '/system'
+                    when '@en', 'esx'
+                      '/'
+                    when 'vbox', 'vmwarews', 'hyperv'
+                      '/session'
+                    else
+                      raise "Require specify driver #{uri}"
         end
         if uri == 'kvm'
-          uri = 'qemu'  # use qemu uri for kvm domain type
+          uri = 'qemu' # use qemu uri for kvm domain type
         end
 
         if @connect_via_ssh
           uri << '+ssh://'
-          if @username
-            uri << @username + '@'
-          end
+          uri << @username + '@' if @username
 
-          if @host
-            uri << @host
-          else
-            uri << 'localhost'
-          end
+          uri << if @host
+                   @host
+                 else
+                   'localhost'
+                 end
         else
           uri << '://'
           uri << @host if @host
@@ -513,8 +472,8 @@ module VagrantPlugins
           uri << @id_ssh_key_file
         end
         # set path to libvirt socket
-        uri << "\&socket="+@socket if @socket
-        return uri
+        uri << "\&socket=" + @socket if @socket
+        uri
       end
 
       def finalize!
@@ -533,21 +492,21 @@ module VagrantPlugins
         @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
 
         # generate a URI if none is supplied
-        @uri = _generate_uri() if @uri == UNSET_VALUE
+        @uri = _generate_uri if @uri == UNSET_VALUE
 
         # Domain specific settings.
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
-        @cpu_model = if (@cpu_model == UNSET_VALUE and @cpu_mode == 'custom')
-            'qemu64'
-          elsif (@cpu_mode != 'custom')
-            ''
+        @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
+                       'qemu64'
+                     elsif @cpu_mode != 'custom'
+                       ''
           end
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
-        @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa()
+        @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE
@@ -564,7 +523,7 @@ module VagrantPlugins
         @graphics_autoport = 'yes' if @graphics_port == UNSET_VALUE
         @graphics_autoport = 'no' if @graphics_port != UNSET_VALUE
         if (@graphics_type != 'vnc' && @graphics_type != 'spice') ||
-            @graphics_passwd == UNSET_VALUE
+           @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
         @graphics_port = 5900 if @graphics_port == UNSET_VALUE
@@ -595,10 +554,10 @@ module VagrantPlugins
         end
 
         # Inputs
-        @inputs = [{:type => "mouse", :bus => "ps2"}] if @inputs == UNSET_VALUE
+        @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
 
         # Channels
-        @channels = [ ] if @channels == UNSET_VALUE
+        @channels = [] if @channels == UNSET_VALUE
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE
@@ -608,13 +567,13 @@ module VagrantPlugins
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE
-        
+
         # Redirected devices
         @redirdevs = [] if @redirdevs == UNSET_VALUE
         @redirfilters = [] if @redirfilters == UNSET_VALUE
 
         # Suspend mode
-        @suspend_mode = "pause" if @suspend_mode == UNSET_VALUE
+        @suspend_mode = 'pause' if @suspend_mode == UNSET_VALUE
 
         # Autostart
         @autostart = false if @autostart == UNSET_VALUE
@@ -624,7 +583,7 @@ module VagrantPlugins
         errors = _detected_errors
 
         machine.provider_config.disks.each do |disk|
-          if disk[:path] and disk[:path][0] == '/'
+          if disk[:path] && (disk[:path][0] == '/')
             errors << "absolute volume paths like '#{disk[:path]}' not yet supported"
           end
         end
@@ -635,7 +594,7 @@ module VagrantPlugins
           end
         end
 
-         { "Libvirt Provider" => errors }
+        { 'Libvirt Provider' => errors }
       end
 
       def merge(other)

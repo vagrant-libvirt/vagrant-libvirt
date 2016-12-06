@@ -5,7 +5,7 @@ module VagrantPlugins
       class ForwardPorts
         @@lock = Mutex.new
 
-        def initialize(app, env)
+        def initialize(app, _env)
           @app    = app
           @logger = Log4r::Logger.new('vagrant_libvirt::action::forward_ports')
         end
@@ -18,12 +18,11 @@ module VagrantPlugins
 
           # Warn if we're port forwarding to any privileged ports
           env[:forwarded_ports].each do |fp|
-            if fp[:host] <= 1024
-              env[:ui].warn I18n.t(
-                'vagrant.actions.vm.forward_ports.privileged_ports'
-              )
-              break
-            end
+            next unless fp[:host] <= 1024
+            env[:ui].warn I18n.t(
+              'vagrant.actions.vm.forward_ports.privileged_ports'
+            )
+            break
           end
 
           # Continue, we need the VM to be booted in order to grab its IP
@@ -44,8 +43,8 @@ module VagrantPlugins
             }
 
             @env[:ui].info(I18n.t(
-                'vagrant.actions.vm.forward_ports.forwarding_entry',
-                message_attributes
+                             'vagrant.actions.vm.forward_ports.forwarding_entry',
+                             message_attributes
             ))
 
             ssh_pid = redirect_port(
@@ -68,12 +67,11 @@ module VagrantPlugins
           config.vm.networks.each do |type, options|
             next if options[:disabled]
 
-            if type == :forwarded_port && options[:id] != 'ssh'
-              if options.fetch(:host_ip, '').to_s.strip.empty?
-                options.delete(:host_ip)
-              end
-              mappings[options[:host]] = options
+            next unless type == :forwarded_port && options[:id] != 'ssh'
+            if options.fetch(:host_ip, '').to_s.strip.empty?
+              options.delete(:host_ip)
             end
+            mappings[options[:host]] = options
           end
 
           mappings.values
@@ -98,8 +96,8 @@ module VagrantPlugins
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
           ) + ssh_info[:private_key_path].map do |pk|
-              "IdentityFile='\"#{pk}\"'"
-            end).map { |s| s.prepend('-o ') }.join(' ')
+                "IdentityFile='\"#{pk}\"'"
+              end).map { |s| s.prepend('-o ') }.join(' ')
 
           options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
 
@@ -111,7 +109,7 @@ module VagrantPlugins
               @env[:ui].info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
-                ssh_cmd << 'sudo '  # add sudo prefix
+                ssh_cmd << 'sudo ' # add sudo prefix
               end
             end
           end
@@ -122,7 +120,7 @@ module VagrantPlugins
           log_file = ssh_forward_log_file(host_ip, host_port,
                                           guest_ip, guest_port)
           @logger.info "Logging to #{log_file}"
-          spawn(ssh_cmd,  [:out, :err] => [log_file, 'w'])
+          spawn(ssh_cmd, [:out, :err] => [log_file, 'w'])
         end
 
         def ssh_forward_log_file(host_ip, host_port, guest_ip, guest_port)
@@ -131,7 +129,7 @@ module VagrantPlugins
           File.join(
             log_dir,
             'ssh-forwarding-%s_%s-%s_%s.log' %
-              [ host_ip, host_port, guest_ip, guest_port ]
+              [host_ip, host_port, guest_ip, guest_port]
           )
         end
 
@@ -155,7 +153,7 @@ module VagrantPlugins
       class ClearForwardedPorts
         @@lock = Mutex.new
 
-        def initialize(app, env)
+        def initialize(app, _env)
           @app = app
           @logger = Log4r::Logger.new(
             'vagrant_libvirt::action::clear_forward_ports'
@@ -175,7 +173,7 @@ module VagrantPlugins
               kill_cmd = ''
 
               if tag[:port] <= 1024
-                kill_cmd << 'sudo '  # add sudo prefix
+                kill_cmd << 'sudo ' # add sudo prefix
               end
 
               kill_cmd << "kill #{tag[:pid]}"
@@ -199,8 +197,8 @@ module VagrantPlugins
           glob = @env[:machine].data_dir.join('pids').to_s + '/ssh_*.pid'
           @ssh_pids = Dir[glob].map do |file|
             {
-              :pid => File.read(file).strip.chomp,
-              :port => File.basename(file)['ssh_'.length..-1*('.pid'.length+1)].to_i
+              pid: File.read(file).strip.chomp,
+              port: File.basename(file)['ssh_'.length..-1 * ('.pid'.length + 1)].to_i
             }
           end
         end

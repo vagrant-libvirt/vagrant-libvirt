@@ -17,8 +17,9 @@ module VagrantPlugins
           # Fog libvirt currently doesn't support snapshots. Use
           # ruby-libvirt client directly. Note this is racy, see
           # http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames
-          libvirt_domain =  env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
-                              env[:machine].id)
+          libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
+            env[:machine].id
+          )
           libvirt_domain.list_snapshots.each do |name|
             @logger.info("Deleting snapshot '#{name}'")
             begin
@@ -29,14 +30,12 @@ module VagrantPlugins
           end
 
           # must remove managed saves
-          if libvirt_domain.has_managed_save?
-            libvirt_domain.managed_save_remove
-          end
+          libvirt_domain.managed_save_remove if libvirt_domain.has_managed_save?
 
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
 
-          if env[:machine].provider_config.disks.empty? and
-              env[:machine].provider_config.cdroms.empty?
+          if env[:machine].provider_config.disks.empty? &&
+             env[:machine].provider_config.cdroms.empty?
             # if using default configuration of disks and cdroms
             # cdroms are consider volumes, but cannot be destroyed
             domain.destroy(destroy_volumes: true)
@@ -56,7 +55,7 @@ module VagrantPlugins
               elsif disk[:path]
                 poolname = env[:machine].provider_config.storage_pool_name
                 libvirt_disk = domain.volumes.select do |x|
-                  # FIXME can remove pool/target.img and pool/123/target.img
+                  # FIXME: can remove pool/target.img and pool/123/target.img
                   x.path =~ /\/#{disk[:path]}$/ && x.pool_name == poolname
                 end.first
                 libvirt_disk.destroy if libvirt_disk

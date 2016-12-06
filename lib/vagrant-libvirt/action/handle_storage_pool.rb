@@ -8,8 +8,8 @@ module VagrantPlugins
 
         @@lock = Mutex.new
 
-        def initialize(app, env)
-          @logger = Log4r::Logger.new("vagrant_libvirt::action::handle_storage_pool")
+        def initialize(app, _env)
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::handle_storage_pool')
           @app = app
         end
 
@@ -23,7 +23,8 @@ module VagrantPlugins
           @@lock.synchronize do
             # Check for storage pool, where box image should be created
             break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name)
+              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name
+            )
 
             @logger.info("No storage pool '#{config.storage_pool_name}' is available.")
 
@@ -37,21 +38,20 @@ module VagrantPlugins
             # ruby-libvirt client directly.
             begin
               libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
-                to_xml('default_storage_pool'))
+                to_xml('default_storage_pool')
+              )
               libvirt_pool.build
               libvirt_pool.create
             rescue => e
               raise Errors::CreatingStoragePoolError,
-                :error_message => e.message
+                    error_message: e.message
             end
-            raise Errors::NoStoragePool if !libvirt_pool
+            raise Errors::NoStoragePool unless libvirt_pool
           end
 
           @app.call(env)
         end
-
       end
     end
   end
 end
-

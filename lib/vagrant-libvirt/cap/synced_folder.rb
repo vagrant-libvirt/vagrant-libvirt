@@ -1,7 +1,7 @@
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'
-require "digest/md5"
+require 'digest/md5'
 
 require 'vagrant/util/subprocess'
 require 'vagrant/errors'
@@ -19,7 +19,7 @@ module VagrantPlugins
         @logger = Log4r::Logger.new('vagrant_libvirt::synced_folders::9p')
       end
 
-      def usable?(machine, raise_error = false)
+      def usable?(machine, _raise_error = false)
         # bail now if not using libvirt since checking version would throw error
         return false unless machine.provider_name == :libvirt
 
@@ -36,43 +36,43 @@ module VagrantPlugins
         begin
           # loop through folders
           folders.each do |id, folder_opts|
-            folder_opts.merge!({  target: id,
-                                  accessmode: 'passthrough',
-                                  mount: true,
-                                  readonly: nil }) { |_k, ov, _nv| ov }
+            folder_opts.merge!(target: id,
+                               accessmode: 'passthrough',
+                               mount: true,
+                               readonly: nil) { |_k, ov, _nv| ov }
 
-            mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0,31]
+            mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
             folder_opts[:mount_tag] = mount_tag
-            
+
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
-            
-            xml =  to_xml('filesystem', folder_opts)
+
+            xml = to_xml('filesystem', folder_opts)
             # puts "<<<<< XML:\n #{xml}\n >>>>>"
             @conn.lookup_domain_by_uuid(machine.id).attach_device(xml, 0)
           end
         rescue => e
           machine.ui.error("could not attach device because: #{e}")
           raise VagrantPlugins::ProviderLibvirt::Errors::AttachDeviceError,
-            error_message: e.message
+                error_message: e.message
         end
       end
 
-      # TODO once up, mount folders
+      # TODO: once up, mount folders
       def enable(machine, folders, _opts)
         # Go through each folder and mount
         machine.ui.info('mounting p9 share in guest')
         # Only mount folders that have a guest path specified.
         mount_folders = {}
         folders.each do |id, opts|
-          if opts[:mount] && opts[:guestpath] && ! opts[:guestpath].empty?
-            mount_folders[id] = opts.dup
-            # merge common options if not given
-            mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
-          end
+          next unless opts[:mount] && opts[:guestpath] && !opts[:guestpath].empty?
+          mount_folders[id] = opts.dup
+          # merge common options if not given
+          mount_folders[id].merge!(version: '9p2000.L') { |_k, ov, _nv| ov }
         end
         # Mount the actual folder
         machine.guest.capability(
-            :mount_p9_shared_folder, mount_folders)
+          :mount_p9_shared_folder, mount_folders
+        )
       end
 
       def cleanup(machine, _opts)
@@ -84,7 +84,8 @@ module VagrantPlugins
           if machine.id && machine.id != ''
             dom = @conn.lookup_domain_by_uuid(machine.id)
             Nokogiri::XML(dom.xml_desc).xpath(
-              '/domain/devices/filesystem').each do |xml|
+              '/domain/devices/filesystem'
+            ).each do |xml|
               dom.detach_device(xml.to_s)
               machine.ui.info 'Cleaned up shared folders'
             end

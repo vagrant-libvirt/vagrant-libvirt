@@ -33,7 +33,6 @@ module VagrantPlugins
         error_key(:image_upload_error)
       end
 
-
       # Box exceptions
       class NoBoxVolume < VagrantLibvirtError
         error_key(:no_box_volume)
@@ -50,7 +49,6 @@ module VagrantPlugins
       class WrongBoxFormatSet < VagrantLibvirtError
         error_key(:wrong_box_format)
       end
-
 
       # Fog libvirt exceptions
       class FogError < VagrantLibvirtError
@@ -142,7 +140,6 @@ module VagrantPlugins
       class DeleteSnapshotError < VagrantLibvirtError
         error_key(:delete_snapshot_error)
       end
-
     end
   end
 end
