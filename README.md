@@ -83,14 +83,14 @@ kvm type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8. 
+Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
 *We only test with the upstream version!* If you decide to install your distros
 version and you run into problems, as a first step you should switch to upstream.
 
-Now you need to make sure your have all the build dependencies installed for 
+Now you need to make sure your have all the build dependencies installed for
 vagrant-libvirt. This depends on your distro. An overview:
 
-* Ubuntu 12.04/14.04/16.04, Debian: 
+* Ubuntu 12.04/14.04/16.04, Debian:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq
@@ -780,7 +780,7 @@ You can define filter for redirected devices. These filters can be positiv or ne
 You can extract that information from output of `lsusb` command. Every line contains the information in format `Bus [<bus>] Device [<device>]: ID [<vendor>:[<product>]`. The `version` can be extracted from the detailed output of the device using `lsusb -D /dev/usb/[<bus>]/[<device>]`. For example:
 
 ```shell
-# get bcdDevice from 
+# get bcdDevice from
 $: lsusb
 Bus 001 Device 009: ID 08e6:3437 Gemalto (was Gemplus) GemPC Twin SmartCard Reader
 
@@ -901,6 +901,25 @@ Vagrant.configure("2") do |config|
     end
   end
 end
+```
+
+Example for vm with 2 networks and only 1 is bootable and has dhcp server in this subnet, for example foreman with dhcp server
+Name of network "foreman_managed" is key for define boot order
+```ruby
+    config.vm.define :pxeclient do |pxeclient|
+      pxeclient.vm.network :private_network,ip: '10.0.0.5',
+            libvirt__network_name: "foreman_managed",
+            libvirt__dhcp_enabled: false,
+            libvirt__host_ip: '10.0.0.1'
+
+       pxeclient.vm.provider :libvirt do |domain|
+          domain.memory = 1000
+          boot_network = {'network' => 'foreman_managed'}
+          domain.storage :file, :size => '100G', :type => 'qcow2'
+          domain.boot boot_network
+          domain.boot 'hd'
+        end
+      end
 ```
 
 ## SSH Access To VM

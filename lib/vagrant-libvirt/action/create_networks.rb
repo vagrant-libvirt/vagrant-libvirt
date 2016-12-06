@@ -227,6 +227,7 @@ module VagrantPlugins
           # Do we need to create new network?
           unless @interface_network[:created]
             @interface_network[:name] = @options[:network_name]
+            @interface_network[:ip_address] ||= @options[:host_ip]
 
             # Generate a unique name for network bridge.
             @interface_network[:bridge_name] = generate_bridge_name
