@@ -36,7 +36,7 @@ module VagrantPlugins
             configured_networks(env, @logger).each do |options|
               # Only need to create private networks
               next if options[:iface_type] != :private_network ||
-                options.fetch(:tunnel_type, nil)
+                      options.fetch(:tunnel_type, nil)
               @logger.debug "Searching for network with options #{options}"
 
               # should fix other methods so this doesn't have to be instance var
@@ -46,7 +46,8 @@ module VagrantPlugins
               # list is used throughout this class and should be easier to
               # process than libvirt API calls.
               @available_networks = libvirt_networks(
-                                      env[:machine].provider.driver.connection.client)
+                env[:machine].provider.driver.connection.client
+              )
 
               # Prepare a hash describing network for this specific interface.
               @interface_network = {
@@ -129,24 +130,22 @@ module VagrantPlugins
           @interface_network[:network_address] = net_address
 
           # if network is veryisolated, search by name
-          if @options[:libvirt__forward_mode] == "veryisolated"
-            network = lookup_network_by_name(@options[:network_name])
-          elsif net_address
-            # otherwise, search by ip (if set)
-            network = lookup_network_by_ip(net_address)
-          else
-            # leaving this here to mimic prior behavior. If we get
-            # here, something's probably broken.
-            network = lookup_network_by_name(@options[:network_name])
-          end
+          network = if @options[:libvirt__forward_mode] == 'veryisolated'
+                      lookup_network_by_name(@options[:network_name])
+                    elsif net_address
+                      # otherwise, search by ip (if set)
+                      lookup_network_by_ip(net_address)
+                    else
+                      # leaving this here to mimic prior behavior. If we get
+                      # here, something's probably broken.
+                      lookup_network_by_name(@options[:network_name])
+                    end
           @interface_network = network if network
 
-          if @interface_network[:created]
-            verify_dhcp
-          end
+          verify_dhcp if @interface_network[:created]
 
           if @options[:network_name]
-            @logger.debug "Checking that network name does not clash with ip"
+            @logger.debug 'Checking that network name does not clash with ip'
             if @interface_network[:created]
               # Just check for mismatch error here - if name and ip from
               # config match together.
@@ -178,7 +177,7 @@ module VagrantPlugins
             # Is name for new network set? If not, generate a unique one.
             count = 0
             while @interface_network[:name].nil?
-              @logger.debug "generating name for network"
+              @logger.debug 'generating name for network'
 
               # Generate a network name.
               network_name = env[:root_path].basename.to_s.dup
@@ -205,12 +204,12 @@ module VagrantPlugins
         def handle_network_name_option(env)
           return if @options[:ip] || \
                     !@options[:network_name] || \
-                    !@options[:libvirt__forward_mode] == "veryisolated"
+                    !@options[:libvirt__forward_mode] == 'veryisolated'
 
           network = lookup_network_by_name(@options[:network_name])
           @interface_network = network if network
 
-          if @options[:libvirt__forward_mode] == "veryisolated"
+          if @options[:libvirt__forward_mode] == 'veryisolated'
             # if this interface has a network address, something's wrong.
             if @interface_network[:network_address]
               raise Errors::NetworkNotAvailableError,
@@ -266,7 +265,7 @@ module VagrantPlugins
 
         # Return the first available virbr interface name
         def generate_bridge_name
-          @logger.debug "generating name for bridge"
+          @logger.debug 'generating name for bridge'
           count = 0
           while lookup_bridge_by_name(bridge_name = "virbr#{count}")
             count += 1
@@ -290,7 +289,7 @@ module VagrantPlugins
           if @options[:dhcp_enabled]
             # Find out DHCP addresses pool range.
             network_address = "#{@interface_network[:network_address]}/"
-            network_address << "#{@interface_network[:netmask]}"
+            network_address << (@interface_network[:netmask]).to_s
             net = @interface_network[:network_address] ? IPAddr.new(network_address) : nil
 
             # First is address of network, second is gateway (by default).
@@ -313,7 +312,7 @@ module VagrantPlugins
           begin
             @interface_network[:libvirt_network] = \
               @libvirt_client.define_network_xml(to_xml('private_network'))
-            @logger.debug "created network"
+            @logger.debug 'created network'
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message
           end
@@ -332,21 +331,16 @@ module VagrantPlugins
         end
 
         def autostart_network
-          begin
-            @interface_network[:libvirt_network].autostart = true
-          rescue => e
-            raise Errors::AutostartNetworkError, error_message: e.message
-          end
+          @interface_network[:libvirt_network].autostart = true
+        rescue => e
+          raise Errors::AutostartNetworkError, error_message: e.message
         end
 
         def activate_network
-          begin
-            @interface_network[:libvirt_network].create
-          rescue => e
-            raise Errors::ActivateNetworkError, error_message: e.message
-          end
+          @interface_network[:libvirt_network].create
+        rescue => e
+          raise Errors::ActivateNetworkError, error_message: e.message
         end
-
       end
     end
   end

@@ -5,7 +5,6 @@ require 'vagrant/util/scoped_hash_override'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-
       # Create network interfaces for domain, before domain is running.
       # Networks for connecting those interfaces should be already prepared.
       class CreateNetworkInterfaces
@@ -27,10 +26,11 @@ module VagrantPlugins
           # Get domain first.
           begin
             domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
-              env[:machine].id.to_s)
+              env[:machine].id.to_s
+            )
           rescue => e
             raise Errors::NoDomainError,
-              :error_message => e.message
+                  error_message: e.message
           end
 
           # Setup list of interfaces before creating them.
@@ -39,11 +39,10 @@ module VagrantPlugins
           # Vagrant gives you adapter 0 by default
           # Assign interfaces to slots.
           configured_networks(env, @logger).each do |options|
-
             # dont need to create interface for this type
             next if options[:iface_type] == :forwarded_port
 
-            # TODO fill first ifaces with adapter option specified.
+            # TODO: fill first ifaces with adapter option specified.
             if options[:adapter]
               if adapters[options[:adapter]]
                 raise Errors::InterfaceSlotNotAvailable
@@ -54,13 +53,14 @@ module VagrantPlugins
             else
               free_slot = find_empty(adapters)
               @logger.debug "Adapter not specified so found slot #{free_slot}"
-              raise Errors::InterfaceSlotNotAvailable if free_slot == nil
+              raise Errors::InterfaceSlotNotAvailable if free_slot.nil?
             end
 
             # We have slot for interface, fill it with interface configuration.
             adapters[free_slot] = options
             adapters[free_slot][:network_name] = interface_network(
-              env[:machine].provider.driver.connection.client, adapters[free_slot])
+              env[:machine].provider.driver.connection.client, adapters[free_slot]
+            )
           end
 
           # Create each interface as new domain device.
@@ -95,17 +95,16 @@ module VagrantPlugins
               end
               # default mcast tunnel to 239.255.1.1. Web search says this
               # 239.255.x.x is a safe range to use for general use mcast
-              if @type == 'mcast'
-                default_ip = '239.255.1.1'
-              else
-                default_ip = '127.0.0.1'
-              end
+              default_ip = if @type == 'mcast'
+                             '239.255.1.1'
+                           else
+                             '127.0.0.1'
+                           end
               @tunnel_ip = iface_configuration.fetch(:tunnel_ip, default_ip)
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
               template_name = 'tunnel_interface'
               @logger.info("Setting up #{@type} tunnel interface using  #{@tunnel_ip} port #{@tunnel_port}")
             end
-
 
             message = "Creating network interface eth#{@iface_number}"
             message << " connected to network #{@network_name}."
@@ -119,30 +118,28 @@ module VagrantPlugins
               domain.attach_device(to_xml(template_name))
             rescue => e
               raise Errors::AttachDeviceError,
-                :error_message => e.message
+                    error_message: e.message
             end
 
             # Re-read the network configuration and grab the MAC address
-            unless @mac
-              xml = Nokogiri::XML(domain.xml_desc)
-              if iface_configuration[:iface_type] == :public_network
-                if @type == 'direct'
-                  @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
-                elsif !@portgroup.nil?
-                  @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
-                else
-                  @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
-                end
-              else
+            next if @mac
+            xml = Nokogiri::XML(domain.xml_desc)
+            if iface_configuration[:iface_type] == :public_network
+              if @type == 'direct'
+                @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
+              elsif !@portgroup.nil?
                 @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
+              else
+                @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
               end
-              iface_configuration[:mac] = @mac.to_s
+            else
+              @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
             end
+            iface_configuration[:mac] = @mac.to_s
           end
 
           # Continue the middleware chain.
           @app.call(env)
-
 
           if env[:machine].config.vm.box
             # Configure interfaces that user requested. Machine should be up and
@@ -158,17 +155,17 @@ module VagrantPlugins
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
               network = {
-                :interface                       => slot_number,
-                :use_dhcp_assigned_default_route => options[:use_dhcp_assigned_default_route],
-                :mac_address => options[:mac],
+                interface: slot_number,
+                use_dhcp_assigned_default_route: options[:use_dhcp_assigned_default_route],
+                mac_address: options[:mac]
               }
 
               if options[:ip]
                 network = {
-                  :type    => :static,
-                  :ip      => options[:ip],
-                  :netmask => options[:netmask],
-                  :gateway => options[:gateway],
+                  type: :static,
+                  ip: options[:ip],
+                  netmask: options[:netmask],
+                  gateway: options[:gateway]
                 }.merge(network)
               else
                 network[:type] = :dhcp
@@ -182,18 +179,19 @@ module VagrantPlugins
 
             env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
             env[:machine].guest.capability(
-              :configure_networks, networks_to_configure)
+              :configure_networks, networks_to_configure
+            )
 
           end
         end
 
         private
 
-        def find_empty(array, start=0, stop=@nic_adapter_count)
+        def find_empty(array, start = 0, stop = @nic_adapter_count)
           (start..stop).each do |i|
             return i unless array[i]
           end
-          return nil
+          nil
         end
 
         # Return network name according to interface options.
@@ -202,7 +200,7 @@ module VagrantPlugins
           return 'tunnel_interface' if options.fetch(:tunnel_type, nil)
 
           if options[:network_name]
-            @logger.debug "Found network by name"
+            @logger.debug 'Found network by name'
             return options[:network_name]
           end
 
@@ -215,7 +213,7 @@ module VagrantPlugins
             address = network_address(options[:ip], options[:netmask])
             available_networks.each do |network|
               if address == network[:network_address]
-                @logger.debug "Found network by ip"
+                @logger.debug 'Found network by ip'
                 return network[:name]
               end
             end

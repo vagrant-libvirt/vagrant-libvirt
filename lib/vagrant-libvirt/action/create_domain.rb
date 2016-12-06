@@ -12,7 +12,7 @@ module VagrantPlugins
         end
 
         def _disk_name(name, disk)
-          "#{name}-#{disk[:device]}.#{disk[:type]}"  # disk name
+          "#{name}-#{disk[:device]}.#{disk[:type]}" # disk name
         end
 
         def _disks_print(disks)
@@ -55,10 +55,10 @@ module VagrantPlugins
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
           @graphics_ip = config.graphics_ip
-          @graphics_passwd =  if config.graphics_passwd.to_s.empty?
-                                ''
-                              else
-                                "passwd='#{config.graphics_passwd}'"
+          @graphics_passwd = if config.graphics_passwd.to_s.empty?
+                               ''
+                             else
+                               "passwd='#{config.graphics_passwd}'"
                               end
           @video_type = config.video_type
           @video_vram = config.video_vram
@@ -88,13 +88,13 @@ module VagrantPlugins
 
           # USB device passthrough
           @usbs = config.usbs
-        
+
           # Redirected devices
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
           # RNG device passthrough
-          @rng =config.rng
+          @rng = config.rng
 
           config = env[:machine].provider_config
           @domain_type = config.driver
@@ -108,7 +108,8 @@ module VagrantPlugins
                 x.pool_name == @storage_pool_name
               end
             domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-              actual_volumes,"#{@name}.img")
+              actual_volumes, "#{@name}.img"
+            )
             raise Errors::DomainVolumeExists if domain_volume.nil?
             @domain_volume_path = domain_volume.path
           end
@@ -117,12 +118,12 @@ module VagrantPlugins
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
           if env[:machine].config.vm.box
-            storage_prefix = File.dirname(@domain_volume_path) + '/'        # steal
+            storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
           else
             storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
             raise Errors::NoStoragePool if storage_pool.nil?
             xml = Nokogiri::XML(storage_pool.xml_desc)
-            storage_prefix = xml.xpath("/pool/target/path").inner_text.to_s + '/'
+            storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
           end
 
           @disks.each do |disk|
@@ -148,10 +149,11 @@ module VagrantPlugins
                   path: disk[:absolute_path],
                   capacity: disk[:size],
                   #:allocation => ?,
-                  pool_name: @storage_pool_name)
+                  pool_name: @storage_pool_name
+                )
               rescue Fog::Errors::Error => e
                 raise Errors::FogDomainVolumeCreateError,
-                    error_message:  e.message
+                      error_message: e.message
               end
             else
               disk[:preexisting] = true
@@ -161,9 +163,7 @@ module VagrantPlugins
           # Output the settings we're going to use to the user
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
           env[:ui].info(" -- Name:              #{@name}")
-          if @uuid != ''
-            env[:ui].info(" -- Forced UUID:       #{@uuid}")
-          end
+          env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           @cpu_features.each do |cpu_feature|
@@ -193,7 +193,7 @@ module VagrantPlugins
             env[:ui].info(" -- Boot device:        #{device}")
           end
 
-          if @disks.length > 0
+          unless @disks.empty?
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
 
@@ -205,7 +205,7 @@ module VagrantPlugins
             env[:ui].info(msg)
           end
 
-          if @cdroms.length > 0
+          unless @cdroms.empty?
             env[:ui].info(" -- CDROMS:            #{_cdroms_print(@cdroms)}")
           end
 
@@ -226,7 +226,7 @@ module VagrantPlugins
             env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
           end
 
-          if !@rng[:model].nil?
+          unless @rng[:model].nil?
             env[:ui].info(" -- RNG device model:  #{@rng[:model]}")
           end
 
@@ -239,17 +239,16 @@ module VagrantPlugins
             env[:ui].info(" -- USB passthrough:   #{usb_dev.join(', ')}")
           end
 
-          if not @redirdevs.empty?
-            env[:ui].info(" -- Redirected Devices: ")
+          unless @redirdevs.empty?
+            env[:ui].info(' -- Redirected Devices: ')
             @redirdevs.each do |redirdev|
               msg = "    -> bus=usb, type=#{redirdev[:type]}"
               env[:ui].info(msg)
             end
           end
 
-
-          if not @redirfilters.empty?
-            env[:ui].info(" -- USB Device filter for Redirected Devices: ")
+          unless @redirfilters.empty?
+            env[:ui].info(' -- USB Device filter for Redirected Devices: ')
             @redirfilters.each do |redirfilter|
               msg = "    -> class=#{redirfilter[:class]}, "
               msg += "vendor=#{redirfilter[:vendor]}, "
@@ -260,7 +259,6 @@ module VagrantPlugins
             end
           end
 
-
           env[:ui].info(" -- Command line : #{@cmd_line}")
 
           # Create libvirt domain.
@@ -268,9 +266,10 @@ module VagrantPlugins
           # existing volume? Use domain creation from template..
           begin
             server = env[:machine].provider.driver.connection.servers.create(
-              xml: to_xml('domain'))
+              xml: to_xml('domain')
+            )
           rescue Fog::Errors::Error => e
-            raise Errors::FogCreateServerError, error_message:  e.message
+            raise Errors::FogCreateServerError, error_message: e.message
           end
 
           # Immediately save the ID since it is created at this point.
