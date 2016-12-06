@@ -27,4 +27,8 @@
     </ip>
   <% end %>
 
+  <% if !@network_ipv6_address.nil? && !@network_ipv6_prefix.nil? %>
+    <ip family='ipv6' address="<%= @network_ipv6_address %>" prefix="<%= @network_ipv6_prefix %>"></ip>
+  <% end %>
+
 </network>

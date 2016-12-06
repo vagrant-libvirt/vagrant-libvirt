@@ -56,6 +56,8 @@ module VagrantPlugins
                 netmask:          @options[:netmask],
                 network_address:  nil,
                 bridge_name:      nil,
+                ipv6_address:     options[:ipv6_address] || nil,
+                ipv6_prefix:      options[:ipv6_prefix] || nil,
                 created:          false,
                 active:           false,
                 autostart:        false,
@@ -281,6 +283,9 @@ module VagrantPlugins
           @network_address = @interface_network[:ip_address]
           @network_netmask = @interface_network[:netmask]
           @guest_ipv6 = @interface_network[:guest_ipv6]
+
+          @network_ipv6_address = @interface_network[:ipv6_address]
+          @network_ipv6_prefix = @interface_network[:ipv6_prefix]
 
           @network_forward_mode = @options[:forward_mode]
           if @options[:forward_device]

@@ -458,6 +458,12 @@ An examples of network interface definitions:
       # default is 127.0.0.1 if omitted
       # :libvirt__tunnel_ip => '127.0.0.1',
       :libvirt__tunnel_port => '11111'
+    # network with ipv6 support
+    test_vm1.vm.network :private_network,
+      :ip => "10.20.5.42",
+      :libvirt__guest_ipv6 => "yes",
+      :libvirt__ipv6_address => "2001:db8:ca2:6::1",
+      :libvirt__ipv6_prefix => "64"
 
   # Guest 2
   config.vm.define :test_vm2 do |test_vm2|
@@ -466,6 +472,12 @@ An examples of network interface definitions:
       # default is 127.0.0.1 if omitted
       # :libvirt__tunnel_ip => '127.0.0.1',
       :libvirt__tunnel_port => '11111'
+    # network with ipv6 support
+    test_vm2.vm.network :private_network,
+      :ip => "10.20.5.45",
+      :libvirt__guest_ipv6 => "yes",
+      :libvirt__ipv6_address => "2001:db8:ca2:6::1",
+      :libvirt__ipv6_prefix => "64"
 
 
   # Public Network
@@ -557,6 +569,8 @@ starts with `libvirt__` string. Here is a list of those options:
   See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
   [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8)
   for for more information. *Note: takes either 'yes' or 'no' for value*
+* `:libvirt__ipv6_address` - Define ipv6 address, require also prefix.
+* `:libvirt__ipv6_prefix` - Define ipv6 prefix. generate string `<ip family="ipv6" address="address" prefix="prefix" >`
 * `:libvirt__iface_name` - Define a name for the private network interface.
   With this feature one can [simulate physical link
   failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
