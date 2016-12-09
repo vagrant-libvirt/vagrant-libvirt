@@ -109,9 +109,9 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
 ```
 
-* Arch linux: look at tips and solutions from Arch wiki.
+* Arch linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
 ```shell
-pacman -Sy vagrant
+pacman -S vagrant
 ```
 
 Now you're ready to install vagrant-libvirt using standard [Vagrant
