@@ -108,6 +108,10 @@ module VagrantPlugins
         error_key(:tunnel_port_not_defined)
       end
 
+      class ManagementNetworkRequired < VagrantLibvirtError
+        error_key(:management_network_required)
+      end
+
       # Other exceptions
       class InterfaceSlotNotAvailable < VagrantLibvirtError
         error_key(:interface_slot_not_available)

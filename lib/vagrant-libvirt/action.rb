@@ -105,7 +105,7 @@ module VagrantPlugins
                 b3.use ForwardPorts
                 b3.use PrepareNFSSettings
                 b3.use ShareFolders
-             end
+              end
             end
           end
         end

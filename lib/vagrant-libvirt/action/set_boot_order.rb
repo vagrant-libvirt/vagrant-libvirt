@@ -86,7 +86,7 @@ module VagrantPlugins
 
         def search_network(nets, xml)
           str = '/domain/devices/interface'
-          str += "[(@type='network' or @type='udp')"
+          str += "[(@type='network' or @type='udp' or @type='bridge')"
           unless nets.empty?
             str += " and source[@network='#{nets.first['network']}']"
           end
