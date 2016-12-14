@@ -44,8 +44,18 @@ module VagrantPlugins
             management_network_options[:mac] = management_network_mac
           end
 
+          if (env[:machine].config.vm.box &&
+              !env[:machine].provider_config.mgmt_attach)
+            raise Errors::ManagementNetworkRequired
+          end
+
           # add management network to list of networks to check
-          networks = [management_network_options]
+          # unless mgmt_attach set to false
+          networks = if env[:machine].provider_config.mgmt_attach
+                       [management_network_options]
+                     else
+                       []
+                     end
 
           env[:machine].config.vm.networks.each do |type, original_options|
             logger.debug "In config found network type #{type} options #{original_options}"

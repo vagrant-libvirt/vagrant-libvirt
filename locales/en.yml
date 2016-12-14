@@ -137,6 +137,9 @@ en:
         Error while deleting snapshot: %{error_message}.
       tunnel_port_not_defined: |-
          tunnel UDP or TCP port not defined.
+      management_network_required: |-
+        Management network can't be disabled when VM use box.
+        Please fix your configuration and run vagrant again.
 
     states:
       paused: |-

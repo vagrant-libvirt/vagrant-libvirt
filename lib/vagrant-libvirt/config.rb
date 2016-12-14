@@ -128,6 +128,9 @@ module VagrantPlugins
       # Autostart
       attr_accessor :autostart
 
+      # Attach mgmt network
+      attr_accessor :mgmt_attach
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -212,6 +215,9 @@ module VagrantPlugins
 
         # Autostart
         @autostart         = UNSET_VALUE
+
+        # Attach mgmt network
+        @mgmt_attach       = UNSET_VALUE
       end
 
       def boot(device)
@@ -577,6 +583,9 @@ module VagrantPlugins
 
         # Autostart
         @autostart = false if @autostart == UNSET_VALUE
+
+        # Attach mgmt network
+        @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
       end
 
       def validate(machine)

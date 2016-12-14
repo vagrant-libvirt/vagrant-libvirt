@@ -360,6 +360,10 @@ end
   for use by the [qemu guest
   agent](http://wiki.libvirt.org/page/Qemu_guest_agent) and the Spice/QXL
   graphics type.
+* `mgmt_attach` - Decide if VM has interface in mgmt network. If set to 'false'
+  it is not possible to communicate with VM through `vagrant ssh` or run
+  provisioning. Setting to 'false' is only possible when VM doesn't use box.
+  Defaults set to 'true'.
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -608,9 +612,9 @@ virtual network.
 
 vagrant-libvirt uses a private network to perform some management operations on
 VMs. All VMs will have an interface connected to this network and an IP address
-dynamically assigned by libvirt. This is in addition to any networks you
-configure. The name and address used by this network are configurable at the
-provider level.
+dynamically assigned by libvirt unless you set `:mgmt_attach` to 'false'.
+This is in addition to any networks you configure. The name and address
+used by this network are configurable at the provider level.
 
 * `management_network_name` - Name of libvirt network to which all VMs will be
   connected. If not specified the default is 'vagrant-libvirt'.
