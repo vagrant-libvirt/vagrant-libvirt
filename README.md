@@ -583,6 +583,8 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:model_type` - parameter specifies the model of the network adapter when you
   create a domain value by default virtio KVM believe possible values, see the
   documentation for libvirt
+* `:autostart` - Automatic startup of network by the libvirt daemon.
+  If not specified the default is 'false'.
 
 When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
 whether the virtual network contains a DHCP server or not and vagrant-libvirt
@@ -629,6 +631,8 @@ used by this network are configurable at the provider level.
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
   [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8)
   for for more information.
+* `management_network_autostart` - Automatic startup of mgmt network, if not
+  specified the default is 'false'.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.

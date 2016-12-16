@@ -60,7 +60,7 @@ module VagrantPlugins
                 ipv6_prefix:      options[:ipv6_prefix] || nil,
                 created:          false,
                 active:           false,
-                autostart:        false,
+                autostart:        options[:autostart] || false,
                 guest_ipv6:       @options[:guest_ipv6] || 'yes',
                 libvirt_network:  nil
               }
