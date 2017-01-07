@@ -131,7 +131,8 @@
 <% @inputs.each do |input| %>
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
 <% end %>
-    <% if @sound_type != 'none' %>
+
+    <% if !@sound_type.nil? %>
       <%# Sound device-%>
       <sound model='<%= @sound_type %>'>
       </sound>
