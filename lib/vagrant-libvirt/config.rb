@@ -116,6 +116,9 @@ module VagrantPlugins
       # Random number device passthrough
       attr_accessor :rng
 
+      # Watchdog device
+      attr_accessor :watchdog_dev  
+
       # USB device passthrough
       attr_accessor :usbs
 
@@ -204,6 +207,9 @@ module VagrantPlugins
 
         # Random number device passthrough
         @rng = UNSET_VALUE
+        
+        # Watchdog device
+        @watchdog_dev      = UNSET_VALUE  
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
@@ -343,6 +349,20 @@ module VagrantPlugins
                    slot:      options[:slot],
                    function:  options[:function])
       end
+      
+      def watchdog(options = {})
+        if options[:model].nil?
+          raise 'Model must be specified.'
+        end
+
+        if @watchdog_dev == UNSET_VALUE
+            @watchdog_dev = {}
+        end
+
+        @watchdog_dev[:model] = options[:model]
+        @watchdog_dev[:action] = options[:action] || 'reset'
+      end
+
 
       def usb(options = {})
         if (options[:bus].nil? || options[:device].nil?) && options[:vendor].nil? && options[:product].nil?
@@ -573,6 +593,9 @@ module VagrantPlugins
 
         # Random number generator passthrough
         @rng = {} if @rng == UNSET_VALUE
+
+        # Watchdog device
+        @watchdog_dev = {} if @watchdog_dev == UNSET_VALUE
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE

@@ -52,6 +52,7 @@ In the table below, build passing means that specific version combination of Vag
 - [PCI device passthrough](#pci-device-passthrough)
 - [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
+- [Watchdog·Device](#watchdog-device)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
@@ -853,6 +854,32 @@ end
 ```
 
 At the moment only the `random` backend is supported.
+
+## Watchdog device
+A virtual hardware watchdog device can be added to the guest via the `libvirt.watchdog` element. The option `model` is mandatory and could have on of the following values.
+
+* `i6300esb` - the recommended device, emulating a PCI Intel 6300ESB
+* 'ib700` - emulating an ISA iBase IB700
+* `diag288` - emulating an S390 DIAG288 device
+
+The optional action attribute describes what `action` to take when the watchdog expires. Valid values are specific to the underlying hypervisor. The default behavior is `reset`.
+
+* `reset` - default, forcefully reset the guest
+* `shutdown` - gracefully shutdown the guest (not recommended)
+* `poweroff` - forcefully power off the guest
+* `pause` - pause the guest
+* `none` - do nothing
+* `dump` - automatically dump the guest
+* `inject-nmi` - inject a non-maskable interrupt into the guest
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Add libvirt watchdog device model i6300esb
+    libvirt.watchdog :model => 'i6300esb', :action => 'reset'
+  end
+end
+```
 
 ## CPU features
 
