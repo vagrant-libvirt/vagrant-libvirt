@@ -85,6 +85,9 @@ module VagrantPlugins
 
           # PCI device passthrough
           @pcis = config.pcis
+          
+          # Watchdog device
+          @watchdog_dev = config.watchdog_dev          
 
           # USB device passthrough
           @usbs = config.usbs
@@ -228,6 +231,10 @@ module VagrantPlugins
 
           unless @rng[:model].nil?
             env[:ui].info(" -- RNG device model:  #{@rng[:model]}")
+          end
+
+          if not @watchdog_dev.empty?
+            env[:ui].info(" -- Watchdog device:   model=#{@watchdog_dev[:model]}, action=#{@watchdog_dev[:action]}")
           end
 
           @usbs.each do |usb|

@@ -115,6 +115,7 @@
         <redirfilter>
           <usbdev class='0x0b' vendor='0x0b' product='0x0b' version='0x0b' allow='yes'/>
         </redirfilter>
+    <watchdog model='i6300esb' action='reset'/>
 
     <tpm model='tpm-tis'>
       <backend type='passthrough'>

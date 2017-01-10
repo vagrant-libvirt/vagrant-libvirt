@@ -183,6 +183,10 @@
         </redirfilter>
       <% end %>
     <% end %>
+    <% unless @watchdog_dev.empty? %>
+    <%# Watchdog Device -%>
+    <watchdog model='<%= @watchdog_dev[:model] %>' action='<%= @watchdog_dev[:action] %>'/>
+    <% end %>
 
     <% if @tpm_path -%>
     <%# TPM Device -%>
