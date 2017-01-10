@@ -1,4 +1,4 @@
-<domain type='kvm'>
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name></name>
   <uuid></uuid>
   <memory></memory>
@@ -125,4 +125,9 @@
       </backend>
     </tpm>
   </devices>
+
+  <qemu:commandline>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='dummy-device'/>
+  </qemu:commandline>
 </domain>

@@ -1220,6 +1220,20 @@ Vagrant.configure(2) do |config|
 end
 ```
 
+## Custom command line arguments
+You can also specify multiple qemuargs arguments for qemu-system
+
+* `value` - Value
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.qemuargs :value => "-device"
+    libvirt.qemuargs :value => "intel-iommu"
+  end
+end
+```
+
 ## Box Format
 
 You can view an example box in the
