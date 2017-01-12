@@ -188,6 +188,18 @@
     <watchdog model='<%= @watchdog_dev[:model] %>' action='<%= @watchdog_dev[:action] %>'/>
     <% end %>
 
+    <% unless @smartcard_dev.empty? -%>
+      <% if @smartcard_dev[:mode] == 'passthrough' %>
+        <% if @smartcard_dev[:type] == 'tcp' %>
+        <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'>
+            <source mode='<%= @smartcard_dev[:source_mode] %>' host='<%= @smartcard_dev[:source_host] %>' service='<%= @smartcard_dev[:source_service] %>'/>
+        </smartcard>
+        <% else %>
+        <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'/>
+        <% end %>
+      <% end %>
+    <% end -%>
+
     <% if @tpm_path -%>
     <%# TPM Device -%>
     <tpm model='<%= @tpm_model %>'>

@@ -117,6 +117,8 @@
         </redirfilter>
     <watchdog model='i6300esb' action='reset'/>
 
+        <smartcard mode='passthrough' type='spicevmc'/>
+
     <tpm model='tpm-tis'>
       <backend type='passthrough'>
         <device path='/dev/tpm0'/>

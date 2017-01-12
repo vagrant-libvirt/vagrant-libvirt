@@ -59,6 +59,7 @@ describe 'templates/domain' do
       domain.redirfilter(class: '0x0b', vendor: '0x08e6',
                          product: '0x3437', version: '2.00', allow: 'yes')
       domain.watchdog(model: 'i6300esb', action: 'reset')
+      domain.smartcard(mode: 'passthrough')
       domain.tpm_path = '/dev/tpm0'
     end
     let(:test_file) { 'domain_all_settings.xml' }

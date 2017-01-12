@@ -96,6 +96,9 @@ module VagrantPlugins
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
+          # smartcard device
+          @smartcard_dev = config.smartcard_dev
+
           # RNG device passthrough
           @rng = config.rng
 
@@ -264,6 +267,10 @@ module VagrantPlugins
               msg += "allow=#{redirfilter[:allow]}"
               env[:ui].info(msg)
             end
+          end
+
+          if not @smartcard_dev.empty?
+            env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
           end
 
           env[:ui].info(" -- Command line : #{@cmd_line}")

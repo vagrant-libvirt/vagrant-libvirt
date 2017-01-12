@@ -40,5 +40,6 @@
         <model type='cirrus' vram='9216' heads='1'/>
       </video>
 
+
   </devices>
 </domain>
