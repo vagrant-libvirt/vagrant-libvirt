@@ -132,6 +132,12 @@
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
 <% end %>
 
+    <% if !@sound_type.nil? %>
+      <%# Sound device-%>
+      <sound model='<%= @sound_type %>'>
+      </sound>
+      <%# End Sound%>
+    <% end %>
     <% if @graphics_type != 'none' %>
       <%# Video device -%>
       <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />

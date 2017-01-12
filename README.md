@@ -332,6 +332,8 @@ end
   "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM
   dedicated to video.  Defaults to 9216.
+* `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#elementsSound)
+  Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use
   `qemu-system-x86_64 -machine help` to get a list of supported machines.
 * `machine_arch` - Sets machine architecture. This helps libvirt to determine
