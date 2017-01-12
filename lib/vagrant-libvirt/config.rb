@@ -126,6 +126,9 @@ module VagrantPlugins
       attr_accessor :redirdevs
       attr_accessor :redirfilters
 
+      # smartcard device
+      attr_accessor :smartcard_dev
+
       # Suspend mode
       attr_accessor :suspend_mode
 
@@ -217,6 +220,9 @@ module VagrantPlugins
         # Redirected devices
         @redirdevs         = UNSET_VALUE
         @redirfilters      = UNSET_VALUE
+
+        # smartcard device
+        @smartcard_dev     = UNSET_VALUE
 
         # Suspend mode
         @suspend_mode      = UNSET_VALUE
@@ -396,6 +402,26 @@ module VagrantPlugins
                            product: options[:class] || -1,
                            version: options[:class] || -1,
                            allow: options[:allow])
+      end
+
+      def smartcard(options = {})
+        if options[:mode].nil?
+          raise 'Option mode must be specified.'
+        elsif options[:mode] != 'passthrough'
+          raise 'Currently only passthrough mode is supported!'
+        elsif options[:type] == 'tcp' && (options[:source_mode].nil? || options[:source_host].nil? || options[:source_service].nil?)
+          raise 'If using type "tcp", option "source_mode", "source_host" and "source_service" must be specified.'
+        end
+
+        if @smartcard_dev == UNSET_VALUE
+          @smartcard_dev = {}
+        end
+
+        @smartcard_dev[:mode] = options[:mode]
+        @smartcard_dev[:type] = options[:type] || 'spicevmc'
+        @smartcard_dev[:source_mode] = options[:source_mode] if @smartcard_dev[:type] == 'tcp'
+        @smartcard_dev[:source_host] = options[:source_host] if @smartcard_dev[:type] == 'tcp'
+        @smartcard_dev[:source_service] = options[:source_service] if @smartcard_dev[:type] == 'tcp'
       end
 
       # NOTE: this will run twice for each time it's needed- keep it idempotent
@@ -603,6 +629,9 @@ module VagrantPlugins
         # Redirected devices
         @redirdevs = [] if @redirdevs == UNSET_VALUE
         @redirfilters = [] if @redirfilters == UNSET_VALUE
+
+        # smartcard device
+        @smartcard_dev = {} if @smartcard_dev == UNSET_VALUE
 
         # Suspend mode
         @suspend_mode = 'pause' if @suspend_mode == UNSET_VALUE

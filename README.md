@@ -53,6 +53,7 @@ In the table below, build passing means that specific version combination of Vag
 - [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [Watchdog·Device](#watchdog-device)
+- [Smartcard device](#smartcard-device)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
@@ -877,6 +878,27 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Add libvirt watchdog device model i6300esb
     libvirt.watchdog :model => 'i6300esb', :action => 'reset'
+  end
+end
+```
+
+## Smartcard device
+A virtual smartcard device can be supplied to the guest via the `libvirt.smartcard` element. The option `mode` is mandatory and currently only value `passthrough` is supported. The value `spicevmc` for option `type` is default value and can be supressed. On using `type = tcp`, the options `source_mode`, `source_host` and `source_service` are mandatory.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Add smartcard device with type 'spicevmc'
+    libvirt.smartcard :mode => 'passthrough', :type => 'spicevmc'
+  end
+end
+```
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Add smartcard device with type 'tcp'
+    domain.smartcard :mode => 'passthrough', :type => 'tcp', :source_mode => 'bind', :source_host => '127.0.0.1', :source_service => '2001'
   end
 end
 ```
