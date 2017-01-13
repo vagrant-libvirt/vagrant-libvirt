@@ -88,6 +88,7 @@ module VagrantPlugins
       attr_accessor :video_vram
       attr_accessor :keymap
       attr_accessor :kvm_hidden
+      attr_accessor :sound_type
 
       # Sets the information for connecting to a host TPM device
       # Only supports socket-based TPMs
