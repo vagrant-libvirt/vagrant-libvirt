@@ -74,7 +74,7 @@
       <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
-      <target dev='vda' bus='<%= @disk_bus %>'/>
+      <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
     </disk>
     <% end %>
 <%# additional disks -%>

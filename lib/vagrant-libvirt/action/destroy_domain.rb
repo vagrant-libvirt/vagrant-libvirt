@@ -20,13 +20,19 @@ module VagrantPlugins
           libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
             env[:machine].id
           )
-          libvirt_domain.list_snapshots.each do |name|
-            @logger.info("Deleting snapshot '#{name}'")
-            begin
-              libvirt_domain.lookup_snapshot_by_name(name).delete
-            rescue => e
-              raise Errors::DeleteSnapshotError, error_message: e.message
+          begin
+            libvirt_domain.list_snapshots.each do |name|
+              @logger.info("Deleting snapshot '#{name}'")
+              begin
+                libvirt_domain.lookup_snapshot_by_name(name).delete
+              rescue => e
+                raise Errors::DeleteSnapshotError, error_message: e.message
+              end
             end
+          rescue
+            # Some drivers (xen) don't support getting list of snapshots,
+            # not much can be done here about it
+            @logger.warn("Failed to get list of snapshots")
           end
 
           # must remove managed saves
