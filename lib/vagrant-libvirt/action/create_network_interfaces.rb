@@ -122,20 +122,17 @@ module VagrantPlugins
             end
 
             # Re-read the network configuration and grab the MAC address
-            next if @mac
-            xml = Nokogiri::XML(domain.xml_desc)
-            if iface_configuration[:iface_type] == :public_network
+            if iface_configuration[:iface_type] == :public_network and not @mac
+              xml = Nokogiri::XML(domain.xml_desc)
+              source = "@network='#{@network_name}'"
               if @type == 'direct'
-                @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
-              elsif !@portgroup.nil?
-                @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
-              else
-                @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
+                  source = "@dev='#{@device}'"
+              elsif @portgroup.nil?
+                source = "@bridge='#{@device}'"
               end
-            else
-              @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
+              @mac = xml.xpath("/domain/devices/interface[source[#{source}]]/mac/@address")
+              iface_configuration[:mac] = @mac.to_s
             end
-            iface_configuration[:mac] = @mac.to_s
           end
 
           # Continue the middleware chain.
