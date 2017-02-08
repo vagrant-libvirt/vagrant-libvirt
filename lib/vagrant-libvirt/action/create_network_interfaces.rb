@@ -121,7 +121,17 @@ module VagrantPlugins
             @logger.info(message)
 
             begin
-              domain.attach_device(to_xml(template_name))
+              # FIXME: all options for network driver should be hash from Vagrantfile
+              if template_name == 'interface'
+                driver_options = {}
+                driver_options[:name] = @driver_name if @driver_name
+                driver_options[:queues] = @driver_queues if @driver_queues
+                xml = interface_xml(@network_name, @mac, @device_name,
+                                    @iface_number, @model_type, driver_options)
+                domain.attach_device(xml)
+              else
+                domain.attach_device(to_xml(template_name))
+              end
             rescue => e
               raise Errors::AttachDeviceError,
                     error_message: e.message
@@ -156,7 +166,7 @@ module VagrantPlugins
               # Skip configuring the management network, which is on the first interface.
               # It's used for provisioning and it has to be available during provisioning,
               # ifdown command is not acceptable here.
-              next if slot_number == 0
+              next if slot_number.zero?
               next if options[:auto_config] === false
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
@@ -192,6 +202,24 @@ module VagrantPlugins
         end
 
         private
+
+        def interface_xml(network_name, mac, device_name,
+                          iface_number, model_type, driver_options)
+          Nokogiri::XML::Builder.new do |xml|
+            xml.interface(type: 'network') do
+              xml.source(network: network_name)
+              xml.mac(address: mac) if mac
+              xml.target(dev: device_name || "vnet#{iface_number}")
+              xml.alias(name: "net#{iface_number}")
+              xml.model(type: model_type)
+              xml.driver(driver_options)
+            end
+          end.to_xml(
+            save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
+                       Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
+                       Nokogiri::XML::Node::SaveOptions::FORMAT
+          )
+        end
 
         def find_empty(array, start = 0, stop = @nic_adapter_count)
           (start..stop).each do |i|
