@@ -608,6 +608,11 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:model_type` - parameter specifies the model of the network adapter when you
   create a domain value by default virtio KVM believe possible values, see the
   documentation for libvirt
+* `:libvirt__driver_name` - Define which network driver to use. [More
+  info](https://libvirt.org/formatdomain.html#elementsDriverBackendOptions)
+* `:libvirt__driver_queues` - Define a number of queues to be used for network
+  interface. Set equal to numer of vCPUs for best performance. [More
+  info](http://www.linux-kvm.org/page/Multiqueue)
 * `:autostart` - Automatic startup of network by the libvirt daemon.
   If not specified the default is 'false'.
 

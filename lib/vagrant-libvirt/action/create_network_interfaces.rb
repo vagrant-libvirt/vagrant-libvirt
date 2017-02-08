@@ -69,6 +69,8 @@ module VagrantPlugins
             @network_name = iface_configuration[:network_name]
             @mac = iface_configuration.fetch(:mac, false)
             @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+            @driver_name = iface_configuration.fetch(:driver_name, false)
+            @driver_queues = iface_configuration.fetch(:driver_queues, false)
             @device_name = iface_configuration.fetch(:iface_name, false)
             template_name = 'interface'
             # Configuration for public interfaces which use the macvtap driver
@@ -77,6 +79,8 @@ module VagrantPlugins
               @mode = iface_configuration.fetch(:mode, 'bridge')
               @type = iface_configuration.fetch(:type, 'direct')
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+              @driver_name = iface_configuration.fetch(:driver_name, false)
+              @driver_queues = iface_configuration.fetch(:driver_queues, false)
               @portgroup = iface_configuration.fetch(:portgroup, nil)
               @network_name = iface_configuration.fetch(:network_name, @network_name)
               template_name = 'public_interface'
@@ -102,6 +106,8 @@ module VagrantPlugins
                            end
               @tunnel_ip = iface_configuration.fetch(:tunnel_ip, default_ip)
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+              @driver_name = iface_configuration.fetch(:driver_name, false)
+              @driver_queues = iface_configuration.fetch(:driver_queues, false)
               template_name = 'tunnel_interface'
               @logger.info("Setting up #{@type} tunnel interface using  #{@tunnel_ip} port #{@tunnel_port}")
             end
