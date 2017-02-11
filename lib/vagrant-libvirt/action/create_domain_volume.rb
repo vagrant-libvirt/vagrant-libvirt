@@ -41,8 +41,38 @@ module VagrantPlugins
           # Create new volume from xml template. Fog currently doesn't support
           # volume snapshots directly.
           begin
+            xml = Nokogiri::XML::Builder.new do |xml|
+              xml.volume do
+                xml.name @name
+                xml.capacity(unit: 'G') @capacity
+                xml.target do
+                  xml.format(type: 'qcow2')
+                  xml.permissions do
+                    xml.owner 0
+                    xml.group 0
+                    xml.mode '0600'
+                    xml.label 'virt_image_t'
+                  end
+                end
+                xml.backingStore do
+                  xml.path @backing_file
+                  xml.format(type: 'qcow2')
+                  xml.permissions do
+                    xml.owner 0
+                    xml.group 0
+                    xml.mode '0600'
+                    xml.label 'virt_image_t'
+                  end
+                end
+              end
+            end.to_xml(
+              save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
+                         Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
+                         Nokogiri::XML::Node::SaveOptions::FORMAT
+            )
+
             domain_volume = env[:machine].provider.driver.connection.volumes.create(
-              xml: to_xml('volume_snapshot'),
+              xml: xml,
               pool_name: config.storage_pool_name
             )
           rescue Fog::Errors::Error => e
