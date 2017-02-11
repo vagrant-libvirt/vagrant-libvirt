@@ -54,10 +54,12 @@ module VagrantPlugins
               end
 
               # Iterface type
-              REXML::XPath.each(xml_descr, '/domain/devices/interface/model') do |iface_model|
-                if iface_model.attributes['type'] != config.nic_model_type
-                  descr_changed = true
-                  iface_model.attributes['type'] = config.nic_model_type
+              unless config.nic_model_type.nil?
+                REXML::XPath.each(xml_descr, '/domain/devices/interface/model') do |iface_model|
+                  if iface_model.attributes['type'] != config.nic_model_type
+                    descr_changed = true
+                    iface_model.attributes['type'] = config.nic_model_type
+                  end
                 end
               end
 
@@ -225,7 +227,7 @@ module VagrantPlugins
               if config.sound_type
                 sound = REXML::XPath.first(xml_descr,'/domain/devices/sound/model')
               end
-                
+
 
               # dtb
               if config.dtb

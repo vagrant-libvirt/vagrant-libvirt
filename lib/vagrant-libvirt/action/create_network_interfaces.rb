@@ -17,7 +17,7 @@ module VagrantPlugins
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @management_network_name = env[:machine].provider_config.management_network_name
           config = env[:machine].provider_config
-          @nic_model_type = config.nic_model_type
+          @nic_model_type = config.nic_model_type || 'virtio'
           @nic_adapter_count = config.nic_adapter_count
           @app = app
         end
@@ -243,7 +243,7 @@ module VagrantPlugins
               xml.mac(address: mac) if mac
               xml.target(dev: target_dev_name(device_name, type, iface_number))
               xml.alias(name: "net#{iface_number}")
-              xml.model(type: model_type)
+              xml.model(type: model_type.to_s)
               xml.driver(driver_options)
             end
           end.to_xml(

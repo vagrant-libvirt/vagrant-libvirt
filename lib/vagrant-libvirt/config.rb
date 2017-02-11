@@ -119,7 +119,7 @@ module VagrantPlugins
       attr_accessor :rng
 
       # Watchdog device
-      attr_accessor :watchdog_dev  
+      attr_accessor :watchdog_dev
 
       # USB device passthrough
       attr_accessor :usbs
@@ -214,9 +214,9 @@ module VagrantPlugins
 
         # Random number device passthrough
         @rng = UNSET_VALUE
-        
+
         # Watchdog device
-        @watchdog_dev      = UNSET_VALUE  
+        @watchdog_dev      = UNSET_VALUE
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
@@ -359,7 +359,7 @@ module VagrantPlugins
                    slot:      options[:slot],
                    function:  options[:function])
       end
-      
+
       def watchdog(options = {})
         if options[:model].nil?
           raise 'Model must be specified.'
@@ -572,7 +572,7 @@ module VagrantPlugins
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @disk_device = 'vda' if @disk_device == UNSET_VALUE
-        @nic_model_type = 'virtio' if @nic_model_type == UNSET_VALUE
+        @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
