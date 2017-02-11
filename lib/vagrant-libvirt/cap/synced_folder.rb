@@ -46,7 +46,19 @@ module VagrantPlugins
 
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
-            xml = to_xml('filesystem', folder_opts)
+            #xml = to_xml('filesystem', folder_opts)
+            xml = Nokogiri::XML::Builder.new do |xml|
+              xml.filesystem(type: 'mount', accessmode: folder_opts[:accessmode]) do
+                xml.driver(type: 'path', wrpolicy: 'immediate')
+                xml.source(dir: folder_opts[:hostpath])
+                xml.target(dir: mount_tag)
+                xml.readonly unless folder_opts[:readonly].nil?
+              end
+            end.to_xml(
+              save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
+                         Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
+                         Nokogiri::XML::Node::SaveOptions::FORMAT
+            )
             # puts "<<<<< XML:\n #{xml}\n >>>>>"
             @conn.lookup_domain_by_uuid(machine.id).attach_device(xml, 0)
           end

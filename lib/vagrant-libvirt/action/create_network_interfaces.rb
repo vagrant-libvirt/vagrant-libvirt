@@ -67,6 +67,9 @@ module VagrantPlugins
           adapters.each_with_index do |iface_configuration, slot_number|
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
+            @source_options = {
+              network: @network_name
+            }
             @mac = iface_configuration.fetch(:mac, false)
             @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
             @driver_name = iface_configuration.fetch(:driver_name, false)
@@ -94,8 +97,10 @@ module VagrantPlugins
               raise Errors::TunnelPortNotDefined if @tunnel_port.nil?
               if @type == 'udp'
                 # default udp tunnel source to 127.0.0.1
-                @udp_tunnel_local_ip = iface_configuration.fetch(:tunnel_local_ip, '127.0.0.1')
-                @udp_tunnel_local_port = iface_configuration.fetch(:tunnel_local_port)
+                @udp_tunnel={
+                  address: iface_configuration.fetch(:tunnel_local_ip,'127.0.0.1'),
+                  port: iface_configuration.fetch(:tunnel_local_port)
+                }
               end
               # default mcast tunnel to 239.255.1.1. Web search says this
               # 239.255.x.x is a safe range to use for general use mcast
@@ -104,8 +109,11 @@ module VagrantPlugins
                            else
                              '127.0.0.1'
                            end
-              @tunnel_ip = iface_configuration.fetch(:tunnel_ip, default_ip)
-              @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+              @source_options = {
+                address: iface_configuration.fetch(:tunnel_ip, default_ip),
+                port: @tunnel_port
+              }
+              @tunnel_type = iface_configuration.fetch(:model_type, @nic_model_type)
               @driver_name = iface_configuration.fetch(:driver_name, false)
               @driver_queues = iface_configuration.fetch(:driver_queues, false)
               template_name = 'tunnel_interface'
@@ -122,16 +130,31 @@ module VagrantPlugins
 
             begin
               # FIXME: all options for network driver should be hash from Vagrantfile
-              if template_name == 'interface'
-                driver_options = {}
-                driver_options[:name] = @driver_name if @driver_name
-                driver_options[:queues] = @driver_queues if @driver_queues
-                xml = interface_xml(@network_name, @mac, @device_name,
-                                    @iface_number, @model_type, driver_options)
-                domain.attach_device(xml)
+              driver_options = {}
+              driver_options[:name] = @driver_name if @driver_name
+              driver_options[:queues] = @driver_queues if @driver_queues
+              xml = if template_name == 'interface'
+                      interface_xml(@type,
+                                    @source_options,
+                                    @mac,
+                                    @device_name,
+                                    @iface_number,
+                                    @model_type,
+                                    driver_options,
+                                    {})
+              elsif template_name == 'tunnel_interface'
+                      interface_xml(@type,
+                                    @source_options,
+                                    @mac,
+                                    @device_name,
+                                    @iface_number,
+                                    @model_type,
+                                    driver_options,
+                                    @udp_tunnel)
               else
-                domain.attach_device(to_xml(template_name))
+                to_xml(template_name)
               end
+              domain.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,
                     error_message: e.message
@@ -203,13 +226,27 @@ module VagrantPlugins
 
         private
 
-        def interface_xml(network_name, mac, device_name,
-                          iface_number, model_type, driver_options)
+        def target_dev_name(device_name, type, iface_number)
+          if device_name
+            device_name
+          elsif type == 'netwrok'
+            "vnet#{iface_number}"
+          else
+            # TODO can we use same name vnet#ifnum?
+            "tnet#{iface_number}"
+          end
+        end
+
+        def interface_xml(type, source_options, mac, device_name,
+                          iface_number, model_type, driver_options,
+                          udp_tunnel={})
           Nokogiri::XML::Builder.new do |xml|
-            xml.interface(type: 'network') do
-              xml.source(network: network_name)
+            xml.interface(type: type || 'network') do
+              xml.source(source_options) do
+                xml.local(udp_tunnel) if type == 'udp'
+              end
               xml.mac(address: mac) if mac
-              xml.target(dev: device_name || "vnet#{iface_number}")
+              xml.target(dev: target_dev_name(device_name, type, iface_number))
               xml.alias(name: "net#{iface_number}")
               xml.model(type: model_type)
               xml.driver(driver_options)
