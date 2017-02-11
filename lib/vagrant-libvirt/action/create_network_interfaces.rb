@@ -64,6 +64,7 @@ module VagrantPlugins
           end
 
           # Create each interface as new domain device.
+          @macs_per_network = Hash.new(0)
           adapters.each_with_index do |iface_configuration, slot_number|
             @iface_number = slot_number
             @network_name = iface_configuration[:network_name]
@@ -161,20 +162,21 @@ module VagrantPlugins
             end
 
             # Re-read the network configuration and grab the MAC address
-            next if @mac
-            xml = Nokogiri::XML(domain.xml_desc)
             if iface_configuration[:iface_type] == :public_network
+              xml = Nokogiri::XML(domain.xml_desc)
+              source = "@network='#{@network_name}'"
               if @type == 'direct'
-                @mac = xml.xpath("/domain/devices/interface[source[@dev='#{@device}']]/mac/@address")
-              elsif !@portgroup.nil?
-                @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
-              else
-                @mac = xml.xpath("/domain/devices/interface[source[@bridge='#{@device}']]/mac/@address")
+                  source = "@dev='#{@device}'"
+              elsif @portgroup.nil?
+                source = "@bridge='#{@device}'"
               end
-            else
-              @mac = xml.xpath("/domain/devices/interface[source[@network='#{@network_name}']]/mac/@address")
+              if not @mac
+                macs = xml.xpath("/domain/devices/interface[source[#{source}]]/mac/@address")
+                @mac = macs[@macs_per_network[source]]
+                iface_configuration[:mac] = @mac.to_s
+              end
+              @macs_per_network[source] += 1
             end
-            iface_configuration[:mac] = @mac.to_s
           end
 
           # Continue the middleware chain.
