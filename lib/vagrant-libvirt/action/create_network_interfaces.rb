@@ -134,16 +134,9 @@ module VagrantPlugins
               driver_options = {}
               driver_options[:name] = @driver_name if @driver_name
               driver_options[:queues] = @driver_queues if @driver_queues
-              xml = if template_name == 'interface'
-                      interface_xml(@type,
-                                    @source_options,
-                                    @mac,
-                                    @device_name,
-                                    @iface_number,
-                                    @model_type,
-                                    driver_options,
-                                    {})
-              elsif template_name == 'tunnel_interface'
+              @udp_tunnel ||= {}
+              xml = if template_name == 'interface' or
+                       template_name == 'tunnel_interface'
                       interface_xml(@type,
                                     @source_options,
                                     @mac,
@@ -152,9 +145,9 @@ module VagrantPlugins
                                     @model_type,
                                     driver_options,
                                     @udp_tunnel)
-              else
-                to_xml(template_name)
-              end
+                    else
+                      to_xml(template_name)
+                    end
               domain.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,
