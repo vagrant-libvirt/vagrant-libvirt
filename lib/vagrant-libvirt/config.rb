@@ -480,7 +480,8 @@ module VagrantPlugins
           bus: options[:bus],
           cache: options[:cache] || 'default',
           allow_existing: options[:allow_existing],
-          shareable: options[:shareable]
+          shareable: options[:shareable],
+          serial: options[:serial]
         }
 
         @disks << disk # append
