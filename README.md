@@ -693,6 +693,7 @@ It has a number of options:
   pre-existing disk. If the disk doesn't exist it will be created.
   Disks with this option set to true need to be removed manually.
 * `shareable` - Set to true if you want to simulate shared SAN storage.
+* `serial` - Serial number of the disk device.
 
 The following example creates two additional disks.
 
