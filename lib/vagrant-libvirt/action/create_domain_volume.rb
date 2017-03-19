@@ -43,8 +43,8 @@ module VagrantPlugins
           begin
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.volume do
-                xml.name @name
-                xml.capacity(unit: 'G') @capacity
+                xml.name(content: @name)
+                xml.capacity(unit: 'G', content: @capacity)
                 xml.target do
                   xml.format(type: 'qcow2')
                   xml.permissions do
