@@ -43,8 +43,8 @@ module VagrantPlugins
           begin
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.volume do
-                xml.name(content: @name)
-                xml.capacity(unit: 'G', content: @capacity)
+                xml.name(@name)
+                xml.capacity(@capacity, unit: 'G')
                 xml.target do
                   xml.format(type: 'qcow2')
                   xml.permissions do
@@ -55,7 +55,7 @@ module VagrantPlugins
                   end
                 end
                 xml.backingStore do
-                  xml.path @backing_file
+                  xml.path(@backing_file)
                   xml.format(type: 'qcow2')
                   xml.permissions do
                     xml.owner 0
@@ -70,7 +70,6 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
-
             domain_volume = env[:machine].provider.driver.connection.volumes.create(
               xml: xml,
               pool_name: config.storage_pool_name
