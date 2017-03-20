@@ -118,7 +118,7 @@ EOF
 
 echo "==> Creating box, tarring and gzipping"
 
-tar cvzf "$BOX" --totals ./metadata.json ./Vagrantfile ./box.img
+tar cvzf "$BOX" -S --totals ./metadata.json ./Vagrantfile ./box.img
 
 # if box is in tmpdir move it to CWD before removing tmpdir
 if ! isabspath "$BOX"; then
