@@ -40,7 +40,8 @@ module VagrantPlugins
           # working for centos with lvs default disks
           `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img}`
           Dir.chdir(@tmp_dir)
-          img_size = `qemu-img info #{@tmp_img} | grep 'virtual size' | awk '{print $3;}' | tr -d 'G'`.chomp
+          info = JSON.parse(`qemu-img info --output=json #{@tmp_img}`)
+          img_size = (Float(info['virtual-size'])/(1024**3)).ceil
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
           File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
           assebmle_box(boxname)
