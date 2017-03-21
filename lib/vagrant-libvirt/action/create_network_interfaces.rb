@@ -228,7 +228,8 @@ module VagrantPlugins
             "vnet#{iface_number}"
           else
             # TODO can we use same name vnet#ifnum?
-            "tnet#{iface_number}"
+            #"tnet#{iface_number}" FIXME plugin vagrant-libvirt trying to create second tnet0 interface
+            "vnet#{iface_number}"
           end
         end
 
