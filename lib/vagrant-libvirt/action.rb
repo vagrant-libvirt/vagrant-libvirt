@@ -67,8 +67,11 @@ module VagrantPlugins
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
           b.use Call, IsRunning do |env, b2|
-            # If the VM is running, then our work here is done, exit
-            next if env[:result]
+            # If the VM is running, run the necessary provisioners
+            if env[:result]
+              b2.use action_provision
+              next
+            end
 
             b2.use Call, IsSuspended do |env2, b3|
               # if vm is suspended resume it then exit
