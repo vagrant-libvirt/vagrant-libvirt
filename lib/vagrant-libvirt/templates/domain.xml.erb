@@ -55,9 +55,9 @@
     <% end %>
   </os>
   <features>
-    <acpi/>
-    <apic/>
-    <pae/>
+    <% @features.each do |feature| %>
+    <<%= feature %>/>
+    <% end %>
     <% if @kvm_hidden %>
       <kvm>
         <hidden state='on'/>

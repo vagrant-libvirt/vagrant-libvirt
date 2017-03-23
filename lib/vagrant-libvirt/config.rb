@@ -64,6 +64,7 @@ module VagrantPlugins
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
+      attr_accessor :features
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :boot_order
@@ -165,6 +166,7 @@ module VagrantPlugins
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
+        @features          = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @machine_type      = UNSET_VALUE
@@ -566,6 +568,7 @@ module VagrantPlugins
           end
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
+        @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE

@@ -34,6 +34,7 @@ module VagrantPlugins
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpu_features = config.cpu_features
+          @features = config.features
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -176,6 +177,9 @@ module VagrantPlugins
           env[:ui].info(" -- Cpus:              #{@cpus}")
           @cpu_features.each do |cpu_feature|
             env[:ui].info(" -- CPU Feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
+          end
+          @features.each do |feature|
+            env[:ui].info(" -- Feature:           #{feature}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
