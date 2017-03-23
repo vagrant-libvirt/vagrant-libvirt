@@ -914,6 +914,33 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+## Features
+
+Hypervisor features can be specified via `libvirt.features` as a list. The default
+options that are enabled are `acpi`, `apic` and `pae`. If you define `libvirt.features`
+you overwrite the defaults, so keep that in mind.
+
+An example:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Specify the default hypervisor features
+    libvirt.features = ['acpi', 'apic', 'pae' ]
+  end
+end
+```
+
+A different example for ARM boards:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Specify the default hypervisor features
+    libvirt.features = ["apic", "gic version='2'" ]
+  end
+end
+```
 
 ## CPU features
 
