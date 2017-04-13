@@ -76,6 +76,7 @@ module VagrantPlugins
             b2.use Call, IsSuspended do |env2, b3|
               # if vm is suspended resume it then exit
               if env2[:result]
+                b3.use CreateNetworks
                 b3.use ResumeDomain
                 next
               end
@@ -127,6 +128,7 @@ module VagrantPlugins
             end
 
             b2.use Call, IsSuspended do |env2, b3|
+              b3.use CreateNetworks if env2[:result]
               b3.use ResumeDomain if env2[:result]
             end
 
@@ -272,6 +274,7 @@ module VagrantPlugins
                 b3.use MessageNotSuspended
                 next
               end
+              b3.use CreateNetworks
               b3.use ResumeDomain
             end
           end
