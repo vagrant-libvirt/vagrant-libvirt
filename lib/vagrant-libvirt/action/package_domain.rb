@@ -39,12 +39,29 @@ module VagrantPlugins
           # remove hw association with interface
           # working for centos with lvs default disks
           `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img}`
+          # add any user provided file
+          extra = ''
+          @tmp_include = @tmp_dir + '/_include'
+          if env['package.include']
+            extra = './_include'
+            Dir.mkdir(@tmp_include)
+            env['package.include'].each do |f|
+              env[:ui].info("Including user file: #{f}")
+              FileUtils.cp(f, @tmp_include)
+            end
+          end
+          if env['package.vagrantfile']
+            extra = './_include'
+            Dir.mkdir(@tmp_include) unless File.directory?(@tmp_include)
+            env[:ui].info('Including user Vagrantfile')
+            FileUtils.cp(env['package.vagrantfile'], @tmp_include + '/Vagrantfile')
+          end
           Dir.chdir(@tmp_dir)
           info = JSON.parse(`qemu-img info --output=json #{@tmp_img}`)
           img_size = (Float(info['virtual-size'])/(1024**3)).ceil
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
           File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
-          assebmle_box(boxname)
+          assemble_box(boxname, extra)
           FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
           FileUtils.rm_rf(@tmp_dir)
           env[:ui].info('Box created')
@@ -53,8 +70,8 @@ module VagrantPlugins
           @app.call(env)
         end
 
-        def assebmle_box(boxname)
-          `tar cvzf "#{boxname}" --totals ./metadata.json ./Vagrantfile ./box.img`
+        def assemble_box(boxname, extra)
+          `tar cvzf "#{boxname}" --totals ./metadata.json ./Vagrantfile ./box.img #{extra}`
         end
 
         def vagrantfile_content
@@ -67,6 +84,9 @@ module VagrantPlugins
                 libvirt.storage_pool_name = "default"
               end
             end
+
+            user_vagrantfile = File.expand_path('../_include/Vagrantfile', __FILE__)
+            load user_vagrantfile if File.exists?(user_vagrantfile)
           EOF
         end
 
