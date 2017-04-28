@@ -1,4 +1,4 @@
-<domain type=''>
+<domain type='' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name></name>
   <uuid></uuid>
   <memory></memory>
@@ -42,4 +42,5 @@
 
 
   </devices>
+
 </domain>

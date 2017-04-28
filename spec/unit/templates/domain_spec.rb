@@ -62,6 +62,9 @@ describe 'templates/domain' do
       domain.watchdog(model: 'i6300esb', action: 'reset')
       domain.smartcard(mode: 'passthrough')
       domain.tpm_path = '/dev/tpm0'
+
+      domain.qemuargs(value: '-device')
+      domain.qemuargs(value: 'dummy-device')
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do

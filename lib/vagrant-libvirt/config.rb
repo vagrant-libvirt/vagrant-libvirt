@@ -141,6 +141,9 @@ module VagrantPlugins
       # Attach mgmt network
       attr_accessor :mgmt_attach
 
+      # Additional qemuargs arguments
+      attr_accessor :qemuargs
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -238,6 +241,8 @@ module VagrantPlugins
 
         # Attach mgmt network
         @mgmt_attach       = UNSET_VALUE
+
+        @qemuargs  = UNSET_VALUE
       end
 
       def boot(device)
@@ -489,6 +494,11 @@ module VagrantPlugins
         @disks << disk # append
       end
 
+      def qemuargs(options = {})
+        @qemuargs = [] if @qemuargs == UNSET_VALUE
+        @qemuargs.push(value: options[:value])
+      end
+
       # code to generate URI from a config moved out of the connect action
       def _generate_uri
         # builds the libvirt connection URI from the given driver config
@@ -651,6 +661,8 @@ module VagrantPlugins
 
         # Attach mgmt network
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
+
+        @qemuargs = [] if @qemuargs == UNSET_VALUE
       end
 
       def validate(machine)
@@ -676,9 +688,14 @@ module VagrantPlugins
           c = disks.dup
           c += other.disks
           result.disks = c
+
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          c = qemuargs.dup
+          c += other.qemuargs
+          result.qemuargs = c
         end
       end
     end

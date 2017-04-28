@@ -1,4 +1,4 @@
-<domain type='<%= @domain_type %>'>
+<domain type='<%= @domain_type %>' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name><%= @name %></name>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
@@ -218,4 +218,12 @@
     </tpm>
     <% end -%>
   </devices>
+
+  <% unless @qemuargs.empty? %>
+  <qemu:commandline>
+    <% @qemuargs.each do |arg| %>
+    <qemu:arg value='<%= arg[:value] %>'/>
+    <% end %>
+  </qemu:commandline>
+  <% end %>
 </domain>

@@ -88,9 +88,9 @@ module VagrantPlugins
 
           # PCI device passthrough
           @pcis = config.pcis
-          
+
           # Watchdog device
-          @watchdog_dev = config.watchdog_dev          
+          @watchdog_dev = config.watchdog_dev
 
           # USB device passthrough
           @usbs = config.usbs
@@ -101,6 +101,9 @@ module VagrantPlugins
 
           # smartcard device
           @smartcard_dev = config.smartcard_dev
+
+          # qemuargs
+          @qemuargs = config.qemuargs
 
           # RNG device passthrough
           @rng = config.rng
@@ -278,6 +281,14 @@ module VagrantPlugins
 
           if not @smartcard_dev.empty?
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
+          end
+
+          unless @qemuargs.empty?
+            env[:ui].info(' -- Command line args: ')
+            @qemuargs.each do |arg|
+              msg = "    -> value=#{arg[:value]}, "
+              env[:ui].info(msg)
+            end
           end
 
           env[:ui].info(" -- Command line : #{@cmd_line}")
