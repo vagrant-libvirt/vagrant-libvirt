@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'fog-libvirt', '>= 0.3.0'
   gem.add_runtime_dependency 'nokogiri', '~> 1.6.0'
+  gem.add_runtime_dependency 'fog-core', '~> 1.43.0'
 
   gem.add_development_dependency 'rake'
 end
