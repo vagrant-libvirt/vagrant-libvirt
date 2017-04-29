@@ -142,7 +142,7 @@ module VagrantPlugins
       attr_accessor :mgmt_attach
 
       # Additional qemuargs arguments
-      attr_accessor :qemuargs
+      attr_accessor :qemu_args
 
       def initialize
         @uri               = UNSET_VALUE
@@ -242,7 +242,7 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach       = UNSET_VALUE
 
-        @qemuargs  = UNSET_VALUE
+        @qemu_args  = []
       end
 
       def boot(device)
@@ -495,8 +495,7 @@ module VagrantPlugins
       end
 
       def qemuargs(options = {})
-        @qemuargs = [] if @qemuargs == UNSET_VALUE
-        @qemuargs.push(value: options[:value])
+        @qemu_args << options if options[:value]
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -662,7 +661,7 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
-        @qemuargs = [] if @qemuargs == UNSET_VALUE
+        @qemu_args = [] if @qemu_args == UNSET_VALUE
       end
 
       def validate(machine)
@@ -692,10 +691,6 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
-
-          c = qemuargs.dup
-          c += other.qemuargs
-          result.qemuargs = c
         end
       end
     end

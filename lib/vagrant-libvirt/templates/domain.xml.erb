@@ -219,9 +219,9 @@
     <% end -%>
   </devices>
 
-  <% unless @qemuargs.empty? %>
+  <% unless @qargs.empty? %>
   <qemu:commandline>
-    <% @qemuargs.each do |arg| %>
+    <% @qargs.each do |arg| %>
     <qemu:arg value='<%= arg[:value] %>'/>
     <% end %>
   </qemu:commandline>
