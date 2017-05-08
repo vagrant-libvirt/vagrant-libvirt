@@ -313,7 +313,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
-  use. Equivalent to qemu `-append`.
+  use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
 * `graphics_type` - Sets the protocol used to expose the guest display.
   Defaults to `vnc`.  Possible values are "sdl", "curses", "none", "gtk", "vnc"
   or "spice".
