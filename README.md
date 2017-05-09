@@ -1277,6 +1277,7 @@ $ git clone https://github.com/vagrant-libvirt/vagrant-libvirt.git
 $ cd vagrant-libvirt
 $ bundle install
 ```
+Ruby >= 2.0 is needed.
 
 Once you have the dependencies, verify the unit tests pass with `rspec`:
 
