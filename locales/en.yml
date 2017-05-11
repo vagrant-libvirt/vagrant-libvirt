@@ -76,8 +76,7 @@ en:
       no_domain_volume: |-
         Volume for domain is missing. Try to run 'vagrant up' again.
       interface_slot_not_available: |-
-        Interface adapter number is already in use. Please specify other adapter
-        number.
+        Available interface adapters have been exhausted. Please increase the nic_adapter_count.
       rsync_error: |-
         There was an error when attempting to rsync a share folder.
         Please inspect the error message below for more info.
