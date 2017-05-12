@@ -547,7 +547,7 @@ starts with `libvirt__` string. Here is a list of those options:
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
-* `:libvirt__host_ip` - Adress to use for the host (not guest).  Default is
+* `:libvirt__host_ip` - Address to use for the host (not guest).  Default is
   first possible address (after network address).
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
@@ -1060,6 +1060,8 @@ vagrant-libvirt supports Forwarded Ports via ssh port forwarding. Please note
 that due to a well known limitation only the TCP protocol is supported. For
 each `forwarded_port` directive you specify in your Vagrantfile,
 vagrant-libvirt will maintain an active ssh process for the lifetime of the VM.
+If your VM should happen to be rebooted, the SSH session will need to be
+restablished by halting the VM and bringing it back up.
 
 vagrant-libvirt supports an additional `forwarded_port` option `gateway_ports`
 which defaults to `false`, but can be set to `true` if you want the forwarded
@@ -1068,6 +1070,14 @@ also set the `host_ip` option to `'*'` since it defaults to `'localhost'`.
 
 You can also provide a custom adapter to forward from by 'adapter' option.
 Default is `eth0`.
+
+**Internally Accessible Port Forward**
+
+`config.vm.network :forwarded_port, guest: 80, host: 2000`
+
+**Externally Accessible Port Forward**
+
+`config.vm.network :forwarded_port, guest: 80, host: 2000, host_ip: "0.0.0.0"`
 
 ## Synced Folders
 
