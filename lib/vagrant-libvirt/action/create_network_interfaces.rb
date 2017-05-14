@@ -53,7 +53,7 @@ module VagrantPlugins
             else
               free_slot = find_empty(adapters)
               @logger.debug "Adapter not specified so found slot #{free_slot}"
-              raise Errors::InterfaceSlotNotAvailable if free_slot.nil?
+              raise Errors::InterfaceSlotExhausted if free_slot.nil?
             end
 
             # We have slot for interface, fill it with interface configuration.
