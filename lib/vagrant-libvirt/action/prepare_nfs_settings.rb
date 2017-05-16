@@ -55,9 +55,11 @@ module VagrantPlugins
         # @param [Machine] machine
         # @return [String]
         def read_machine_ip(machine)
-          # check host only ip
-          ssh_host = machine.ssh_info[:host]
-          return ssh_host if ping(ssh_host)
+          # check host only ip when ssh_info is ready
+          if machine.ssh_info
+            ssh_host = machine.ssh_info[:host]
+            return ssh_host if ping(ssh_host)
+          end
 
           # check other ips
           command = "ip=$(which ip); ${ip:-/sbin/ip} addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
