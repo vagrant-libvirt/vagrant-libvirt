@@ -187,7 +187,7 @@ module VagrantPlugins
             b2.use Call, DestroyConfirm do |env2, b3|
               if env2[:result]
                 b3.use ClearForwardedPorts
-                # b3.use PruneNFSExports
+                b3.use PruneNFSExports
                 b3.use DestroyDomain
                 b3.use DestroyNetworks
                 b3.use ProvisionerCleanup
