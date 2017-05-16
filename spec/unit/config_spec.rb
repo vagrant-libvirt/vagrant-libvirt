@@ -8,7 +8,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
   def assert_invalid
     errors = subject.validate(machine)
-    raise "No errors: #{errors.inspect}" if errors.values.any? { |v| !v.empty? }
+    raise "No errors: #{errors.inspect}" if errors.values.all?(&:empty?)
   end
 
   def assert_valid
@@ -21,31 +21,31 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       assert_valid
     end
 
-    it 'is valid if relative path used for disk' do
-      subject.storage :file, path: '../path/to/file.qcow2'
-      assert_valid
-    end
+    context 'with disks defined' do
+      before { expect(machine).to receive(:provider_config).and_return(subject).at_least(:once) }
 
-    it 'should be invalid if absolute path used for disk' do
-      subject.storage :file, path: '/absolute/path/to/file.qcow2'
-      assert_invalid
+      it 'is valid if relative path used for disk' do
+        subject.storage :file, path: '../path/to/file.qcow2'
+        assert_valid
+      end
+
+      it 'should be invalid if absolute path used for disk' do
+        subject.storage :file, path: '/absolute/path/to/file.qcow2'
+        assert_invalid
+      end
     end
 
     context 'with mac defined' do
       let (:vm) { double('vm') }
-      let (:networks) { double('networks') }
-      before do
-        allow(vm).to receive(:networks).and_return(networks)
-        allow(machine.config).to receive(:vm).and_return(vm)
-      end
+      before { expect(machine.config).to receive(:vm).and_return(vm) }
 
       it 'is valid with valid mac' do
-        allow(networks).to receive(:each).and_return([:public, { mac: 'aa:bb:cc:dd:ee:ff' }])
+        expect(vm).to receive(:networks).and_return([[:public, { mac: 'aa:bb:cc:dd:ee:ff' }]])
         assert_valid
       end
 
       it 'should be invalid if MAC not formatted correctly' do
-        allow(networks).to receive(:each).and_return([:public, { mac: 'aabbccddeeff' }])
+        expect(vm).to receive(:networks).and_return([[:public, { mac: 'aabbccddeeff' }]])
         assert_invalid
       end
     end
