@@ -44,8 +44,15 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         assert_valid
       end
 
+      it 'is valid with MAC containing no delimiters' do
+        network = [:public, { mac: 'aabbccddeeff' }]
+        expect(vm).to receive(:networks).and_return([network])
+        assert_valid
+        expect(network[1][:mac]).to eql('aa:bb:cc:dd:ee:ff')
+      end
+
       it 'should be invalid if MAC not formatted correctly' do
-        expect(vm).to receive(:networks).and_return([[:public, { mac: 'aabbccddeeff' }]])
+        expect(vm).to receive(:networks).and_return([[:public, { mac: 'aa/bb/cc/dd/ee/ff' }]])
         assert_invalid
       end
     end
