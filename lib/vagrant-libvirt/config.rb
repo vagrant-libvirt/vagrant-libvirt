@@ -674,8 +674,14 @@ module VagrantPlugins
         end
 
         machine.config.vm.networks.each do |_type, opts|
-          if opts[:mac] && opts[:mac].downcase! && !(opts[:mac] =~ /\A([0-9a-f]{2}:){5}([0-9a-f]{2})\z/)
-            errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' format"
+          if opts[:mac]
+            opts[:mac].downcase!
+            if opts[:mac] =~ /\A([0-9a-f]{12})\z/
+              opts[:mac] = opts[:mac].scan(/../).join(':')
+            end
+            unless opts[:mac] =~ /\A([0-9a-f]{2}:){5}([0-9a-f]{2})\z/
+              errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
+            end
           end
         end
 
