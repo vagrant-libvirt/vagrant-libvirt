@@ -8,6 +8,11 @@ describe 'templates/domain' do
 
   class DomainTemplateHelper < VagrantPlugins::ProviderLibvirt::Config
     include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+
+    def finalize!
+      super
+      @qargs = @qemu_args
+    end
   end
 
   let(:domain) { DomainTemplateHelper.new }
