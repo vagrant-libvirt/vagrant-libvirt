@@ -280,10 +280,10 @@ module VagrantPlugins
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
           end
 
-          @qargs = config.qemu_args
-          if not @qargs.empty?
+          @qemu_args = config.qemu_args
+          if not @qemu_args.empty?
             env[:ui].info(' -- Command line args: ')
-            @qargs.each do |arg|
+            @qemu_args.each do |arg|
               msg = "    -> value=#{arg[:value]}, "
               env[:ui].info(msg)
             end
