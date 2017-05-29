@@ -117,6 +117,10 @@ module VagrantPlugins
         error_key(:interface_slot_not_available)
       end
 
+      class InterfaceSlotExhausted < VagrantLibvirtError
+        error_key(:interface_slot_exhausted)
+      end
+
       class RsyncError < VagrantLibvirtError
         error_key(:rsync_error)
       end
