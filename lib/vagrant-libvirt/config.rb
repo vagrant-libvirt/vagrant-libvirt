@@ -547,6 +547,15 @@ module VagrantPlugins
       end
 
       def finalize!
+        @uri = ENV['VAGRANT_LIBVIRT_URI'] if (@uri == UNSET_VALUE && ENV['VAGRANT_LIBVIRT_URI'])
+        if (@uri && @uri != UNSET_VALUE)
+          uri = URI(@uri)
+          @driver = u.scheme.sub('+ssh','') if @driver == UNSET_VALUE
+          @host = uri.host if @host == UNSET_VALUE
+          @connect_via_ssh = uri.scheme.include?("+ssh") if @connect_via_ssh == UNSET_VALUE
+          @username = uri.user if @username == UNSET_VALUE
+          @password = uri.password if @password == UNSET_VALUE
+        end
         @driver = 'kvm' if @driver == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
