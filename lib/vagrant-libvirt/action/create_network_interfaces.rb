@@ -224,7 +224,7 @@ module VagrantPlugins
         def target_dev_name(device_name, type, iface_number)
           if device_name
             device_name
-          elsif type == 'netwrok'
+          elsif type == 'network'
             "vnet#{iface_number}"
           else
             # TODO can we use same name vnet#ifnum?
