@@ -300,7 +300,15 @@ end
 * `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
-* `numa_nodes` - Number of NUMA nodes on guest. Must be a factor of `cpu`.
+* `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but ake sure your total count of defined CPUs adds up to v.cpus. 
+
+  The sum of all the memory defined here will act as your total memory for your guest VM. **This sum will override what is set in `v.memory`**
+  ```
+  v.numa_nodes = [
+    {:id => 0, :cpus => "0-1", :memory => "1024"},
+    {:id => 1, :cpus => "2-3", :memory => "4096"}
+  ] 
+  ```
 * `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default",
   "none", "writethrough", "writeback", "directsync" and "unsafe". [See
