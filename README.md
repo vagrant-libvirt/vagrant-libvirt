@@ -300,7 +300,7 @@ end
 * `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
-* `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but ake sure your total count of defined CPUs adds up to v.cpus. 
+* `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but make sure your total count of defined CPUs adds up to v.cpus. 
 
   The sum of all the memory defined here will act as your total memory for your guest VM. **This sum will override what is set in `v.memory`**
   ```
