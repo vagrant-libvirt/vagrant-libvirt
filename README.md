@@ -304,6 +304,7 @@ end
 
   The sum of all the memory defined here will act as your total memory for your guest VM. **This sum will override what is set in `v.memory`**
   ```
+  v.cpus = 4
   v.numa_nodes = [
     {:id => 0, :cpus => "0-1", :memory => "1024"},
     {:id => 1, :cpus => "2-3", :memory => "4096"}
