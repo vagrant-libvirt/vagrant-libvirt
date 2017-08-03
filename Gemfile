@@ -14,14 +14,13 @@ group :development do
     gem 'vagrant', :git => 'https://github.com/mitchellh/vagrant.git'
   end
 
-  gem 'vagrant-spec', :github => 'mitchellh/vagrant-spec',
-    tag: ENV['VAGRANT_SPEC_VERSION'] || "9bba7e1228379c0a249a06ce76ba8ea7d276afbe"
+  gem 'vagrant-spec', :github => 'mitchellh/vagrant-spec'
 
   gem 'pry'
 end
 
 group :plugins do
-  gem 'vagrant-libvirt', :path => '.'
+  gemspec
 end
 
 gem 'coveralls', require: false
