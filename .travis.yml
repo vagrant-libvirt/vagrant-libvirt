@@ -3,26 +3,21 @@ language: ruby
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libvirt-dev
-  - gem update --system 2.4.8
-  - gem install bundler --version $BUNDLER_VERSION
-install: bundle _${BUNDLER_VERSION}_ install
-script: bundle _${BUNDLER_VERSION}_ exec rspec --color --format documentation
+  - gem update --system
+  - gem install bundler
+install: bundle install
+script: bundle exec rspec --color --format documentation
 notifications:
   email: false
 rvm:
-  - 2.2.3
+  - 2.2.5
+  - 2.3.3
 env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   matrix:
-    - VAGRANT_VERSION=v1.8.4 BUNDLER_VERSION=1.12.5
+    - VAGRANT_VERSION=v1.9.7 
 matrix:
-  include:
-    - env: VAGRANT_VERSION=master BUNDLER_VERSION=1.12.5
-      rvm: 2.2.3
-    - env: VAGRANT_VERSION=v1.7.4 BUNDLER_VERSION=1.7.9
-      rvm: 2.0.0
   allow_failures:
-    - env: VAGRANT_VERSION=master BUNDLER_VERSION=1.12.5
-      rvm: 2.2.3
-
+    - env: VAGRANT_VERSION=master 
+      rvm: 2.3.3
