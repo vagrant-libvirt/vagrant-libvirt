@@ -54,6 +54,7 @@ module VagrantPlugins
                 # b2.use SyncFolders
               end
             else
+              env[:halt_on_error] = true
               b2.use action_start
             end
           end
