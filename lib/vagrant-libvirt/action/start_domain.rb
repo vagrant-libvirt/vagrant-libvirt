@@ -128,6 +128,13 @@ module VagrantPlugins
                     cpu.delete_element(svm_feature)
                   end
                 end
+              elsif config.numa_nodes == nil
+                unless cpu.elements.to_a.empty?
+                  descr_changed = true
+                  cpu.elements.each do |elem|
+                    cpu.delete_element(elem)
+                  end
+                end
               end
 
               # Graphics
