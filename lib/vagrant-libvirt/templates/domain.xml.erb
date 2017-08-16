@@ -18,8 +18,8 @@
     <% end %>
     <% if @numa_nodes %>
       <numa>
-        <% @numa_nodes.each do |node| %>
-          <cell id='<%= node[:id] %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'/>
+        <% @numa_nodes.each_with_index do |node, index| %>
+          <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'/>
         <% end %>
       </numa>
     <% end %>

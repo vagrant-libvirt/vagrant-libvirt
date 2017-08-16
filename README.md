@@ -306,8 +306,8 @@ end
   ```
   v.cpus = 4
   v.numa_nodes = [
-    {:id => 0, :cpus => "0-1", :memory => "1024"},
-    {:id => 1, :cpus => "2-3", :memory => "4096"}
+    {:cpus => "0-1", :memory => "1024"},
+    {:cpus => "2-3", :memory => "4096"}
   ] 
   ```
 * `loader` - Sets path to custom UEFI loader.
