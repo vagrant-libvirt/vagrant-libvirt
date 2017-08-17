@@ -279,13 +279,16 @@ module VagrantPlugins
       end
 
       def _generate_numa
-        # Perform some validation of cpu values
-        @numa_nodes.each { |x|
+        @numa_nodes.collect { |x|
+          # Perform some validation of cpu values
           unless x[:cpus] =~ /^\d+-\d+$/
             raise 'numa_nodes[:cpus] must be in format "integer-integer"'
           end
+
+          # Convert to KiB
+          x[:memory] = x[:memory].to_i * 1024
         }
-        
+
         # Grab the value of the last @numa_nodes[:cpus] and verify @cpus matches
         # Note: [:cpus] is zero based and @cpus is not, so we need to +1
         last_cpu = @numa_nodes.last[:cpus]
@@ -295,8 +298,6 @@ module VagrantPlugins
         if @cpus != last_cpu.to_i
           raise 'The total number of numa_nodes[:cpus] must equal config.cpus'
         end
-
-        @numa_nodes.collect { |x| x[:memory] = x[:memory].to_i * 1024 }
 
         @numa_nodes
       end
