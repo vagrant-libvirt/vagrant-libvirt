@@ -279,26 +279,27 @@ module VagrantPlugins
       end
 
       def _generate_numa
-        raise 'NUMA nodes must be a factor of CPUs' if @cpus % @numa_nodes != 0
+        @numa_nodes.collect { |x|
+          # Perform some validation of cpu values
+          unless x[:cpus] =~ /^\d+-\d+$/
+            raise 'numa_nodes[:cpus] must be in format "integer-integer"'
+          end
 
-        if @memory % @numa_nodes != 0
-          raise 'NUMA nodes must be a factor of memory'
+          # Convert to KiB
+          x[:memory] = x[:memory].to_i * 1024
+        }
+
+        # Grab the value of the last @numa_nodes[:cpus] and verify @cpus matches
+        # Note: [:cpus] is zero based and @cpus is not, so we need to +1
+        last_cpu = @numa_nodes.last[:cpus]
+        last_cpu = last_cpu.scan(/\d+$/)[0]
+        last_cpu = last_cpu.to_i + 1
+
+        if @cpus != last_cpu.to_i
+          raise 'The total number of numa_nodes[:cpus] must equal config.cpus'
         end
 
-        numa = []
-
-        (1..@numa_nodes).each do |node|
-          numa_cpu_start = (@cpus / @numa_nodes) * (node - 1)
-          numa_cpu_end = (@cpus / @numa_nodes) * node - 1
-          numa_cpu = Array(numa_cpu_start..numa_cpu_end).join(',')
-          numa_mem = @memory / @numa_nodes
-
-          numa.push(id: node,
-                    cpu: numa_cpu,
-                    mem: numa_mem)
-        end
-
-        @numa_nodes = numa
+        @numa_nodes
       end
 
       def cpu_feature(options = {})
