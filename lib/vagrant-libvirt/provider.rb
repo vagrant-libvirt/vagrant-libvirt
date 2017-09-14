@@ -73,7 +73,7 @@ module VagrantPlugins
             "ssh '#{@machine.provider_config.host}' " \
             "-l '#{@machine.provider_config.username}' " \
             "-i '#{@machine.provider_config.id_ssh_key_file}' " \
-            'nc %h %p'
+            'nc -q0 %h %p'
 
         end
 
