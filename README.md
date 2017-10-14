@@ -1090,10 +1090,11 @@ Default is `eth0`.
 
 ## Synced Folders
 
-vagrant-libvirt supports bidirectional synced folders via nfs or 9p and
-unidirectional via rsync. The default is nfs. Vagrant automatically syncs the
-project folder on the host to `/vagrant` in the guest. You can also configure
+Vagrant automatically syncs the project folder on the host to `/vagrant` in the guest. You can also configure
 additional synced folders.
+
+`vagrant-libvirt` supports bidirectional synced folders via [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [VirtFS](http://www.linux-kvm.org/page/VirtFS) ([9p or Plan 9](https://en.wikipedia.org/wiki/9P_(protocol))) and
+unidirectional via rsync. The default is NFS. Difference between NFS and 9p is explained [here](https://unix.stackexchange.com/questions/240281/virtfs-plan-9-vs-nfs-as-tool-for-share-folder-for-virtual-machine).
 
 You can change the synced folder type for `/vagrant` by explicity configuring
 it an setting the type, e.g.
@@ -1117,7 +1118,7 @@ config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmod
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
 
-Further documentation on using 9p can be found [here](https://www.kernel.org/doc/Documentation/filesystems/9p.txt). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
+Further documentation on using 9p can be found in [kernel docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in [QEMU wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
 
 **SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged
 public network interface and you must connect to libvirt via ssh.
