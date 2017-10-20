@@ -286,6 +286,8 @@ module VagrantPlugins
           @network_bridge_name = @interface_network[:bridge_name]
           @network_address = @interface_network[:ip_address]
           @network_netmask = @interface_network[:netmask]
+          @network_mtu = @options[:mtu]
+
           @guest_ipv6 = @interface_network[:guest_ipv6]
 
           @network_ipv6_address = @interface_network[:ipv6_address]

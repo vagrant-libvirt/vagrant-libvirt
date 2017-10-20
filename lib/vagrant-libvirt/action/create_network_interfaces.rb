@@ -76,6 +76,7 @@ module VagrantPlugins
             @driver_name = iface_configuration.fetch(:driver_name, false)
             @driver_queues = iface_configuration.fetch(:driver_queues, false)
             @device_name = iface_configuration.fetch(:iface_name, false)
+            @mtu = iface_configuration.fetch(:mtu, nil)
             template_name = 'interface'
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
@@ -143,6 +144,7 @@ module VagrantPlugins
                                     @device_name,
                                     @iface_number,
                                     @model_type,
+                                    @mtu,
                                     driver_options,
                                     @udp_tunnel)
                     else
@@ -234,7 +236,7 @@ module VagrantPlugins
         end
 
         def interface_xml(type, source_options, mac, device_name,
-                          iface_number, model_type, driver_options,
+                          iface_number, model_type, mtu, driver_options,
                           udp_tunnel={})
           Nokogiri::XML::Builder.new do |xml|
             xml.interface(type: type || 'network') do
@@ -245,6 +247,7 @@ module VagrantPlugins
               xml.target(dev: target_dev_name(device_name, type, iface_number))
               xml.alias(name: "net#{iface_number}")
               xml.model(type: model_type.to_s)
+              xml.mtu(size: mtu) if mtu
               xml.driver(driver_options)
             end
           end.to_xml(
