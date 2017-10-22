@@ -247,7 +247,7 @@ module VagrantPlugins
               xml.target(dev: target_dev_name(device_name, type, iface_number))
               xml.alias(name: "net#{iface_number}")
               xml.model(type: model_type.to_s)
-              xml.mtu(size: mtu) if mtu
+              xml.mtu(size: Integer(mtu)) if mtu
               xml.driver(driver_options)
             end
           end.to_xml(

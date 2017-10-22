@@ -6,7 +6,7 @@
     <domain name="<%= @network_domain_name %>" localOnly="yes" />
   <% end %>
 
-  <% if !@network_mtu.nil? %>
+  <% if @network_mtu %>
   <mtu size="<%= @network_mtu %>" />
   <% end %>
 
