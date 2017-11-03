@@ -16,8 +16,14 @@ module VagrantPlugins
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain.nil?
 
-          @logger.info('Trying gracefull shutdown.')
-          domain.shutdown
+          begin
+            env[:machine].guest.capability(:halt)
+          rescue
+            @logger.info('Trying libvirt graceful shutdown.')
+            domain.shutdown
+          end
+
+
           begin
             domain.wait_for(30) do
               !ready?
