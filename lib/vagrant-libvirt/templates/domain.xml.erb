@@ -25,6 +25,13 @@
     <% end %>
   </cpu>
 
+<% unless @memory_backing.empty? %>
+  <memoryBacking>
+  <% @memory_backing.each do |backing| %>
+    <<%= backing[:name] %> <%= backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>/>
+  <% end %>
+  </memoryBacking>
+<% end%>
 
   <os>
     <% if @machine_type %>

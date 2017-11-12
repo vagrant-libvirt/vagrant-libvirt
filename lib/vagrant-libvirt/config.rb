@@ -58,6 +58,7 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
       attr_accessor :cpu_mode
@@ -164,6 +165,7 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
+        @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
@@ -311,6 +313,21 @@ module VagrantPlugins
 
         @cpu_features.push(name:   options[:name],
                            policy: options[:policy])
+      end
+
+      def memorybacking(option, config = {})
+        case option
+        when :source
+          raise 'Source type must be specified' if config[:type].nil?
+        when :access
+          raise 'Access mode must be specified' if config[:mode].nil?
+        when :allocation
+          raise 'Allocation mode must be specified' if config[:mode].nil?
+        end
+
+        @memory_backing = [] if @memory_backing == UNSET_VALUE
+        @memory_backing.push(name: option,
+                             config: config)
       end
 
       def input(options = {})
@@ -569,6 +586,7 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
+        @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
