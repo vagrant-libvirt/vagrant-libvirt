@@ -56,6 +56,7 @@ module VagrantPlugins
                 netmask:          @options[:netmask],
                 network_address:  nil,
                 bridge_name:      nil,
+                domain_name:      nil,
                 ipv6_address:     options[:ipv6_address] || nil,
                 ipv6_prefix:      options[:ipv6_prefix] || nil,
                 created:          false,
@@ -121,6 +122,7 @@ module VagrantPlugins
         def handle_ip_option(env)
           return unless @options[:ip]
           net_address = nil
+
           unless @options[:forward_mode] == 'veryisolated'
             net_address = network_address(@options[:ip], @options[:netmask])
 
@@ -316,6 +318,8 @@ module VagrantPlugins
           else
             @network_dhcp_enabled = false
           end
+
+          @network_domain_name = @options[:domain_name]
 
           begin
             @interface_network[:libvirt_network] = \

@@ -490,6 +490,13 @@ An examples of network interface definitions:
       :libvirt__network_address => '10.20.30.0'
   end
 
+  # Private network (as above) using a domain name
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :private_network,
+      :ip => "10.20.30.40",
+      :libvirt__domain_name => "test.local"
+  end
+
   # Private network. Point to Point between 2 Guest OS using a TCP tunnel
   # Guest 1
   config.vm.define :test_vm1 do |test_vm1|
@@ -561,6 +568,8 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:libvirt__network_address` - Used only when `:type` is set to `dhcp`. Only `/24` subnet is supported. Default is `172.28.128.0`.
 * `:libvirt__host_ip` - Address to use for the host (not guest).  Default is
   first possible address (after network address).
+* `:libvirt__domain_name` - DNS domain of the DHCP server. Used only
+  when creating new network.
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
   when creating new network. Default is true.
 * `:libvirt__dhcp_start` - First address given out via DHCP.  Default is third
