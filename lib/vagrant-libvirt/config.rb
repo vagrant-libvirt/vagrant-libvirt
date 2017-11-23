@@ -600,7 +600,7 @@ module VagrantPlugins
            @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
-        @graphics_port = 5900 if @graphics_port == UNSET_VALUE
+        @graphics_port = -1 if @graphics_port == UNSET_VALUE
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
