@@ -17,8 +17,8 @@ env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   matrix:
-    - VAGRANT_VERSION=v1.9.7 
+    - VAGRANT_VERSION=v2.0.1
 matrix:
   allow_failures:
-    - env: VAGRANT_VERSION=master 
+    - env: VAGRANT_VERSION=master
       rvm: 2.3.3
