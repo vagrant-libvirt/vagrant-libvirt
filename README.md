@@ -300,7 +300,7 @@ end
 * `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
-* `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but make sure your total count of defined CPUs adds up to `v.cpus`. 
+* `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but make sure your total count of defined CPUs adds up to `v.cpus`.
 
   The sum of all the memory defined here will act as your total memory for your guest VM. **This sum will override what is set in `v.memory`**
   ```
@@ -308,7 +308,7 @@ end
   v.numa_nodes = [
     {:cpus => "0-1", :memory => "1024"},
     {:cpus => "2-3", :memory => "4096"}
-  ] 
+  ]
   ```
 * `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default",
@@ -488,6 +488,13 @@ An examples of network interface definitions:
     test_vm1.vm.network :private_network, :ip => "10.20.30.40"
   end
 
+  # Private network using DHCP and a custom network
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :private_network,
+      :type => "dhcp",
+      :libvirt__network_address => '10.20.30.0'
+  end
+
   # Private network. Point to Point between 2 Guest OS using a TCP tunnel
   # Guest 1
   config.vm.define :test_vm1 do |test_vm1|
@@ -556,6 +563,7 @@ starts with `libvirt__` string. Here is a list of those options:
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
+* `:libvirt__network_address` - Used only when `:type` is set to `dhcp`. Only `/24` subnet is supported. Default is `172.28.128.0`.
 * `:libvirt__host_ip` - Address to use for the host (not guest).  Default is
   first possible address (after network address).
 * `:libvirt__dhcp_enabled` - If DHCP will offer addresses, or not. Used only
