@@ -183,11 +183,17 @@ module VagrantPlugins
               next
             end
 
-            b2.use ClearForwardedPorts
-            # b2.use PruneNFSExports
-            b2.use DestroyDomain
-            b2.use DestroyNetworks
-            b2.use ProvisionerCleanup
+            b2.use Call, DestroyConfirm do |env2, b3|
+              if env2[:result]
+                b3.use ClearForwardedPorts
+                # b3.use PruneNFSExports
+                b3.use DestroyDomain
+                b3.use DestroyNetworks
+                b3.use ProvisionerCleanup
+              else
+                b3.use MessageWillNotDestroy
+              end
+            end
           end
         end
       end
@@ -332,6 +338,7 @@ module VagrantPlugins
       autoload :MessageNotCreated, action_root.join('message_not_created')
       autoload :MessageNotRunning, action_root.join('message_not_running')
       autoload :MessageNotSuspended, action_root.join('message_not_suspended')
+      autoload :MessageWillNotDestroy, action_root.join('message_will_not_destroy')
 
       autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
 
