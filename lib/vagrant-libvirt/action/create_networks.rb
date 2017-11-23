@@ -240,8 +240,10 @@ module VagrantPlugins
         end
 
         def handle_dhcp_private_network(env)
-          net_address = '172.28.128.0'
+          net_address = @options[:libvirt__network_address]
+          net_address = '172.28.128.0' unless net_address
           network = lookup_network_by_ip(net_address)
+
           @interface_network = network if network
 
           # Do we need to create new network?
