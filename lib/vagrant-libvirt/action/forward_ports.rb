@@ -102,7 +102,7 @@ module VagrantPlugins
           options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
 
           # TODO: instead of this, try and lock and get the stdin from spawn...
-          ssh_cmd = ''
+          ssh_cmd = 'exec '
           if host_port <= 1024
             @@lock.synchronize do
               # TODO: add i18n
