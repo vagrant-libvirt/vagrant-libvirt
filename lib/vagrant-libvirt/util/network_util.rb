@@ -112,6 +112,9 @@ module VagrantPlugins
                              false
                            end
 
+            domain_name = xml.at_xpath('/network/domain/@name')
+            domain_name = domain_name.value if domain_name
+
             # Calculate network address of network from ip address and
             # netmask.
             network_address = (network_address(ip, netmask) if ip && netmask)
@@ -123,6 +126,7 @@ module VagrantPlugins
               network_address:  network_address,
               dhcp_enabled:     dhcp_enabled,
               bridge_name:      libvirt_network.bridge_name,
+              domain_name:      domain_name,
               created:          true,
               active:           libvirt_network.active?,
               autostart:        libvirt_network.autostart?,
