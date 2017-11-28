@@ -111,11 +111,16 @@
 
 <% @channels.each do |channel| %>
   <channel type='<%= channel[:type] %>' >
-      <source mode='<%= channel[:source_mode] %>'
+      <%if channel[:source_mode] or channel[:source_path] %>
+      <source
+          <% if channel[:source_mode] %>
+               mode='<%= channel[:source_mode] %>'
+          <% end %>
           <% if channel[:source_path] %>
                path="<%= channel[:source_path] %>"
           <% end %>
       />
+      <% end %>
       <target type='<%= channel[:target_type] %>'
           <% if channel[:target_name] %>
                name="<%= channel[:target_name] %>"
