@@ -52,6 +52,9 @@ describe 'templates/domain' do
       domain.channel(type: 'unix',
                      target_name: 'org.qemu.guest_agent.0',
                      target_type: 'virtio')
+      domain.channel(type: 'spicevmc',
+                     target_name: 'com.redhat.spice.0',
+                     target_type: 'virtio')
       domain.channel(type: 'unix',
                      target_type: 'guestfwd',
                      target_address: '192.0.2.42',
