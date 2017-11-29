@@ -49,6 +49,8 @@ en:
       Machine is booted and ready for use!
     remove_stale_volume: |-
       Remove stale volume...
+    package_domain: |-
+      Packaging domain...
 
     warnings:
       ignoring_virtual_size_too_small: |-

@@ -62,7 +62,9 @@ module VagrantPlugins
           File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
           File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
           assemble_box(boxname, extra)
-          FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
+          source_file = @tmp_dir + '/' + boxname
+          dest_file = '../' + boxname
+          FileUtils.mv(source_file, dest_file) if File.exist?(source_file)
           FileUtils.rm_rf(@tmp_dir)
           env[:ui].info('Box created')
           env[:ui].info('You can now add the box:')
