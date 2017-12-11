@@ -6,6 +6,10 @@
     <domain name="<%= @network_domain_name %>" localOnly="yes" />
   <% end %>
 
+  <% if @network_mtu %>
+  <mtu size="<%= @network_mtu %>" />
+  <% end %>
+
   <% if (@network_forward_mode != 'none' && @network_forward_mode != 'veryisolated') %>
     <% if @network_forward_device %>
       <forward mode="<%= @network_forward_mode %>" dev="<%= @network_forward_device %>" />

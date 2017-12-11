@@ -626,6 +626,9 @@ starts with `libvirt__` string. Here is a list of those options:
   failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
 * `:mac` - MAC address for the interface. *Note: specify this in lowercase
   since Vagrant network scripts assume it will be!*
+* `:libvirt__mtu` - MTU size for the libvirt network, if not defined, the
+  created network will use the libvirt default (1500). VMs still need to set the
+  MTU accordingly.
 * `:model_type` - parameter specifies the model of the network adapter when you
   create a domain value by default virtio KVM believe possible values, see the
   documentation for libvirt
