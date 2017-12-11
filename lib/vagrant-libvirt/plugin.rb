@@ -39,6 +39,11 @@ module VagrantPlugins
         Cap::NicMacAddresses
       end
 
+      provider_capability(:libvirt, :snapshot_list) do
+        require_relative 'cap/snapshots'
+        Cap::Snapshots
+      end
+
       # lower priority than nfs or rsync
       # https://github.com/vagrant-libvirt/vagrant-libvirt/pull/170
       synced_folder('9p', 4) do

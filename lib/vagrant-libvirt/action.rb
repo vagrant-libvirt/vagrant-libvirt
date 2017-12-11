@@ -317,6 +317,58 @@ module VagrantPlugins
         end
       end
 
+      def self.action_snapshot_delete
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if env[:result]
+              b2.use SnapshotDelete
+              next
+            else
+              b2.use MessageNotCreated
+            end
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for restoring a snapshot
+      def self.action_snapshot_restore
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if env[:result]
+              b2.use SnapshotRestore
+              next
+            else
+              b2.use MessageNotCreated
+            end
+
+            b2.use Call, IsRunning do |env2, b3|
+              unless env2[:result]
+                b3.use MessageNotRunning
+                next
+              end
+              b3.use SnapshotDelete
+            end
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for saving a snapshot
+      def self.action_snapshot_save
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            if env[:result]
+              b2.use SnapshotSave
+            else
+              b2.use MessageNotCreated
+              next
+            end
+          end
+        end
+      end
+
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
       autoload :PackageDomain, action_root.join('package_domain')
       autoload :CreateDomain, action_root.join('create_domain')
@@ -341,6 +393,10 @@ module VagrantPlugins
       autoload :MessageWillNotDestroy, action_root.join('message_will_not_destroy')
 
       autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
+
+      autoload :SnapshotDelete, action_root.join('snapshot_delete')
+      autoload :SnapshotSave, action_root.join('snapshot_save')
+      autoload :SnapshotRestore, action_root.join('snapshot_restore')
 
       autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')

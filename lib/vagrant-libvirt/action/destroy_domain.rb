@@ -26,7 +26,7 @@ module VagrantPlugins
               begin
                 libvirt_domain.lookup_snapshot_by_name(name).delete
               rescue => e
-                raise Errors::DeleteSnapshotError, error_message: e.message
+                raise Errors::SnapshotDeletionError, error_message: e.message
               end
             end
           rescue
