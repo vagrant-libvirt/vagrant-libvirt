@@ -46,6 +46,7 @@ module VagrantPlugins
           @disk_device = config.disk_device
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
+          @memory_backing = config.memory_backing
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache
           @kernel = config.kernel
@@ -182,6 +183,9 @@ module VagrantPlugins
             env[:ui].info(" -- Feature:           #{feature}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          @memory_backing.each do |backing|
+            env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
           if env[:machine].config.vm.box

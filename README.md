@@ -989,6 +989,24 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Memory Backing
+
+You can specify memoryBacking options via `libvirt.memorybacking`. Available options are shown below. Full documentation is available at the [libvirt _memoryBacking_ section](https://libvirt.org/formatdomain.html#elementsMemoryBacking).
+
+NOTE: The hugepages `<page>` element is not yet supported
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memorybacking :hugepages
+    libvirt.memorybacking :nosharepages
+    libvirt.memorybacking :locked
+    libvirt.memorybacking :source, :type => 'file'
+    libvirt.memorybacking :access, :mode => 'shared'
+    libvirt.memorybacking :allocation, :mode => 'immediate'
+  end
+end
+```
 ## USB device passthrough
 
 You can specify multiple USB devices to passthrough to the VM via
