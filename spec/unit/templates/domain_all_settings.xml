@@ -8,6 +8,7 @@
   <cpu mode='custom'>
       <model fallback='allow'>qemu64</model>
         <feature name='AAA' policy='required'/>
+        <topology sockets='1' cores='3' threads='2'/>
   </cpu>
 
 
