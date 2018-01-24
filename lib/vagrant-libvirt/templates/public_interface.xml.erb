@@ -20,4 +20,7 @@
   <% if @ovs %>
   <virtualport type='openvswitch'/>
   <% end %>
+  <% if @pci_bus and @pci_slot %>
+  <address type='pci' bus='<%=@pci_bus%>' slot='<%=@pci_slot%>' />
+  <% end %>
 </interface>

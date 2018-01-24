@@ -639,6 +639,8 @@ starts with `libvirt__` string. Here is a list of those options:
   info](http://www.linux-kvm.org/page/Multiqueue)
 * `:autostart` - Automatic startup of network by the libvirt daemon.
   If not specified the default is 'false'.
+* `:bus` - The bus of the PCI device. Both :bus and :slot have to be defined.
+* `:slot` - The slot of the PCI device. Both :bus and :slot have to be defined.
 
 When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
 whether the virtual network contains a DHCP server or not and vagrant-libvirt
