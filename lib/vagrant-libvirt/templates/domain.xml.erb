@@ -15,6 +15,10 @@
       <% @cpu_features.each do |cpu_feature| %>
         <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
       <% end %>
+      <% unless @cpu_topology.empty? %>
+        <%# CPU topology -%>
+        <topology sockets='<%= @cpu_topology[:sockets] %>' cores='<%= @cpu_topology[:cores] %>' threads='<%= @cpu_topology[:threads] %>'/>
+      <% end %>
     <% end %>
     <% if @numa_nodes %>
       <numa>

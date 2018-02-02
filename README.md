@@ -282,6 +282,17 @@ end
   libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+* `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+
+  ```ruby
+  Vagrant.configure("2") do |config|
+    config.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = 4
+      libvirt.cputopology :sockets => '2', :cores => '2', :threads => '1'
+    end
+  end
+  ```
+
 * `nested` - [Enable nested
   virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt).
   Default is false.
