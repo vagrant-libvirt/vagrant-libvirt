@@ -47,6 +47,11 @@ module VagrantPlugins
                              message_attributes
             ))
 
+            if fp[:protocol] == 'udp'
+              env[:ui].warn I18n.t('vagrant_libvirt.warnings.forwarding_udp')
+              next
+            end
+
             ssh_pid = redirect_port(
               @env[:machine],
               fp[:host_ip] || 'localhost',
