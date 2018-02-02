@@ -14,6 +14,8 @@ module VagrantPlugins
           management_network_mac = env[:machine].provider_config.management_network_mac
           management_network_guest_ipv6 = env[:machine].provider_config.management_network_guest_ipv6
           management_network_autostart = env[:machine].provider_config.management_network_autostart
+          management_network_pci_bus = env[:machine].provider_config.management_network_pci_bus
+          management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -39,11 +41,18 @@ module VagrantPlugins
             dhcp_enabled: true,
             forward_mode: management_network_mode,
             guest_ipv6: management_network_guest_ipv6,
-            autostart: management_network_autostart
+            autostart: management_network_autostart,
+            bus: management_network_pci_bus,
+            slot: management_network_pci_slot
           }
 
           unless management_network_mac.nil?
             management_network_options[:mac] = management_network_mac
+          end
+
+          unless management_network_pci_bus.nil? and management_network_pci_slot.nil?
+            management_network_options[:bus] = management_network_pci_bus
+            management_network_options[:slot] = management_network_pci_slot
           end
 
           if (env[:machine].config.vm.box &&

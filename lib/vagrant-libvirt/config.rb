@@ -51,6 +51,8 @@ module VagrantPlugins
       attr_accessor :management_network_mac
       attr_accessor :management_network_guest_ipv6
       attr_accessor :management_network_autostart
+      attr_accessor :management_network_pci_bus
+      attr_accessor :management_network_pci_slot
 
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
@@ -162,6 +164,8 @@ module VagrantPlugins
         @management_network_mac  = UNSET_VALUE
         @management_network_guest_ipv6 = UNSET_VALUE
         @management_network_autostart = UNSET_VALUE
+        @management_network_pci_slot = UNSET_VALUE
+        @management_network_pci_bus = UNSET_VALUE
 
         # Domain specific settings.
         @uuid              = UNSET_VALUE
@@ -595,6 +599,8 @@ module VagrantPlugins
         @management_network_mac = nil if @management_network_mac == UNSET_VALUE
         @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
         @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
+        @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
+        @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri if @uri == UNSET_VALUE
