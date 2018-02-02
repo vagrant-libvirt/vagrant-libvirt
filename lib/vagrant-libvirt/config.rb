@@ -67,6 +67,7 @@ module VagrantPlugins
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
+      attr_accessor :cpu_topology
       attr_accessor :features
       attr_accessor :numa_nodes
       attr_accessor :loader
@@ -175,6 +176,7 @@ module VagrantPlugins
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
+        @cpu_topology      = UNSET_VALUE
         @features          = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
@@ -317,6 +319,20 @@ module VagrantPlugins
 
         @cpu_features.push(name:   options[:name],
                            policy: options[:policy])
+      end
+
+      def cputopology(options = {})
+        if options[:sockets].nil? || options[:cores].nil? || options[:threads].nil?
+          raise 'CPU topology must have all of sockets, cores and threads specified'
+        end
+
+        if @cpu_topology == UNSET_VALUE
+          @cpu_topology = {}
+        end
+
+        @cpu_topology[:sockets] = options[:sockets]
+        @cpu_topology[:cores] = options[:cores]
+        @cpu_topology[:threads] = options[:threads]        
       end
 
       def memorybacking(option, config = {})
@@ -600,6 +616,7 @@ module VagrantPlugins
                      elsif @cpu_mode != 'custom'
                        ''
           end
+        @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE

@@ -54,6 +54,8 @@ en:
       ignoring_virtual_size_too_small: |-
         Ignoring requested virtual disk size of '%{requested}' as it is below
         the minimum box image size of '%{minimum}'.
+      forwarding_udp: |-
+        Forwarding UDP ports is not supported. Ignoring.
 
     errors:
       package_not_supported: No support for package with libvirt. Create box manually.
