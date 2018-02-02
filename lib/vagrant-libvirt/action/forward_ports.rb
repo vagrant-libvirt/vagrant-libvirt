@@ -100,6 +100,7 @@ module VagrantPlugins
             StrictHostKeyChecking=no
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
+            IdentitiesOnly=#{ssh_info[:keys_only] ? 'yes' : 'no'}
           ) + ssh_info[:private_key_path].map do |pk|
                 "IdentityFile='\"#{pk}\"'"
               end).map { |s| s.prepend('-o ') }.join(' ')
