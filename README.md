@@ -845,7 +845,7 @@ Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` es
 
 ## USB Controller Configuration
 
-The USB controller can be configured using `libvirt.usbctl`, with the following options:
+The USB controller can be configured using `libvirt.usb_controller`, with the following options:
 
 * `model` - The USB controller device model to emulate. (mandatory)
 * `ports` - The number of devices that can be connected to the controller.
@@ -856,7 +856,7 @@ See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsCo
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Set up a USB3 controller
-    libvirt.usbctl :model => "nec-xhci"
+    libvirt.usb_controller :model => "nec-xhci"
   end
 end
 ```

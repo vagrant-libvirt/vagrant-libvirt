@@ -425,7 +425,7 @@ module VagrantPlugins
       end
 
 
-      def usbctl(options = {})
+      def usb_controller(options = {})
         if options[:model].nil?
           raise 'USB controller model must be specified.'
         end
