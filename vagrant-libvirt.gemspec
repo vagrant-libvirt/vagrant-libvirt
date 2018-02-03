@@ -1,13 +1,17 @@
 # -*- encoding: utf-8 -*-
 # stub: vagrant-libvirt 0.0.41 ruby lib
+require File.expand_path('../lib/vagrant-libvirt/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.name = "vagrant-libvirt".freeze
-  s.version = "0.0.41"
+  s.version = VagrantPlugins::ProviderLibvirt::VERSION
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Lukas Stanek".freeze, "Dima Vasilets".freeze, "Brian Pitts".freeze]
+  s.files         = `git ls-files`.split($\)
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+
   s.date = "2018-02-02"
   s.description = "libvirt provider for Vagrant.".freeze
   s.email = ["ls@elostech.cz".freeze, "pronix.service@gmail.com".freeze, "brian@polibyte.com".freeze]
