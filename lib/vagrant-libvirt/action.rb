@@ -19,6 +19,7 @@ module VagrantPlugins
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
+          b.use BoxCheckOutdated
           b.use Call, IsCreated do |env, b2|
             # Create VM if not yet created.
             if !env[:result]
