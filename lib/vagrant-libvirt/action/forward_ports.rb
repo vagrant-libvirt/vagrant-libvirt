@@ -48,7 +48,7 @@ module VagrantPlugins
             ))
 
             if fp[:protocol] == 'udp'
-              env[:ui].warn I18n.t('vagrant_libvirt.warnings.forwarding_udp')
+              @env[:ui].warn I18n.t('vagrant_libvirt.warnings.forwarding_udp')
               next
             end
 
