@@ -126,6 +126,9 @@ module VagrantPlugins
       # Watchdog device
       attr_accessor :watchdog_dev
 
+      # USB controller
+      attr_accessor :usbctl_dev
+
       # USB device passthrough
       attr_accessor :usbs
 
@@ -230,6 +233,9 @@ module VagrantPlugins
 
         # Watchdog device
         @watchdog_dev      = UNSET_VALUE
+
+        # USB controller
+        @usbctl_dev        = UNSET_VALUE
 
         # USB device passthrough
         @usbs              = UNSET_VALUE
@@ -418,6 +424,19 @@ module VagrantPlugins
         @watchdog_dev[:action] = options[:action] || 'reset'
       end
 
+
+      def usbctl(options = {})
+        if options[:model].nil?
+          raise 'USB controller model must be specified.'
+        end
+
+        if @usbctl_dev == UNSET_VALUE
+            @usbctl_dev = {}
+        end
+
+        @usbctl_dev[:model] = options[:model]
+        @usbctl_dev[:ports] = options[:ports]
+      end
 
       def usb(options = {})
         if (options[:bus].nil? || options[:device].nil?) && options[:vendor].nil? && options[:product].nil?
@@ -683,6 +702,9 @@ module VagrantPlugins
 
         # Watchdog device
         @watchdog_dev = {} if @watchdog_dev == UNSET_VALUE
+
+        # USB controller
+        @usbctl_dev = {} if @usbctl_dev == UNSET_VALUE
 
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE

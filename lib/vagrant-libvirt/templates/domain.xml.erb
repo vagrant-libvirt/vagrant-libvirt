@@ -232,6 +232,14 @@
       </backend>
     </tpm>
     <% end -%>
+    <% unless @usbctl_dev.empty? %>
+    <%# USB Controller -%>
+    <controller type='usb' model='<%= @usbctl_dev[:model] %>'
+      <% if @usbctl_dev[:ports] %>
+        ports="<%= @usbctl_dev[:ports] %>"
+      <% end %>
+    />
+    <% end %>
   </devices>
 
   <% unless @qargs.empty? %>
