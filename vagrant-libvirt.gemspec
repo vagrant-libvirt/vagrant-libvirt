@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files`.split($\)
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
 
-  s.date = "2018-02-02"
   s.description = "libvirt provider for Vagrant.".freeze
   s.email = ["ls@elostech.cz".freeze, "pronix.service@gmail.com".freeze, "brian@polibyte.com".freeze]
   s.homepage = "https://github.com/vagrant-libvirt/vagrant-libvirt".freeze
