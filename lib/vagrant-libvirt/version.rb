@@ -1,5 +1,5 @@
 module VagrantPlugins
   module ProviderLibvirt
-    VERSION = '0.0.42'.freeze
+    VERSION = '0.0.43'.freeze
   end
 end
