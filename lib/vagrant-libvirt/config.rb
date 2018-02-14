@@ -615,6 +615,8 @@ module VagrantPlugins
                        'qemu64'
                      elsif @cpu_mode != 'custom'
                        ''
+                     else
+                       @cpu_model
           end
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE

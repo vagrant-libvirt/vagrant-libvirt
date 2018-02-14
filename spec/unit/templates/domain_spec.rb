@@ -81,4 +81,16 @@ describe 'templates/domain' do
       expect(domain.to_xml('domain')).to eq xml_expected
     end
   end
+
+  context 'when custom cpu model enabled' do
+    before do
+      domain.cpu_mode = 'custom'
+      domain.cpu_model = 'SandyBridge'
+    end
+    let(:test_file) { 'domain_custom_cpu_model.xml' }
+    it 'renders template' do
+      domain.finalize!
+      expect(domain.to_xml('domain')).to eq xml_expected
+    end
+  end
 end
