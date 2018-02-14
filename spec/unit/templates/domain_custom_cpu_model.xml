@@ -1,0 +1,46 @@
+<domain type='' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name></name>
+  <uuid></uuid>
+  <memory></memory>
+  <vcpu>1</vcpu>
+
+
+  <cpu mode='custom'>
+      <model fallback='allow'>SandyBridge</model>
+  </cpu>
+
+
+  <os>
+        <type>hvm</type>
+    <kernel></kernel>
+    <initrd></initrd>
+    <cmdline></cmdline>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'/>
+  <devices>
+
+
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target port='0'/>
+    </console>
+
+
+    <input type='mouse' bus='ps2'/>
+
+      <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'  />
+      <video>
+        <model type='cirrus' vram='9216' heads='1'/>
+      </video>
+
+
+  </devices>
+
+</domain>
