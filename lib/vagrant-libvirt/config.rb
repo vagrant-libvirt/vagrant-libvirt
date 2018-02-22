@@ -40,6 +40,7 @@ module VagrantPlugins
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
       attr_accessor :storage_pool_name
+      attr_accessor :storage_pool_path
 
       # Turn on to prevent hostname conflicts
       attr_accessor :random_hostname
@@ -148,6 +149,9 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
+      # Use qemu session instead of system
+      attr_accessor :qemu_use_session
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -251,6 +255,7 @@ module VagrantPlugins
         @mgmt_attach       = UNSET_VALUE
 
         @qemu_args  = []
+        @qemu_use_session  = UNSET_VALUE
       end
 
       def boot(device)
@@ -542,7 +547,9 @@ module VagrantPlugins
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
-                    when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
+                    when 'qemu', 'kvm'
+                      @qemu_use_session ? '/session' : '/system'
+                    when 'openvz', 'uml', 'phyp', 'parallels'
                       '/system'
                     when '@en', 'esx'
                       '/'
@@ -592,6 +599,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
@@ -706,6 +714,7 @@ module VagrantPlugins
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
         @qemu_args = [] if @qemu_args == UNSET_VALUE
+        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
       end
 
       def validate(machine)

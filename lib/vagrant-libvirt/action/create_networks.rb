@@ -27,6 +27,11 @@ module VagrantPlugins
         end
 
         def call(env)
+          if env[:machine].provider_config.qemu_use_session
+            @app.call(env)
+            return
+          end
+
           # only one vm at a time should try to set up networks
           # otherwise they'll have inconsitent views of current state
           # and conduct redundant operations that cause errors
