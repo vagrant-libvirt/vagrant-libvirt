@@ -46,6 +46,7 @@ module VagrantPlugins
       attr_accessor :random_hostname
 
       # Libvirt default network
+      attr_accessor :management_network_device
       attr_accessor :management_network_name
       attr_accessor :management_network_address
       attr_accessor :management_network_mode
@@ -54,6 +55,9 @@ module VagrantPlugins
       attr_accessor :management_network_autostart
       attr_accessor :management_network_pci_bus
       attr_accessor :management_network_pci_slot
+
+      # System connection information
+      attr_accessor :system_uri
 
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
@@ -162,6 +166,7 @@ module VagrantPlugins
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
+        @management_network_device  = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_network_mode = UNSET_VALUE
@@ -170,6 +175,9 @@ module VagrantPlugins
         @management_network_autostart = UNSET_VALUE
         @management_network_pci_slot = UNSET_VALUE
         @management_network_pci_bus = UNSET_VALUE
+
+        # System connection information
+        @system_uri      = UNSET_VALUE
 
         # Domain specific settings.
         @uuid              = UNSET_VALUE
@@ -601,6 +609,7 @@ module VagrantPlugins
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
+        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
@@ -609,6 +618,7 @@ module VagrantPlugins
         @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
         @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
+        @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri if @uri == UNSET_VALUE

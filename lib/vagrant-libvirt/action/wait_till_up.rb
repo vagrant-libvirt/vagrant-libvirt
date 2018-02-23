@@ -31,22 +31,39 @@ module VagrantPlugins
           # from arp table, either localy or remotely via ssh, if libvirt
           # connection was done via ssh.
           env[:ip_address] = nil
-          env[:metrics]['instance_ip_time'] = Util::Timer.time do
-            @logger.debug("Searching for IP for MAC address: #{domain.mac}")
-            env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
-            retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-              # If we're interrupted don't worry about waiting
-              return terminate(env) if env[:interrupted]
+          @logger.debug("Searching for IP for MAC address: #{domain.mac}")
+          env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
 
-              # Wait for domain to obtain an ip address
-              domain.wait_for(2) do
-                addresses.each_pair do |_type, ip|
-                  env[:ip_address] = ip[0] unless ip[0].nil?
+          if env[:machine].provider_config.qemu_use_session
+            env[:metrics]['instance_ip_time'] = Util::Timer.time do
+              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
+                # If we're interrupted don't worry about waiting
+                return terminate(env) if env[:interrupted]
+
+                # Wait for domain to obtain an ip address
+                domain.wait_for(2) do
+                  env[:ip_address] = env[:machine].provider.driver.get_ipaddress_system(domain.mac)
+                  !env[:ip_address].nil?
                 end
-                !env[:ip_address].nil?
+              end
+            end
+          else
+            env[:metrics]['instance_ip_time'] = Util::Timer.time do
+              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
+                # If we're interrupted don't worry about waiting
+                return terminate(env) if env[:interrupted]
+
+                # Wait for domain to obtain an ip address
+                domain.wait_for(2) do
+                  addresses.each_pair do |_type, ip|
+                    env[:ip_address] = ip[0] unless ip[0].nil?
+                  end
+                  !env[:ip_address].nil?
+                end
               end
             end
           end
+
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]['instance_ip_time']}")
 

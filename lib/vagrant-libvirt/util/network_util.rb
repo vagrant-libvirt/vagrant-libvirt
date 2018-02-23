@@ -8,6 +8,8 @@ module VagrantPlugins
         include Vagrant::Util::NetworkIP
 
         def configured_networks(env, logger)
+          qemu_use_session = env[:machine].provider_config.qemu_use_session
+          management_network_device = env[:machine].provider_config.management_network_device
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
           management_network_mode = env[:machine].provider_config.management_network_mode
@@ -33,18 +35,31 @@ module VagrantPlugins
                   error_message: "#{management_network_address} does not include both an address and subnet mask"
           end
 
-          management_network_options = {
-            iface_type: :private_network,
-            network_name: management_network_name,
-            ip: Regexp.last_match(1),
-            netmask: Regexp.last_match(2),
-            dhcp_enabled: true,
-            forward_mode: management_network_mode,
-            guest_ipv6: management_network_guest_ipv6,
-            autostart: management_network_autostart,
-            bus: management_network_pci_bus,
-            slot: management_network_pci_slot
-          }
+          if qemu_use_session
+            management_network_options = {
+              iface_type: :public_network,
+              dev: management_network_device,
+              mode: 'bridge',
+              type: 'bridge',
+              bus: management_network_pci_bus,
+              slot: management_network_pci_slot
+            }
+          else
+            management_network_options = {
+              iface_type: :private_network,
+              network_name: management_network_name,
+              ip: Regexp.last_match(1),
+              netmask: Regexp.last_match(2),
+              dhcp_enabled: true,
+              forward_mode: management_network_mode,
+              guest_ipv6: management_network_guest_ipv6,
+              autostart: management_network_autostart,
+              bus: management_network_pci_bus,
+              slot: management_network_pci_slot
+            }
+          end
+
+
 
           unless management_network_mac.nil?
             management_network_options[:mac] = management_network_mac

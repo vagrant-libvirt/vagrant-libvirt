@@ -27,7 +27,7 @@ module VagrantPlugins
               if !env[:machine].config.vm.box
                 b2.use CreateDomain
                 b2.use CreateNetworks
-                #b2.use CreateNetworkInterfaces
+                b2.use CreateNetworkInterfaces
                 b2.use SetBootOrder
                 b2.use StartDomain
               else
@@ -44,7 +44,7 @@ module VagrantPlugins
                 b2.use PrepareNFSSettings
                 b2.use ShareFolders
                 b2.use CreateNetworks
-                #b2.use CreateNetworkInterfaces
+                b2.use CreateNetworkInterfaces
                 b2.use SetBootOrder
 
                 b2.use StartDomain
