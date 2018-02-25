@@ -45,6 +45,7 @@ can help a lot :-)
 - [SSH Access To VM](#ssh-access-to-vm)
 - [Forwarded Ports](#forwarded-ports)
 - [Synced Folders](#synced-folders)
+- [QEMU Session Support](#qemu-session-support)
 - [Customized Graphics](#customized-graphics)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
@@ -1084,7 +1085,7 @@ Name of network "foreman_managed" is key for define boot order
 ```ruby
     config.vm.define :pxeclient do |pxeclient|
       pxeclient.vm.network :private_network,ip: '10.0.0.5',
-            libvirt__network_name: "foreman_managed",
+            libvirt__network_name: "foreman_managed".
             libvirt__dhcp_enabled: false,
             libvirt__host_ip: '10.0.0.1'
 
@@ -1163,6 +1164,34 @@ Further documentation on using 9p can be found in [kernel docs](https://www.kern
 **SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged
 public network interface and you must connect to libvirt via ssh.
 
+## QEMU Session Support
+
+vagrant-libvirt supports using the QEMU session connection to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+
+An example configuration of a machine using the QEMU session connection:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Use QEMU session instead of system connection
+    libvirt.qemu_use_session = true
+    # URI of QEMU session connection, default is as below
+    libvirt.uri = 'qemu:///session'
+    # URI of QEMU system connection, use to obtain IP address for management
+    libvirt.system_uri = 'qemu:///system'
+    # Path to store libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
+    libvirt.storage_pool_path = '/home/user/.local/share/libvirt/images'
+    # Management network device
+    libvirt.management_network_device = 'virbr0'
+  end
+  
+  # Public network configuration using existing network device
+  # Note: Private networks do not work with QEMU session enabled as root access is required to create new network devices
+  config.vm.network :public_network, :dev => "virbr1",
+      :mode => "bridge",
+      :type => "bridge"
+end
+```
 
 ## Customized Graphics
 
