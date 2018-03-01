@@ -41,6 +41,7 @@ module VagrantPlugins
           @cpu_fallback = config.cpu_fallback
           @numa_nodes = config.numa_nodes
           @loader = config.loader
+          @nvram = config.nvram
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
@@ -193,6 +194,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
+          env[:ui].info(" -- Nvram:             #{@nvram}")
           if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end

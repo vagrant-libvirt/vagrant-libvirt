@@ -52,7 +52,14 @@
       <% end %>
     <% end %>
     <% if @loader %>
-      <loader readonly='yes' type='rom'><%= @loader %></loader>
+      <% if @nvram %>
+        <loader readonly='yes' type='pflash'><%= @loader %></loader>
+      <% else %>
+        <loader readonly='yes' type='rom'><%= @loader %></loader>
+      <% end %>
+    <% end %>
+    <% if @nvram %>
+      <nvram><%= @nvram %></nvram>
     <% end %>
     <% if @boot_order.count >= 1 %>
       <bootmenu enable='yes'/>
