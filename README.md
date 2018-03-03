@@ -41,6 +41,7 @@ can help a lot :-)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [Watchdog·Device](#watchdog-device)
 - [Smartcard device](#smartcard-device)
+- [Hypervisor Features](#hypervisor-features)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
@@ -967,7 +968,7 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
-## Features
+## Hypervisor Features
 
 Hypervisor features can be specified via `libvirt.features` as a list. The default
 options that are enabled are `acpi`, `apic` and `pae`. If you define `libvirt.features`
@@ -991,6 +992,26 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Specify the default hypervisor features
     libvirt.features = ["apic", "gic version='2'" ]
+  end
+end
+```
+
+You can also specify a special set of features that help improve the behavior of guests
+running Microsoft Windows.
+
+You can specify HyperV features via `libvirt.hyperv_feature`. Available
+options are listed below. Note that both options are required:
+
+* `name` - The name of the feature Hypervisor feature (see libvirt doc)
+* `state` - The state for this feature which can be either `on` or `off`.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Relax constraints on timers
+    libvirt.hyperv_feature :name => 'relaxed', :state => 'on'
+    # Enable virtual APIC
+    libvirt.hyperv_feature :name => 'vapic', :state => 'on'
   end
 end
 ```

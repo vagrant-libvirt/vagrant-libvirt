@@ -36,6 +36,7 @@ module VagrantPlugins
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
           @features = config.features
+          @features_hyperv = config.features_hyperv
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -191,6 +192,9 @@ module VagrantPlugins
           end
           @features.each do |feature|
             env[:ui].info(" -- Feature:           #{feature}")
+          end
+          @features_hyperv.each do |feature|
+            env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           @memory_backing.each do |backing|
