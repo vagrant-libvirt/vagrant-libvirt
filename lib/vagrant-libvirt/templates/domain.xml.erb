@@ -8,10 +8,6 @@
   <cpu mode='<%= @cpu_mode %>'>
     <% if @cpu_mode != 'host-passthrough' %>
       <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
-      <% if @nested %>
-        <feature policy='optional' name='vmx'/>
-        <feature policy='optional' name='svm'/>
-      <% end %>
       <% @cpu_features.each do |cpu_feature| %>
         <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
       <% end %>
