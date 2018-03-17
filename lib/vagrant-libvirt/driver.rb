@@ -1,4 +1,5 @@
 require 'fog/libvirt'
+require 'libvirt'
 require 'log4r'
 
 module VagrantPlugins
@@ -10,6 +11,7 @@ module VagrantPlugins
       # settings as a key to allow per machine connection attributes
       # to be used.
       @@connection = nil
+      @@system_connection = nil
 
       def initialize(machine)
         @logger = Log4r::Logger.new('vagrant_libvirt::driver')
@@ -47,6 +49,17 @@ module VagrantPlugins
         @@connection
       end
 
+      def system_connection
+        # If already connected to libvirt, just use it and don't connect
+        # again.
+        return @@system_connection if @@system_connection
+
+        config = @machine.provider_config
+
+        @@system_connection = Libvirt::open_read_only(config.system_uri)
+        @@system_connection
+      end
+
       def get_domain(mid)
         begin
           domain = connection.servers.get(mid)
@@ -70,6 +83,9 @@ module VagrantPlugins
       def get_ipaddress(machine)
         # Find the machine
         domain = get_domain(machine.id)
+        if @machine.provider_config.qemu_use_session
+          return get_ipaddress_system domain.mac
+        end
 
         if domain.nil?
           # The machine can't be found
@@ -97,6 +113,19 @@ module VagrantPlugins
         end
 
         ip_address
+      end
+
+      def get_ipaddress_system(mac)
+        ip_address = nil
+
+        system_connection.list_all_networks.each do |net|
+          leases = net.dhcp_leases(mac, 0)
+          # Assume the lease expiring last is the current IP address
+          ip_address = leases.sort_by { |lse| lse["expirytime"] }.last["ipaddr"] if !leases.empty?
+          break if ip_address
+        end
+
+        return ip_address
       end
 
       def state(machine)

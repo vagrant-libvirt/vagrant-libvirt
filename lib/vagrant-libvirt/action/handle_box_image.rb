@@ -4,6 +4,10 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class HandleBoxImage
+        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
+
+
         @@lock = Mutex.new
 
         def initialize(app, _env)
@@ -31,11 +35,12 @@ module VagrantPlugins
           config = env[:machine].provider_config
           box_image_file = env[:machine].box.directory.join('box.img').to_s
           env[:box_volume_name] = env[:machine].box.name.to_s.dup.gsub('/', '-VAGRANTSLASH-')
-          env[:box_volume_name] << "_vagrant_box_image_#{begin
-                                                           env[:machine].box.version.to_s
-                                                         rescue
-                                                           ''
-                                                         end}.img"
+          env[:box_volume_name] << "_vagrant_box_image_#{
+          begin
+            env[:machine].box.version.to_s
+          rescue
+            ''
+          end}.img"
 
           # Override box_virtual_size
           if config.machine_virtual_size
@@ -44,7 +49,7 @@ module VagrantPlugins
               # is not supported and will be ignored
               env[:ui].warn I18n.t(
                 'vagrant_libvirt.warnings.ignoring_virtual_size_too_small',
-                requested: config.machine_virtual_size, minimum: box_virtual_size
+                  requested: config.machine_virtual_size, minimum: box_virtual_size
               )
             else
               env[:ui].info I18n.t('vagrant_libvirt.manual_resize_required')
@@ -75,17 +80,41 @@ module VagrantPlugins
             message = "Creating volume #{env[:box_volume_name]}"
             message << " in storage pool #{config.storage_pool_name}."
             @logger.info(message)
-            begin
-              fog_volume = env[:machine].provider.driver.connection.volumes.create(
-                name:         env[:box_volume_name],
-                allocation:   "#{box_image_size / 1024 / 1024}M",
-                capacity:     "#{box_virtual_size}G",
-                format_type:  box_format,
-                pool_name:    config.storage_pool_name
-              )
-            rescue Fog::Errors::Error => e
-              raise Errors::FogCreateVolumeError,
-                    error_message: e.message
+
+            if config.qemu_use_session
+              begin
+                @name = env[:box_volume_name]
+                @allocation = "#{box_image_size / 1024 / 1024}M"
+                @capacity = "#{box_virtual_size}G"
+                @format_type = box_format ? box_format : 'raw'
+
+                @storage_volume_uid = storage_uid env
+                @storage_volume_gid = storage_gid env
+
+                libvirt_client = env[:machine].provider.driver.connection.client
+                libvirt_pool = libvirt_client.lookup_storage_pool_by_name(
+                  config.storage_pool_name
+                )
+                libvirt_volume = libvirt_pool.create_volume_xml(
+                  to_xml('default_storage_volume')
+                )
+              rescue => e
+                raise Errors::CreatingVolumeError,
+                      error_message: e.message
+              end
+            else
+              begin
+                fog_volume = env[:machine].provider.driver.connection.volumes.create(
+                  name: env[:box_volume_name],
+                  allocation: "#{box_image_size / 1024 / 1024}M",
+                  capacity: "#{box_virtual_size}G",
+                  format_type: box_format,
+                  pool_name: config.storage_pool_name
+                )
+              rescue Fog::Errors::Error => e
+                raise Errors::FogCreateVolumeError,
+                      error_message: e.message
+              end
             end
 
             # Upload box image to storage pool
@@ -103,7 +132,11 @@ module VagrantPlugins
             # storage pool.
             if env[:interrupted] || !ret
               begin
-                fog_volume.destroy
+                if config.qemu_use_session
+                  libvirt_volume.delete
+                else
+                  fog_volume.destroy
+                end
               rescue
                 nil
               end
@@ -111,6 +144,19 @@ module VagrantPlugins
           end
 
           @app.call(env)
+        end
+
+        def split_size_unit(text)
+          if text.kind_of? Integer
+            # if text is an integer, match will fail
+            size    = text
+            unit    = 'G'
+          else
+            matcher = text.match(/(\d+)(.+)/)
+            size    = matcher[1]
+            unit    = matcher[2]
+          end
+          [size, unit]
         end
 
         protected
