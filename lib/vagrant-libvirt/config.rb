@@ -347,7 +347,7 @@ module VagrantPlugins
 
         @cpu_topology[:sockets] = options[:sockets]
         @cpu_topology[:cores] = options[:cores]
-        @cpu_topology[:threads] = options[:threads]        
+        @cpu_topology[:threads] = options[:threads]
       end
 
       def memorybacking(option, config = {})
@@ -622,6 +622,8 @@ module VagrantPlugins
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
+        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
+
         # generate a URI if none is supplied
         @uri = _generate_uri if @uri == UNSET_VALUE
 
@@ -727,7 +729,6 @@ module VagrantPlugins
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
         @qemu_args = [] if @qemu_args == UNSET_VALUE
-        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
       end
 
       def validate(machine)

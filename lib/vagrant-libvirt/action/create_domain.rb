@@ -129,13 +129,15 @@ module VagrantPlugins
           # If we have a box, take the path from the domain volume and set our storage_prefix.
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
-          if env[:machine].config.vm.box
-            storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
-          else
-            storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
-            raise Errors::NoStoragePool if storage_pool.nil?
-            xml = Nokogiri::XML(storage_pool.xml_desc)
-            storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+          if !config.qemu_use_session
+            if env[:machine].config.vm.box
+              storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
+            else
+              storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
+              raise Errors::NoStoragePool if storage_pool.nil?
+              xml = Nokogiri::XML(storage_pool.xml_desc)
+              storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+            end
           end
 
           @disks.each do |disk|
