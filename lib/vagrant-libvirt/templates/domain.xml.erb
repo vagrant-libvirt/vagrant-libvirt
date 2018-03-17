@@ -232,13 +232,9 @@
       </backend>
     </tpm>
     <% end -%>
-    <% unless @usbctl_dev.empty? %>
+    <% if not @usbctl_dev.empty? %>
     <%# USB Controller -%>
-    <controller type='usb' model='<%= @usbctl_dev[:model] %>'
-      <% if @usbctl_dev[:ports] %>
-        ports="<%= @usbctl_dev[:ports] %>"
-      <% end %>
-    />
+    <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>/>
     <% end %>
   </devices>
 
