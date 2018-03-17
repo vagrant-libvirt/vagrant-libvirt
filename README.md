@@ -1085,7 +1085,7 @@ Name of network "foreman_managed" is key for define boot order
 ```ruby
     config.vm.define :pxeclient do |pxeclient|
       pxeclient.vm.network :private_network,ip: '10.0.0.5',
-            libvirt__network_name: "foreman_managed".
+            libvirt__network_name: "foreman_managed",
             libvirt__dhcp_enabled: false,
             libvirt__host_ip: '10.0.0.1'
 
@@ -1184,7 +1184,7 @@ Vagrant.configure("2") do |config|
     # Management network device
     libvirt.management_network_device = 'virbr0'
   end
-  
+
   # Public network configuration using existing network device
   # Note: Private networks do not work with QEMU session enabled as root access is required to create new network devices
   config.vm.network :public_network, :dev => "virbr1",
