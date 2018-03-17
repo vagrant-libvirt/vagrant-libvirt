@@ -14,7 +14,7 @@
 
   <os>
         <type arch='x86_64' machine='pc-compatible'>hvm</type>
-      <loader readonly='yes' type='rom'>/efi/loader</loader>
+        <loader readonly='yes' type='rom'>/efi/loader</loader>
       <bootmenu enable='yes'/>
     <kernel></kernel>
     <initrd></initrd>

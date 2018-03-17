@@ -71,6 +71,7 @@ module VagrantPlugins
       attr_accessor :features
       attr_accessor :numa_nodes
       attr_accessor :loader
+      attr_accessor :nvram
       attr_accessor :boot_order
       attr_accessor :machine_type
       attr_accessor :machine_arch
@@ -180,6 +181,7 @@ module VagrantPlugins
         @features          = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
+        @nvram             = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
         @machine_virtual_size = UNSET_VALUE
@@ -624,6 +626,7 @@ module VagrantPlugins
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
+        @nvram = nil if @nvram == UNSET_VALUE
         @machine_type = nil if @machine_type == UNSET_VALUE
         @machine_arch = nil if @machine_arch == UNSET_VALUE
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
