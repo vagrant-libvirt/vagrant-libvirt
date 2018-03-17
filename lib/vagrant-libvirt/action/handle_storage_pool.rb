@@ -5,6 +5,8 @@ module VagrantPlugins
     module Action
       class HandleStoragePool
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
+
 
         @@lock = Mutex.new
 
@@ -37,6 +39,9 @@ module VagrantPlugins
             # Fog libvirt currently doesn't support creating pools. Use
             # ruby-libvirt client directly.
             begin
+              @storage_pool_path = storage_pool_path(env)
+              @storage_pool_uid = storage_uid(env)
+              @storage_pool_gid = storage_gid(env)
               libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
                 to_xml('default_storage_pool')
               )

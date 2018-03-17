@@ -8,6 +8,7 @@ module VagrantPlugins
       # image as new domain volume.
       class CreateDomainVolume
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
 
         def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_domain_volume')
@@ -48,8 +49,8 @@ module VagrantPlugins
                 xml.target do
                   xml.format(type: 'qcow2')
                   xml.permissions do
-                    xml.owner 0
-                    xml.group 0
+                    xml.owner storage_uid(env)
+                    xml.group storage_gid(env)
                     xml.mode '0600'
                     xml.label 'virt_image_t'
                   end
@@ -58,8 +59,8 @@ module VagrantPlugins
                   xml.path(@backing_file)
                   xml.format(type: 'qcow2')
                   xml.permissions do
-                    xml.owner 0
-                    xml.group 0
+                    xml.owner storage_uid(env)
+                    xml.group storage_gid(env)
                     xml.mode '0600'
                     xml.label 'virt_image_t'
                   end

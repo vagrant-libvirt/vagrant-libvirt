@@ -40,11 +40,13 @@ module VagrantPlugins
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
       attr_accessor :storage_pool_name
+      attr_accessor :storage_pool_path
 
       # Turn on to prevent hostname conflicts
       attr_accessor :random_hostname
 
       # Libvirt default network
+      attr_accessor :management_network_device
       attr_accessor :management_network_name
       attr_accessor :management_network_address
       attr_accessor :management_network_mode
@@ -53,6 +55,9 @@ module VagrantPlugins
       attr_accessor :management_network_autostart
       attr_accessor :management_network_pci_bus
       attr_accessor :management_network_pci_slot
+
+      # System connection information
+      attr_accessor :system_uri
 
       # Default host prefix (alternative to use project folder name)
       attr_accessor :default_prefix
@@ -149,6 +154,9 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
+      # Use qemu session instead of system
+      attr_accessor :qemu_use_session
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -159,6 +167,7 @@ module VagrantPlugins
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
+        @management_network_device  = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
         @management_network_address = UNSET_VALUE
         @management_network_mode = UNSET_VALUE
@@ -167,6 +176,9 @@ module VagrantPlugins
         @management_network_autostart = UNSET_VALUE
         @management_network_pci_slot = UNSET_VALUE
         @management_network_pci_bus = UNSET_VALUE
+
+        # System connection information
+        @system_uri      = UNSET_VALUE
 
         # Domain specific settings.
         @uuid              = UNSET_VALUE
@@ -253,6 +265,7 @@ module VagrantPlugins
         @mgmt_attach       = UNSET_VALUE
 
         @qemu_args  = []
+        @qemu_use_session  = UNSET_VALUE
       end
 
       def boot(device)
@@ -334,7 +347,7 @@ module VagrantPlugins
 
         @cpu_topology[:sockets] = options[:sockets]
         @cpu_topology[:cores] = options[:cores]
-        @cpu_topology[:threads] = options[:threads]        
+        @cpu_topology[:threads] = options[:threads]
       end
 
       def memorybacking(option, config = {})
@@ -544,7 +557,9 @@ module VagrantPlugins
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
-                    when 'qemu', 'openvz', 'uml', 'phyp', 'parallels', 'kvm'
+                    when 'qemu', 'kvm'
+                      @qemu_use_session ? '/session' : '/system'
+                    when 'openvz', 'uml', 'phyp', 'parallels'
                       '/system'
                     when '@en', 'esx'
                       '/'
@@ -594,7 +609,9 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
+        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
         @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
         @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
         @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
@@ -603,6 +620,9 @@ module VagrantPlugins
         @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
         @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
+        @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
+
+        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri if @uri == UNSET_VALUE

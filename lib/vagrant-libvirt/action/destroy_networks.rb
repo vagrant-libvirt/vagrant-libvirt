@@ -13,6 +13,11 @@ module VagrantPlugins
         end
 
         def call(env)
+          if env[:machine].provider_config.qemu_use_session
+            @app.call(env)
+            return
+          end
+
           # If there were some networks created for this machine, in machines
           # data directory, created_networks file holds UUIDs of each network.
           created_networks_file = env[:machine].data_dir + 'created_networks'
