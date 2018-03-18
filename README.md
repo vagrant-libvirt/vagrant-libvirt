@@ -36,6 +36,7 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
+- [USB Controller Configuration](#usb-controller-configuration)
 - [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [Watchdog·Device](#watchdog-device)
@@ -832,6 +833,26 @@ end
 Note! Above options affect configuration only at domain creation. It won't change VM behaviour on `vagrant reload` after domain was created.
 
 Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
+
+
+## USB Controller Configuration
+
+The USB controller can be configured using `libvirt.usb_controller`, with the following options:
+
+* `model` - The USB controller device model to emulate. (mandatory)
+* `ports` - The number of devices that can be connected to the controller.
+
+See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Set up a USB3 controller
+    libvirt.usb_controller :model => "nec-xhci"
+  end
+end
+```
+
 
 ## USB Redirector Devices
 You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.

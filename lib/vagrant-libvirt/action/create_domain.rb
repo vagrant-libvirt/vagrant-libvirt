@@ -95,6 +95,9 @@ module VagrantPlugins
           # Watchdog device
           @watchdog_dev = config.watchdog_dev
 
+          # USB controller
+          @usbctl_dev = config.usbctl_dev
+
           # USB device passthrough
           @usbs = config.usbs
 
@@ -258,6 +261,12 @@ module VagrantPlugins
 
           if not @watchdog_dev.empty?
             env[:ui].info(" -- Watchdog device:   model=#{@watchdog_dev[:model]}, action=#{@watchdog_dev[:action]}")
+          end
+
+          if not @usbctl_dev.empty?
+            msg = " -- USB controller:    model=#{@usbctl_dev[:model]}"
+            msg += ", ports=#{@usbctl_dev[:ports]}" if @usbctl_dev[:ports]
+            env[:ui].info(msg)
           end
 
           @usbs.each do |usb|
