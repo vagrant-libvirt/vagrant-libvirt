@@ -80,6 +80,8 @@ module VagrantPlugins
             @pci_bus = iface_configuration.fetch(:bus, nil)
             @pci_slot = iface_configuration.fetch(:slot, nil)
             template_name = 'interface'
+            @type = nil
+            @udp_tunnel = nil
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
               @device = iface_configuration.fetch(:dev, 'eth0')
