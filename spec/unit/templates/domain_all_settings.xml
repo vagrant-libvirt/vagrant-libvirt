@@ -24,6 +24,9 @@
     <acpi/>
     <apic/>
     <pae/>
+    <hyperv>
+      <BBB state='on' />
+    </hyperv>
   </features>
   <clock offset='utc'/>
   <devices>

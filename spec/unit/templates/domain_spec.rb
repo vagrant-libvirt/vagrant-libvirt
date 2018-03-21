@@ -31,6 +31,7 @@ describe 'templates/domain' do
       domain.instance_variable_set('@domain_type', 'kvm')
       domain.cpu_mode = 'custom'
       domain.cpu_feature(name: 'AAA', policy: 'required')
+      domain.hyperv_feature(name: 'BBB', state: 'on')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'

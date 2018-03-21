@@ -84,6 +84,13 @@
         <hidden state='on'/>
       </kvm>
     <% end %>
+    <% if !@features_hyperv.empty? %>
+    <hyperv>
+      <% @features_hyperv.each do |feature| %>
+      <<%= feature[:name] %> state='<%= feature[:state] %>' />
+      <% end %>
+    </hyperv>
+    <% end %>
   </features>
   <clock offset='utc'/>
   <devices>

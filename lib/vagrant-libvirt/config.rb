@@ -74,6 +74,7 @@ module VagrantPlugins
       attr_accessor :cpu_features
       attr_accessor :cpu_topology
       attr_accessor :features
+      attr_accessor :features_hyperv
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -194,6 +195,7 @@ module VagrantPlugins
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
         @features          = UNSET_VALUE
+        @features_hyperv   = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -340,6 +342,14 @@ module VagrantPlugins
 
         @cpu_features.push(name:   options[:name],
                            policy: options[:policy])
+      end
+
+      def hyperv_feature(options = {})
+        if options[:name].nil? || options[:state].nil?
+          raise 'Feature name AND state must be specified'
+        end
+
+        @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
       end
 
       def cputopology(options = {})
@@ -663,6 +673,7 @@ module VagrantPlugins
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
+        @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
