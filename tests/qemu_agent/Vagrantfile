@@ -6,7 +6,9 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "generic/debian10"
   config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.network "private_network", type: "dhcp"
   config.vm.provider :libvirt do |libvirt|
     libvirt.qemu_use_agent = true
+    libvirt.mgmt_attach = false
   end
 end
