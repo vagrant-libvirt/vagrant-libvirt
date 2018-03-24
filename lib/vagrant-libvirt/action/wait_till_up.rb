@@ -22,30 +22,29 @@ module VagrantPlugins
           # Initialize metrics if they haven't been
           env[:metrics] ||= {}
 
-          # Get domain object
-          domain = env[:machine].provider.driver.get_domain(env[:machine])
+          driver = env[:machine].provider.driver
+          domain = driver.get_domain(env[:machine])
+
           if domain.nil?
             raise Errors::NoDomainError,
                   error_message: "Domain #{env[:machine].id} not found"
           end
 
-          # Wait for domain to obtain an ip address. Ip address is searched
-          # from arp table, either locally or remotely via ssh, if Libvirt
-          # connection was done via ssh.
           env[:ip_address] = nil
           @logger.debug("Searching for IP for MAC address: #{domain.mac}")
           env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
 
+          # Wait for domain to obtain an ip address. Ip address is searched
+          # from dhcp leases table via libvirt, or via qemu agent if enabled.
           env[:metrics]['instance_ip_time'] = Util::Timer.time do
             retryable(on: Fog::Errors::TimeoutError, tries: 300) do
               # just return if interrupted and let the warden call recover
               return if env[:interrupted]
 
               # Wait for domain to obtain an ip address
-              env[:ip_address] = env[:machine].provider.driver.get_domain_ipaddress(env[:machine], domain)
+              env[:ip_address] = driver.get_domain_ipaddress(env[:machine], domain)
             end
           end
-
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]['instance_ip_time']}")
 

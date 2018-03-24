@@ -92,8 +92,14 @@ module VagrantPlugins
             management_network_options[:slot] = management_network_pci_slot
           end
 
-          if (env[:machine].config.vm.box &&
-              !env[:machine].provider_config.mgmt_attach)
+          # if there is a box and management network is disabled
+          # need qemu agent enabled and at least one network that can be accessed
+          if (
+            env[:machine].config.vm.box &&
+            !env[:machine].provider_config.mgmt_attach &&
+            !env[:machine].provider_config.qemu_use_agent &&
+            !env[:machine].config.vm.networks.any? { |type, _| ["private_network", "public_network"].include?(type.to_s) }
+          )
             raise Errors::ManagementNetworkRequired
           end
 
