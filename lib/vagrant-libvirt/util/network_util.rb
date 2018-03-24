@@ -70,10 +70,10 @@ module VagrantPlugins
             management_network_options[:slot] = management_network_pci_slot
           end
 
-          if (env[:machine].config.vm.box &&
-              !env[:machine].provider_config.mgmt_attach)
-            raise Errors::ManagementNetworkRequired
-          end
+          # if (env[:machine].config.vm.box &&
+          #     !env[:machine].provider_config.mgmt_attach)
+          #   raise Errors::ManagementNetworkRequired
+          # end
 
           # add management network to list of networks to check
           # unless mgmt_attach set to false

@@ -99,7 +99,14 @@ module VagrantPlugins
             addresses.each_pair do |_type, ip|
               # Multiple leases are separated with a newline, return only
               # the most recent address
-              ip_address = ip[0].split("\n").first unless ip[0].nil?
+              unless ip[0].nil?
+                ip_address = ip[0].split("\n").first
+              else
+                domain.nics.each do |nic|
+                  ip_address = %x(awk '/#{nic.mac}/ {print \$1}' /proc/net/arp).strip
+                  break unless ip_address.nil?
+                end
+              end
             end
             !ip_address.nil?
           end

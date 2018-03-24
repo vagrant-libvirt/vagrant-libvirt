@@ -17,11 +17,15 @@ module VagrantPlugins
         end
 
         def call(env)
+
           # Initialize metrics if they haven't been
           env[:metrics] ||= {}
 
+          # Get driver object
+          driver = env[:machine].provider.driver
           # Get domain object
-          domain = env[:machine].provider.driver.get_domain(env[:machine].id.to_s)
+          domain = driver.get_domain(env[:machine].id.to_s)
+
           if domain.nil?
             raise Errors::NoDomainError,
                   error_message: "Domain #{env[:machine].id} not found"
@@ -31,39 +35,28 @@ module VagrantPlugins
           # from arp table, either localy or remotely via ssh, if libvirt
           # connection was done via ssh.
           env[:ip_address] = nil
-          @logger.debug("Searching for IP for MAC address: #{domain.mac}")
-          env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
+          env[:metrics]['instance_ip_time'] = Util::Timer.time do
+            @logger.debug("Searching for IP for MAC address: #{domain.mac}")
+            env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
+            retryable(on: Fog::Errors::TimeoutError, tries: 300) do
+              # If we're interrupted don't worry about waiting
+              return terminate(env) if env[:interrupted]
 
-          if env[:machine].provider_config.qemu_use_session
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
+              # Wait for domain to obtain an ip address
+              domain.wait_for(2) do
+                addresses.each_pair do |_type, ip|
+                  ip_address = driver.get_ipaddress(env[:machine])
 
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  env[:ip_address] = env[:machine].provider.driver.get_ipaddress_system(domain.mac)
-                  !env[:ip_address].nil?
-                end
-              end
-            end
-          else
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
-
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  addresses.each_pair do |_type, ip|
-                    env[:ip_address] = ip[0] unless ip[0].nil?
+                  if !ip[0].nil?
+                    env[:ip_address] = ip[0]
+                  elsif ip_address != ""
+                    env[:ip_address] = ip_address
                   end
-                  !env[:ip_address].nil?
                 end
+                !env[:ip_address].nil?
               end
             end
           end
-
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]['instance_ip_time']}")
 
