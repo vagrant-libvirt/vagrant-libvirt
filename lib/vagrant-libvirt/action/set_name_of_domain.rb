@@ -51,7 +51,7 @@ module VagrantPlugins
               # don't have any prefix, not even "_"
               ''
             else
-              config.default_prefix.to_s.dup.concat('_')
+              config.default_prefix.to_s.dup
             end
           domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_\.]/i, '')
