@@ -101,7 +101,7 @@ vagrant-libvirt. This depends on your distro. An overview:
 * Ubuntu 12.04/14.04/16.04, Debian:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
-apt-get install qemu libvirt-bin ebtables dnsmasq
+apt-get install qemu libvirt-bin ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 ```
 
