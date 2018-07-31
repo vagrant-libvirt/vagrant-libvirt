@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
       s.add_runtime_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
       s.add_runtime_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-      s.add_runtime_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
+      s.add_runtime_dependency(%q<fog-core>.freeze, ["~> 2.1"])
       s.add_development_dependency(%q<rake>.freeze, [">= 0"])
     else
       s.add_dependency(%q<rspec-core>.freeze, ["~> 3.5.0"])
@@ -38,7 +38,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
       s.add_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
       s.add_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-      s.add_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
+      s.add_dependency(%q<fog-core>.freeze, ["~> 2.1"])
       s.add_dependency(%q<rake>.freeze, [">= 0"])
     end
   else
@@ -47,7 +47,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
     s.add_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
     s.add_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-    s.add_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
+    s.add_dependency(%q<fog-core>.freeze, ["~> 2.1"])
     s.add_dependency(%q<rake>.freeze, [">= 0"])
   end
 end
