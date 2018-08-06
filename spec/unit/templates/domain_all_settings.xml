@@ -64,11 +64,13 @@
     </disk>
 
     <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw' />
       <source file=''/>
       <target dev='hda' bus='ide'/>
       <readonly/>
     </disk>
     <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw' />
       <source file=''/>
       <target dev='hdb' bus='ide'/>
       <readonly/>
