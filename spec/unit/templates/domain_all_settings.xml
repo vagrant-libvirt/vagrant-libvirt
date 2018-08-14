@@ -120,7 +120,7 @@
         <redirdev bus='usb' type='tcp'>
         </redirdev>
         <redirfilter>
-          <usbdev class='0x0b' vendor='0x0b' product='0x0b' version='0x0b' allow='yes'/>
+          <usbdev class='0x0b' vendor='0x08e6' product='0x3437' version='2.00' allow='yes'/>
         </redirfilter>
     <watchdog model='i6300esb' action='reset'/>
 
