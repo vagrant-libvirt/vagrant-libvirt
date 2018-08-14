@@ -491,9 +491,9 @@ module VagrantPlugins
         @redirfilters = [] if @redirfilters == UNSET_VALUE
 
         @redirfilters.push(class: options[:class] || -1,
-                           vendor: options[:class] || -1,
-                           product: options[:class] || -1,
-                           version: options[:class] || -1,
+                           vendor: options[:vendor] || -1,
+                           product: options[:product] || -1,
+                           version: options[:version] || -1,
                            allow: options[:allow])
       end
 
