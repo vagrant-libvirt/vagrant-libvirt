@@ -72,6 +72,7 @@ module VagrantPlugins
       attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
+      attr_accessor :cpuset
       attr_accessor :cpu_mode
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
@@ -195,6 +196,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
@@ -672,6 +674,7 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @cpuset = nil if @cpuset == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
                        'qemu64'
