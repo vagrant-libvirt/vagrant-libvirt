@@ -73,6 +73,7 @@ module VagrantPlugins
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
       attr_accessor :cpu_topology
+      attr_accessor :shares
       attr_accessor :features
       attr_accessor :features_hyperv
       attr_accessor :numa_nodes
@@ -194,6 +195,7 @@ module VagrantPlugins
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
+        @shares            = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
@@ -672,6 +674,7 @@ module VagrantPlugins
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
+        @shares = nil if @shares == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
