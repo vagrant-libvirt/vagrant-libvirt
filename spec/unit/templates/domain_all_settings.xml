@@ -11,6 +11,9 @@
         <topology sockets='1' cores='3' threads='2'/>
   </cpu>
 
+  <cputune>
+    <shares>1024</shares>
+  </cputune>
 
   <os>
         <type arch='x86_64' machine='pc-compatible'>hvm</type>

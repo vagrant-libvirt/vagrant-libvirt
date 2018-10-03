@@ -40,12 +40,11 @@
   <% end %>
   </memoryBacking>
 <% end%>
-
-  <% if @shares %>
-    <cputune>
-      <shares><%= @shares %></shares>
-    </cputune>
-  <% end %>
+<% if @shares %>
+  <cputune>
+    <shares><%= @shares %></shares>
+  </cputune>
+<% end %>
 
   <os>
     <% if @machine_type %>

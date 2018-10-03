@@ -76,6 +76,7 @@ describe 'templates/domain' do
 
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')
+      domain.shares = '1024'
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do
