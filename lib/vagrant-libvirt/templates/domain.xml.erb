@@ -2,11 +2,8 @@
   <name><%= @name %></name>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
-  <vcpu
-      <% if @cpuset %>
-          cpuset='<%= @cpuset %>'
-      <% end %>
-  ><%= @cpus %></vcpu>
+  <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
+
 
   <cpu mode='<%= @cpu_mode %>'>
     <% if @cpu_mode != 'host-passthrough' %>

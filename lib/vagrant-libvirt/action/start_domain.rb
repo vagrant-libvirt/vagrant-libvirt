@@ -68,7 +68,7 @@ module VagrantPlugins
               end
 
               # vCpu count
-              if config.cpus.to_i != libvirt_domain.vcpus.length
+              if config.cpus.to_i != libvirt_domain.num_vcpus(0)
                 descr_changed = true
                 REXML::XPath.first(xml_descr, '/domain/vcpu').text = config.cpus
               end
