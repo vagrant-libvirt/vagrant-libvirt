@@ -33,12 +33,11 @@
     <% end %>
   </cpu>
 
-  <% if @nodeset %>
-    <numatune>
-      <memory nodeset='<%= @nodeset %>'/>
-    </numatune>
-  <% end %>
-
+<%- if @nodeset -%>
+  <numatune>
+    <memory nodeset='<%= @nodeset %>'/>
+  </numatune>
+<%- end -%>
 <% unless @memory_backing.empty? %>
   <memoryBacking>
   <% @memory_backing.each do |backing| %>
