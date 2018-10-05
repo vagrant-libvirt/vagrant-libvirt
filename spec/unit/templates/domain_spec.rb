@@ -64,7 +64,7 @@ describe 'templates/domain' do
                      source_path: '/tmp/foo')
       domain.random(model: 'random')
       domain.pci(bus: '0x06', slot: '0x12', function: '0x5')
-      domain.pci(bus: '0x03', slot: '0x00', function: '0x0')
+      domain.pci(domain: '0x0001', bus: '0x03', slot: '0x00', function: '0x0')
       domain.usb_controller(model: 'nec-xhci', ports: '4')
       domain.usb(bus: '1', device: '2', vendor: '0x1234', product: '0xabcd')
       domain.redirdev(type: 'tcp', host: 'localhost', port: '4000')

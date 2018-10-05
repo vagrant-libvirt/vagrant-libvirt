@@ -104,7 +104,7 @@
       </hostdev>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
-          <address domain='0x0000'
+          <address domain='0x0001'
             bus='0x03'
             slot='0x00'
             function='0x0'/>

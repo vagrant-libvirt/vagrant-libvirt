@@ -804,29 +804,30 @@ end
 
 You can specify multiple PCI devices to passthrough to the VM via
 `libvirt.pci`. Available options are listed below. Note that all options are
-required:
+required, except domain, which defaults to `0x0000`:
 
+* `domain` - The domain of the PCI device
 * `bus` - The bus of the PCI device
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
 You can extract that information from output of `lspci` command. First
-characters of each line are in format `[<bus>]:[<slot>].[<func>]`. For example:
+characters of each line are in format `[<domain>]:[<bus>]:[<slot>].[<func>]`. For example:
 
 ```shell
 $ lspci| grep NVIDIA
-03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+0000:03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
 ```
 
-In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+In that case `domain` is `0x0000`, `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
+    libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+    libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```

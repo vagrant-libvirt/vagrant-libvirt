@@ -431,7 +431,14 @@ module VagrantPlugins
 
         @pcis = [] if @pcis == UNSET_VALUE
 
-        @pcis.push(bus:       options[:bus],
+        if options[:domain].nil?
+          pci_domain = '0x0000'
+        else
+          pci_domain = options[:domain]
+        end
+
+        @pcis.push(domain:    pci_domain,
+                   bus:       options[:bus],
                    slot:      options[:slot],
                    function:  options[:function])
       end
