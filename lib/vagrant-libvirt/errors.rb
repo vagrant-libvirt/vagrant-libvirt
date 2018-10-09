@@ -37,6 +37,10 @@ module VagrantPlugins
         error_key(:image_upload_error)
       end
 
+      class ImageDownloadError < VagrantLibvirtError
+        error_key(:image_download_error)
+      end
+
       # Box exceptions
       class NoBoxVolume < VagrantLibvirtError
         error_key(:no_box_volume)
