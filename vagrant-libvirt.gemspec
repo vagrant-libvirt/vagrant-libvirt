@@ -1,53 +1,28 @@
 # -*- encoding: utf-8 -*-
-# stub: vagrant-libvirt 0.0.41 ruby lib
 require File.expand_path('../lib/vagrant-libvirt/version', __FILE__)
 
-Gem::Specification.new do |s|
-  s.name = "vagrant-libvirt".freeze
-  s.version = VagrantPlugins::ProviderLibvirt::VERSION
+Gem::Specification.new do |gem|
+  gem.authors       = ['Lukas Stanek','Dima Vasilets','Brian Pitts']
+  gem.email         = ['ls@elostech.cz','pronix.service@gmail.com','brian@polibyte.com']
+  gem.license       = 'MIT'
+  gem.description   = %q{libvirt provider for Vagrant.}
+  gem.summary       = %q{libvirt provider for Vagrant.}
+  gem.homepage      = 'https://github.com/vagrant-libvirt/vagrant-libvirt'
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
-  s.require_paths = ["lib".freeze]
-  s.authors = ["Lukas Stanek".freeze, "Dima Vasilets".freeze, "Brian Pitts".freeze]
-  s.files         = `git ls-files`.split($\)
-  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  gem.files         = `git ls-files`.split($\)
+  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.name          = 'vagrant-libvirt'
+  gem.require_paths = ['lib']
+  gem.version       = VagrantPlugins::ProviderLibvirt::VERSION
 
-  s.description = "libvirt provider for Vagrant.".freeze
-  s.email = ["ls@elostech.cz".freeze, "pronix.service@gmail.com".freeze, "brian@polibyte.com".freeze]
-  s.homepage = "https://github.com/vagrant-libvirt/vagrant-libvirt".freeze
-  s.licenses = ["MIT".freeze]
-  s.rubygems_version = "2.6.14".freeze
-  s.summary = "libvirt provider for Vagrant.".freeze
+  gem.add_development_dependency "rspec-core", "~> 3.5.0"
+  gem.add_development_dependency "rspec-expectations", "~> 3.5.0"
+  gem.add_development_dependency "rspec-mocks", "~> 3.5.0"
 
-  s.installed_by_version = "2.6.14" if s.respond_to? :installed_by_version
+  gem.add_runtime_dependency 'fog-libvirt', '>= 0.3.0'
+  gem.add_runtime_dependency 'nokogiri', '~> 1.6.0'
+  gem.add_runtime_dependency 'fog-core', '~> 1.43.0'
 
-  if s.respond_to? :specification_version then
-    s.specification_version = 4
-
-    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<rspec-core>.freeze, ["~> 3.5.0"])
-      s.add_development_dependency(%q<rspec-expectations>.freeze, ["~> 3.5.0"])
-      s.add_development_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
-      s.add_runtime_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
-      s.add_runtime_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-      s.add_runtime_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
-      s.add_development_dependency(%q<rake>.freeze, [">= 0"])
-    else
-      s.add_dependency(%q<rspec-core>.freeze, ["~> 3.5.0"])
-      s.add_dependency(%q<rspec-expectations>.freeze, ["~> 3.5.0"])
-      s.add_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
-      s.add_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
-      s.add_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-      s.add_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
-      s.add_dependency(%q<rake>.freeze, [">= 0"])
-    end
-  else
-    s.add_dependency(%q<rspec-core>.freeze, ["~> 3.5.0"])
-    s.add_dependency(%q<rspec-expectations>.freeze, ["~> 3.5.0"])
-    s.add_dependency(%q<rspec-mocks>.freeze, ["~> 3.5.0"])
-    s.add_dependency(%q<fog-libvirt>.freeze, [">= 0.3.0"])
-    s.add_dependency(%q<nokogiri>.freeze, [">= 1.6.0"])
-    s.add_dependency(%q<fog-core>.freeze, ["~> 1.43.0"])
-    s.add_dependency(%q<rake>.freeze, [">= 0"])
-  end
+  gem.add_development_dependency 'rake'
 end
