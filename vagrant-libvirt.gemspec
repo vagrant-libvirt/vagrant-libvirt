@@ -3,12 +3,13 @@
 
 Gem::Specification.new do |s|
   s.name = "vagrant-libvirt".freeze
-  s.version = "0.0.44"
+  s.version = "0.0.45"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Lukas Stanek".freeze, "Dima Vasilets".freeze, "Brian Pitts".freeze]
-  s.date = "2018-02-02"
+  s.files         = `git ls-files`.split($\)
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.description = "libvirt provider for Vagrant.".freeze
   s.email = ["ls@elostech.cz".freeze, "pronix.service@gmail.com".freeze, "brian@polibyte.com".freeze]
   s.homepage = "https://github.com/vagrant-libvirt/vagrant-libvirt".freeze
