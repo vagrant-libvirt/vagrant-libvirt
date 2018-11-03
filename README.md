@@ -36,9 +36,10 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
-- [USB Device Passthrough](#usb-device-passthrough)
-- [USB Controller Configuration](#usb-controller-configuration)
-- [USB Redirector Devices](#usb-redirector-devices)
+- [Using USB Devices](#using-usb-devices)
+  - [USB Controller Configuration](#usb-controller-configuration)
+  - [USB Device Passthrough](#usb-device-passthrough)
+  - [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [Watchdog·Device](#watchdog-device)
 - [Smartcard device](#smartcard-device)
@@ -837,7 +838,18 @@ Note! Above options affect configuration only at domain creation. It won't chang
 Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
 
 
-## USB Controller Configuration
+## Using USB Devices
+
+There are several ways to pass a USB device through to a running instance:
+* Use `libvirt.usb` to [attach a USB device at boot](#usb-device-passthrough), with the device ID specified in the Vagrantfile
+* Use a client (such as `virt-viewer` or `virt-manager`) to attach the device at runtime [via USB redirectors](#usb-redirector-devices)
+* Use `virsh attach-device` once the VM is running (however, this is outside the scope of this readme)
+
+In all cases, if you wish to use a high-speed USB device,
+you will need to use `libvirt.usb_controller` to specify a USB2 or USB3 controller,
+as the default configuration only exposes a USB1.1 controller.
+
+### USB Controller Configuration
 
 The USB controller can be configured using `libvirt.usb_controller`, with the following options:
 
@@ -881,7 +893,7 @@ Additionally, the following options can be used:
   "requisite", "optional".
 
 
-## USB Redirector Devices
+### USB Redirector Devices
 You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.
 
 * `type` - The type of the USB redirector device. (`tcp` or `spicevmc`)
@@ -901,7 +913,7 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-### Filter for USB Redirector Devices
+#### Filter for USB Redirector Devices
 You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
 
 * `class` - The device class of the USB device. A list of device classes is available on [Wikipedia](https://en.wikipedia.org/wiki/USB#Device_classes).
