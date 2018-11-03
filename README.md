@@ -854,6 +854,31 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## USB Device Passthrough
+
+You can specify multiple USB devices to passthrough to the VM via
+`libvirt.usb`. The device can be specified by the following options:
+
+* `bus` - The USB bus ID, e.g. "1"
+* `device` - The USB device ID, e.g. "2"
+* `vendor` - The USB devices vendor ID (VID), e.g. "0x1234"
+* `product` - The USB devices product ID (PID), e.g. "0xabcd"
+
+At least one of these has to be specified, and `bus` and `device` may only be
+used together.
+
+The example values above match the device from the following output of `lsusb`:
+
+```
+Bus 001 Device 002: ID 1234:abcd Example device
+```
+
+Additionally, the following options can be used:
+
+* `startupPolicy` - Is passed through to libvirt and controls if the device has
+  to exist.  libvirt currently allows the following values: "mandatory",
+  "requisite", "optional".
+
 
 ## USB Redirector Devices
 You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.
@@ -1057,30 +1082,6 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
-## USB device passthrough
-
-You can specify multiple USB devices to passthrough to the VM via
-`libvirt.usb`. The device can be specified by the following options:
-
-* `bus` - The USB bus ID, e.g. "1"
-* `device` - The USB device ID, e.g. "2"
-* `vendor` - The USB devices vendor ID (VID), e.g. "0x1234"
-* `product` - The USB devices product ID (PID), e.g. "0xabcd"
-
-At least one of these has to be specified, and `bus` and `device` may only be
-used together.
-
-The example values above match the device from the following output of `lsusb`:
-
-```
-Bus 001 Device 002: ID 1234:abcd Example device
-```
-
-Additionally, the following options can be used:
-
-* `startupPolicy` - Is passed through to libvirt and controls if the device has
-  to exist.  libvirt currently allows the following values: "mandatory",
-  "requisite", "optional".
 
 ## No box and PXE boot
 
