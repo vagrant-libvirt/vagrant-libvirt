@@ -856,8 +856,6 @@ The USB controller can be configured using `libvirt.usb_controller`, with the fo
 * `model` - The USB controller device model to emulate. (mandatory)
 * `ports` - The number of devices that can be connected to the controller.
 
-See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
-
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
@@ -867,7 +865,10 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-## USB Device Passthrough
+See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
+
+
+### USB Device Passthrough
 
 You can specify multiple USB devices to passthrough to the VM via
 `libvirt.usb`. The device can be specified by the following options:
