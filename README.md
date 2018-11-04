@@ -914,6 +914,9 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+Note that in order to enable USB redirection with Spice clients,
+you may need to also set `libvirt.graphics_type = "spice"`
+
 #### Filter for USB Redirector Devices
 You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
 
