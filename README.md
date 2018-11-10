@@ -699,9 +699,10 @@ used by this network are configurable at the provider level.
   for for more information.
 * `management_network_autostart` - Automatic startup of mgmt network, if not
   specified the default is 'false'.
-* `:management_network_pci_bus` -  The bus of the PCI device.
-* `:management_network_pci_slot` -  The slot of the PCI device.
+* `management_network_pci_bus` -  The bus of the PCI device.
+* `management_network_pci_slot` -  The slot of the PCI device.
 * `management_network_mac` - MAC address of management network interface.
+* `management_network_domain` - Domain name assigned to the management network.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.
