@@ -120,7 +120,7 @@ module VagrantPlugins
             end
           end
 
-          ssh_cmd << "ssh #{options} #{params}"
+          ssh_cmd << "ssh -n #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
           log_file = ssh_forward_log_file(host_ip, host_port,

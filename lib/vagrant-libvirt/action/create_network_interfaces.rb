@@ -219,10 +219,12 @@ module VagrantPlugins
               networks_to_configure << network
             end
 
-            env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
-            env[:machine].guest.capability(
-              :configure_networks, networks_to_configure
-            )
+            unless networks_to_configure.empty?
+              env[:ui].info I18n.t('vagrant.actions.vm.network.configuring')
+              env[:machine].guest.capability(
+                :configure_networks, networks_to_configure
+              )
+            end
 
           end
         end

@@ -36,8 +36,10 @@ can help a lot :-)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
-- [USB Controller Configuration](#usb-controller-configuration)
-- [USB Redirector Devices](#usb-redirector-devices)
+- [Using USB Devices](#using-usb-devices)
+  - [USB Controller Configuration](#usb-controller-configuration)
+  - [USB Device Passthrough](#usb-device-passthrough)
+  - [USB Redirector Devices](#usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
 - [Watchdog·Device](#watchdog-device)
 - [Smartcard device](#smartcard-device)
@@ -836,14 +838,23 @@ Note! Above options affect configuration only at domain creation. It won't chang
 Don't forget to [set](#domain-specific-options) `kvm_hidden` option to `true` especially if you are passthroughing NVIDIA GPUs. Otherwise GPU is visible from VM but cannot be operated.
 
 
-## USB Controller Configuration
+## Using USB Devices
+
+There are several ways to pass a USB device through to a running instance:
+* Use `libvirt.usb` to [attach a USB device at boot](#usb-device-passthrough), with the device ID specified in the Vagrantfile
+* Use a client (such as `virt-viewer` or `virt-manager`) to attach the device at runtime [via USB redirectors](#usb-redirector-devices)
+* Use `virsh attach-device` once the VM is running (however, this is outside the scope of this readme)
+
+In all cases, if you wish to use a high-speed USB device,
+you will need to use `libvirt.usb_controller` to specify a USB2 or USB3 controller,
+as the default configuration only exposes a USB1.1 controller.
+
+### USB Controller Configuration
 
 The USB controller can be configured using `libvirt.usb_controller`, with the following options:
 
 * `model` - The USB controller device model to emulate. (mandatory)
 * `ports` - The number of devices that can be connected to the controller.
-
-See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -854,8 +865,36 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
 
-## USB Redirector Devices
+
+### USB Device Passthrough
+
+You can specify multiple USB devices to passthrough to the VM via
+`libvirt.usb`. The device can be specified by the following options:
+
+* `bus` - The USB bus ID, e.g. "1"
+* `device` - The USB device ID, e.g. "2"
+* `vendor` - The USB devices vendor ID (VID), e.g. "0x1234"
+* `product` - The USB devices product ID (PID), e.g. "0xabcd"
+
+At least one of these has to be specified, and `bus` and `device` may only be
+used together.
+
+The example values above match the device from the following output of `lsusb`:
+
+```
+Bus 001 Device 002: ID 1234:abcd Example device
+```
+
+Additionally, the following options can be used:
+
+* `startupPolicy` - Is passed through to libvirt and controls if the device has
+  to exist.  libvirt currently allows the following values: "mandatory",
+  "requisite", "optional".
+
+
+### USB Redirector Devices
 You can specify multiple redirect devices via `libvirt.redirdev`. There are two types, `tcp` and `spicevmc` supported, for forwarding USB-devices to the guest. Available options are listed below.
 
 * `type` - The type of the USB redirector device. (`tcp` or `spicevmc`)
@@ -875,7 +914,10 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-### Filter for USB Redirector Devices
+Note that in order to enable USB redirection with Spice clients,
+you may need to also set `libvirt.graphics_type = "spice"`
+
+#### Filter for USB Redirector Devices
 You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
 
 * `class` - The device class of the USB device. A list of device classes is available on [Wikipedia](https://en.wikipedia.org/wiki/USB#Device_classes).
@@ -1057,30 +1099,6 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
-## USB device passthrough
-
-You can specify multiple USB devices to passthrough to the VM via
-`libvirt.usb`. The device can be specified by the following options:
-
-* `bus` - The USB bus ID, e.g. "1"
-* `device` - The USB device ID, e.g. "2"
-* `vendor` - The USB devices vendor ID (VID), e.g. "0x1234"
-* `product` - The USB devices product ID (PID), e.g. "0xabcd"
-
-At least one of these has to be specified, and `bus` and `device` may only be
-used together.
-
-The example values above match the device from the following output of `lsusb`:
-
-```
-Bus 001 Device 002: ID 1234:abcd Example device
-```
-
-Additionally, the following options can be used:
-
-* `startupPolicy` - Is passed through to libvirt and controls if the device has
-  to exist.  libvirt currently allows the following values: "mandatory",
-  "requisite", "optional".
 
 ## No box and PXE boot
 
