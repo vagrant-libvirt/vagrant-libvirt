@@ -210,9 +210,9 @@ module VagrantPlugins
         end
 
         def ssh_pid?(pid)
-          @logger.debug 'Checking if #{pid} is an ssh process '\
-                        'with `ps -o cmd= #{pid}`'
-          `ps -o cmd= #{pid}`.strip.chomp =~ /ssh/
+          @logger.debug "Checking if #{pid} is an ssh process "\
+                        "with `ps -o command= #{pid}`"
+          `ps -o command= #{pid}`.strip.chomp =~ /ssh/
         end
 
         def remove_ssh_pids
