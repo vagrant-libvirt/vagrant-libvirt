@@ -323,6 +323,9 @@ end
   to qemu `-initrd`.
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
+* `default_prefix` - The default libvirt guest name becomes a concatenation of the 
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
 * `graphics_type` - Sets the protocol used to expose the guest display.
