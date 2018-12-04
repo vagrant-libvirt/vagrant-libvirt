@@ -71,9 +71,15 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
+            if config.snapshot_pool_name != 'default'
+                pool_name = config.snapshot_pool_name
+            else
+                pool_name = config.storage_pool_name
+            end
+            @logger.debug "Using pool #{pool_name} for base box snapshot"
             domain_volume = env[:machine].provider.driver.connection.volumes.create(
               xml: xml,
-              pool_name: config.storage_pool_name
+              pool_name: pool_name
             )
           rescue Fog::Errors::Error => e
             raise Errors::FogDomainVolumeCreateError,

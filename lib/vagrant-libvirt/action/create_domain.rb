@@ -81,6 +81,7 @@ module VagrantPlugins
 
           # Storage
           @storage_pool_name = config.storage_pool_name
+          @snapshot_pool_name = config.snapshot_pool_name
           @disks = config.disks
           @cdroms = config.cdroms
 
@@ -119,9 +120,15 @@ module VagrantPlugins
 
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
+            if @snapshot_pool_name != 'default'
+                pool_name = @snapshot_pool_name
+            else
+                pool_name = @storage_pool_name
+            end
+            @logger.debug "Search for volume in pool: #{pool_name}"
             actual_volumes =
               env[:machine].provider.driver.connection.volumes.all.select do |x|
-                x.pool_name == @storage_pool_name
+                x.pool_name == pool_name
               end
             domain_volume = ProviderLibvirt::Util::Collection.find_matching(
               actual_volumes, "#{@name}.img"
