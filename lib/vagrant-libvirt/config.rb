@@ -42,6 +42,9 @@ module VagrantPlugins
       attr_accessor :storage_pool_name
       attr_accessor :storage_pool_path
 
+      # Libvirt storage pool where the base image snapshot shall be stored
+      attr_accessor :snapshot_pool_name
+
       # Turn on to prevent hostname conflicts
       attr_accessor :random_hostname
 
@@ -170,6 +173,7 @@ module VagrantPlugins
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
+        @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
         @management_network_device  = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
@@ -638,6 +642,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @snapshot_pool_name = 'default' if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
