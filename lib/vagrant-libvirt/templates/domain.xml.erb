@@ -103,6 +103,9 @@
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
+      <% if @disk_address_type %>
+      <address type='<%= @disk_address_type %>'/>
+      <% end %>
     </disk>
     <% end %>
 <%# additional disks -%>
