@@ -256,10 +256,13 @@
     <% end %>
   </devices>
 
-  <% unless @qargs.empty? %>
+  <% if not @qemu_args.empty? or not @qemu_env.empty? %>
   <qemu:commandline>
-    <% @qargs.each do |arg| %>
+    <% @qemu_args.each do |arg| %>
     <qemu:arg value='<%= arg[:value] %>'/>
+    <% end %>
+    <% @qemu_env.each do |env_var, env_value| %>
+    <qemu:env name='<%= env_var.to_s %>' value='<%= env_value %>'/>
     <% end %>
   </qemu:commandline>
   <% end %>

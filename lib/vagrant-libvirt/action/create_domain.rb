@@ -107,6 +107,12 @@ module VagrantPlugins
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
+          # Additional qemu commandline arguments
+          @qemu_args = config.qemu_args
+
+          # Additional qemu commandline environment variables
+          @qemu_env = config.qemu_env
+
           # smartcard device
           @smartcard_dev = config.smartcard_dev
 
@@ -312,11 +318,18 @@ module VagrantPlugins
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
           end
 
-          @qargs = config.qemu_args
-          if not @qargs.empty?
+          unless @qemu_args.empty?
             env[:ui].info(' -- Command line args: ')
-            @qargs.each do |arg|
+            @qemu_args.each do |arg|
               msg = "    -> value=#{arg[:value]}, "
+              env[:ui].info(msg)
+            end
+          end
+
+          unless @qemu_env.empty?
+            env[:ui].info(' -- Command line environment variables: ')
+            @qemu_env.each do |env_var, env_value|
+              msg = "    -> #{env_var}=#{env_value}, "
               env[:ui].info(msg)
             end
           end

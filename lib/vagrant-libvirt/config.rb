@@ -162,6 +162,9 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
+      # Additional qemuenv arguments
+      attr_accessor :qemu_env
+
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
@@ -278,7 +281,12 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach       = UNSET_VALUE
 
-        @qemu_args  = []
+        # Additional qemu commandline arguments
+        @qemu_args         = UNSET_VALUE
+
+        # Additional qemu commandline environment variables
+        @qemu_env          = UNSET_VALUE
+
         @qemu_use_session  = UNSET_VALUE
       end
 
@@ -583,7 +591,15 @@ module VagrantPlugins
       end
 
       def qemuargs(options = {})
+        @qemu_args = [] if @qemu_args == UNSET_VALUE
+
         @qemu_args << options if options[:value]
+      end
+
+      def qemuenv(options = {})
+        @qemu_env = {} if @qemu_env == UNSET_VALUE
+
+        @qemu_env.merge!(options)
       end
 
       # code to generate URI from a config moved out of the connect action
@@ -769,7 +785,11 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
+        # Additional qemu commandline arguments
         @qemu_args = [] if @qemu_args == UNSET_VALUE
+
+        # Additional qemu commandline environment variables
+        @qemu_env = {} if @qemu_env == UNSET_VALUE
       end
 
       def validate(machine)
