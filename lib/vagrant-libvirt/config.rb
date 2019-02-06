@@ -656,7 +656,7 @@ module VagrantPlugins
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
-        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
+        @qemu_use_session = true if @qemu_use_session == UNSET_VALUE
 
         # generate a URI if none is supplied
         @uri = _generate_uri if @uri == UNSET_VALUE
