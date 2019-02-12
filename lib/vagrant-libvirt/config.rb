@@ -20,12 +20,12 @@ module VagrantPlugins
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver
 
-      # The name of the server, where libvirtd is running.
+      # The name of the server, where Libvirtd is running.
       attr_accessor :host
 
       # If use ssh tunnel to connect to Libvirt.
       attr_accessor :connect_via_ssh
-      # Path towards the libvirt socket
+      # Path towards the Libvirt socket
       attr_accessor :socket
 
       # The username to access Libvirt.
@@ -161,7 +161,7 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
-      # Use qemu session instead of system
+      # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
       def initialize
@@ -309,7 +309,7 @@ module VagrantPlugins
           end
         end
 
-        # is it better to raise our own error, or let libvirt cause the exception?
+        # is it better to raise our own error, or let Libvirt cause the exception?
         raise 'Only four cdroms may be attached at a time'
       end
 
@@ -586,7 +586,7 @@ module VagrantPlugins
 
       # code to generate URI from a config moved out of the connect action
       def _generate_uri
-        # builds the libvirt connection URI from the given driver config
+        # builds the Libvirt connection URI from the given driver config
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
@@ -602,7 +602,7 @@ module VagrantPlugins
                       raise "Require specify driver #{uri}"
         end
         if uri == 'kvm'
-          uri = 'qemu' # use qemu uri for kvm domain type
+          uri = 'qemu' # use QEMU uri for KVM domain type
         end
 
         if @connect_via_ssh
@@ -623,13 +623,13 @@ module VagrantPlugins
         uri << '?no_verify=1'
 
         if @id_ssh_key_file
-          # set ssh key for access to libvirt host
+          # set ssh key for access to Libvirt host
           uri << "\&keyfile="
           # if no slash, prepend $HOME/.ssh/
           @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
           uri << @id_ssh_key_file
         end
-        # set path to libvirt socket
+        # set path to Libvirt socket
         uri << "\&socket=" + @socket if @socket
         uri
       end

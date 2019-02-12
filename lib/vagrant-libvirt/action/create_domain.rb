@@ -323,7 +323,7 @@ module VagrantPlugins
 
           env[:ui].info(" -- Command line : #{@cmd_line}") unless @cmd_line.empty?
 
-          # Create libvirt domain.
+          # Create Libvirt domain.
           # Is there a way to tell fog to create new domain with already
           # existing volume? Use domain creation from template..
           begin

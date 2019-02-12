@@ -109,7 +109,7 @@ module VagrantPlugins
           networks
         end
 
-        # Return a list of all (active and inactive) libvirt networks as a list
+        # Return a list of all (active and inactive) Libvirt networks as a list
         # of hashes with their name, network address and status (active or not)
         def libvirt_networks(libvirt_client)
           libvirt_networks = []
