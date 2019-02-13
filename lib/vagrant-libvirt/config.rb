@@ -642,7 +642,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
-        @snapshot_pool_name = 'default' if @snapshot_pool_name == UNSET_VALUE
+        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE

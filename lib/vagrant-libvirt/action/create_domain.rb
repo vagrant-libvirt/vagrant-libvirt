@@ -120,7 +120,7 @@ module VagrantPlugins
 
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
-            if @snapshot_pool_name != 'default'
+            if @snapshot_pool_name != @storage_pool_name
                 pool_name = @snapshot_pool_name
             else
                 pool_name = @storage_pool_name
