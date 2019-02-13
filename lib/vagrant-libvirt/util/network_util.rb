@@ -18,6 +18,7 @@ module VagrantPlugins
           management_network_autostart = env[:machine].provider_config.management_network_autostart
           management_network_pci_bus = env[:machine].provider_config.management_network_pci_bus
           management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
+          management_network_domain = env[:machine].provider_config.management_network_domain
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -63,6 +64,10 @@ module VagrantPlugins
 
           unless management_network_mac.nil?
             management_network_options[:mac] = management_network_mac
+          end
+
+          unless management_network_domain.nil?
+            management_network_options[:domain_name] = management_network_domain
           end
 
           unless management_network_pci_bus.nil? and management_network_pci_slot.nil?
