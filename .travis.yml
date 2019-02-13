@@ -4,8 +4,8 @@ dist: trusty
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libvirt-dev
-  - gem update --system
-  - gem install bundler
+  - gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
+  - gem update bundler --conservative
 install: bundle install
 script: bundle exec rspec --color --format documentation
 notifications:
