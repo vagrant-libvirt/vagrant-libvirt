@@ -54,7 +54,7 @@ module VagrantPlugins
         error_key(:wrong_box_format)
       end
 
-      # Fog libvirt exceptions
+      # Fog Libvirt exceptions
       class FogError < VagrantLibvirtError
         error_key(:fog_error)
       end

@@ -8,7 +8,7 @@ module VagrantPlugins
       include Vagrant::Action::Builtin
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
-      # remove image from libvirt storage pool
+      # remove image from Libvirt storage pool
       def self.remove_libvirt_image
         Vagrant::Action::Builder.new.tap do |b|
           b.use RemoveLibvirtImage

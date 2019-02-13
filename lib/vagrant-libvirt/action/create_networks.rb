@@ -47,9 +47,9 @@ module VagrantPlugins
               # should fix other methods so this doesn't have to be instance var
               @options = options
 
-              # Get a list of all (active and inactive) libvirt networks. This
+              # Get a list of all (active and inactive) Libvirt networks. This
               # list is used throughout this class and should be easier to
-              # process than libvirt API calls.
+              # process than Libvirt API calls.
               @available_networks = libvirt_networks(
                 env[:machine].provider.driver.connection.client
               )

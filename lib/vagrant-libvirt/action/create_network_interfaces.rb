@@ -283,7 +283,7 @@ module VagrantPlugins
             return options[:network_name]
           end
 
-          # Get list of all (active and inactive) libvirt networks.
+          # Get list of all (active and inactive) Libvirt networks.
           available_networks = libvirt_networks(libvirt_client)
 
           return 'public' if options[:iface_type] == :public_network

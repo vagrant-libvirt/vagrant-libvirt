@@ -3,7 +3,7 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-      # Action for create new box for libvirt provider
+      # Action for create new box for Libvirt provider
       class PackageDomain
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::package_domain')

@@ -33,7 +33,7 @@ module VagrantPlugins
           if @boot_order.count >= 1
 
             # If a domain is initially defined with no box or disk or
-            # with an explicit boot order, libvirt adds <boot dev="foo">
+            # with an explicit boot order, Libvirt adds <boot dev="foo">
             # This conflicts with an explicit boot_order configuration,
             # so we need to remove it from the domain xml and feed it back.
             # Also see https://bugzilla.redhat.com/show_bug.cgi?id=1248514
@@ -66,7 +66,7 @@ module VagrantPlugins
               logger_msg(node, index)
             end
 
-            # Finally redefine the domain XML through libvirt
+            # Finally redefine the domain XML through Libvirt
             # to apply the boot ordering
             env[:machine].provider
                          .driver
