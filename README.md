@@ -729,6 +729,8 @@ It has a number of options:
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
+* `address_type` - Address type of disk device to emulate. If unspecified, 
+  Libvirt uses a sensible default.
 * `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see
   the [libvirt documentation for possible
   values](http://libvirt.org/formatdomain.html#elementsDisks) or

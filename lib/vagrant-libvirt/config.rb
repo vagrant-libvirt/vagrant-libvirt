@@ -572,6 +572,7 @@ module VagrantPlugins
         disk = {
           device: options[:device],
           type: options[:type],
+          address_type: options[:address_type],
           size: options[:size],
           path: options[:path],
           bus: options[:bus],

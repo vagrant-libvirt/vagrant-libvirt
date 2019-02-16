@@ -104,7 +104,7 @@
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
       <% if @disk_address_type %>
-      <address type='<%= @disk_address_type %>'/>
+        <address type='<%= @disk_address_type %>'/>
       <% end %>
     </disk>
     <% end %>
@@ -114,6 +114,9 @@
       <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
+      <% if d[:address_type] %>
+        <address type='<%= d[:address_type] %>'/>
+      <% end %>
       <% if d[:shareable] %>
         <shareable/>
       <% end %>
