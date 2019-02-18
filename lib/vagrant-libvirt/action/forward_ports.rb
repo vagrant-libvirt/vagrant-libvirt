@@ -54,7 +54,7 @@ module VagrantPlugins
 
             ssh_pid = redirect_port(
               @env[:machine],
-              fp[:host_ip] || 'localhost',
+              fp[:host_ip] || '*',
               fp[:host],
               fp[:guest_ip] || @env[:machine].provider.ssh_info[:host],
               fp[:guest],
