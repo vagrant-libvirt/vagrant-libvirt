@@ -825,6 +825,10 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          c = qemu_env != UNSET_VALUE ? qemu_env.dup : {}
+          c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
+          result.qemu_env = c
         end
       end
     end
