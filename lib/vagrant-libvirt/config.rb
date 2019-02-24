@@ -281,10 +281,10 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach       = UNSET_VALUE
 
-        # Additional qemu commandline arguments
+        # Additional QEMU commandline arguments
         @qemu_args         = UNSET_VALUE
 
-        # Additional qemu commandline environment variables
+        # Additional QEMU commandline environment variables
         @qemu_env          = UNSET_VALUE
 
         @qemu_use_session  = UNSET_VALUE
@@ -785,10 +785,10 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
-        # Additional qemu commandline arguments
+        # Additional QEMU commandline arguments
         @qemu_args = [] if @qemu_args == UNSET_VALUE
 
-        # Additional qemu commandline environment variables
+        # Additional QEMU commandline environment variables
         @qemu_env = {} if @qemu_env == UNSET_VALUE
       end
 

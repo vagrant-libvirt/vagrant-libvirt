@@ -107,10 +107,10 @@ module VagrantPlugins
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
-          # Additional qemu commandline arguments
+          # Additional QEMU commandline arguments
           @qemu_args = config.qemu_args
 
-          # Additional qemu commandline environment variables
+          # Additional QEMU commandline environment variables
           @qemu_env = config.qemu_env
 
           # smartcard device
