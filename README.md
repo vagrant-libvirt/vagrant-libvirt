@@ -53,6 +53,7 @@ can help a lot :-)
 - [Customized Graphics](#customized-graphics)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
+- [Package Box from VM](#package-box-from-vm)
 - [Development](#development)
 - [Contributing](#contributing)
 
@@ -1418,6 +1419,28 @@ you can build a vagrant-libvirt box by running:
 ```shell
 $ cd packer-qemu-templates
 $ packer build ubuntu-14.04-server-amd64-vagrant.json
+```
+
+## Package Box from VM
+
+vagrant-libvirt has native support for [`vagrant
+package`](https://www.vagrantup.com/docs/cli/package.html) via
+libguestfs [virt-sysprep](http://libguestfs.org/virt-sysprep.1.html).
+virt-sysprep operations can be customized via the
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS` environment variable; see the
+[upstream
+documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
+further details especially on default sysprep operations enabled for
+your system.
+
+For example, on Chef [bento](https://github.com/chef/bento) VMs that
+require SSH hostkeys already set (e.g. bento/debian-7) as well as leave
+existing LVM UUIDs untouched (e.g. bento/ubuntu-18.04), these can be
+packaged into vagrant-libvirt boxes like so:
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS="defaults,-ssh-userdir,-ssh-hostkeys,-lvm-uuids"
+$ vagrant package
 ```
 
 ## Development
