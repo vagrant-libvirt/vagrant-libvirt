@@ -38,7 +38,8 @@ module VagrantPlugins
           `qemu-img rebase -p -b "" #{@tmp_img}`
           # remove hw association with interface
           # working for centos with lvs default disks
-          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir,-ssh-hostkeys,-lvm-uuids -a #{@tmp_img}`
+          operations = ENV.get('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir')
+          `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img}`
           # add any user provided file
           extra = ''
           @tmp_include = @tmp_dir + '/_include'
