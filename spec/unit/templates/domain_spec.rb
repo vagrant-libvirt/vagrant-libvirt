@@ -44,8 +44,9 @@ describe 'templates/domain' do
       domain.instance_variable_set('@domain_volume_cache', 'unsafe')
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
+      domain.disk_address_type = 'virtio-mmio'
       domain.storage(:file, path: 'test-disk1.qcow2')
-      domain.storage(:file, path: 'test-disk2.qcow2')
+      domain.storage(:file, path: 'test-disk2.qcow2', address_type: 'pci')
       domain.disks.each do |disk|
         disk[:absolute_path] = '/var/lib/libvirt/images/' + disk[:path]
       end
