@@ -162,26 +162,28 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:machine].provider.driver.connection.volumes.select do |x|
-              x.name == disk[:name] && x.pool_name == @storage_pool_name
-            end.empty?
-              # make the disk. equivalent to:
-              # qemu-img create -f qcow2 <path> 5g
-              begin
-                env[:machine].provider.driver.connection.volumes.create(
-                  name: disk[:name],
-                  format_type: disk[:type],
-                  path: disk[:absolute_path],
-                  capacity: disk[:size],
-                  #:allocation => ?,
-                  pool_name: @storage_pool_name
-                )
-              rescue Fog::Errors::Error => e
+            # make the disk. equivalent to:
+            # qemu-img create -f qcow2 <path> 5g
+            begin
+              env[:machine].provider.driver.connection.volumes.create(
+                name: disk[:name],
+                format_type: disk[:type],
+                path: disk[:absolute_path],
+                capacity: disk[:size],
+                #:allocation => ?,
+                pool_name: @storage_pool_name
+              )
+            rescue Libvirt::Error => e
+              # It is hard to believe that e contains just a string
+              # and no useful error code!
+              msg = "Call to virStorageVolCreateXML failed: " +
+                    "storage volume '#{disk[:path]}' exists already"
+              if e.message == msg and disk[:allow_existing]
+                disk[:preexisting] = true
+              else
                 raise Errors::FogDomainVolumeCreateError,
                       error_message: e.message
               end
-            else
-              disk[:preexisting] = true
             end
           end
 
