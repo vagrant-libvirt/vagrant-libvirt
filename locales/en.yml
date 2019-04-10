@@ -134,6 +134,13 @@ en:
       network_not_available_error: |-
         Network %{network_name} is not available. Specify available network
         name, or an ip address if you want to create a new network.
+
+        Note: Private networks do not work with QEMU session enabled as root
+        access is required to create new network devices.
+
+        Set libvirt.qemu_use_session = false if you want to use private networks
+        on a per VM basis or use VAGRANT_LIBVIRT_QEMU_USE_SESSION=false for
+        setting it globally.
       activate_network_error: |-
         Error while activating network: %{error_message}.
       autostart_network_error: |-
