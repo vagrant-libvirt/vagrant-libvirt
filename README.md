@@ -325,7 +325,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
 * `default_prefix` - The default Libvirt guest name becomes a concatenation of the
-   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix
    to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
@@ -1256,6 +1256,12 @@ Vagrant.configure("2") do |config|
       :mode => "bridge",
       :type => "bridge"
 end
+```
+
+You can globally enable or disable qemu_use_session with the environment variable `VAGRANT_LIBVIRT_QEMU_USE_SESSION`
+
+```shell
+export VAGRANT_LIBVIRT_QEMU_USE_SESSION=false
 ```
 
 ## Customized Graphics
