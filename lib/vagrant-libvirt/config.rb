@@ -659,12 +659,8 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
-        if ENV['VAGRANT_LIBVIRT_QEMU_USE_SESSION'] == 'true'
-          @qemu_use_session = true if @qemu_use_session == UNSET_VALUE
-        elsif ENV['VAGRANT_LIBVIRT_QEMU_USE_SESSION'] == 'false'
-          @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
-        else
-          @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
+        if @qemu_use_session == UNSET_VALUE
+          @qemu_use_session = ENV['VAGRANT_LIBVIRT_QEMU_USE_SESSION'] == 'true'
         end
 
         # generate a URI if none is supplied
