@@ -13,19 +13,25 @@ module VagrantPlugins
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.halt_domain'))
 
+          timeout = env[:machine].config.vm.graceful_halt_timeout
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain.nil?
 
           begin
-            env[:machine].guest.capability(:halt)
-          rescue
+            Timeout.timeout(timeout) do
+              env[:machine].guest.capability(:halt)
+            end
+          rescue Timeout::Error
             @logger.info('Trying libvirt graceful shutdown.')
-            domain.shutdown
+            # Read domain object again
+            dom = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
+            if dom.state.to_s == 'running'
+              dom.shutdown
+            end
           end
 
-
           begin
-            domain.wait_for(30) do
+            domain.wait_for(timeout) do
               !ready?
             end
           rescue Fog::Errors::TimeoutError
