@@ -54,6 +54,7 @@ module VagrantPlugins
                 env[:machine].provider.driver.connection.client
               )
 
+              current_network = @available_networks.detect { |network| network[:name] == @options[:network_name] }
               # Prepare a hash describing network for this specific interface.
               @interface_network = {
                 name:             nil,
@@ -64,11 +65,11 @@ module VagrantPlugins
                 domain_name:      nil,
                 ipv6_address:     options[:ipv6_address] || nil,
                 ipv6_prefix:      options[:ipv6_prefix] || nil,
-                created:          false,
-                active:           false,
+                created:          current_network.nil? ? false : true,
+                active:           current_network.nil? ? false : current_network[:active],
                 autostart:        options[:autostart] || false,
                 guest_ipv6:       @options[:guest_ipv6] || 'yes',
-                libvirt_network:  nil
+                libvirt_network:  current_network.nil? ? nil : current_network[:libvirt_network]
               }
 
               if @options[:ip]
@@ -255,7 +256,9 @@ module VagrantPlugins
 
           # Do we need to create new network?
           unless @interface_network[:created]
-            @interface_network[:name] = 'vagrant-private-dhcp'
+            @interface_network[:name] = @options[:libvirt__network_name] ?
+                                          @options[:libvirt__network_name] :
+                                          'vagrant-private-dhcp'
             @interface_network[:network_address] = net_address
 
             # Set IP address of network (actually bridge). It will be used as
