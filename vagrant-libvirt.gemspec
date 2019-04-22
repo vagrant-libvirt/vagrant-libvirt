@@ -3,7 +3,7 @@
 
 Gem::Specification.new do |s|
   s.name = "vagrant-libvirt".freeze
-  s.version = "0.0.45"
+  s.version = "0.0.45.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
