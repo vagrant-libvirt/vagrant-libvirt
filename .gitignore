@@ -1,3 +1,73 @@
+### Linux
+*~
+.directory
+.Trash-*
+
+### Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+### MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### JetBrains
+*.iml
+*.ipr
+*.iws
+.idea/
+/out/
+.idea_modules/
+atlassian-ide-plugin.xml
+
+### Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*~.nib
+local.properties
+.settings/
+.loadpath
+.project
+.externalToolBuilders/
+*.launch
+.classpath
+.buildpath
+.target
+.texlipse
+
+### VSCode and VisualStudio
+*.vs
+*.db
+*.opendb
+*.user
+.vscode/
+.vs/
+
+### Vagrant
 *.gem
 *.rbc
 .bundle
@@ -17,5 +87,5 @@ test/version_tmp
 tmp
 Vagrantfile
 !example_box/Vagrantfile
-.vagrant
+.vagrant/
 *.swp
