@@ -91,6 +91,10 @@ module VagrantPlugins
       attr_accessor :nic_model_type
       attr_accessor :nested
       attr_accessor :volume_cache
+      attr_accessor :volume_io
+      attr_accessor :volume_copy_on_read
+      attr_accessor :volume_discard
+      attr_accessor :volume_detect_zeroes
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
@@ -213,6 +217,10 @@ module VagrantPlugins
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
+        @volume_io         = UNSET_VALUE
+        @volume_copy_on_read = UNSET_VALUE
+        @volume_discard    = UNSET_VALUE
+        @volume_detect_zeroes = UNSET_VALUE
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
         @dtb               = UNSET_VALUE
@@ -693,6 +701,10 @@ module VagrantPlugins
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
+        @volume_io = nil if @volume_io == UNSET_VALUE
+        @volume_copy_on_read = nil if @volume_copy_on_read == UNSET_VALUE
+        @volume_discard = nil if @volume_discard == UNSET_VALUE
+        @volume_detect_zeroes = nil if @volume_detect_zeroes == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE

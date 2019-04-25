@@ -99,7 +99,11 @@
     <% end %>
     <% if @domain_volume_path %>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
+      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'<%= " io='#{@volume_io}'" unless @volume_io.nil? -%>
+<%# Extra optional domain volume atrributes -%>
+<%=      " copy_on_read='#{@volume_copy_on_read}'"   unless @volume_copy_on_read.nil? -%>
+<%=      " discard='#{@volume_discard}'"             unless @volume_discard.nil? -%>
+<%=      " detect_zeroes='#{@volume_detect_zeroes}'" unless @volume_detect_zeroes.nil? -%>/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>

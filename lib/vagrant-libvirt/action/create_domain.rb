@@ -52,6 +52,10 @@ module VagrantPlugins
           @memory_backing = config.memory_backing
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache
+          @volume_io = config.volume_io
+          @volume_copy_on_read = config.volume_copy_on_read
+          @volume_discard = config.volume_discard
+          @volume_detect_zeroes = config.volume_detect_zeroes
           @kernel = config.kernel
           @cmd_line = config.cmd_line
           @emulator_path = config.emulator_path

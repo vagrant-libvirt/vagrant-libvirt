@@ -318,6 +318,10 @@ end
   "none", "writethrough", "writeback", "directsync" and "unsafe". [See
   driver->cache in Libvirt
   documentation](http://libvirt.org/formatdomain.html#elementsDisks).
+* `volume_io` - Controls specific policies on I/O. Possible values are "threads" and "native".
+* `volume_copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
+* `volume_discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
+* `volume_detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent

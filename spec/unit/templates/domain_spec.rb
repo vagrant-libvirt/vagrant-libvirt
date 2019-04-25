@@ -42,6 +42,10 @@ describe 'templates/domain' do
       domain.emulator_path = '/usr/bin/kvm-spice'
       domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
       domain.instance_variable_set('@domain_volume_cache', 'unsafe')
+      domain.volume_io = 'threads'
+      domain.volume_copy_on_read = 'on'
+      domain.volume_discard = 'unmap'
+      domain.volume_detect_zeroes = 'on'
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
       domain.storage(:file, path: 'test-disk1.qcow2')
