@@ -42,7 +42,7 @@
       <target dev='vdb' bus='virtio'/>
     </disk>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='default'/>
+      <driver name='qemu' type='qcow2' cache='default' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
       <source file='/var/lib/libvirt/images/test-disk2.qcow2'/>
       <target dev='vdc' bus='virtio'/>
     </disk>

@@ -112,7 +112,12 @@
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'/>
+      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'<%= -%>
+<%# Extra optional disk driver atrributes -%>
+<%=      " io='#{d[:io]}'"                           unless d[:io].nil? -%>
+<%=      " copy_on_read='#{d[:copy_on_read]}'"       unless d[:copy_on_read].nil? -%>
+<%=      " discard='#{d[:discard]}'"                 unless d[:discard].nil? -%>
+<%=      " detect_zeroes='#{d[:detect_zeroes]}'"     unless d[:detect_zeroes].nil? -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
       <% if d[:shareable] %>

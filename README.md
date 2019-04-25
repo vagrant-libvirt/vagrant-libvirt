@@ -729,16 +729,22 @@ It has a number of options:
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
-* `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see
-  the [libvirt documentation for possible
-  values](http://libvirt.org/formatdomain.html#elementsDisks) or
-  [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html)
-  for a fuller explanation). Defaults to *default*.
 * `allow_existing` - Set to true if you want to allow the VM to use a
   pre-existing disk. If the disk doesn't exist it will be created.
   Disks with this option set to true need to be removed manually.
 * `shareable` - Set to true if you want to simulate shared SAN storage.
 * `serial` - Serial number of the disk device.
+
+The following disk performance options can also be configured
+(see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks)
+or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation).
+In all cases, the options use the hypervisor default if not specified.
+
+* `cache` - Cache mode to use. Value may be `default`, `none`, `writeback`, `writethrough`, `directsync` or `unsafe`.
+* `io` - Controls specific policies on I/O. Value may be `threads` or `native`.
+* `copy_on_read` - Controls whether to copy read backing file into the image file. Value may be `on` or `off`.
+* `discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Value may be `unmap` or `ignore`.
+* `detect_zeroes` - Controls whether to detect zero write requests. Value may be `off`, `on` or `unmap`.
 
 The following example creates two additional disks.
 
@@ -746,7 +752,7 @@ The following example creates two additional disks.
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
-    libvirt.storage :file, :size => '40G', :type => 'raw'
+    libvirt.storage :file, :size => '40G', :type => 'raw', :discard => 'unmap', :detect_zeroes => 'on'
   end
 end
 ```

@@ -584,7 +584,11 @@ module VagrantPlugins
           cache: options[:cache] || 'default',
           allow_existing: options[:allow_existing],
           shareable: options[:shareable],
-          serial: options[:serial]
+          serial: options[:serial],
+          io: options[:io],
+          copy_on_read: options[:copy_on_read],
+          discard: options[:discard],
+          detect_zeroes: options[:detect_zeroes]
         }
 
         @disks << disk # append

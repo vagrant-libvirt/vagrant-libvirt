@@ -49,7 +49,7 @@ describe 'templates/domain' do
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
       domain.storage(:file, path: 'test-disk1.qcow2')
-      domain.storage(:file, path: 'test-disk2.qcow2')
+      domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
       domain.disks.each do |disk|
         disk[:absolute_path] = '/var/lib/libvirt/images/' + disk[:path]
       end
