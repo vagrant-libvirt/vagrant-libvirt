@@ -18,7 +18,7 @@ module VagrantPlugins
 
         def _disks_print(disks)
           disks.collect do |x|
-            "#{x[:device]}(#{x[:type]},#{x[:size]})"
+            "#{x[:device]}(#{x[:type]},#{x[:bus]},#{x[:size]})"
           end.join(', ')
         end
 
@@ -280,6 +280,7 @@ module VagrantPlugins
             env[:ui].info(" -- Boot device:        #{device}")
           end
 
+          env[:ui].info(" -- System disk:       device=#{@disk_device}, bus=#{@disk_bus}")
           unless @disks.empty?
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
