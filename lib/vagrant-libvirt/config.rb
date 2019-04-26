@@ -211,7 +211,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
-        @disk_driver_opts  = UNSET_VALUE
+        @disk_driver_opts  = {}
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
@@ -527,13 +527,8 @@ module VagrantPlugins
 
       # Disk driver options for primary disk
       def disk_driver(options = {})
-        @disk_driver_opts = {
-          cache: options[:cache],
-          io: options[:io],
-          copy_on_read: options[:copy_on_read],
-          discard: options[:discard],
-          detect_zeroes: options[:detect_zeroes]
-        }
+        supported_opts = [:cache, :io, :copy_on_read, :discard, :detect_zeroes]
+        @disk_driver_opts = options.select { |k,_| supported_opts.include? k }
       end
 
       # NOTE: this will run twice for each time it's needed- keep it idempotent
@@ -823,6 +818,8 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
         end
       end
     end

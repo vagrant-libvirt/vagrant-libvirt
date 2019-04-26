@@ -274,7 +274,7 @@ end
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
 * `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
-  NOTE: this option also applies only to disks associated with a box image. Supported options include:
+  NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
   * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
   * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
   * `:copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
@@ -737,7 +737,7 @@ It has a number of options:
 The following disk performance options can also be configured
 (see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks)
 or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation).
-In all cases, the options use the hypervisor default if not specified.
+In all cases, the options use the hypervisor default if not specified, or if set to `nil`.
 
 * `cache` - Cache mode to use. Value may be `default`, `none`, `writeback`, `writethrough`, `directsync` or `unsafe`.
 * `io` - Controls specific policies on I/O. Value may be `threads` or `native`.
