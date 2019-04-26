@@ -47,15 +47,12 @@ module VagrantPlugins
           @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
           @disk_device = config.disk_device
+          @disk_driver_opts = config.disk_driver_opts
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache
-          @volume_io = config.volume_io
-          @volume_copy_on_read = config.volume_copy_on_read
-          @volume_discard = config.volume_discard
-          @volume_detect_zeroes = config.volume_detect_zeroes
           @kernel = config.kernel
           @cmd_line = config.cmd_line
           @emulator_path = config.emulator_path
@@ -219,7 +216,13 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
-          env[:ui].info(" -- Volume Cache:      #{@domain_volume_cache}")
+
+          if not @disk_driver_opts.empty?
+            env[:ui].info(" -- Disk driver opts:  #{@disk_driver_opts.reject { |k,v| v.nil? }.map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          else
+            env[:ui].info(" -- Disk driver opts:  cache='#{@domain_volume_cache}'")
+          end
+
           env[:ui].info(" -- Kernel:            #{@kernel}")
           env[:ui].info(" -- Initrd:            #{@initrd}")
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")

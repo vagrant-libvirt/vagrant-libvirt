@@ -88,13 +88,10 @@ module VagrantPlugins
       attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :disk_device
+      attr_accessor :disk_driver_opts
       attr_accessor :nic_model_type
       attr_accessor :nested
-      attr_accessor :volume_cache
-      attr_accessor :volume_io
-      attr_accessor :volume_copy_on_read
-      attr_accessor :volume_discard
-      attr_accessor :volume_detect_zeroes
+      attr_accessor :volume_cache # deprecated, kept for backwards compatibility; use disk_driver
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
@@ -214,13 +211,10 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
+        @disk_driver_opts  = UNSET_VALUE
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
-        @volume_io         = UNSET_VALUE
-        @volume_copy_on_read = UNSET_VALUE
-        @volume_discard    = UNSET_VALUE
-        @volume_detect_zeroes = UNSET_VALUE
         @kernel            = UNSET_VALUE
         @initrd            = UNSET_VALUE
         @dtb               = UNSET_VALUE
@@ -531,6 +525,17 @@ module VagrantPlugins
         @smartcard_dev[:source_service] = options[:source_service] if @smartcard_dev[:type] == 'tcp'
       end
 
+      # Disk driver options for primary disk
+      def disk_driver(options = {})
+        @disk_driver_opts = {
+          cache: options[:cache],
+          io: options[:io],
+          copy_on_read: options[:copy_on_read],
+          discard: options[:discard],
+          detect_zeroes: options[:detect_zeroes]
+        }
+      end
+
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options = {})
         if storage_type == :file
@@ -702,13 +707,10 @@ module VagrantPlugins
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @disk_device = 'vda' if @disk_device == UNSET_VALUE
+        @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = 'default' if @volume_cache == UNSET_VALUE
-        @volume_io = nil if @volume_io == UNSET_VALUE
-        @volume_copy_on_read = nil if @volume_copy_on_read == UNSET_VALUE
-        @volume_discard = nil if @volume_discard == UNSET_VALUE
-        @volume_detect_zeroes = nil if @volume_detect_zeroes == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE

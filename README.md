@@ -273,6 +273,13 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
+  NOTE: this option also applies only to disks associated with a box image. Supported options include:
+  * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
+  * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
+  * `:copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
+  * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
+  * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
@@ -314,14 +321,6 @@ end
   ]
   ```
 * `loader` - Sets path to custom UEFI loader.
-* `volume_cache` - Controls the cache mechanism. Possible values are "default",
-  "none", "writethrough", "writeback", "directsync" and "unsafe". [See
-  driver->cache in Libvirt
-  documentation](http://libvirt.org/formatdomain.html#elementsDisks).
-* `volume_io` - Controls specific policies on I/O. Possible values are "threads" and "native".
-* `volume_copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
-* `volume_discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
-* `volume_detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent
@@ -421,7 +420,7 @@ Vagrant.configure("2") do |config|
       domain.memory = 2048
       domain.cpus = 2
       domain.nested = true
-      domain.volume_cache = 'none'
+      domain.disk_driver :cache => 'none'
     end
   end
 

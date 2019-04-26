@@ -99,11 +99,17 @@
     <% end %>
     <% if @domain_volume_path %>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'<%= " io='#{@volume_io}'" unless @volume_io.nil? -%>
-<%# Extra optional domain volume atrributes -%>
-<%=      " copy_on_read='#{@volume_copy_on_read}'"   unless @volume_copy_on_read.nil? -%>
-<%=      " discard='#{@volume_discard}'"             unless @volume_discard.nil? -%>
-<%=      " detect_zeroes='#{@volume_detect_zeroes}'" unless @volume_detect_zeroes.nil? -%>/>
+      <driver name='qemu' type='qcow2'<%= -%>
+<% if !@disk_driver_opts.empty? -%>
+<%=      " cache='#{@disk_driver_opts[:cache]}'"                 unless @disk_driver_opts[:cache].nil? -%>
+<%=      " io='#{@disk_driver_opts[:io]}'"                       unless @disk_driver_opts[:io].nil? -%>
+<%=      " copy_on_read='#{@disk_driver_opts[:copy_on_read]}'"   unless @disk_driver_opts[:copy_on_read].nil? -%>
+<%=      " discard='#{@disk_driver_opts[:discard]}'"             unless @disk_driver_opts[:discard].nil? -%>
+<%=      " detect_zeroes='#{@disk_driver_opts[:detect_zeroes]}'" unless @disk_driver_opts[:detect_zeroes].nil? -%>
+<% else -%>
+<%# For backwards-compatibility with deprecated 'volume_cache' property -%>
+<%=      " cache='#{@domain_volume_cache}'" -%>
+<% end -%>/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
