@@ -295,7 +295,7 @@ module VagrantPlugins
           @network_address = @interface_network[:ip_address]
           @network_netmask = @interface_network[:netmask]
           @network_mtu = Integer(@options[:mtu]) if @options[:mtu]
-          @network_bridge_stp = @options[:bridge_stp].nil? ? 'off' :
+          @network_bridge_stp = @options[:bridge_stp].nil? ? 'on' :
                                   @options[:bridge_stp] ? 'on' : 'off'
           @network_bridge_delay = @options[:bridge_delay] ? @options[:bridge_delay] : 0
 
