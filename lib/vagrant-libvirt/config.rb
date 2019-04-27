@@ -705,7 +705,7 @@ module VagrantPlugins
         @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
-        @volume_cache = 'default' if @volume_cache == UNSET_VALUE
+        @volume_cache = nil if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
@@ -803,6 +803,14 @@ module VagrantPlugins
             unless opts[:mac] =~ /\A([0-9a-f]{2}:){5}([0-9a-f]{2})\z/
               errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
             end
+          end
+        end
+
+        if !machine.provider_config.volume_cache.nil? and machine.provider_config.volume_cache != UNSET_VALUE
+          machine.ui.warn("Libvirt Provider: volume_cache is deprecated. Use disk_driver :cache => '#{machine.provider_config.volume_cache}' instead.")
+
+          if !machine.provider_config.disk_driver_opts.empty?
+            machine.ui.warn("Libvirt Provider: volume_cache has no effect when disk_driver is defined.")
           end
         end
 

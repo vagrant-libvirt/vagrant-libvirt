@@ -52,7 +52,7 @@ module VagrantPlugins
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
           @management_network_mac = config.management_network_mac
-          @domain_volume_cache = config.volume_cache
+          @domain_volume_cache = config.volume_cache || 'default'
           @kernel = config.kernel
           @cmd_line = config.cmd_line
           @emulator_path = config.emulator_path
