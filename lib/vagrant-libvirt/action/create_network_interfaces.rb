@@ -193,7 +193,7 @@ module VagrantPlugins
               # It's used for provisioning and it has to be available during provisioning,
               # ifdown command is not acceptable here.
               next if slot_number.zero?
-              next if options[:auto_config] === false
+              next if !options[:auto_config]
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
               network = {
@@ -212,9 +212,6 @@ module VagrantPlugins
               else
                 network[:type] = :dhcp
               end
-
-              # do not run configure_networks for tcp tunnel interfaces
-              next if options.fetch(:tunnel_type, nil)
 
               networks_to_configure << network
             end
