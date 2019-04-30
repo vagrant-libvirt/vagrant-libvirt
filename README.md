@@ -279,6 +279,7 @@ end
   * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
   * `:copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
   * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
+    Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
   * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
@@ -743,6 +744,7 @@ In all cases, the options use the hypervisor default if not specified, or if set
 * `io` - Controls specific policies on I/O. Value may be `threads` or `native`.
 * `copy_on_read` - Controls whether to copy read backing file into the image file. Value may be `on` or `off`.
 * `discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Value may be `unmap` or `ignore`.
+  Note: for discard to work, you will likely also need to set `:bus => 'scsi'`
 * `detect_zeroes` - Controls whether to detect zero write requests. Value may be `off`, `on` or `unmap`.
 
 The following example creates two additional disks.
@@ -751,7 +753,7 @@ The following example creates two additional disks.
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
-    libvirt.storage :file, :size => '40G', :type => 'raw', :discard => 'unmap', :detect_zeroes => 'on'
+    libvirt.storage :file, :size => '40G', :bus => 'scsi', :type => 'raw', :discard => 'unmap', :detect_zeroes => 'on'
   end
 end
 ```
