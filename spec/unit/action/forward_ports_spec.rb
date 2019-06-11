@@ -12,11 +12,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
 
   let(:machine_config) { double("machine_config") }
   let(:vm_config) { double("vm_config") }
+  let(:provider_config) { double("provider_config") }
 
   before (:each) do
     allow(machine).to receive(:config).and_return(machine_config)
+    allow(machine).to receive(:provider_config).and_return(provider_config)
     allow(machine_config).to receive(:vm).and_return(vm_config)
     allow(vm_config).to receive(:networks).and_return([])
+    allow(provider_config).to receive(:forward_ssh_port).and_return(true)
   end
 
   describe '#call' do
@@ -67,6 +70,40 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
         expect(subject.call(env)).to be_nil
       end
     end
+
+    context 'when default ssh port forward provided' do
+      let(:networks){ [
+        [:private_network, {:ip=>"10.20.30.40", :protocol=>"tcp", :id=>"6b8175ed-3220-4b63-abaf-0bb8d7cdd723"}],
+        [:forwarded_port, {guest: 80, host: 8080}],
+        [:forwarded_port, {guest: 22, host: 2222, host_ip: '127.0.0.1', id: 'ssh'}],
+      ]}
+
+      context 'with default config' do
+        it 'should forward the port' do
+          expect(vm_config).to receive(:networks).and_return(networks)
+          expect(subject).to receive(:forward_ports)
+
+          expect(subject.call(env)).to be_nil
+
+          expect(env[:forwarded_ports]).to eq(networks.drop(1).map { |_, opts| opts })
+        end
+      end
+
+      context 'with forward_ssh_port disabled' do
+        before do
+          allow(provider_config).to receive(:forward_ssh_port).and_return(false)
+        end
+
+        it 'should not forward the port' do
+          expect(vm_config).to receive(:networks).and_return(networks)
+          expect(subject).to receive(:forward_ports)
+
+          expect(subject.call(env)).to be_nil
+
+          expect(env[:forwarded_ports]).to eq([networks[1][1]])
+        end
+      end
+    end
   end
 
   describe '#forward_ports' do
@@ -82,6 +119,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
           :private_key_path => ["/home/test/.ssh/id_rsa"],
         }
       )
+      allow(provider_config).to receive(:proxy_command).and_return(nil)
     end
 
     context 'with port to forward' do

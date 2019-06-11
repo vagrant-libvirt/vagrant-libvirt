@@ -39,6 +39,9 @@ module VagrantPlugins
 
       attr_accessor :proxy_command
 
+      # Forward port with id 'ssh'
+      attr_accessor :forward_ssh_port
+
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
       attr_accessor :storage_pool_name
@@ -196,6 +199,7 @@ module VagrantPlugins
         @id_ssh_key_file   = UNSET_VALUE
         @socket            = UNSET_VALUE
         @proxy_command     = UNSET_VALUE
+        @forward_ssh_port  = UNSET_VALUE # forward port with id 'ssh'
         @storage_pool_name = UNSET_VALUE
         @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
@@ -783,6 +787,9 @@ module VagrantPlugins
 
         finalize_from_uri
         finalize_proxy_command
+
+        # forward port with id 'ssh'
+        @forward_ssh_port = true if @forward_ssh_port == UNSET_VALUE
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
