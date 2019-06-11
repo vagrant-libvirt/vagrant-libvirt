@@ -72,7 +72,7 @@ module VagrantPlugins
           config.vm.networks.each do |type, options|
             next if options[:disabled]
 
-            next unless type == :forwarded_port && options[:id] != 'ssh'
+            next unless type == :forwarded_port && !@env[:machine].provider_config.forward_ssh_port && options[:id] != 'ssh'
             if options.fetch(:host_ip, '').to_s.strip.empty?
               options.delete(:host_ip)
             end

@@ -165,6 +165,9 @@ module VagrantPlugins
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
+      # Forward port with id 'ssh'
+      attr_accessor :forward_ssh_port
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -280,6 +283,9 @@ module VagrantPlugins
 
         @qemu_args  = []
         @qemu_use_session  = UNSET_VALUE
+
+        # forward port with id 'ssh'
+        @forward_ssh_port  = UNSET_VALUE
       end
 
       def boot(device)
@@ -770,6 +776,9 @@ module VagrantPlugins
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
         @qemu_args = [] if @qemu_args == UNSET_VALUE
+
+        # forward port with id 'ssh'
+        @forward_ssh_port = false if @forward_ssh_port == UNSET_VALUE
       end
 
       def validate(machine)

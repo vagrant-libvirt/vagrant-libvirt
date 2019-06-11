@@ -1194,6 +1194,20 @@ Default is `eth0`.
 
 `config.vm.network :forwarded_port, guest: 80, host: 2000, host_ip: "0.0.0.0"`
 
+### Forwarding the ssh-port
+
+It is useful in some environments to forward the ssh-port to localhost.
+By default libvirt skips the forwarding of the ssh-port because you can access the machine directly.
+To be able to access the ssh-service from the host-interface, you can enable the option `forward_ssh_port`
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Enable forwarding of forwarded_port with id 'ssh'. Default is 2222
+    libvirt.forward_ssh_port = true
+  end
+```
+
 ## Synced Folders
 
 Vagrant automatically syncs the project folder on the host to `/vagrant` in the guest. You can also configure
