@@ -55,6 +55,7 @@ can help a lot :-)
 * [No box and PXE boot](#no-box-and-pxe-boot)
 * [SSH Access To VM](#ssh-access-to-vm)
 * [Forwarded Ports](#forwarded-ports)
+  * [Forwarding the ssh-port](#forwarding-the-ssh-port)
 * [Synced Folders](#synced-folders)
 * [QEMU Session Support](#qemu-session-support)
 * [Customized Graphics](#customized-graphics)
@@ -1415,6 +1416,24 @@ Default is `eth0`.
 **Externally Accessible Port Forward**
 
 `config.vm.network :forwarded_port, guest: 80, host: 2000, host_ip: "0.0.0.0"`
+
+### Forwarding the ssh-port
+
+By default vagrant-libvirt now allows the standard ssh-port to be forwarded to
+the localhost to allow for consistent provisioning steps/ports used when
+defining across multiple providers.
+
+Previously by default libvirt skipped the forwarding of the ssh-port because
+you can access the machine directly. To return to this behaviour set the
+option `forward_ssh_port` to `false` in the Vagrantfile.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Disable forwarding of forwarded_port with id 'ssh'.
+    libvirt.forward_ssh_port = false
+  end
+```
 
 ## Synced Folders
 

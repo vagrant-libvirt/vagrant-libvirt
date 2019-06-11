@@ -71,7 +71,7 @@ module VagrantPlugins
               next
             end
 
-            next unless type == :forwarded_port && options[:id] != 'ssh'
+            next if type != :forwarded_port || ( options[:id] == 'ssh' && !env[:machine].provider_config.forward_ssh_port )
             if options.fetch(:host_ip, '').to_s.strip.empty?
               options.delete(:host_ip)
             end
