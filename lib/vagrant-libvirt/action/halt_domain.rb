@@ -22,7 +22,7 @@ module VagrantPlugins
               env[:machine].guest.capability(:halt)
             end
           rescue Timeout::Error
-            @logger.info('Trying libvirt graceful shutdown.')
+            @logger.info('Trying Libvirt graceful shutdown.')
             # Read domain object again
             dom = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
             if dom.state.to_s == 'running'

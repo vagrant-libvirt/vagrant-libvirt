@@ -161,7 +161,7 @@ module VagrantPlugins
 
         protected
 
-        # Fog libvirt currently doesn't support uploading images to storage
+        # Fog Libvirt currently doesn't support uploading images to storage
         # pool volumes. Use ruby-libvirt client instead.
         def upload_image(image_file, pool_name, volume_name, env)
           image_size = File.size(image_file) # B

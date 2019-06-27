@@ -23,7 +23,7 @@ module VagrantPlugins
 
             libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
 
-            # libvirt API doesn't support modifying memory on NUMA enabled CPUs
+            # Libvirt API doesn't support modifying memory on NUMA enabled CPUs
             # http://libvirt.org/git/?p=libvirt.git;a=commit;h=d174394105cf00ed266bf729ddf461c21637c736
             if config.numa_nodes == nil
               if config.memory.to_i * 1024 != libvirt_domain.max_memory

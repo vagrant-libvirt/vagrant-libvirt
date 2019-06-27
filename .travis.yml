@@ -1,24 +1,35 @@
 ---
 language: ruby
-dist: trusty
+dist: xenial
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y libvirt-dev
-  - gem update --system
-  - gem install bundler
+  - gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
+  - gem update bundler --conservative
+addons:
+  apt:
+    packages: libvirt-dev
+    update: true
 install: bundle install
 script: bundle exec rspec --color --format documentation
 notifications:
   email: false
-rvm:
-  - 2.2.5
-  - 2.3.3
 env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   matrix:
-    - VAGRANT_VERSION=v2.0.1
+    - VAGRANT_VERSION=v2.0.4
+    - VAGRANT_VERSION=v2.1.5
+    - VAGRANT_VERSION=v2.2.3
+rvm:
+  - 2.2.7
+  - 2.3.4
+  - 2.4.1
+  - 2.6.1
+
 matrix:
   allow_failures:
     - env: VAGRANT_VERSION=master
-      rvm: 2.3.3
+  exclude:
+    - env: VAGRANT_VERSION=v2.0.4
+      rvm: 2.6.1
+    - env: VAGRANT_VERSION=v2.1.5
+      rvm: 2.6.1
