@@ -94,7 +94,12 @@ KVM type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
+Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
+releases from 1.5 onwards but they are not actively tested.
+
+Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+for the current list of tested versions.
+
 *We only test with the upstream version!* If you decide to install your distro's
 version and you run into problems, as a first step you should switch to upstream.
 
