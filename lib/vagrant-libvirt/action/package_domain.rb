@@ -27,7 +27,7 @@ module VagrantPlugins
           @tmp_img = @tmp_dir + '/box.img'
           Dir.mkdir(@tmp_dir)
           if File.readable?(root_disk.path)
-            backing = `qemu-img info "#{root_disk.path}" | grep 'backing file:' | cut -d ':' -f2`.chomp
+            backing = `qemu-img info --force-share "#{root_disk.path}" | grep 'backing file:' | cut -d ':' -f2`.chomp
           else
             env[:ui].error("Require set read access to #{root_disk.path}. sudo chmod a+r #{root_disk.path}")
             FileUtils.rm_rf(@tmp_dir)
