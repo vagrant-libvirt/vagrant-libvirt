@@ -216,6 +216,9 @@ module VagrantPlugins
               # do not run configure_networks for tcp tunnel interfaces
               next if options.fetch(:tunnel_type, nil)
 
+              # do not run configure_networks for ipv6 only interfaces
+              next if options[:ip] == 'none'
+
               networks_to_configure << network
             end
 
@@ -288,11 +291,21 @@ module VagrantPlugins
 
           return 'public' if options[:iface_type] == :public_network
 
-          if options[:ip]
+          if options[:ip] and options[:ip] != 'none'
             address = network_address(options[:ip], options[:netmask])
             available_networks.each do |network|
               if address == network[:network_address]
                 @logger.debug 'Found network by ip'
+                return network[:name]
+              end
+            end
+          end
+
+          if options[:ipv6_address]
+            address = options[:ipv6_address]
+            available_networks.each do |network|
+              if options[:ipv6_address] == network[:ip_address]
+                @logger.debug 'Found network by ipv6'
                 return network[:name]
               end
             end
