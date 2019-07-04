@@ -128,7 +128,7 @@ module VagrantPlugins
           return unless @options[:ip]
           net_address = nil
 
-          unless @options[:forward_mode] == 'veryisolated'
+          unless @options[:forward_mode] == 'veryisolated' or @options[:ip] == "none"
             net_address = network_address(@options[:ip], @options[:netmask])
 
             # Set IP address of network (actually bridge). It will be used as
@@ -303,7 +303,7 @@ module VagrantPlugins
             @network_forward_device = @options[:forward_device]
           end
 
-          if @options[:dhcp_enabled]
+          if @options[:dhcp_enabled] and  @options[:ip] != "none"
             # Find out DHCP addresses pool range.
             network_address = "#{@interface_network[:network_address]}/"
             network_address << (@interface_network[:netmask]).to_s

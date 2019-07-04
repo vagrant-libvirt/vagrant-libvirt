@@ -18,7 +18,7 @@
     <% end %>
   <% end %>
 
-  <% if @network_forward_mode != 'veryisolated' %>
+  <% if @network_forward_mode != 'veryisolated' and @network_address %>
     <ip address="<%= @network_address %>" netmask="<%= @network_netmask %>">
     <% if @network_dhcp_enabled  %>
       <dhcp>
