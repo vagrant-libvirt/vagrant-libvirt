@@ -125,6 +125,11 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
 ```
 
+* OpenSUSE leap 15.1:
+```shell
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+```
+
 * Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
 ```shell
 pacman -S vagrant
