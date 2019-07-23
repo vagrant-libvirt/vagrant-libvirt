@@ -161,10 +161,14 @@ module VagrantPlugins
         end
       end
 
-      # not implemented and looks like not require
+      # Create/package a new Vagrant Box from the current Domain.
+      # This action requires access to the Domain disk image files and will use
+      # virt-sysprep (from libguestfs project) to clean the image, removing
+      # host SSH keys, etc.
       def self.action_package
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
+          b.use action_halt
           b.use PackageDomain
         end
       end
