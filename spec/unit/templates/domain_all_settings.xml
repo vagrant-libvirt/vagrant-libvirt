@@ -34,6 +34,7 @@
     <pae/>
     <hyperv>
       <BBB state='on' />
+      <spinlocks state='on' retries='4096' />
     </hyperv>
   </features>
   <clock offset='variable'>
