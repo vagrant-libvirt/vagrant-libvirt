@@ -79,6 +79,8 @@ module VagrantPlugins
       attr_accessor :cpu_topology
       attr_accessor :features
       attr_accessor :features_hyperv
+      attr_accessor :clock_offset
+      attr_accessor :clock_timers
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -202,6 +204,8 @@ module VagrantPlugins
         @cpu_topology      = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
+        @clock_offset      = UNSET_VALUE
+        @clock_timers      = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -356,6 +360,31 @@ module VagrantPlugins
         end
 
         @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
+      end
+
+      def clock_timer(options = {})
+        if options[:name].nil?
+          raise 'Clock timer name must be specified'
+        end
+
+        options.each do |key, value|
+          case key
+            when :name, :track, :tickpolicy, :frequency, :mode, :present
+              if value.nil?
+                raise "Value of timer option #{key} is nil"
+              end
+            else
+                raise "Unknown clock timer option: #{key}"
+          end
+        end
+
+        @clock_timers = [] if @clock_timers == UNSET_VALUE
+        options2 = {}
+        options.each do |key, value|
+          options2[key] = value
+        end
+
+        @clock_timers.push(options2)
       end
 
       def cputopology(options = {})
@@ -682,6 +711,8 @@ module VagrantPlugins
         @cpu_features = [] if @cpu_features == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
+        @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
+        @clock_timers = [] if @clock_timers == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE

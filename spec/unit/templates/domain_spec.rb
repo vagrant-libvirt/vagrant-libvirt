@@ -32,6 +32,9 @@ describe 'templates/domain' do
       domain.cpu_mode = 'custom'
       domain.cpu_feature(name: 'AAA', policy: 'required')
       domain.hyperv_feature(name: 'BBB', state: 'on')
+      domain.clock_offset = 'variable'
+      domain.clock_timer(name: 't1')
+      domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'

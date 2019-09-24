@@ -44,6 +44,7 @@ can help a lot :-)
 - [Watchdog·Device](#watchdog-device)
 - [Smartcard device](#smartcard-device)
 - [Hypervisor Features](#hypervisor-features)
+- [Clock](#clock)
 - [CPU Features](#cpu-features)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
@@ -1069,6 +1070,27 @@ Vagrant.configure("2") do |config|
     libvirt.hyperv_feature :name => 'relaxed', :state => 'on'
     # Enable virtual APIC
     libvirt.hyperv_feature :name => 'vapic', :state => 'on'
+  end
+end
+```
+
+## Clock
+
+Clock offset can be specified via `libvirt.clock_offset`. (Default is utc)
+
+Additionally timers can be specified via `libvirt.clock_timer`.
+Available options for timers are: name, track, tickpolicy, frequency, mode,  present
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Set clock offset to localtime
+    libvirt.clock_offset = 'localtime'
+    # Timers ...
+    libvirt.clock_timer :name => 'rtc', :tickpolicy => 'catchup'
+    libvirt.clock_timer :name => 'pit', :tickpolicy => 'delay'
+    libvirt.clock_timer :name => 'hpet', :present => 'no'
+    libvirt.clock_timer :name => 'hypervclock', :present => 'yes'
   end
 end
 ```
