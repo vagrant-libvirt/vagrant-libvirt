@@ -107,7 +107,14 @@ version and you run into problems, as a first step you should switch to upstream
 Now you need to make sure your have all the build dependencies installed for
 vagrant-libvirt. This depends on your distro. An overview:
 
-* Ubuntu, Debian:
+* Ubuntu 18.10, Debian 9 and up:
+```shell
+apt-get build-dep vagrant ruby-libvirt
+apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+```
+
+* Ubuntu 18.04, Debian 8 and older:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq-base
