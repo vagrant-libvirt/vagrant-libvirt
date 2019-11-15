@@ -18,6 +18,54 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         stub_const("ENV", fake_env)
       end
 
+      context 'when LIBVIRT_DEFAULT_URI is defined' do
+        it 'should always use this value' do
+          fake_env['LIBVIRT_DEFAULT_URI'] = "custom:///custom_path"
+
+          subject.finalize!
+          expect(subject.uri).to eq("custom:///custom_path")
+          expect(subject.qemu_use_session).to eq(false)
+        end
+
+        context 'when LIBVIRT_DEFAULT_URI contains "qemu"' do
+          [
+            [
+              'set qemu_use_session if "session" present',
+              'qemu:///session',
+              true,
+            ],
+            [
+              'handle different protocol additions',
+              'qemu+ssh:///session',
+              true,
+            ],
+            [
+              'handle options before and after path',
+              'qemu://remote/session?keyfile=my_id_rsa',
+              true,
+            ],
+            [
+              'identify when session not set',
+              'qemu://remote/system',
+              false,
+            ],
+            [
+              'handle session appearing elsewhere',
+              'qemu://remote/system?keyfile=my_session_id',
+              false,
+            ],
+          ].each do |title, uri, session|
+            it "should #{title}" do
+              fake_env['LIBVIRT_DEFAULT_URI'] = uri
+
+              subject.finalize!
+              expect(subject.uri).to eq(uri)
+              expect(subject.qemu_use_session).to eq(session)
+            end
+          end
+        end
+      end
+
       context 'when @driver is defined' do
         defaults = {'id_ssh_key_file' => nil}
         [
@@ -130,11 +178,13 @@ describe VagrantPlugins::ProviderLibvirt::Config do
   end
 
   def assert_invalid
+    subject.finalize!
     errors = subject.validate(machine)
     raise "No errors: #{errors.inspect}" if errors.values.all?(&:empty?)
   end
 
   def assert_valid
+    subject.finalize!
     errors = subject.validate(machine)
     raise "Errors: #{errors.inspect}" unless errors.values.all?(&:empty?)
   end
