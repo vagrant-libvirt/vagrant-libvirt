@@ -1249,7 +1249,14 @@ public network interface and you must connect to Libvirt via ssh.
 
 ## QEMU Session Support
 
-vagrant-libvirt supports using the QEMU session connection to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+vagrant-libvirt supports using QEMU user sessions to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+
+There must be a virbr network defined in the QEMU system session. The libvirt `default` network which comes by default, the vagrant `vagrant-libvirt` network which is generated if you run a Vagrantfile using the System session, or a manually defined network can be used. These networks can be set to autostart with `sudo virsh net-autostart <net-name>`, which'll mean no further root access is required even after reboots.
+
+The QEMU bridge helper is configured via `/etc/qemu/bridge.conf`. This file must include the virbr you wish to use (e.g. virbr0, virbr1, etc). You can find this out via `sudo virsh net-dumpxml <net-name>`.
+```
+allow virbr0
+```
 
 An example configuration of a machine using the QEMU session connection:
 
@@ -1260,11 +1267,11 @@ Vagrant.configure("2") do |config|
     libvirt.qemu_use_session = true
     # URI of QEMU session connection, default is as below
     libvirt.uri = 'qemu:///session'
-    # URI of QEMU system connection, use to obtain IP address for management
+    # URI of QEMU system connection, use to obtain IP address for management, default is below
     libvirt.system_uri = 'qemu:///system'
     # Path to store Libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
     libvirt.storage_pool_path = '/home/user/.local/share/libvirt/images'
-    # Management network device
+    # Management network device, default is below
     libvirt.management_network_device = 'virbr0'
   end
 
