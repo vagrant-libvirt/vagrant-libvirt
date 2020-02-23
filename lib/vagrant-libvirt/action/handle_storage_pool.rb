@@ -24,9 +24,9 @@ module VagrantPlugins
           # locking all subsequent actions as well.
           @@lock.synchronize do
             # Check for storage pool, where box image should be created
-            break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name
-            )
+            break unless env[:machine].provider.driver.connection.pools.all(
+              name: config.storage_pool_name
+            ).empty?
 
             @logger.info("No storage pool '#{config.storage_pool_name}' is available.")
 

@@ -126,13 +126,9 @@ module VagrantPlugins
                 pool_name = @storage_pool_name
             end
             @logger.debug "Search for volume in pool: #{pool_name}"
-            actual_volumes =
-              env[:machine].provider.driver.connection.volumes.all.select do |x|
-                x.pool_name == pool_name
-              end
-            domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-              actual_volumes, "#{@name}.img"
-            )
+            domain_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: "#{@name}.img"
+            ).find { |x| x.pool_name == pool_name }
             raise Errors::DomainVolumeExists if domain_volume.nil?
             @domain_volume_path = domain_volume.path
           end

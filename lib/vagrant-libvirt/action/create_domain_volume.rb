@@ -25,15 +25,15 @@ module VagrantPlugins
           @name = "#{env[:domain_name]}.img"
 
           # Verify the volume doesn't exist already.
-          domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:machine].provider.driver.connection.volumes.all, @name
-          )
-          raise Errors::DomainVolumeExists if domain_volume
+          domain_volume = env[:machine].provider.driver.connection.volumes.all(
+            name: @name
+          ).first
+          raise Errors::DomainVolumeExists if domain_volume.id
 
           # Get path to backing image - box volume.
-          box_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:machine].provider.driver.connection.volumes.all, env[:box_volume_name]
-          )
+          box_volume = env[:machine].provider.driver.connection.volumes.all(
+            name: env[:box_volume_name]
+          ).first
           @backing_file = box_volume.path
 
           # Virtual size of image. Take value worked out by HandleBoxImage
