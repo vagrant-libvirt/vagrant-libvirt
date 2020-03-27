@@ -71,7 +71,7 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
-            if config.snapshot_pool_name != 'default'
+            if config.snapshot_pool_name != config.storage_pool_name
                 pool_name = config.snapshot_pool_name
             else
                 pool_name = config.storage_pool_name
