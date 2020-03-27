@@ -20,7 +20,7 @@ module VagrantPlugins
       end
 
       def usable?(machine, _raise_error = false)
-        # bail now if not using libvirt since checking version would throw error
+        # bail now if not using Libvirt since checking version would throw error
         return false unless machine.provider_name == :libvirt
 
         # <filesystem/> support in device attach/detach introduced in 1.2.2
@@ -30,7 +30,7 @@ module VagrantPlugins
       end
 
       def prepare(machine, folders, _opts)
-        raise Vagrant::Errors::Error('No libvirt connection') if machine.provider.driver.connection.nil?
+        raise Vagrant::Errors::Error('No Libvirt connection') if machine.provider.driver.connection.nil?
         @conn = machine.provider.driver.connection.client
 
         begin
@@ -89,7 +89,7 @@ module VagrantPlugins
 
       def cleanup(machine, _opts)
         if machine.provider.driver.connection.nil?
-          raise Vagrant::Errors::Error('No libvirt connection')
+          raise Vagrant::Errors::Error('No Libvirt connection')
         end
         @conn = machine.provider.driver.connection.client
         begin

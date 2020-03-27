@@ -14,7 +14,7 @@ module VagrantPlugins
           env[:ui].info(I18n.t('vagrant_libvirt.destroy_domain'))
 
           # Must delete any snapshots before domain can be destroyed
-          # Fog libvirt currently doesn't support snapshots. Use
+          # Fog Libvirt currently doesn't support snapshots. Use
           # ruby-libvirt client directly. Note this is racy, see
           # http://www.libvirt.org/html/libvirt-libvirt.html#virDomainSnapshotListNames
           libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(

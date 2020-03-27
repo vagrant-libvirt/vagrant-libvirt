@@ -28,7 +28,7 @@ module VagrantPlugins
           end
 
           # Wait for domain to obtain an ip address. Ip address is searched
-          # from arp table, either localy or remotely via ssh, if libvirt
+          # from arp table, either locally or remotely via ssh, if Libvirt
           # connection was done via ssh.
           env[:ip_address] = nil
           @logger.debug("Searching for IP for MAC address: #{domain.mac}")

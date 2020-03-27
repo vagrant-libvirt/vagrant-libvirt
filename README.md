@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt.svg)](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt)
 [![Coverage Status](https://coveralls.io/repos/github/vagrant-libvirt/vagrant-libvirt/badge.svg?branch=master)](https://coveralls.io/github/vagrant-libvirt/vagrant-libvirt?branch=master)
 
-This is a [Vagrant](http://www.vagrantup.com) plugin that adds an
+This is a [Vagrant](http://www.vagrantup.com) plugin that adds a
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
 control and provision machines via Libvirt toolkit.
 
@@ -53,6 +53,8 @@ can help a lot :-)
 - [Customized Graphics](#customized-graphics)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
+- [Package Box from VM](#package-box-from-vm)
+- [Troubleshooting VMs](#troubleshooting-vms)
 - [Development](#development)
 - [Contributing](#contributing)
 
@@ -83,27 +85,39 @@ can help a lot :-)
 
 ## Installation
 
-First, you should have both qemu and libvirt installed if you plan to run VMs
-on your local system. For instructions, refer to your linux distribution's
+First, you should have both QEMU and Libvirt installed if you plan to run VMs
+on your local system. For instructions, refer to your Linux distribution's
 documentation.
 
-**NOTE:** Before you start using Vagrant-libvirt, please make sure your libvirt
-and qemu installation is working correctly and you are able to create qemu or
-kvm type virtual machines with `virsh` or `virt-manager`.
+**NOTE:** Before you start using vagrant-libvirt, please make sure your Libvirt
+and QEMU installation is working correctly and you are able to create QEMU or
+KVM type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
-*We only test with the upstream version!* If you decide to install your distros
+Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
+releases from 1.5 onwards but they are not actively tested.
+
+Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+for the current list of tested versions.
+
+*We only test with the upstream version!* If you decide to install your distro's
 version and you run into problems, as a first step you should switch to upstream.
 
 Now you need to make sure your have all the build dependencies installed for
 vagrant-libvirt. This depends on your distro. An overview:
 
-* Ubuntu 12.04/14.04/16.04, Debian:
+* Ubuntu 18.10, Debian 9 and up:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
-apt-get install qemu libvirt-bin ebtables dnsmasq
+apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+```
+
+* Ubuntu 18.04, Debian 8 and older:
+```shell
+apt-get build-dep vagrant ruby-libvirt
+apt-get install qemu libvirt-bin ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 ```
 
@@ -119,7 +133,12 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
 ```
 
-* Arch linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
+* OpenSUSE leap 15.1:
+```shell
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+```
+
+* Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
 ```shell
 pacman -S vagrant
 ```
@@ -147,7 +166,7 @@ $ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
   libguestfs-tools-c ruby-devel gcc
 ```
 
-On Arch linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
+On Arch Linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
 
 If have problem with installation - check your linker. It should be `ld.gold`:
 
@@ -169,8 +188,8 @@ CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/u
 After installing the plugin (instructions above), the quickest way to get
 started is to add Libvirt box and specify all the details manually within a
 `config.vm.provider` block. So first, add Libvirt box using any name you want.
-You can find more libvirt ready boxes at
-[Atlas](https://atlas.hashicorp.com/boxes/search?provider=libvirt). For
+You can find more Libvirt-ready boxes at
+[Vagrant Cloud](https://app.vagrantup.com/boxes/search?provider=libvirt). For
 example:
 
 ```shell
@@ -210,7 +229,7 @@ export VAGRANT_DEFAULT_PROVIDER=libvirt
 
 Vagrant goes through steps below when creating new project:
 
-1. Connect to Libvirt localy or remotely via SSH.
+1. Connect to Libvirt locally or remotely via SSH.
 2. Check if box image is available in Libvirt storage pool. If not, upload it
    to remote Libvirt storage pool as new volume.
 3. Create COW diff image of base box image for new Libvirt domain.
@@ -227,22 +246,22 @@ Vagrant goes through steps below when creating new project:
 Although it should work without any configuration for most people, this
 provider exposes quite a few provider-specific configuration options. The
 following options allow you to configure how vagrant-libvirt connects to
-libvirt, and are used to generate the [libvirt connection
+Libvirt, and are used to generate the [Libvirt connection
 URI](http://libvirt.org/uri.html):
 
-* `driver` - A hypervisor name to access. For now only kvm and qemu are
+* `driver` - A hypervisor name to access. For now only KVM and QEMU are
   supported
-* `host` - The name of the server, where libvirtd is running
+* `host` - The name of the server, where Libvirtd is running
 * `connect_via_ssh` - If use ssh tunnel to connect to Libvirt. Absolutely
-  needed to access libvirt on remote host. It will not be able to get the IP
+  needed to access Libvirt on remote host. It will not be able to get the IP
   address of a started VM otherwise.
 * `username` - Username and password to access Libvirt
 * `password` - Password to access Libvirt
 * `id_ssh_key_file` - If not nil, uses this ssh private key to access Libvirt.
   Default is `$HOME/.ssh/id_rsa`. Prepends `$HOME/.ssh/` if no directory
-* `socket` - Path to the libvirt unix socket (e.g.
+* `socket` - Path to the Libvirt unix socket (e.g.
   `/var/run/libvirt/libvirt-sock`)
-* `uri` - For advanced usage. Directly specifies what libvirt connection URI
+* `uri` - For advanced usage. Directly specifies what Libvirt connection URI
   vagrant-libvirt should use. Overrides all other connection configuration
   options
 
@@ -264,7 +283,7 @@ end
 ### Domain Specific Options
 
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not
-  set. Possible values are documented in libvirt's [description for
+  set. Possible values are documented in Libvirt's [description for
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
   option applies only to disks associated with a box image. To set the bus type
   on additional disks, see the [Additional Disks](#additional-disks) section.
@@ -275,7 +294,7 @@ end
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
-  libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+  Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
@@ -299,7 +318,7 @@ end
 * `cpu_model` - CPU Model. Defaults to 'qemu64' if not set and `cpu_mode` is
   `custom` and to '' otherwise. This can really only be used when setting
   `cpu_mode` to `custom`.
-* `cpu_fallback` - Whether to allow libvirt to fall back to a CPU model close
+* `cpu_fallback` - Whether to allow Libvirt to fall back to a CPU model close
   to the specified model if features in the guest CPU are not supported on the
   host. Defaults to 'allow' if not set. Allowed values: `allow`, `forbid`.
 * `numa_nodes` - Specify an array of NUMA nodes for the guest. The syntax is similar to what would be set in the domain XML. `memory` must be in MB. Symmetrical and asymmetrical topologies are supported but make sure your total count of defined CPUs adds up to `v.cpus`.
@@ -315,7 +334,7 @@ end
 * `loader` - Sets path to custom UEFI loader.
 * `volume_cache` - Controls the cache mechanism. Possible values are "default",
   "none", "writethrough", "writeback", "directsync" and "unsafe". [See
-  driver->cache in libvirt
+  driver->cache in Libvirt
   documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
@@ -323,6 +342,9 @@ end
   to qemu `-initrd`.
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
+* `default_prefix` - The default Libvirt guest name becomes a concatenation of the
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
 * `graphics_type` - Sets the protocol used to expose the guest display.
@@ -333,8 +355,8 @@ end
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to
   "127.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for
-  vnc and spice. by default working without passsword.
-* `graphics_autoport` - Sets autoport for graphics, libvirt in this case
+  vnc and Spice. by default working without passsword.
+* `graphics_autoport` - Sets autoport for graphics, Libvirt in this case
   ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and
   "no"
 * `keymap` - Set keymap for vm. default: en-us
@@ -351,8 +373,8 @@ end
   Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use
   `qemu-system-x86_64 -machine help` to get a list of supported machines.
-* `machine_arch` - Sets machine architecture. This helps libvirt to determine
-  the correct emulator type. Possible values depend on your version of qemu.
+* `machine_arch` - Sets machine architecture. This helps Libvirt to determine
+  the correct emulator type. Possible values depend on your version of QEMU.
   For possible values, see which emulator executable `qemu-system-*` your
   system provides. Common examples are `aarch64`, `alpha`, `arm`, `cris`,
   `i386`, `lm32`, `m68k`, `microblaze`, `microblazeel`, `mips`, `mips64`,
@@ -376,7 +398,7 @@ end
 * `nic_adapter_count` - Defaults to '8'. Only use case for increasing this
   count is for VMs that virtualize switches such as Cumulus Linux. Max value
   for Cumulus Linux VMs is 33.
-* `uuid` - Force a domain UUID. Defaults to autogenerated value by libvirt if
+* `uuid` - Force a domain UUID. Defaults to autogenerated value by Libvirt if
   not set.
 * `suspend_mode` - What is done on vagrant suspend. Possible values: 'pause',
   'managedsave'. Pause mode executes a la `virsh suspend`, which just pauses
@@ -390,10 +412,10 @@ end
   specified here.
 * `autostart` - Automatically start the domain when the host boots. Defaults to
   'false'.
-* `channel` - [libvirt
+* `channel` - [Libvirt
   channels](https://libvirt.org/formatdomain.html#elementCharChannel).
   Configure a private communication channel between the host and guest, e.g.
-  for use by the [qemu guest
+  for use by the [QEMU guest
   agent](http://wiki.libvirt.org/page/Qemu_guest_agent) and the Spice/QXL
   graphics type.
 * `mgmt_attach` - Decide if VM has interface in mgmt network. If set to 'false'
@@ -474,11 +496,11 @@ https://libvirt.org/formatdomain.html#elementsNICSTCP
 
 http://libvirt.org/formatdomain.html#elementsNICSMulticast
 
-http://libvirt.org/formatdomain.html#elementsNICSUDP _(in libvirt v1.2.20 and higher)_
+http://libvirt.org/formatdomain.html#elementsNICSUDP _(in Libvirt v1.2.20 and higher)_
 
 Public Network interfaces are currently implemented using the macvtap driver.
 The macvtap driver is only available with the Linux Kernel version >= 2.6.24.
-See the following libvirt documentation for the details of the macvtap usage.
+See the following Libvirt documentation for the details of the macvtap usage.
 
 http://www.libvirt.org/formatdomain.html#elementsNICSDirect
 
@@ -547,7 +569,7 @@ In example below, one network interface is configured for VM `test_vm1`. After
 you run `vagrant up`, VM will be accessible on IP address `10.20.30.40`. So if
 you install a web server via provisioner, you will be able to access your
 testing server on `http://10.20.30.40` URL. But beware that this address is
-private to libvirt host only. It's not visible outside of the hypervisor box.
+private to Libvirt host only. It's not visible outside of the hypervisor box.
 
 If network `10.20.30.0/24` doesn't exist, provider will create it. By default
 created networks are NATed to outside world, so your VM will be able to connect
@@ -564,11 +586,11 @@ reachable by anyone with access to the public network.
 
 *Note: These options are not applicable to public network interfaces.*
 
-There is a way to pass specific options for libvirt provider when using
+There is a way to pass specific options for Libvirt provider when using
 `config.vm.network` to configure new network interface. Each parameter name
 starts with `libvirt__` string. Here is a list of those options:
 
-* `:libvirt__network_name` - Name of libvirt network to connect to. By default,
+* `:libvirt__network_name` - Name of Libvirt network to connect to. By default,
   network 'default' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
@@ -607,7 +629,7 @@ starts with `libvirt__` string. Here is a list of those options:
   between Guests. Useful for Switch VMs like Cumulus Linux. No virtual switch
   setting like `libvirt__network_name` applies with tunnel interfaces and will
   be ignored if configured.
-* `:libvirt__tunnel_ip` - Sets the source IP of the libvirt tunnel interface.
+* `:libvirt__tunnel_ip` - Sets the source IP of the Libvirt tunnel interface.
   By default this is `127.0.0.1` for TCP and UDP tunnels and `239.255.1.1` for
   Multicast tunnels. It populates the address field in the `<source
   address="XXX">` of the interface xml configuration.
@@ -617,11 +639,11 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:libvirt__tunnel_local_port` - Sets the local port used by the udp tunnel
   interface type. It populates the port field in the `<local port=XXX">`
   section of the interface xml configuration. _(This feature only works in
-  libvirt 1.2.20 and higher)_
+  Libvirt 1.2.20 and higher)_
 * `:libvirt__tunnel_local_ip` - Sets the local IP used by the udp tunnel
   interface type. It populates the ip entry of the `<local address=XXX">`
   section of the interface xml configuration. _(This feature only works in
-  libvirt 1.2.20 and higher)_
+  Libvirt 1.2.20 and higher)_
 * `:libvirt__guest_ipv6` - Enable or disable guest-to-guest IPv6 communication.
   See [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
   [here](http://libvirt.org/git/?p=libvirt.git;a=commitdiff;h=705e67d40b09a905cd6a4b8b418d5cb94eaa95a8)
@@ -633,18 +655,18 @@ starts with `libvirt__` string. Here is a list of those options:
   failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
 * `:mac` - MAC address for the interface. *Note: specify this in lowercase
   since Vagrant network scripts assume it will be!*
-* `:libvirt__mtu` - MTU size for the libvirt network, if not defined, the
-  created network will use the libvirt default (1500). VMs still need to set the
+* `:libvirt__mtu` - MTU size for the Libvirt network, if not defined, the
+  created network will use the Libvirt default (1500). VMs still need to set the
   MTU accordingly.
 * `:model_type` - parameter specifies the model of the network adapter when you
   create a domain value by default virtio KVM believe possible values, see the
-  documentation for libvirt
+  documentation for Libvirt
 * `:libvirt__driver_name` - Define which network driver to use. [More
   info](https://libvirt.org/formatdomain.html#elementsDriverBackendOptions)
 * `:libvirt__driver_queues` - Define a number of queues to be used for network
   interface. Set equal to numer of vCPUs for best performance. [More
   info](http://www.linux-kvm.org/page/Multiqueue)
-* `:autostart` - Automatic startup of network by the libvirt daemon.
+* `:autostart` - Automatic startup of network by the Libvirt daemon.
   If not specified the default is 'false'.
 * `:bus` - The bus of the PCI device. Both :bus and :slot have to be defined.
 * `:slot` - The slot of the PCI device. Both :bus and :slot have to be defined.
@@ -665,8 +687,8 @@ virtual network.
   Default mode is 'bridge'.
 * `:type` - is type of interface.(`<interface type="#{@type}">`)
 * `:mac` - MAC address for the interface.
-* `:network_name` - Name of libvirt network to connect to.
-* `:portgroup` - Name of libvirt portgroup to connect to.
+* `:network_name` - Name of Libvirt network to connect to.
+* `:portgroup` - Name of Libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an Open vSwitch bridge device. Default is
   'false'.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
@@ -677,17 +699,17 @@ virtual network.
 
 vagrant-libvirt uses a private network to perform some management operations on
 VMs. All VMs will have an interface connected to this network and an IP address
-dynamically assigned by libvirt unless you set `:mgmt_attach` to 'false'.
+dynamically assigned by Libvirt unless you set `:mgmt_attach` to 'false'.
 This is in addition to any networks you configure. The name and address
 used by this network are configurable at the provider level.
 
-* `management_network_name` - Name of libvirt network to which all VMs will be
+* `management_network_name` - Name of Libvirt network to which all VMs will be
   connected. If not specified the default is 'vagrant-libvirt'.
 * `management_network_address` - Address of network to which all VMs will be
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
-* `management_network_mode` - Network mode for the libvirt management network.
-  Specify one of veryisolated, none, nat or route options. Further documentated
+* `management_network_mode` - Network mode for the Libvirt management network.
+  Specify one of veryisolated, none, nat or route options. Further documented
   under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
@@ -696,9 +718,10 @@ used by this network are configurable at the provider level.
   for for more information.
 * `management_network_autostart` - Automatic startup of mgmt network, if not
   specified the default is 'false'.
-* `:management_network_pci_bus` -  The bus of the PCI device.
-* `:management_network_pci_slot` -  The slot of the PCI device.
+* `management_network_pci_bus` -  The bus of the PCI device.
+* `management_network_pci_slot` -  The slot of the PCI device.
 * `management_network_mac` - MAC address of management network interface.
+* `management_network_domain` - Domain name assigned to the management network.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.
@@ -889,8 +912,8 @@ Bus 001 Device 002: ID 1234:abcd Example device
 
 Additionally, the following options can be used:
 
-* `startupPolicy` - Is passed through to libvirt and controls if the device has
-  to exist.  libvirt currently allows the following values: "mandatory",
+* `startupPolicy` - Is passed through to Libvirt and controls if the device has
+  to exist.  Libvirt currently allows the following values: "mandatory",
   "requisite", "optional".
 
 
@@ -984,7 +1007,7 @@ The optional action attribute describes what `action` to take when the watchdog 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    # Add libvirt watchdog device model i6300esb
+    # Add Libvirt watchdog device model i6300esb
     libvirt.watchdog :model => 'i6300esb', :action => 'reset'
   end
 end
@@ -1044,7 +1067,7 @@ running Microsoft Windows.
 You can specify HyperV features via `libvirt.hyperv_feature`. Available
 options are listed below. Note that both options are required:
 
-* `name` - The name of the feature Hypervisor feature (see libvirt doc)
+* `name` - The name of the feature Hypervisor feature (see Libvirt doc)
 * `state` - The state for this feature which can be either `on` or `off`.
 
 ```ruby
@@ -1063,10 +1086,10 @@ end
 You can specify CPU feature policies via `libvirt.cpu_feature`. Available
 options are listed below. Note that both options are required:
 
-* `name` - The name of the feature for the chosen CPU (see libvirts
+* `name` - The name of the feature for the chosen CPU (see Libvirt's
   `cpu_map.xml`)
 * `policy` - The policy for this feature (one of `force`, `require`,
-  `optional`, `disable` and `forbid` - see libvirt documentation)
+  `optional`, `disable` and `forbid` - see Libvirt documentation)
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -1221,12 +1244,19 @@ mounting them at boot.
 
 Further documentation on using 9p can be found in [kernel docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in [QEMU wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
 
-**SECURITY NOTE:** for remote libvirt, nfs synced folders requires a bridged
-public network interface and you must connect to libvirt via ssh.
+**SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
+public network interface and you must connect to Libvirt via ssh.
 
 ## QEMU Session Support
 
-vagrant-libvirt supports using the QEMU session connection to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+vagrant-libvirt supports using QEMU user sessions to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+
+There must be a virbr network defined in the QEMU system session. The libvirt `default` network which comes by default, the vagrant `vagrant-libvirt` network which is generated if you run a Vagrantfile using the System session, or a manually defined network can be used. These networks can be set to autostart with `sudo virsh net-autostart <net-name>`, which'll mean no further root access is required even after reboots.
+
+The QEMU bridge helper is configured via `/etc/qemu/bridge.conf`. This file must include the virbr you wish to use (e.g. virbr0, virbr1, etc). You can find this out via `sudo virsh net-dumpxml <net-name>`.
+```
+allow virbr0
+```
 
 An example configuration of a machine using the QEMU session connection:
 
@@ -1237,11 +1267,11 @@ Vagrant.configure("2") do |config|
     libvirt.qemu_use_session = true
     # URI of QEMU session connection, default is as below
     libvirt.uri = 'qemu:///session'
-    # URI of QEMU system connection, use to obtain IP address for management
+    # URI of QEMU system connection, use to obtain IP address for management, default is below
     libvirt.system_uri = 'qemu:///system'
-    # Path to store libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
+    # Path to store Libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
     libvirt.storage_pool_path = '/home/user/.local/share/libvirt/images'
-    # Management network device
+    # Management network device, default is below
     libvirt.management_network_device = 'virbr0'
   end
 
@@ -1302,7 +1332,7 @@ end
 
 For certain functionality to be available within a guest, a private
 communication channel must be established with the host. Two notable examples
-of this are the qemu guest agent, and the Spice/QXL graphics type.
+of this are the QEMU guest agent, and the Spice/QXL graphics type.
 
 Below is a simple example which exposes a virtio serial channel to the guest.
 Note: in a multi-VM environment, the channel would be created for all VMs.
@@ -1328,7 +1358,7 @@ end
 
 These settings can be specified on a per-VM basis, however the per-guest
 settings will OVERRIDE any global 'config' setting. In the following example,
-we create 3 VM with the following configuration:
+we create 3 VMs with the following configuration:
 
 * **master**: No channel settings specified, so we default to the provider
   setting of a single virtio guest agent channel.
@@ -1415,6 +1445,65 @@ you can build a vagrant-libvirt box by running:
 $ cd packer-qemu-templates
 $ packer build ubuntu-14.04-server-amd64-vagrant.json
 ```
+
+## Package Box from VM
+
+vagrant-libvirt has native support for [`vagrant
+package`](https://www.vagrantup.com/docs/cli/package.html) via
+libguestfs [virt-sysprep](http://libguestfs.org/virt-sysprep.1.html).
+virt-sysprep operations can be customized via the
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS` environment variable; see the
+[upstream
+documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
+further details especially on default sysprep operations enabled for
+your system.
+
+For example, on Chef [bento](https://github.com/chef/bento) VMs that
+require SSH hostkeys already set (e.g. bento/debian-7) as well as leave
+existing LVM UUIDs untouched (e.g. bento/ubuntu-18.04), these can be
+packaged into vagrant-libvirt boxes like so:
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS="defaults,-ssh-userdir,-ssh-hostkeys,-lvm-uuids"
+$ vagrant package
+```
+
+## Troubleshooting VMs
+
+The first step for troubleshooting a VM image that appears to not boot correctly,
+or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
+to remember is that if the VM doesn't get an IP, then vagrant can't communicate
+with it to configure anything, so a problem at this stage is likely to come from 
+the VM, but we'll outline the tools and common problems to help you troubleshoot
+that.
+
+By default, when you create a new VM, a vnc server will listen on `127.0.0.1` on
+port `TCP5900`. If you connect with a vnc viewer you can see the boot process. If
+your VM isn't listening on `5900` by default, you can use `virsh dumpxml` to find
+out which port it's listening on, or can configure it with `graphics_port` and
+`graphics_ip` (see 'Domain Specific Options' above).
+
+Note: Connecting with the console (`virsh console`) requires additional config,
+so some VMs may not show anything on the console at all, instead displaying it in
+the VNC console. The issue with the text console is that you also need to build the 
+image used to tell the kernel to output to the console during boot, and typically 
+most do not have this built in.
+
+Problems we've seen in the past include:
+- Forgetting to remove `/etc/udev/rules.d/70-persistent-net.rules` before packaging
+the VM
+- VMs expecting a specific disk device to be connected
+
+If you're still confused, check the Github Issues for this repo for anything that
+looks similar to your problem.
+
+[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032) 
+contains some historical troubleshooting for VMs that appeared
+to hang. 
+
+Did you hit a problem that you'd like to note here to save time in the future?
+Please do!
+
 
 ## Development
 

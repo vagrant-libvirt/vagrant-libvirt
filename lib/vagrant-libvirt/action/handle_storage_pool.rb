@@ -36,7 +36,7 @@ module VagrantPlugins
 
             @logger.info("Creating storage pool 'default'")
 
-            # Fog libvirt currently doesn't support creating pools. Use
+            # Fog Libvirt currently doesn't support creating pools. Use
             # ruby-libvirt client directly.
             begin
               @storage_pool_path = storage_pool_path(env)

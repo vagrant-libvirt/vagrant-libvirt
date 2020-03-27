@@ -81,6 +81,7 @@ module VagrantPlugins
 
           # Storage
           @storage_pool_name = config.storage_pool_name
+          @snapshot_pool_name = config.snapshot_pool_name
           @disks = config.disks
           @cdroms = config.cdroms
 
@@ -119,9 +120,15 @@ module VagrantPlugins
 
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
+            if @snapshot_pool_name != @storage_pool_name
+                pool_name = @snapshot_pool_name
+            else
+                pool_name = @storage_pool_name
+            end
+            @logger.debug "Search for volume in pool: #{pool_name}"
             actual_volumes =
               env[:machine].provider.driver.connection.volumes.all.select do |x|
-                x.pool_name == @storage_pool_name
+                x.pool_name == pool_name
               end
             domain_volume = ProviderLibvirt::Util::Collection.find_matching(
               actual_volumes, "#{@name}.img"
@@ -155,26 +162,28 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:machine].provider.driver.connection.volumes.select do |x|
-              x.name == disk[:name] && x.pool_name == @storage_pool_name
-            end.empty?
-              # make the disk. equivalent to:
-              # qemu-img create -f qcow2 <path> 5g
-              begin
-                env[:machine].provider.driver.connection.volumes.create(
-                  name: disk[:name],
-                  format_type: disk[:type],
-                  path: disk[:absolute_path],
-                  capacity: disk[:size],
-                  #:allocation => ?,
-                  pool_name: @storage_pool_name
-                )
-              rescue Fog::Errors::Error => e
+            # make the disk. equivalent to:
+            # qemu-img create -f qcow2 <path> 5g
+            begin
+              env[:machine].provider.driver.connection.volumes.create(
+                name: disk[:name],
+                format_type: disk[:type],
+                path: disk[:absolute_path],
+                capacity: disk[:size],
+                #:allocation => ?,
+                pool_name: @storage_pool_name
+              )
+            rescue Libvirt::Error => e
+              # It is hard to believe that e contains just a string
+              # and no useful error code!
+              msg = "Call to virStorageVolCreateXML failed: " +
+                    "storage volume '#{disk[:path]}' exists already"
+              if e.message == msg and disk[:allow_existing]
+                disk[:preexisting] = true
+              else
                 raise Errors::FogDomainVolumeCreateError,
                       error_message: e.message
               end
-            else
-              disk[:preexisting] = true
             end
           end
 
@@ -316,7 +325,7 @@ module VagrantPlugins
 
           env[:ui].info(" -- Command line : #{@cmd_line}") unless @cmd_line.empty?
 
-          # Create libvirt domain.
+          # Create Libvirt domain.
           # Is there a way to tell fog to create new domain with already
           # existing volume? Use domain creation from template..
           begin

@@ -41,7 +41,7 @@ module VagrantPlugins
         # parsable and sortable by epoch time
         # @example
         #   development-centos-6-chef-11_1404488971_3b7a569e2fd7c554b852
-        # @return [String] libvirt domain name
+        # @return [String] Libvirt domain name
         def build_domain_name(env)
           config = env[:machine].provider_config
           domain_name =
@@ -51,7 +51,7 @@ module VagrantPlugins
               # don't have any prefix, not even "_"
               ''
             else
-              config.default_prefix.to_s.dup.concat('_')
+              config.default_prefix.to_s.dup
             end
           domain_name << env[:machine].name.to_s
           domain_name.gsub!(/[^-a-z0-9_\.]/i, '')
