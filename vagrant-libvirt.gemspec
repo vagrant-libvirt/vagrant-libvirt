@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Lukas Stanek".freeze, "Dima Vasilets".freeze, "Brian Pitts".freeze]
-  s.files = Dir.glob("{lib,locales}/**/*.*")
+  s.files = Dir.glob("{lib,locales}/**/*.*") + %w(LICENSE README.md)
   s.test_files = Dir.glob("{test,spec,features}/**/*.*")
   s.description = "libvirt provider for Vagrant.".freeze
   s.email = ["ls@elostech.cz".freeze, "pronix.service@gmail.com".freeze, "brian@polibyte.com".freeze]
