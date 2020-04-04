@@ -100,6 +100,7 @@ describe 'templates/domain' do
     before do
       domain.disk_bus = 'scsi'
       domain.disk_controller_model = 'virtio-scsi'
+      domain.disk_discard = 'unmap'
       domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
       domain.instance_variable_set('@domain_volume_cache', 'unsafe')
       domain.disks.each do |disk|

@@ -294,6 +294,10 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_discard` - Whether discard requests are ignored or passed to the
+  filesystem. The valid value are `unmap` and `ignore`. When using `unmap`,
+  `disk_controller_model` should be configured as `virtio-scsi` and `disk_bus`
+  should be configured as `scsi`.
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for

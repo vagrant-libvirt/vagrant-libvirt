@@ -24,7 +24,7 @@
   <clock offset='utc'/>
   <devices>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <driver name='qemu' type='qcow2' cache='unsafe' discard='unmap'/>
       <source file='/var/lib/libvirt/images/test.qcow2'/>
       <target dev='vda' bus='scsi'/>
     </disk>

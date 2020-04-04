@@ -99,7 +99,7 @@
     <% end %>
     <% if @domain_volume_path %>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
+      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>' discard='<%= @disk_discard %>'/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
@@ -111,7 +111,7 @@
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'/>
+      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>' discard='<%= d[:discard] %>'/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
       <% if d[:shareable] %>
