@@ -80,14 +80,17 @@ module VagrantPlugins
             message << " in storage pool #{config.storage_pool_name}."
             @logger.info(message)
 
+            @storage_volume_uid = storage_uid env
+            @storage_volume_gid = storage_gid env
+
             begin
               fog_volume = env[:machine].provider.driver.connection.volumes.create(
                 name: env[:box_volume_name],
                 allocation: "#{box_image_size / 1024 / 1024}M",
                 capacity: "#{box_virtual_size}G",
                 format_type: box_format,
-                owner: storage_uid env,
-                group: storage_gid env,
+                owner: @storage_volume_uid,
+                group: @storage_volume_gid,
                 pool_name: config.storage_pool_name
               )
             rescue Fog::Errors::Error => e
