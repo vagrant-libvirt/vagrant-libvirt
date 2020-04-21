@@ -1458,6 +1458,14 @@ documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
 further details especially on default sysprep operations enabled for
 your system.
 
+Options to the virt-sysprep command call can be passed via
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS` environment variable.
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS="--delete /etc/hostname"
+$ vagrant package
+```
+
 For example, on Chef [bento](https://github.com/chef/bento) VMs that
 require SSH hostkeys already set (e.g. bento/debian-7) as well as leave
 existing LVM UUIDs untouched (e.g. bento/ubuntu-18.04), these can be

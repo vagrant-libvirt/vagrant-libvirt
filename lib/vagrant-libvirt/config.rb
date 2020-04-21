@@ -355,7 +355,10 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
-        @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
+        @features_hyperv = []  if @features_hyperv == UNSET_VALUE
+
+        @features_hyperv.push(name: options[:name],
+                              state: options[:state])
       end
 
       def cputopology(options = {})
