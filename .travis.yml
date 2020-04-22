@@ -18,7 +18,7 @@ env:
   matrix:
     - VAGRANT_VERSION=v2.0.4
     - VAGRANT_VERSION=v2.1.5
-    - VAGRANT_VERSION=v2.2.6
+    - VAGRANT_VERSION=v2.2.4
     - VAGRANT_VERSION=master
 rvm:
   - 2.2.10
@@ -34,9 +34,9 @@ matrix:
       rvm: 2.6.6
     - env: VAGRANT_VERSION=v2.1.5
       rvm: 2.6.6
-    - env: VAGRANT_VERSION=v2.2.6
+    - env: VAGRANT_VERSION=v2.2.4
       rvm: 2.2.10
-    - env: VAGRANT_VERSION=v2.2.6
+    - env: VAGRANT_VERSION=v2.2.4
       rvm: 2.3.5
     - env: VAGRANT_VERSION=master
       rvm: 2.2.10
