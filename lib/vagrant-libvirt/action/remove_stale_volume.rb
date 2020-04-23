@@ -16,13 +16,19 @@ module VagrantPlugins
 
         def call(env)
           # Remove stale server volume
-          env[:ui].info(I18n.t('vagrant_libvirt.remove_stale_volume'))
-
           config = env[:machine].provider_config
           # Check for storage pool, where box image should be created
           fog_pool = ProviderLibvirt::Util::Collection.find_matching(
             env[:machine].provider.driver.connection.pools.all, config.storage_pool_name
           )
+
+          env[:result] = nil
+
+          if not fog_pool
+            @logger.debug("**** Pool #{config.storage_pool_name} not found")
+            return @app.call(env)
+          end
+
           @logger.debug("**** Pool #{fog_pool.name}")
 
           # This is name of newly created image for vm.
@@ -34,13 +40,11 @@ module VagrantPlugins
             env[:machine].provider.driver.connection.volumes.all, name
           )
           if box_volume && box_volume.pool_name == fog_pool.name
+            env[:ui].info(I18n.t('vagrant_libvirt.remove_stale_volume'))
             @logger.info("Deleting volume #{box_volume.key}")
             box_volume.destroy
             env[:result] = box_volume
-          else
-            env[:result] = nil
           end
-
           # Continue the middleware chain.
           @app.call(env)
         end
