@@ -63,9 +63,10 @@ module VagrantPlugins
           # locking all subsequent actions as well.
           @@lock.synchronize do
             # Don't continue if image already exists in storage pool.
-            break if env[:machine].provider.driver.connection.volumes.all(
+            box_volume = env[:machine].provider.driver.connection.volumes.all(
               name: env[:box_volume_name]
-            ).first.id
+            ).first
+            break if box_volume && box_volume.id
 
             # Box is not available as a storage pool volume. Create and upload
             # it as a copy of local box image.

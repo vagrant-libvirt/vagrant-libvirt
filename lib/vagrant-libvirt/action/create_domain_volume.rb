@@ -28,7 +28,7 @@ module VagrantPlugins
           domain_volume = env[:machine].provider.driver.connection.volumes.all(
             name: @name
           ).first
-          raise Errors::DomainVolumeExists if domain_volume.id
+          raise Errors::DomainVolumeExists if domain_volume && domain_volume.id
 
           # Get path to backing image - box volume.
           box_volume = env[:machine].provider.driver.connection.volumes.all(
