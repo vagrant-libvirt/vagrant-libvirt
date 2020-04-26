@@ -1,44 +1,35 @@
----
+dist: bionic
 language: ruby
-dist: xenial
+
+
 before_install:
-  - gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
-  - gem update bundler --conservative
-addons:
-  apt:
-    packages: libvirt-dev
-    update: true
-install: bundle install
-script: bundle exec rspec --color --format documentation
-notifications:
-  email: false
+  #  - gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
+  #   - gem update bundler --conservative
+  - sudo apt-get update 1>/dev/null 
+  - sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev ruby-bundler bsdtar libz-dev libxml2-dev bats fping 1>/dev/null
+
+install:
+  - sudo bundle install
+  - sudo bundle --binstubs /tmp/exec 1>/dev/null
+
 env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
-  matrix:
-    - VAGRANT_VERSION=v2.0.4
-    - VAGRANT_VERSION=v2.1.5
-    - VAGRANT_VERSION=v2.2.4
-    - VAGRANT_VERSION=master
 rvm:
-  - 2.2.10
-  - 2.3.5
-  - 2.4.10
-  - 2.6.6
+    - 2.5.7
 
 matrix:
-  allow_failures:
+  include:
     - env: VAGRANT_VERSION=master
-  exclude:
-    - env: VAGRANT_VERSION=v2.0.4
-      rvm: 2.6.6
+      rvm: 2.5.7
+    - env: VAGRANT_VERSION=v2.2.4
+      rvm: 2.5.7
     - env: VAGRANT_VERSION=v2.1.5
-      rvm: 2.6.6
-    - env: VAGRANT_VERSION=v2.2.4
-      rvm: 2.2.10
-    - env: VAGRANT_VERSION=v2.2.4
-      rvm: 2.3.5
-    - env: VAGRANT_VERSION=master
-      rvm: 2.2.10
-    - env: VAGRANT_VERSION=master
-      rvm: 2.3.5
+      rvm: 2.5.7
+    - env: VAGRANT_VERSION=v2.0.4
+      rvm: 2.5.7
+
+# execue tests via BATS
+script:
+- sudo /tmp/exec/vagrant --version
+- sudo bats tests/runtests.bats
