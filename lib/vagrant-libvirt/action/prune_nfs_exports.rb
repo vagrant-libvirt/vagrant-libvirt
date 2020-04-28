@@ -3,20 +3,27 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PruneNFSExports
+        include VagrantPlugins::ProviderLibvirt::Util::Nfs
+
         def initialize(app, _env)
           @app = app
         end
 
         def call(env)
-          if env[:host]
-            uuid = env[:machine].id
-            # get all uuids
-            uuids = env[:machine].provider.driver.connection.servers.all.map(&:id)
-            # not exiisted in array will removed from nfs
-            uuids.delete(uuid)
-            env[:host].capability(
-              :nfs_prune, env[:machine].ui, uuids
-            )
+	  @machine = env[:machine]
+
+	  if using_nfs?
+            @logger.info('Using NFS, prunning NFS settings from host')
+	    if env[:host]
+              uuid = env[:machine].id
+              # get all uuids
+              uuids = env[:machine].provider.driver.connection.servers.all.map(&:id)
+              # not exiisted in array will removed from nfs
+              uuids.delete(uuid)
+              env[:host].capability(
+                :nfs_prune, env[:machine].ui, uuids
+              )
+            end
           end
 
           @app.call(env)
