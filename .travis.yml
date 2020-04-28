@@ -8,6 +8,11 @@ before_install:
   - sudo apt-get update 1>/dev/null 
   - sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev ruby-bundler bsdtar libz-dev libxml2-dev bats fping 1>/dev/null
 
+# Cache the big Vagrant boxes
+cache:
+  directories:
+  - /home/travis/.vagrant.d/boxes
+
 install:
   - sudo bundle install
   - sudo bundle --binstubs /tmp/exec 1>/dev/null
@@ -32,4 +37,7 @@ matrix:
 # execue tests via BATS
 script:
 - sudo /tmp/exec/vagrant --version
-- sudo bats tests/runtests.bats
+
+# downloading the debian box may take longer
+# than 10 minutes, execute tests via travis_wait
+- travis_wait 20 sudo bats tests/runtests.bats
