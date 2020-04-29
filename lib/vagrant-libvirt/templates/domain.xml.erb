@@ -2,7 +2,7 @@
   <name><%= @name %></name>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
-  <vcpu><%= @cpus %></vcpu>
+  <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
 
 
   <cpu mode='<%= @cpu_mode %>'>
