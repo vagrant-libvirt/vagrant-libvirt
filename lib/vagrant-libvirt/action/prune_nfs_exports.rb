@@ -1,4 +1,6 @@
+require 'vagrant-libvirt/util/nfs'
 require 'yaml'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
