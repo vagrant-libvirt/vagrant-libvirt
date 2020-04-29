@@ -309,7 +309,7 @@ end
   ```
 
 * `nested` - [Enable nested
-  virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt).
+  virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
 * `cpu_mode` - [CPU emulation
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
