@@ -180,6 +180,43 @@ If you have issues building ruby-libvirt, try the following:
 ```shell
 CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems PATH=/opt/vagrant/embedded/bin:$PATH vagrant plugin install vagrant-libvirt
 ```
+### Additional Notes for Fedora and Similar Linux Distributions
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libssh):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /opt/vagrant/embedded/lib64/libcrypto.so.1.1: version `OPENSSL_1_1_1b' not found (required by /lib64/libssh.so.4) - /home/xxx/.vagrant.d/gems/2.4.6/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+then the following steps have been found to resolve the problem. Thanks to James Reynolds (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472). The specific version of libssh will change over time so references to the rpm in the commands below will need to be adjusted accordingly.
+
+```shell
+dnf download --source libssh
+rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
+tar xf libssh-0.9.0.tar.xz
+mkdir build
+cd build
+cmake ../libssh-0.9.0 -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
+make
+sudo cp lib/libssh* /opt/vagrant/embedded/lib64
+```
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libk5crypto):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /usr/lib64/libk5crypto.so.3: undefined symbol: EVP_KDF_ctrl, version OPENSSL_1_1_1b - /home/rbelgrave/.vagrant.d/gems/2.4.9/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+
+then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
+
+```shell
+dnf download --source krb5-libs
+rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
+tar xf krb5-1.18.tar.gz
+cd krb5-1.18/src
+./configure
+make
+sudo cp -a lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
+```
 
 ## Vagrant Project Preparation
 
