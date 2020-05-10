@@ -4,7 +4,6 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class HandleBoxImage
-        include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
         include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
 
 
@@ -64,9 +63,10 @@ module VagrantPlugins
           # locking all subsequent actions as well.
           @@lock.synchronize do
             # Don't continue if image already exists in storage pool.
-            break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:machine].provider.driver.connection.volumes.all, env[:box_volume_name]
-            )
+            box_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: env[:box_volume_name]
+            ).first
+            break if box_volume && box_volume.id
 
             # Box is not available as a storage pool volume. Create and upload
             # it as a copy of local box image.
@@ -81,40 +81,22 @@ module VagrantPlugins
             message << " in storage pool #{config.storage_pool_name}."
             @logger.info(message)
 
-            if config.qemu_use_session
-              begin
-                @name = env[:box_volume_name]
-                @allocation = "#{box_image_size / 1024 / 1024}M"
-                @capacity = "#{box_virtual_size}G"
-                @format_type = box_format ? box_format : 'raw'
+            @storage_volume_uid = storage_uid env
+            @storage_volume_gid = storage_gid env
 
-                @storage_volume_uid = storage_uid env
-                @storage_volume_gid = storage_gid env
-
-                libvirt_client = env[:machine].provider.driver.connection.client
-                libvirt_pool = libvirt_client.lookup_storage_pool_by_name(
-                  config.storage_pool_name
-                )
-                libvirt_volume = libvirt_pool.create_volume_xml(
-                  to_xml('default_storage_volume')
-                )
-              rescue => e
-                raise Errors::CreatingVolumeError,
-                      error_message: e.message
-              end
-            else
-              begin
-                fog_volume = env[:machine].provider.driver.connection.volumes.create(
-                  name: env[:box_volume_name],
-                  allocation: "#{box_image_size / 1024 / 1024}M",
-                  capacity: "#{box_virtual_size}G",
-                  format_type: box_format,
-                  pool_name: config.storage_pool_name
-                )
-              rescue Fog::Errors::Error => e
-                raise Errors::FogCreateVolumeError,
-                      error_message: e.message
-              end
+            begin
+              fog_volume = env[:machine].provider.driver.connection.volumes.create(
+                name: env[:box_volume_name],
+                allocation: "#{box_image_size / 1024 / 1024}M",
+                capacity: "#{box_virtual_size}G",
+                format_type: box_format,
+                owner: @storage_volume_uid,
+                group: @storage_volume_gid,
+                pool_name: config.storage_pool_name
+              )
+            rescue Fog::Errors::Error => e
+              raise Errors::FogCreateVolumeError,
+                    error_message: e.message
             end
 
             # Upload box image to storage pool
@@ -132,11 +114,7 @@ module VagrantPlugins
             # storage pool.
             if env[:interrupted] || !ret
               begin
-                if config.qemu_use_session
-                  libvirt_volume.delete
-                else
-                  fog_volume.destroy
-                end
+                fog_volume.destroy
               rescue
                 nil
               end
@@ -144,19 +122,6 @@ module VagrantPlugins
           end
 
           @app.call(env)
-        end
-
-        def split_size_unit(text)
-          if text.kind_of? Integer
-            # if text is an integer, match will fail
-            size    = text
-            unit    = 'G'
-          else
-            matcher = text.match(/(\d+)(.+)/)
-            size    = matcher[1]
-            unit    = matcher[2]
-          end
-          [size, unit]
         end
 
         protected

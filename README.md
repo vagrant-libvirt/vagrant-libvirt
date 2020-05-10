@@ -53,6 +53,8 @@ can help a lot :-)
 - [Customized Graphics](#customized-graphics)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
+- [Package Box from VM](#package-box-from-vm)
+- [Troubleshooting VMs](#troubleshooting-vms)
 - [Development](#development)
 - [Contributing](#contributing)
 
@@ -93,14 +95,26 @@ KVM type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
+Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
+releases from 1.5 onwards but they are not actively tested.
+
+Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+for the current list of tested versions.
+
 *We only test with the upstream version!* If you decide to install your distro's
 version and you run into problems, as a first step you should switch to upstream.
 
 Now you need to make sure your have all the build dependencies installed for
 vagrant-libvirt. This depends on your distro. An overview:
 
-* Ubuntu, Debian:
+* Ubuntu 18.10, Debian 9 and up:
+```shell
+apt-get build-dep vagrant ruby-libvirt
+apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+```
+
+* Ubuntu 18.04, Debian 8 and older:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq-base
@@ -117,6 +131,11 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 * Fedora 22 and up:
 ```shell
 dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+```
+
+* OpenSUSE leap 15.1:
+```shell
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 ```
 
 * Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
@@ -281,21 +300,25 @@ end
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
   Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+* `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|
     config.vm.provider :libvirt do |libvirt|
       libvirt.cpus = 4
+      libvirt.cpuset = '1-4,^3,6'
       libvirt.cputopology :sockets => '2', :cores => '2', :threads => '1'
     end
   end
   ```
 
 * `nested` - [Enable nested
-  virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt).
+  virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
 * `cpu_mode` - [CPU emulation
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
@@ -817,29 +840,30 @@ end
 
 You can specify multiple PCI devices to passthrough to the VM via
 `libvirt.pci`. Available options are listed below. Note that all options are
-required:
+required, except domain, which defaults to `0x0000`:
 
+* `domain` - The domain of the PCI device
 * `bus` - The bus of the PCI device
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
 You can extract that information from output of `lspci` command. First
-characters of each line are in format `[<bus>]:[<slot>].[<func>]`. For example:
+characters of each line are in format `[<domain>]:[<bus>]:[<slot>].[<func>]`. For example:
 
 ```shell
 $ lspci| grep NVIDIA
-03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+0000:03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
 ```
 
-In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+In that case `domain` is `0x0000`, `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
+    libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+    libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```
@@ -1237,7 +1261,14 @@ public network interface and you must connect to Libvirt via ssh.
 
 ## QEMU Session Support
 
-vagrant-libvirt supports using the QEMU session connection to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+vagrant-libvirt supports using QEMU user sessions to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+
+There must be a virbr network defined in the QEMU system session. The libvirt `default` network which comes by default, the vagrant `vagrant-libvirt` network which is generated if you run a Vagrantfile using the System session, or a manually defined network can be used. These networks can be set to autostart with `sudo virsh net-autostart <net-name>`, which'll mean no further root access is required even after reboots.
+
+The QEMU bridge helper is configured via `/etc/qemu/bridge.conf`. This file must include the virbr you wish to use (e.g. virbr0, virbr1, etc). You can find this out via `sudo virsh net-dumpxml <net-name>`.
+```
+allow virbr0
+```
 
 An example configuration of a machine using the QEMU session connection:
 
@@ -1248,11 +1279,11 @@ Vagrant.configure("2") do |config|
     libvirt.qemu_use_session = true
     # URI of QEMU session connection, default is as below
     libvirt.uri = 'qemu:///session'
-    # URI of QEMU system connection, use to obtain IP address for management
+    # URI of QEMU system connection, use to obtain IP address for management, default is below
     libvirt.system_uri = 'qemu:///system'
     # Path to store Libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
     libvirt.storage_pool_path = '/home/user/.local/share/libvirt/images'
-    # Management network device
+    # Management network device, default is below
     libvirt.management_network_device = 'virbr0'
   end
 
@@ -1426,6 +1457,73 @@ you can build a vagrant-libvirt box by running:
 $ cd packer-qemu-templates
 $ packer build ubuntu-14.04-server-amd64-vagrant.json
 ```
+
+## Package Box from VM
+
+vagrant-libvirt has native support for [`vagrant
+package`](https://www.vagrantup.com/docs/cli/package.html) via
+libguestfs [virt-sysprep](http://libguestfs.org/virt-sysprep.1.html).
+virt-sysprep operations can be customized via the
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS` environment variable; see the
+[upstream
+documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
+further details especially on default sysprep operations enabled for
+your system.
+
+Options to the virt-sysprep command call can be passed via
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS` environment variable.
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS="--delete /etc/hostname"
+$ vagrant package
+```
+
+For example, on Chef [bento](https://github.com/chef/bento) VMs that
+require SSH hostkeys already set (e.g. bento/debian-7) as well as leave
+existing LVM UUIDs untouched (e.g. bento/ubuntu-18.04), these can be
+packaged into vagrant-libvirt boxes like so:
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS="defaults,-ssh-userdir,-ssh-hostkeys,-lvm-uuids"
+$ vagrant package
+```
+
+## Troubleshooting VMs
+
+The first step for troubleshooting a VM image that appears to not boot correctly,
+or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
+to remember is that if the VM doesn't get an IP, then vagrant can't communicate
+with it to configure anything, so a problem at this stage is likely to come from 
+the VM, but we'll outline the tools and common problems to help you troubleshoot
+that.
+
+By default, when you create a new VM, a vnc server will listen on `127.0.0.1` on
+port `TCP5900`. If you connect with a vnc viewer you can see the boot process. If
+your VM isn't listening on `5900` by default, you can use `virsh dumpxml` to find
+out which port it's listening on, or can configure it with `graphics_port` and
+`graphics_ip` (see 'Domain Specific Options' above).
+
+Note: Connecting with the console (`virsh console`) requires additional config,
+so some VMs may not show anything on the console at all, instead displaying it in
+the VNC console. The issue with the text console is that you also need to build the 
+image used to tell the kernel to output to the console during boot, and typically 
+most do not have this built in.
+
+Problems we've seen in the past include:
+- Forgetting to remove `/etc/udev/rules.d/70-persistent-net.rules` before packaging
+the VM
+- VMs expecting a specific disk device to be connected
+
+If you're still confused, check the Github Issues for this repo for anything that
+looks similar to your problem.
+
+[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032) 
+contains some historical troubleshooting for VMs that appeared
+to hang. 
+
+Did you hit a problem that you'd like to note here to save time in the future?
+Please do!
+
 
 ## Development
 

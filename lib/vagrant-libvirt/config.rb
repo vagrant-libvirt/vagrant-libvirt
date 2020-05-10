@@ -69,14 +69,17 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :nodeset
       attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
+      attr_accessor :cpuset
       attr_accessor :cpu_mode
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
       attr_accessor :cpu_topology
+      attr_accessor :shares
       attr_accessor :features
       attr_accessor :features_hyperv
       attr_accessor :numa_nodes
@@ -194,13 +197,16 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
+        @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
+        @shares            = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
@@ -357,7 +363,10 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
-        @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
+        @features_hyperv = []  if @features_hyperv == UNSET_VALUE
+
+        @features_hyperv.push(name: options[:name],
+                              state: options[:state])
       end
 
       def cputopology(options = {})
@@ -439,7 +448,14 @@ module VagrantPlugins
 
         @pcis = [] if @pcis == UNSET_VALUE
 
-        @pcis.push(bus:       options[:bus],
+        if options[:domain].nil?
+          pci_domain = '0x0000'
+        else
+          pci_domain = options[:domain]
+        end
+
+        @pcis.push(domain:    pci_domain,
+                   bus:       options[:bus],
                    slot:      options[:slot],
                    function:  options[:function])
       end
@@ -647,7 +663,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
-        @snapshot_pool_name = 'default' if @snapshot_pool_name == UNSET_VALUE
+        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
@@ -670,8 +686,10 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
+        @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @cpuset = nil if @cpuset == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
                        'qemu64'
@@ -683,6 +701,7 @@ module VagrantPlugins
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
+        @shares = nil if @shares == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
