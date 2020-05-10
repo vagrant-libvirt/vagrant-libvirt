@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'log4r'
 
 module VagrantPlugins
@@ -21,24 +22,31 @@ module VagrantPlugins
           root_disk = domain.volumes.select do |x|
             x.name == libvirt_domain.name + '.img'
           end.first
+          raise Errors::NoDomainVolume if root_disk.nil?
           boxname = env['package.output']
           raise "#{boxname}: Already exists" if File.exist?(boxname)
           @tmp_dir = Dir.pwd + '/_tmp_package'
           @tmp_img = @tmp_dir + '/box.img'
-          Dir.mkdir(@tmp_dir)
-          if File.readable?(root_disk.path)
-            backing = `qemu-img info "#{root_disk.path}" | grep 'backing file:' | cut -d ':' -f2`.chomp
-          else
-            env[:ui].error("Require set read access to #{root_disk.path}. sudo chmod a+r #{root_disk.path}")
-            FileUtils.rm_rf(@tmp_dir)
-            raise 'Have no access'
+          FileUtils.mkdir_p(@tmp_dir)
+          env[:ui].info("Downloading #{root_disk.name} to #{@tmp_img}")
+          ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
+                               root_disk.name, env) do |progress,image_size|
+            env[:ui].clear_line
+            env[:ui].report_progress(progress, image_size, false)
           end
-          env[:ui].info('Image has backing image, copying image and rebasing ...')
-          FileUtils.cp(root_disk.path, @tmp_img)
-          `qemu-img rebase -p -b "" #{@tmp_img}`
+          # Clear the line one last time since the progress meter doesn't
+          # disappear immediately.
+          env[:ui].clear_line
+          backing = `qemu-img info "#{@tmp_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
+          if backing
+            env[:ui].info('Image has backing image, copying image and rebasing ...')
+            `qemu-img rebase -p -b "" #{@tmp_img}`
+          end
           # remove hw association with interface
           # working for centos with lvs default disks
-          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img}`
+          options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
+          operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir')
+          `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
           # add any user provided file
           extra = ''
           @tmp_include = @tmp_dir + '/_include'
@@ -98,6 +106,44 @@ module VagrantPlugins
               "virtual_size": #{filesize}
             }
           EOF
+        end
+
+        protected
+
+        # Fog libvirt currently doesn't support downloading images from storage
+        # pool volumes. Use ruby-libvirt client instead.
+        def download_image(image_file, pool_name, volume_name, env)
+          begin
+            pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(
+              pool_name
+            )
+            volume = pool.lookup_volume_by_name(volume_name)
+            image_size = volume.info.allocation # B
+
+            stream = env[:machine].provider.driver.connection.client.stream
+
+            # Use length of 0 to download remaining contents after offset
+            volume.download(stream, offset = 0, length = 0)
+
+            buf_size = 1024 * 250 # 250K, copied from upload_image in handle_box_image.rb
+            progress = 0
+            retval = stream.recv(buf_size)
+            open(image_file, 'wb') do |io|
+              while (retval.at(0) > 0)
+                recvd = io.write(retval.at(1))
+                progress += recvd
+                yield [progress, image_size]
+                retval = stream.recv(buf_size)
+              end
+            end
+          rescue => e
+            raise Errors::ImageDownloadError,
+                  volume_name: volume_name,
+                  pool_name: pool_name,
+                  error_message: e.message
+          end
+
+          progress == image_size
         end
       end
     end

@@ -2,7 +2,7 @@
   <name><%= @name %></name>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
-  <vcpu><%= @cpus %></vcpu>
+  <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
 
 
   <cpu mode='<%= @cpu_mode %>'>
@@ -33,6 +33,11 @@
     <% end %>
   </cpu>
 
+<%- if @nodeset -%>
+  <numatune>
+    <memory nodeset='<%= @nodeset %>'/>
+  </numatune>
+<%- end -%>
 <% unless @memory_backing.empty? %>
   <memoryBacking>
   <% @memory_backing.each do |backing| %>
@@ -40,6 +45,11 @@
   <% end %>
   </memoryBacking>
 <% end%>
+<% if @shares %>
+  <cputune>
+    <shares><%= @shares %></shares>
+  </cputune>
+<% end %>
 
   <os>
     <% if @machine_type %>
@@ -190,7 +200,7 @@
     <% @pcis.each do |pci| %>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
-          <address domain='0x0000'
+          <address domain='<%= pci[:domain] %>'
             bus='<%= pci[:bus] %>'
             slot='<%= pci[:slot] %>'
             function='<%= pci[:function] %>'/>

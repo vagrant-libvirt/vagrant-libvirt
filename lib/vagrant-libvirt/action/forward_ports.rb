@@ -97,6 +97,7 @@ module VagrantPlugins
             User=#{ssh_info[:username]}
             Port=#{ssh_info[:port]}
             UserKnownHostsFile=/dev/null
+            ExitOnForwardFailure=yes
             StrictHostKeyChecking=no
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
