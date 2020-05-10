@@ -356,7 +356,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
 * `default_prefix` - The default Libvirt guest name becomes a concatenation of the
-   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix
    to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
@@ -1495,7 +1495,7 @@ $ vagrant package
 The first step for troubleshooting a VM image that appears to not boot correctly,
 or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
 to remember is that if the VM doesn't get an IP, then vagrant can't communicate
-with it to configure anything, so a problem at this stage is likely to come from 
+with it to configure anything, so a problem at this stage is likely to come from
 the VM, but we'll outline the tools and common problems to help you troubleshoot
 that.
 
@@ -1507,8 +1507,8 @@ out which port it's listening on, or can configure it with `graphics_port` and
 
 Note: Connecting with the console (`virsh console`) requires additional config,
 so some VMs may not show anything on the console at all, instead displaying it in
-the VNC console. The issue with the text console is that you also need to build the 
-image used to tell the kernel to output to the console during boot, and typically 
+the VNC console. The issue with the text console is that you also need to build the
+image used to tell the kernel to output to the console during boot, and typically
 most do not have this built in.
 
 Problems we've seen in the past include:
@@ -1519,9 +1519,8 @@ the VM
 If you're still confused, check the Github Issues for this repo for anything that
 looks similar to your problem.
 
-[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032) 
-contains some historical troubleshooting for VMs that appeared
-to hang. 
+[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032)
+contains some historical troubleshooting for VMs that appeared to hang.
 
 Did you hit a problem that you'd like to note here to save time in the future?
 Please do!
