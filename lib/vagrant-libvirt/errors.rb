@@ -29,10 +29,6 @@ module VagrantPlugins
         error_key(:creating_storage_pool_error)
       end
 
-      class CreatingVolumeError < VagrantLibvirtError
-        error_key(:creating_volume_error)
-      end
-
       class ImageUploadError < VagrantLibvirtError
         error_key(:image_upload_error)
       end
@@ -58,7 +54,7 @@ module VagrantPlugins
         error_key(:wrong_box_format)
       end
 
-      # Fog libvirt exceptions
+      # Fog Libvirt exceptions
       class FogError < VagrantLibvirtError
         error_key(:fog_error)
       end

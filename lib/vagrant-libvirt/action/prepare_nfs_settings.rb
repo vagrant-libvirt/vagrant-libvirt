@@ -1,12 +1,13 @@
 require 'nokogiri'
 require 'socket'
 require 'timeout'
+require 'vagrant-libvirt/util/nfs'
 
 module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
-        include Vagrant::Action::Builtin::MixinSyncedFolders
+        include VagrantPlugins::ProviderLibvirt::Util::Nfs
 
         def initialize(app, _env)
           @app = app
@@ -26,13 +27,6 @@ module VagrantPlugins
 
             raise Vagrant::Errors::NFSNoHostonlyNetwork if !env[:nfs_machine_ip] || !env[:nfs_host_ip]
           end
-        end
-
-        # We're using NFS if we have any synced folder with NFS configured. If
-        # we are not using NFS we don't need to do the extra work to
-        # populate these fields in the environment.
-        def using_nfs?
-          !!synced_folders(@machine)[:nfs]
         end
 
         # Returns the IP address of the host
@@ -79,7 +73,7 @@ module VagrantPlugins
         # Check if we can open a connection to the host
         def ping(host, timeout = 3)
           ::Timeout.timeout(timeout) do
-            s = TCPSocket.new(host, 'echo')
+            s = TCPSocket.new(host, 'ssh')
             s.close
           end
           true

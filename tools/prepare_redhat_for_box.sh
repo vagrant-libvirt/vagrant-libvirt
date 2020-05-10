@@ -1,6 +1,6 @@
 #!/bin/bash +x
 
-# This script should help to prepare RedHat and RedHat like OS (CentOS,
+# This script should help to prepare Red Hat and Red Hat-like OS (CentOS,
 # Scientific Linux, ...) for Vagrant box usage.
 
 # To create new box image, just install minimal base system in VM on top of not
@@ -18,13 +18,13 @@ if [ $# -ne 1 ]; then
 fi
 
 
-# On which version of RedHet are we running?
+# On which version of Red Hat are we running?
 RHEL_MAJOR_VERSION=$(sed 's/.*release \([0-9]\)\..*/\1/' /etc/redhat-release)
 if [ $? -ne 0 ]; then
-    echo "Is this a RedHat distro?"
+    echo "Is this a Red Hat distro?"
     exit 1
 fi
-echo "* Found RedHat ${RHEL_MAJOR_VERSION} version."
+echo "* Found Red Hat ${RHEL_MAJOR_VERSION} version."
 
 
 # Setup hostname vagrant-something.
