@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'log4r'
 
 module VagrantPlugins
@@ -21,11 +22,12 @@ module VagrantPlugins
           root_disk = domain.volumes.select do |x|
             x.name == libvirt_domain.name + '.img'
           end.first
+          raise Errors::NoDomainVolume if root_disk.nil?
           boxname = env['package.output']
           raise "#{boxname}: Already exists" if File.exist?(boxname)
           @tmp_dir = Dir.pwd + '/_tmp_package'
           @tmp_img = @tmp_dir + '/box.img'
-          Dir.mkdir(@tmp_dir)
+          FileUtils.mkdir_p(@tmp_dir)
           env[:ui].info("Downloading #{root_disk.name} to #{@tmp_img}")
           ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
                                root_disk.name, env) do |progress,image_size|
@@ -136,6 +138,8 @@ module VagrantPlugins
             end
           rescue => e
             raise Errors::ImageDownloadError,
+                  volume_name: volume_name,
+                  pool_name: pool_name,
                   error_message: e.message
           end
 
