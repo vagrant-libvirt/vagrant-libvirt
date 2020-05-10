@@ -139,7 +139,7 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 
 * Fedora 22 and up:
 ```shell
-dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel
 ```
 
 * OpenSUSE leap 15.1:
@@ -155,8 +155,16 @@ pacman -S vagrant
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
+For some distributions you will need to specify `CONFIGURE_ARGS` variable before
+running `vagrant plugin install`:
+
+* Fedora 32 + upstream Vagrant:
+  ```shell
+  export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
+  ```
+
 ```shell
-$ vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-libvirt
 ```
 
 ### Possible problems with plugin installation on Linux
