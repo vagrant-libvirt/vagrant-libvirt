@@ -4,7 +4,7 @@ rescue LoadError
   raise 'The Vagrant Libvirt plugin must be run within Vagrant.'
 end
 
-# compatibility fix to define constant not available vagrant <1.6
+# compatibility fix to define constant not available Vagrant <1.6
 ::Vagrant::MachineState::NOT_CREATED_ID ||= :not_created
 
 module VagrantPlugins
@@ -12,7 +12,7 @@ module VagrantPlugins
     class Plugin < Vagrant.plugin('2')
       name 'libvirt'
       description <<-DESC
-      Vagrant plugin to manage VMs in libvirt.
+      Vagrant plugin to manage VMs in Libvirt.
       DESC
 
       config('libvirt', :provider) do
