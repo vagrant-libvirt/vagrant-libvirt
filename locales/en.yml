@@ -16,7 +16,7 @@ en:
       Created volume larger than box defaults, will require manual resizing of
       filesystems to utilize.
     uploading_volume: |-
-      Uploading base box image as volume into libvirt storage...
+      Uploading base box image as volume into Libvirt storage...
     creating_domain_volume: |-
       Creating image (snapshot of base box volume).
     removing_domain_volume: |-
@@ -60,7 +60,7 @@ en:
         Forwarding UDP ports is not supported. Ignoring.
 
     errors:
-      package_not_supported: No support for package with libvirt. Create box manually.
+      package_not_supported: No support for package with Libvirt. Create box manually.
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:
@@ -97,7 +97,7 @@ en:
       wrong_box_format: |-
         Wrong image format specified for box.
       fog_libvirt_connection_error: |-
-        Error while connecting to libvirt: %{error_message}
+        Error while connecting to Libvirt: %{error_message}
       fog_create_volume_error: |-
         Error while creating a storage pool volume: %{error_message}
       fog_create_domain_volume_error: |-
@@ -108,9 +108,7 @@ en:
         Name `%{domain_name}` of domain about to create is already taken. Please try to run
         `vagrant up` command again.
       creating_storage_pool_error: |-
-        There was error while creating libvirt storage pool: %{error_message}
-      creating_volume_error: |-
-        There was error while creating libvirt volume: %{error_message}
+        There was error while creating Libvirt storage pool: %{error_message}
       image_upload_error: |-
         Error while uploading image to storage pool: %{error_message}
       no_domain_error: |-

@@ -8,7 +8,7 @@ module VagrantPlugins
       include Vagrant::Action::Builtin
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
-      # remove image from libvirt storage pool
+      # remove image from Libvirt storage pool
       def self.remove_libvirt_image
         Vagrant::Action::Builder.new.tap do |b|
           b.use RemoveLibvirtImage
@@ -187,7 +187,7 @@ module VagrantPlugins
             b2.use Call, DestroyConfirm do |env2, b3|
               if env2[:result]
                 b3.use ClearForwardedPorts
-                # b3.use PruneNFSExports
+                b3.use PruneNFSExports
                 b3.use DestroyDomain
                 b3.use DestroyNetworks
                 b3.use ProvisionerCleanup

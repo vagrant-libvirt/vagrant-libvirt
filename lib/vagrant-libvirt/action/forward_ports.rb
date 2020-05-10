@@ -54,7 +54,7 @@ module VagrantPlugins
 
             ssh_pid = redirect_port(
               @env[:machine],
-              fp[:host_ip] || 'localhost',
+              fp[:host_ip] || '*',
               fp[:host],
               fp[:guest_ip] || @env[:machine].provider.ssh_info[:host],
               fp[:guest],
@@ -97,6 +97,7 @@ module VagrantPlugins
             User=#{ssh_info[:username]}
             Port=#{ssh_info[:port]}
             UserKnownHostsFile=/dev/null
+            ExitOnForwardFailure=yes
             StrictHostKeyChecking=no
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
@@ -120,7 +121,7 @@ module VagrantPlugins
             end
           end
 
-          ssh_cmd << "ssh #{options} #{params}"
+          ssh_cmd << "ssh -n #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
           log_file = ssh_forward_log_file(host_ip, host_port,
@@ -210,9 +211,9 @@ module VagrantPlugins
         end
 
         def ssh_pid?(pid)
-          @logger.debug 'Checking if #{pid} is an ssh process '\
-                        'with `ps -o cmd= #{pid}`'
-          `ps -o cmd= #{pid}`.strip.chomp =~ /ssh/
+          @logger.debug "Checking if #{pid} is an ssh process "\
+                        "with `ps -o command= #{pid}`"
+          `ps -o command= #{pid}`.strip.chomp =~ /ssh/
         end
 
         def remove_ssh_pids
