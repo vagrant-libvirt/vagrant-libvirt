@@ -57,7 +57,7 @@ can help a lot :-)
 - [Customized Graphics](#customized-graphics)
 - [TPM Devices](#tpm-devices)
 - [Libvirt communication channels](#libvirt-communication-channels)
-- [Custom command line arguments](#custom-command-line-arguments)
+- [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
 - [Package Box from VM](#package-box-from-vm)
@@ -1413,8 +1413,8 @@ Vagrant.configure(2) do |config|
 end
 ```
 
-## Custom command line arguments
-You can also specify multiple qemuargs arguments for qemu-system
+## Custom command line arguments and environment variables
+You can also specify multiple qemuargs arguments or qemuenv environment variables for qemu-system
 
 * `value` - Value
 
@@ -1423,6 +1423,9 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.qemuargs :value => "-device"
     libvirt.qemuargs :value => "intel-iommu"
+    libvirt.qemuenv QEMU_AUDIO_DRV: 'pa'
+    libvirt.qemuenv QEMU_AUDIO_TIMER_PERIOD: '150'
+    libvirt.qemuenv QEMU_PA_SAMPLES: '1024', QEMU_PA_SERVER: '/run/user/1000/pulse/native'
   end
 end
 ```

@@ -11,7 +11,6 @@ describe 'templates/domain' do
 
     def finalize!
       super
-      @qargs = @qemu_args
     end
   end
 
@@ -76,6 +75,12 @@ describe 'templates/domain' do
 
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')
+
+      domain.qemuenv(QEMU_AUDIO_DRV: 'pa')
+      domain.qemuenv(QEMU_AUDIO_TIMER_PERIOD: '150')
+      domain.qemuenv(QEMU_PA_SAMPLES: '1024')
+      domain.qemuenv(QEMU_PA_SERVER: '/run/user/1000/pulse/native')
+
       domain.shares = '1024'
       domain.cpuset = '1-4,^3,6'
       domain.nodeset = '1-4,^3,6'
