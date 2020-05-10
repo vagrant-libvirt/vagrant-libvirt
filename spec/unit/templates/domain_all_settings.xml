@@ -143,5 +143,9 @@
   <qemu:commandline>
     <qemu:arg value='-device'/>
     <qemu:arg value='dummy-device'/>
+    <qemu:env name='QEMU_AUDIO_DRV' value='pa'/>
+    <qemu:env name='QEMU_AUDIO_TIMER_PERIOD' value='150'/>
+    <qemu:env name='QEMU_PA_SAMPLES' value='1024'/>
+    <qemu:env name='QEMU_PA_SERVER' value='/run/user/1000/pulse/native'/>
   </qemu:commandline>
 </domain>
