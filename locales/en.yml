@@ -109,8 +109,6 @@ en:
         `vagrant up` command again.
       creating_storage_pool_error: |-
         There was error while creating Libvirt storage pool: %{error_message}
-      creating_volume_error: |-
-        There was error while creating Libvirt volume: %{error_message}
       image_upload_error: |-
         Error while uploading image to storage pool: %{error_message}
       no_domain_error: |-

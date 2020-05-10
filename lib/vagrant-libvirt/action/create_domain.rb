@@ -33,10 +33,13 @@ module VagrantPlugins
           @name = env[:domain_name]
           @uuid = config.uuid
           @cpus = config.cpus.to_i
+          @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -120,19 +123,15 @@ module VagrantPlugins
 
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
-            if @snapshot_pool_name != 'default'
+            if @snapshot_pool_name != @storage_pool_name
                 pool_name = @snapshot_pool_name
             else
                 pool_name = @storage_pool_name
             end
             @logger.debug "Search for volume in pool: #{pool_name}"
-            actual_volumes =
-              env[:machine].provider.driver.connection.volumes.all.select do |x|
-                x.pool_name == pool_name
-              end
-            domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-              actual_volumes, "#{@name}.img"
-            )
+            domain_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: "#{@name}.img"
+            ).find { |x| x.pool_name == pool_name }
             raise Errors::DomainVolumeExists if domain_volume.nil?
             @domain_volume_path = domain_volume.path
           end
@@ -162,26 +161,28 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
-            if env[:machine].provider.driver.connection.volumes.select do |x|
-              x.name == disk[:name] && x.pool_name == @storage_pool_name
-            end.empty?
-              # make the disk. equivalent to:
-              # qemu-img create -f qcow2 <path> 5g
-              begin
-                env[:machine].provider.driver.connection.volumes.create(
-                  name: disk[:name],
-                  format_type: disk[:type],
-                  path: disk[:absolute_path],
-                  capacity: disk[:size],
-                  #:allocation => ?,
-                  pool_name: @storage_pool_name
-                )
-              rescue Fog::Errors::Error => e
+            # make the disk. equivalent to:
+            # qemu-img create -f qcow2 <path> 5g
+            begin
+              env[:machine].provider.driver.connection.volumes.create(
+                name: disk[:name],
+                format_type: disk[:type],
+                path: disk[:absolute_path],
+                capacity: disk[:size],
+                #:allocation => ?,
+                pool_name: @storage_pool_name
+              )
+            rescue Libvirt::Error => e
+              # It is hard to believe that e contains just a string
+              # and no useful error code!
+              msg = "Call to virStorageVolCreateXML failed: " +
+                    "storage volume '#{disk[:path]}' exists already"
+              if e.message == msg and disk[:allow_existing]
+                disk[:preexisting] = true
+              else
                 raise Errors::FogDomainVolumeCreateError,
                       error_message: e.message
               end
-            else
-              disk[:preexisting] = true
             end
           end
 
@@ -191,6 +192,9 @@ module VagrantPlugins
           env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
+          unless @cpuset.nil?
+            env[:ui].info(" -- Cpuset:            #{@cpuset}")
+          end
           if not @cpu_topology.empty?
             env[:ui].info(" -- CPU topology:   sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
           end
@@ -204,8 +208,14 @@ module VagrantPlugins
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          unless @nodeset.nil?
+            env[:ui].info(" -- Nodeset:           #{@nodeset}")
+          end
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          end
+          unless @shares.nil?
+            env[:ui].info(" -- Shares:            #{@shares}")
           end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
@@ -262,7 +272,7 @@ module VagrantPlugins
           end
 
           @pcis.each do |pci|
-            env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+            env[:ui].info(" -- PCI passthrough:   #{pci[:domain]}:#{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
           end
 
           unless @rng[:model].nil?
