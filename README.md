@@ -299,6 +299,7 @@ end
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|

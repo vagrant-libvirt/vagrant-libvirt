@@ -69,6 +69,7 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :nodeset
       attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
@@ -194,6 +195,7 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
+        @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpuset            = UNSET_VALUE
@@ -672,6 +674,7 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
+        @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpuset = nil if @cpuset == UNSET_VALUE

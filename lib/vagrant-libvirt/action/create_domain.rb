@@ -36,6 +36,7 @@ module VagrantPlugins
           @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
           @cpu_mode = config.cpu_mode
@@ -206,6 +207,9 @@ module VagrantPlugins
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          unless @nodeset.nil?
+            env[:ui].info(" -- Nodeset:           #{@nodeset}")
+          end
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
           end

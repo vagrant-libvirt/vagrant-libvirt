@@ -77,6 +77,7 @@ describe 'templates/domain' do
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')
       domain.cpuset = '1-4,^3,6'
+      domain.nodeset = '1-4,^3,6'
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do
