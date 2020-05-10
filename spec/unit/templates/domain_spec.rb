@@ -76,6 +76,7 @@ describe 'templates/domain' do
 
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')
+      domain.shares = '1024'
       domain.cpuset = '1-4,^3,6'
       domain.nodeset = '1-4,^3,6'
     end

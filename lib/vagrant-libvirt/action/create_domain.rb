@@ -39,6 +39,7 @@ module VagrantPlugins
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -212,6 +213,9 @@ module VagrantPlugins
           end
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          end
+          unless @shares.nil?
+            env[:ui].info(" -- Shares:            #{@shares}")
           end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")

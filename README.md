@@ -295,6 +295,7 @@ end
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
   Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
