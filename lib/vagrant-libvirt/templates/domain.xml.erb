@@ -200,7 +200,7 @@
     <% @pcis.each do |pci| %>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
-          <address domain='0x0000'
+          <address domain='<%= pci[:domain] %>'
             bus='<%= pci[:bus] %>'
             slot='<%= pci[:slot] %>'
             function='<%= pci[:function] %>'/>

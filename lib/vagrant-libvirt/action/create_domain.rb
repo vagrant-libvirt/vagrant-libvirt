@@ -272,7 +272,7 @@ module VagrantPlugins
           end
 
           @pcis.each do |pci|
-            env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+            env[:ui].info(" -- PCI passthrough:   #{pci[:domain]}:#{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
           end
 
           unless @rng[:model].nil?
