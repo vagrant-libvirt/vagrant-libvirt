@@ -13,6 +13,8 @@ can help a lot :-)
 
 ## Index
 
+<!-- note in vim set "let g:vmt_list_item_char='-'" to generate the correct output -->
+<!-- vim-markdown-toc GFM -->
 
 - [Features](#features)
 - [Future work](#future-work)
@@ -32,7 +34,7 @@ can help a lot :-)
   - [Public Network Options](#public-network-options)
   - [Management Network](#management-network)
 - [Additional Disks](#additional-disks)
-    - [Reload behavior](#reload-behavior-1)
+  - [Reload behavior](#reload-behavior-1)
 - [CDROMs](#cdroms)
 - [Input](#input)
 - [PCI device passthrough](#pci-device-passthrough)
@@ -40,23 +42,30 @@ can help a lot :-)
   - [USB Controller Configuration](#usb-controller-configuration)
   - [USB Device Passthrough](#usb-device-passthrough)
   - [USB Redirector Devices](#usb-redirector-devices)
+    - [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
 - [Random number generator passthrough](#random-number-generator-passthrough)
-- [Watchdog·Device](#watchdog-device)
+- [Watchdog device](#watchdog-device)
 - [Smartcard device](#smartcard-device)
 - [Hypervisor Features](#hypervisor-features)
-- [CPU Features](#cpu-features)
+- [CPU features](#cpu-features)
+- [Memory Backing](#memory-backing)
 - [No box and PXE boot](#no-box-and-pxe-boot)
 - [SSH Access To VM](#ssh-access-to-vm)
 - [Forwarded Ports](#forwarded-ports)
 - [Synced Folders](#synced-folders)
 - [QEMU Session Support](#qemu-session-support)
 - [Customized Graphics](#customized-graphics)
+- [TPM Devices](#tpm-devices)
+- [Libvirt communication channels](#libvirt-communication-channels)
+- [Custom command line arguments](#custom-command-line-arguments)
 - [Box Format](#box-format)
 - [Create Box](#create-box)
 - [Package Box from VM](#package-box-from-vm)
 - [Troubleshooting VMs](#troubleshooting-vms)
 - [Development](#development)
 - [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
 
 ## Features
 
@@ -1559,3 +1568,8 @@ $ bundle exec vagrant up --provider=libvirt
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+<!--
+ # styling for TOC
+ vim: expandtab shiftwidth=2
+-->
