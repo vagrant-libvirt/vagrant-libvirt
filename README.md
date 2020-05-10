@@ -13,57 +13,59 @@ can help a lot :-)
 
 ## Index
 
+<!-- note in vim set "let g:vmt_list_item_char='-'" to generate the correct output -->
+<!-- vim-markdown-toc GFM -->
 
-- [Vagrant Libvirt Provider](#vagrant-libvirt-provider)
-  - [Index](#index)
-  - [Features](#features)
-  - [Future work](#future-work)
-  - [Installation](#installation)
-    - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
-  - [Vagrant Project Preparation](#vagrant-project-preparation)
-    - [Add Box](#add-box)
-    - [Create Vagrantfile](#create-vagrantfile)
-    - [Start VM](#start-vm)
-    - [How Project Is Created](#how-project-is-created)
-    - [Libvirt Configuration](#libvirt-configuration)
-    - [Provider Options](#provider-options)
-    - [Domain Specific Options](#domain-specific-options)
-      - [Reload behavior](#reload-behavior)
-  - [Networks](#networks)
-    - [Private Network Options](#private-network-options)
-    - [Public Network Options](#public-network-options)
-    - [Management Network](#management-network)
-  - [Additional Disks](#additional-disks)
-    - [Reload behavior](#reload-behavior-1)
-  - [CDROMs](#cdroms)
-  - [Input](#input)
-  - [PCI device passthrough](#pci-device-passthrough)
-  - [Using USB Devices](#using-usb-devices)
-    - [USB Controller Configuration](#usb-controller-configuration)
-    - [USB Device Passthrough](#usb-device-passthrough)
-    - [USB Redirector Devices](#usb-redirector-devices)
-      - [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
-  - [Random number generator passthrough](#random-number-generator-passthrough)
-  - [Watchdog device](#watchdog-device)
-  - [Smartcard device](#smartcard-device)
-  - [Hypervisor Features](#hypervisor-features)
-  - [CPU features](#cpu-features)
-  - [Memory Backing](#memory-backing)
-  - [No box and PXE boot](#no-box-and-pxe-boot)
-  - [SSH Access To VM](#ssh-access-to-vm)
-  - [Forwarded Ports](#forwarded-ports)
-  - [Synced Folders](#synced-folders)
-  - [QEMU Session Support](#qemu-session-support)
-  - [Customized Graphics](#customized-graphics)
-  - [TPM Devices](#tpm-devices)
-  - [Libvirt communication channels](#libvirt-communication-channels)
-  - [Custom command line arguments](#custom-command-line-arguments)
-  - [Box Format](#box-format)
-  - [Create Box](#create-box)
-  - [Package Box from VM](#package-box-from-vm)
-  - [Troubleshooting VMs](#troubleshooting-vms)
-  - [Development](#development)
-  - [Contributing](#contributing)
+- [Features](#features)
+- [Future work](#future-work)
+- [Installation](#installation)
+  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+- [Vagrant Project Preparation](#vagrant-project-preparation)
+  - [Add Box](#add-box)
+  - [Create Vagrantfile](#create-vagrantfile)
+  - [Start VM](#start-vm)
+  - [How Project Is Created](#how-project-is-created)
+  - [Libvirt Configuration](#libvirt-configuration)
+  - [Provider Options](#provider-options)
+  - [Domain Specific Options](#domain-specific-options)
+    - [Reload behavior](#reload-behavior)
+- [Networks](#networks)
+  - [Private Network Options](#private-network-options)
+  - [Public Network Options](#public-network-options)
+  - [Management Network](#management-network)
+- [Additional Disks](#additional-disks)
+  - [Reload behavior](#reload-behavior-1)
+- [CDROMs](#cdroms)
+- [Input](#input)
+- [PCI device passthrough](#pci-device-passthrough)
+- [Using USB Devices](#using-usb-devices)
+  - [USB Controller Configuration](#usb-controller-configuration)
+  - [USB Device Passthrough](#usb-device-passthrough)
+  - [USB Redirector Devices](#usb-redirector-devices)
+    - [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
+- [Random number generator passthrough](#random-number-generator-passthrough)
+- [Watchdog device](#watchdog-device)
+- [Smartcard device](#smartcard-device)
+- [Hypervisor Features](#hypervisor-features)
+- [CPU features](#cpu-features)
+- [Memory Backing](#memory-backing)
+- [No box and PXE boot](#no-box-and-pxe-boot)
+- [SSH Access To VM](#ssh-access-to-vm)
+- [Forwarded Ports](#forwarded-ports)
+- [Synced Folders](#synced-folders)
+- [QEMU Session Support](#qemu-session-support)
+- [Customized Graphics](#customized-graphics)
+- [TPM Devices](#tpm-devices)
+- [Libvirt communication channels](#libvirt-communication-channels)
+- [Custom command line arguments](#custom-command-line-arguments)
+- [Box Format](#box-format)
+- [Create Box](#create-box)
+- [Package Box from VM](#package-box-from-vm)
+- [Troubleshooting VMs](#troubleshooting-vms)
+- [Development](#development)
+- [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
 
 ## Features
 
@@ -310,21 +312,25 @@ end
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
   Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+* `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|
     config.vm.provider :libvirt do |libvirt|
       libvirt.cpus = 4
+      libvirt.cpuset = '1-4,^3,6'
       libvirt.cputopology :sockets => '2', :cores => '2', :threads => '1'
     end
   end
   ```
 
 * `nested` - [Enable nested
-  virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt).
+  virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
 * `cpu_mode` - [CPU emulation
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
@@ -844,29 +850,30 @@ end
 
 You can specify multiple PCI devices to passthrough to the VM via
 `libvirt.pci`. Available options are listed below. Note that all options are
-required:
+required, except domain, which defaults to `0x0000`:
 
+* `domain` - The domain of the PCI device
 * `bus` - The bus of the PCI device
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
 You can extract that information from output of `lspci` command. First
-characters of each line are in format `[<bus>]:[<slot>].[<func>]`. For example:
+characters of each line are in format `[<domain>]:[<bus>]:[<slot>].[<func>]`. For example:
 
 ```shell
 $ lspci| grep NVIDIA
-03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+0000:03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
 ```
 
-In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+In that case `domain` is `0x0000`, `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
+    libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+    libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```
@@ -1521,8 +1528,7 @@ If you're still confused, check the Github Issues for this repo for anything tha
 looks similar to your problem.
 
 [Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032)
-contains some historical troubleshooting for VMs that appeared
-to hang.
+contains some historical troubleshooting for VMs that appeared to hang.
 
 Did you hit a problem that you'd like to note here to save time in the future?
 Please do!
@@ -1570,3 +1576,8 @@ $ bundle exec vagrant up --provider=libvirt
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+<!--
+ # styling for TOC
+ vim: expandtab shiftwidth=2
+-->

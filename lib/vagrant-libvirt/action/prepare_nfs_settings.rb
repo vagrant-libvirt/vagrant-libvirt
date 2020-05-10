@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'socket'
 require 'timeout'
+require 'vagrant-libvirt/util/nfs'
 
 module VagrantPlugins
   module ProviderLibvirt

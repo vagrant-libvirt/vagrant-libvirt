@@ -33,10 +33,13 @@ module VagrantPlugins
           @name = env[:domain_name]
           @uuid = config.uuid
           @cpus = config.cpus.to_i
+          @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -189,6 +192,9 @@ module VagrantPlugins
           env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
+          unless @cpuset.nil?
+            env[:ui].info(" -- Cpuset:            #{@cpuset}")
+          end
           if not @cpu_topology.empty?
             env[:ui].info(" -- CPU topology:   sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
           end
@@ -202,8 +208,14 @@ module VagrantPlugins
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          unless @nodeset.nil?
+            env[:ui].info(" -- Nodeset:           #{@nodeset}")
+          end
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          end
+          unless @shares.nil?
+            env[:ui].info(" -- Shares:            #{@shares}")
           end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
@@ -260,7 +272,7 @@ module VagrantPlugins
           end
 
           @pcis.each do |pci|
-            env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+            env[:ui].info(" -- PCI passthrough:   #{pci[:domain]}:#{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
           end
 
           unless @rng[:model].nil?
