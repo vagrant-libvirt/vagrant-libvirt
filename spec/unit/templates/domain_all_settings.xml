@@ -2,7 +2,7 @@
   <name></name>
   <uuid></uuid>
   <memory></memory>
-  <vcpu>1</vcpu>
+  <vcpu cpuset='1-4,^3,6'>1</vcpu>
 
 
   <cpu mode='custom'>
@@ -11,6 +11,9 @@
         <topology sockets='1' cores='3' threads='2'/>
   </cpu>
 
+  <numatune>
+    <memory nodeset='1-4,^3,6'/>
+  </numatune>
   <cputune>
     <shares>1024</shares>
   </cputune>

@@ -28,7 +28,7 @@ module VagrantPlugins
           end
 
           # Wait for domain to obtain an ip address. Ip address is searched
-          # from arp table, either localy or remotely via ssh, if libvirt
+          # from arp table, either locally or remotely via ssh, if Libvirt
           # connection was done via ssh.
           env[:ip_address] = nil
           @logger.debug("Searching for IP for MAC address: #{domain.mac}")
@@ -37,8 +37,8 @@ module VagrantPlugins
           if env[:machine].provider_config.qemu_use_session
             env[:metrics]['instance_ip_time'] = Util::Timer.time do
               retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
+                # just return if interrupted and let the warden call recover
+                return if env[:interrupted]
 
                 # Wait for domain to obtain an ip address
                 domain.wait_for(2) do
@@ -50,8 +50,8 @@ module VagrantPlugins
           else
             env[:metrics]['instance_ip_time'] = Util::Timer.time do
               retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
+                # just return if interrupted and let the warden call recover
+                return if env[:interrupted]
 
                 # Wait for domain to obtain an ip address
                 domain.wait_for(2) do
@@ -84,8 +84,8 @@ module VagrantPlugins
               end
             end
           end
-          # if interrupted above, just terminate immediately
-          return terminate(env) if env[:interrupted]
+          # just return if interrupted and let the warden call recover
+          return if env[:interrupted]
           @logger.info("Time for SSH ready: #{env[:metrics]['instance_ssh_time']}")
 
           # Booted and ready for use.
@@ -95,8 +95,6 @@ module VagrantPlugins
         end
 
         def recover(env)
-          return if env['vagrant.error'].is_a?(Vagrant::Errors::VagrantError)
-
           # Undo the import
           terminate(env)
         end

@@ -19,7 +19,7 @@ module VagrantPlugins
           begin
             env[:machine].guest.capability(:halt)
           rescue
-            @logger.info('Trying libvirt graceful shutdown.')
+            @logger.info('Trying Libvirt graceful shutdown.')
             domain.shutdown
           end
 

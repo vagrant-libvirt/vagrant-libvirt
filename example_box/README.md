@@ -2,7 +2,7 @@
 
 Vagrant providers each require a custom provider-specific box format.
 This folder shows the example contents of a box for the `libvirt` provider.
-To turn this into a box create a vagrant image according documentation (don't
+To turn this into a box create a Vagrant image according documentation (don't
 forget to install rsync command) and create box with following command:
 
 ```

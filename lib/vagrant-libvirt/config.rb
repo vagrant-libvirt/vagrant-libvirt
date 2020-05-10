@@ -20,12 +20,12 @@ module VagrantPlugins
       # A hypervisor name to access via Libvirt.
       attr_accessor :driver
 
-      # The name of the server, where libvirtd is running.
+      # The name of the server, where Libvirtd is running.
       attr_accessor :host
 
       # If use ssh tunnel to connect to Libvirt.
       attr_accessor :connect_via_ssh
-      # Path towards the libvirt socket
+      # Path towards the Libvirt socket
       attr_accessor :socket
 
       # The username to access Libvirt.
@@ -42,6 +42,9 @@ module VagrantPlugins
       attr_accessor :storage_pool_name
       attr_accessor :storage_pool_path
 
+      # Libvirt storage pool where the base image snapshot shall be stored
+      attr_accessor :snapshot_pool_name
+
       # Turn on to prevent hostname conflicts
       attr_accessor :random_hostname
 
@@ -55,6 +58,7 @@ module VagrantPlugins
       attr_accessor :management_network_autostart
       attr_accessor :management_network_pci_bus
       attr_accessor :management_network_pci_slot
+      attr_accessor :management_network_domain
 
       # System connection information
       attr_accessor :system_uri
@@ -65,9 +69,11 @@ module VagrantPlugins
       # Domain specific settings used while creating new domain.
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :nodeset
       attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
+      attr_accessor :cpuset
       attr_accessor :cpu_mode
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
@@ -159,7 +165,7 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
-      # Use qemu session instead of system
+      # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
       def initialize
@@ -171,6 +177,7 @@ module VagrantPlugins
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
+        @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
         @management_network_device  = UNSET_VALUE
         @management_network_name    = UNSET_VALUE
@@ -181,6 +188,7 @@ module VagrantPlugins
         @management_network_autostart = UNSET_VALUE
         @management_network_pci_slot = UNSET_VALUE
         @management_network_pci_bus = UNSET_VALUE
+        @management_network_domain = UNSET_VALUE
 
         # System connection information
         @system_uri      = UNSET_VALUE
@@ -188,8 +196,10 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
+        @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
@@ -307,7 +317,7 @@ module VagrantPlugins
           end
         end
 
-        # is it better to raise our own error, or let libvirt cause the exception?
+        # is it better to raise our own error, or let Libvirt cause the exception?
         raise 'Only four cdroms may be attached at a time'
       end
 
@@ -351,7 +361,10 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
-        @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
+        @features_hyperv = []  if @features_hyperv == UNSET_VALUE
+
+        @features_hyperv.push(name: options[:name],
+                              state: options[:state])
       end
 
       def cputopology(options = {})
@@ -584,7 +597,7 @@ module VagrantPlugins
 
       # code to generate URI from a config moved out of the connect action
       def _generate_uri
-        # builds the libvirt connection URI from the given driver config
+        # builds the Libvirt connection URI from the given driver config
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
@@ -600,7 +613,7 @@ module VagrantPlugins
                       raise "Require specify driver #{uri}"
         end
         if uri == 'kvm'
-          uri = 'qemu' # use qemu uri for kvm domain type
+          uri = 'qemu' # use QEMU uri for KVM domain type
         end
 
         if @connect_via_ssh
@@ -621,13 +634,13 @@ module VagrantPlugins
         uri << '?no_verify=1'
 
         if @id_ssh_key_file
-          # set ssh key for access to libvirt host
+          # set ssh key for access to Libvirt host
           uri << "\&keyfile="
           # if no slash, prepend $HOME/.ssh/
           @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
           uri << @id_ssh_key_file
         end
-        # set path to libvirt socket
+        # set path to Libvirt socket
         uri << "\&socket=" + @socket if @socket
         uri
       end
@@ -640,6 +653,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
@@ -651,6 +665,7 @@ module VagrantPlugins
         @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
         @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
+        @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
         @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
@@ -661,8 +676,10 @@ module VagrantPlugins
         # Domain specific settings.
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
+        @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @cpuset = nil if @cpuset == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
                        'qemu64'

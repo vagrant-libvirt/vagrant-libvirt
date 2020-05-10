@@ -19,11 +19,11 @@ module VagrantPlugins
       end
 
       def connection
-        # If already connected to libvirt, just use it and don't connect
+        # If already connected to Libvirt, just use it and don't connect
         # again.
         return @@connection if @@connection
 
-        # Get config options for libvirt provider.
+        # Get config options for Libvirt provider.
         config = @machine.provider_config
         uri = config.uri
 
@@ -50,7 +50,7 @@ module VagrantPlugins
       end
 
       def system_connection
-        # If already connected to libvirt, just use it and don't connect
+        # If already connected to Libvirt, just use it and don't connect
         # again.
         return @@system_connection if @@system_connection
 

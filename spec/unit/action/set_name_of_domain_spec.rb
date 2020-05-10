@@ -14,7 +14,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain do
   end
 
   it 'builds simple domain name' do
-    @env.default_prefix = 'pre'
+    @env.default_prefix = 'pre_'
     dmn = VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain.new(Object.new, @env)
     dmn.build_domain_name(@env).should eq('pre_')
   end
