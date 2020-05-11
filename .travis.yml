@@ -2,8 +2,7 @@ dist: bionic
 language: ruby
 
 before_install:
-  - gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
-  - gem update bundler --conservative
+  - sudo gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
   - sudo apt-get update 1>/dev/null 
   - sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev ruby-bundler bsdtar libz-dev libxml2-dev bats fping 1>/dev/null
 
