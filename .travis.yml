@@ -23,11 +23,16 @@ env:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
 rvm:
     - 2.5.7
+      2.6.5
 
 matrix:
   include:
     - env: VAGRANT_VERSION=master
       rvm: 2.5.7
+    - env: VAGRANT_VERSION=v2.2.9
+      rvm: 2.5.7
+    - env: VAGRANT_VERSION=v2.2.9
+      rvm: 2.6.5
     - env: VAGRANT_VERSION=v2.2.4
       rvm: 2.5.7
     - env: VAGRANT_VERSION=v2.1.5
