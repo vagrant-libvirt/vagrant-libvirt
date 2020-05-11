@@ -17,6 +17,9 @@ install:
   - sudo bundle install
   - sudo bundle --binstubs /tmp/exec 1>/dev/null
 
+notifications:
+  email: false
+
 env:
   global:
     - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
@@ -37,6 +40,7 @@ matrix:
 # execue tests via BATS
 script:
 - sudo /tmp/exec/vagrant --version
+- bundle exec rspec --color --format documentation
 
 # downloading the debian box may take longer
 # than 10 minutes, execute tests via travis_wait
