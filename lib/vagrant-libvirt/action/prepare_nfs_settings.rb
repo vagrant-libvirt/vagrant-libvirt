@@ -6,7 +6,7 @@ module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
-        include Vagrant::Action::Builtin::MixinSyncedFolders
+        include VagrantPlugins::ProviderLibvirt::Util::Nfs
 
         def initialize(app, _env)
           @app = app
@@ -26,13 +26,6 @@ module VagrantPlugins
 
             raise Vagrant::Errors::NFSNoHostonlyNetwork if !env[:nfs_machine_ip] || !env[:nfs_host_ip]
           end
-        end
-
-        # We're using NFS if we have any synced folder with NFS configured. If
-        # we are not using NFS we don't need to do the extra work to
-        # populate these fields in the environment.
-        def using_nfs?
-          !!synced_folders(@machine)[:nfs]
         end
 
         # Returns the IP address of the host
