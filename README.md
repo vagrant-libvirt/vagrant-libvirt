@@ -285,7 +285,7 @@ URI](http://libvirt.org/uri.html):
 Connection-independent options:
 
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance
-  snapshots (if `snapshot_pool_namename` is not set) will be stored.
+  snapshots (if `snapshot_pool_name` is not set) will be stored.
 * `snapshot_pool_name` - Libvirt storage pool name. If set, the created
   snapshot of the instance will be stored at this location instead of
   `storage_pool_name`.
