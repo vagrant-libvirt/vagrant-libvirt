@@ -210,7 +210,7 @@ You can find more Libvirt-ready boxes at
 example:
 
 ```shell
-vagrant init fedora/24-cloud-base
+vagrant init fedora/32-cloud-base
 ```
 
 ### Create Vagrantfile
@@ -221,7 +221,7 @@ information where necessary. For example:
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :test_vm do |test_vm|
-    test_vm.vm.box = "fedora/24-cloud-base"
+    test_vm.vm.box = "fedora/32-cloud-base"
   end
 end
 ```
@@ -1395,7 +1395,7 @@ For example:
 
 ```ruby
 Vagrant.configure(2) do |config|
-  config.vm.box = "fedora/24-cloud-base"
+  config.vm.box = "fedora/32-cloud-base"
   config.vm.provider :libvirt do |libvirt|
     libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
   end
