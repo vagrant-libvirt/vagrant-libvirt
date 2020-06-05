@@ -5,6 +5,7 @@ module VagrantPlugins
     module Action
       class HandleBoxImage
         include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
+        include VagrantPlugins::ProviderLibvirt::Util::Ui
 
 
         @@lock = Mutex.new
@@ -102,13 +103,15 @@ module VagrantPlugins
             # Upload box image to storage pool
             ret = upload_image(box_image_file, config.storage_pool_name,
                                env[:box_volume_name], env) do |progress|
-              env[:ui].clear_line
-              env[:ui].report_progress(progress, box_image_size, false)
+              rewriting(env[:ui]) do |ui|
+                ui.clear_line
+                ui.report_progress(progress, box_image_size, false)
+              end
             end
 
             # Clear the line one last time since the progress meter doesn't
             # disappear immediately.
-            env[:ui].clear_line
+            rewriting(env[:ui]) {|ui| ui.clear_line}
 
             # If upload failed or was interrupted, remove created volume from
             # storage pool.
