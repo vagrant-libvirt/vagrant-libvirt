@@ -600,7 +600,8 @@ module VagrantPlugins
           cache: options[:cache] || 'default',
           allow_existing: options[:allow_existing],
           shareable: options[:shareable],
-          serial: options[:serial]
+          serial: options[:serial],
+          pool: options[:pool] # overrides storage_pool setting for additional disks
         }
 
         @disks << disk # append

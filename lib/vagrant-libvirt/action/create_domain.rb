@@ -167,6 +167,19 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
+            if not disk[:pool].nil?
+              disk_pool_name = disk[:pool]
+              @logger.debug "Overriding pool name with: #{disk_pool_name}"
+              disk_storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(disk_pool_name)
+              raise Errors::NoStoragePool if disk_storage_pool.nil?
+              xml = Nokogiri::XML(disk_storage_pool.xml_desc)
+              disk_storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+              disk[:absolute_path] = disk_storage_prefix + disk[:path]
+              @logger.debug "Overriding disk path with: #{disk[:absolute_path]}"
+            else
+              @disk_pool_name = @storage_pool_name
+            end
+
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
@@ -176,7 +189,7 @@ module VagrantPlugins
                 path: disk[:absolute_path],
                 capacity: disk[:size],
                 #:allocation => ?,
-                pool_name: @storage_pool_name
+                pool_name: @disk_pool_name
               )
             rescue Libvirt::Error => e
               # It is hard to believe that e contains just a string
