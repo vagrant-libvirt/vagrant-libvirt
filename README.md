@@ -302,6 +302,8 @@ end
 
 ### Domain Specific Options
 
+* `title` - A short description of the domain.
+* `description` - A human readable description of the virtual machine.
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not
   set. Possible values are documented in Libvirt's [description for
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this

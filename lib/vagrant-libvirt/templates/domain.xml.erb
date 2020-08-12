@@ -1,5 +1,7 @@
 <domain type='<%= @domain_type %>' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name><%= @name %></name>
+  <title><%= @title %></title>
+  <description><%= @description %></description>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
   <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
