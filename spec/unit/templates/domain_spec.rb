@@ -27,6 +27,8 @@ describe 'templates/domain' do
 
   context 'when all settings enabled' do
     before do
+      domain.title = 'title'
+      domain.description = 'description'
       domain.instance_variable_set('@domain_type', 'kvm')
       domain.cpu_mode = 'custom'
       domain.cpu_feature(name: 'AAA', policy: 'required')

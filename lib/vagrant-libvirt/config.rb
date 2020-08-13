@@ -67,6 +67,8 @@ module VagrantPlugins
       attr_accessor :default_prefix
 
       # Domain specific settings used while creating new domain.
+      attr_accessor :title
+      attr_accessor :description
       attr_accessor :uuid
       attr_accessor :memory
       attr_accessor :nodeset
@@ -197,6 +199,8 @@ module VagrantPlugins
         @system_uri      = UNSET_VALUE
 
         # Domain specific settings.
+        @title             = UNSET_VALUE
+        @description       = UNSET_VALUE
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
         @nodeset           = UNSET_VALUE
@@ -697,6 +701,8 @@ module VagrantPlugins
         @uri = _generate_uri if @uri == UNSET_VALUE
 
         # Domain specific settings.
+        @title = '' if @title == UNSET_VALUE
+        @description = '' if @description == UNSET_VALUE
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @nodeset = nil if @nodeset == UNSET_VALUE
