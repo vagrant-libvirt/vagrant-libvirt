@@ -622,14 +622,21 @@ module VagrantPlugins
         @qemu_env.merge!(options)
       end
 
-      # code to generate URI from a config moved out of the connect action
-      def _generate_uri
+      # code to generate URI from from either the LIBVIRT_URI environment
+      # variable or a config moved out of the connect action
+      def _generate_uri(qemu_use_session)
+
+        # If the LIBVIRT_DEFAULT_URI var is set, we'll use that
+        if ENV.fetch('LIBVIRT_DEFAULT_URI', '') != ""
+          return ENV['LIBVIRT_DEFAULT_URI']
+        end
+
         # builds the Libvirt connection URI from the given driver config
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
                     when 'qemu', 'kvm'
-                      @qemu_use_session ? '/session' : '/system'
+                      qemu_use_session ? '/session' : '/system'
                     when 'openvz', 'uml', 'phyp', 'parallels'
                       '/system'
                     when '@en', 'esx'
@@ -670,6 +677,14 @@ module VagrantPlugins
         uri
       end
 
+      def _parse_uri(uri)
+        begin
+          URI.parse(uri)
+        rescue
+          raise "@uri set to invalid uri '#{uri}'"
+        end
+      end
+
       def finalize!
         @driver = 'kvm' if @driver == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
@@ -693,10 +708,21 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
-        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
+        # If uri isn't set then let's build one from various sources.
+        # Default to passing false for qemu_use_session if it's not set.
+        if @uri == UNSET_VALUE
+          @uri = _generate_uri(@qemu_use_session == UNSET_VALUE ? false : @qemu_use_session)
+        end
 
-        # generate a URI if none is supplied
-        @uri = _generate_uri if @uri == UNSET_VALUE
+        # Set qemu_use_session based on the URI if it wasn't set by the user
+        if @qemu_use_session == UNSET_VALUE
+          uri = _parse_uri(@uri)
+          if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
+            @qemu_use_session = true
+          else
+            @qemu_use_session = false
+          end
+        end
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
@@ -817,6 +843,14 @@ module VagrantPlugins
 
       def validate(machine)
         errors = _detected_errors
+
+        # The @uri and @qemu_use_session should not conflict
+        uri = _parse_uri(@uri)
+        if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
+          if @qemu_use_session != true
+            errors << "the URI and qemu_use_session configuration conflict: uri:'#{@uri}' qemu_use_session:'#{@qemu_use_session}'"
+          end
+        end
 
         machine.provider_config.disks.each do |disk|
           if disk[:path] && (disk[:path][0] == '/')
