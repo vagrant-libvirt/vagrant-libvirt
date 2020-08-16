@@ -647,28 +647,26 @@ module VagrantPlugins
           uri << '+ssh://'
           uri << @username + '@' if @username
 
-          uri << if @host
-                   @host
-                 else
-                   'localhost'
-                 end
+          uri << ( @host ? @host : 'localhost' )
         else
           uri << '://'
           uri << @host if @host
         end
 
         uri << virt_path
-        uri << '?no_verify=1'
+
+        params = {'no_verify' => '1'}
 
         if @id_ssh_key_file
           # set ssh key for access to Libvirt host
-          uri << "\&keyfile="
           # if no slash, prepend $HOME/.ssh/
-          @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
-          uri << @id_ssh_key_file
+          @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
+          params['keyfile'] = @id_ssh_key_file
         end
         # set path to Libvirt socket
-        uri << "\&socket=" + @socket if @socket
+        params['socket'] = @socket if @socket
+
+        uri << "?" + params.map{|pair| pair.join('=')}.join('&')
         uri
       end
 
