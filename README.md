@@ -779,6 +779,7 @@ It has a number of options:
   Disks with this option set to true need to be removed manually.
 * `shareable` - Set to true if you want to simulate shared SAN storage.
 * `serial` - Serial number of the disk device.
+* `wwn` - WWN number of the disk device.
 
 The following example creates two additional disks.
 
