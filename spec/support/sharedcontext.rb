@@ -28,7 +28,7 @@ shared_context 'unit' do
   let(:plugin)           { register_plugin }
 
   before (:each) do
-    machine.stub(guest: guest)
-    machine.stub(communicator: communicator)
+    allow(machine).to receive(:guest).and_return(guest)
+    allow(machine).to receive(:communicator).and_return(communicator)
   end
 end
