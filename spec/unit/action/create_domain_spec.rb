@@ -31,6 +31,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
       env[:domain_name] = "vagrant-test_default"
 
+      env[:box_volumes] = []
+      env[:box_volumes].push({
+        :path=>"/test/box.img",
+        :name=>"test_vagrant_box_image_1.1.1_0.img", 
+        :virtual_size=>5
+      })
       # should be ignored for system session and used for user session
       allow(Process).to receive(:uid).and_return(9999)
       allow(Process).to receive(:gid).and_return(9999)

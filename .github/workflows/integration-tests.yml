@@ -18,6 +18,7 @@ jobs:
         - simple vm provision via shell
         - bring up with custom default prefix
         - bring up with second disk
+        - bring up with two disks
         - bring up with adjusted memory settings
         - bring up with adjusted cpu settings
         - ip is reachable with private network

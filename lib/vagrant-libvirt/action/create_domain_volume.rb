@@ -18,72 +18,74 @@ module VagrantPlugins
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain_volume'))
 
-          # Get config options.
-          config = env[:machine].provider_config
+          env[:box_volumes].each_index do |index|
+            suffix_index = index > 0 ? "_#{index}" : ''
+            # Get config options.
+            config = env[:machine].provider_config
 
-          # This is name of newly created image for vm.
-          @name = "#{env[:domain_name]}.img"
+            # This is name of newly created image for vm.
+            @name = "#{env[:domain_name]}#{suffix_index}.img"
 
-          # Verify the volume doesn't exist already.
-          domain_volume = env[:machine].provider.driver.connection.volumes.all(
-            name: @name
-          ).first
-          raise Errors::DomainVolumeExists if domain_volume && domain_volume.id
+            # Verify the volume doesn't exist already.
+            domain_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: @name
+            ).first
+            raise Errors::DomainVolumeExists if domain_volume && domain_volume.id
 
-          # Get path to backing image - box volume.
-          box_volume = env[:machine].provider.driver.connection.volumes.all(
-            name: env[:box_volume_name]
-          ).first
-          @backing_file = box_volume.path
+            # Get path to backing image - box volume.
+            box_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: env[:box_volumes][index][:name]
+            ).first
+            @backing_file = box_volume.path
 
-          # Virtual size of image. Take value worked out by HandleBoxImage
-          @capacity = env[:box_virtual_size] # G
+            # Virtual size of image. Take value worked out by HandleBoxImage
+            @capacity = env[:box_volumes][index][:virtual_size] # G
 
-          # Create new volume from xml template. Fog currently doesn't support
-          # volume snapshots directly.
-          begin
-            xml = Nokogiri::XML::Builder.new do |xml|
-              xml.volume do
-                xml.name(@name)
-                xml.capacity(@capacity, unit: 'G')
-                xml.target do
-                  xml.format(type: 'qcow2')
-                  xml.permissions do
-                    xml.owner storage_uid(env)
-                    xml.group storage_gid(env)
-                    xml.label 'virt_image_t'
+            # Create new volume from xml template. Fog currently doesn't support
+            # volume snapshots directly.
+            begin
+              xml = Nokogiri::XML::Builder.new do |xml|
+                xml.volume do
+                  xml.name(@name)
+                  xml.capacity(@capacity, unit: 'G')
+                  xml.target do
+                    xml.format(type: 'qcow2')
+                    xml.permissions do
+                      xml.owner storage_uid(env)
+                      xml.group storage_gid(env)
+                      xml.label 'virt_image_t'
+                    end
+                  end
+                  xml.backingStore do
+                    xml.path(@backing_file)
+                    xml.format(type: 'qcow2')
+                    xml.permissions do
+                      xml.owner storage_uid(env)
+                      xml.group storage_gid(env)
+                      xml.label 'virt_image_t'
+                    end
                   end
                 end
-                xml.backingStore do
-                  xml.path(@backing_file)
-                  xml.format(type: 'qcow2')
-                  xml.permissions do
-                    xml.owner storage_uid(env)
-                    xml.group storage_gid(env)
-                    xml.label 'virt_image_t'
-                  end
-                end
+              end.to_xml(
+                save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
+                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
+                          Nokogiri::XML::Node::SaveOptions::FORMAT
+              )
+              if config.snapshot_pool_name != config.storage_pool_name
+                  pool_name = config.snapshot_pool_name
+              else
+                  pool_name = config.storage_pool_name
               end
-            end.to_xml(
-              save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
-                         Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
-                         Nokogiri::XML::Node::SaveOptions::FORMAT
-            )
-            if config.snapshot_pool_name != config.storage_pool_name
-                pool_name = config.snapshot_pool_name
-            else
-                pool_name = config.storage_pool_name
+              @logger.debug "Using pool #{pool_name} for base box snapshot"
+              domain_volume = env[:machine].provider.driver.connection.volumes.create(
+                xml: xml,
+                pool_name: pool_name
+              )
+            rescue Fog::Errors::Error => e
+              raise Errors::FogDomainVolumeCreateError,
+                    error_message: e.message
             end
-            @logger.debug "Using pool #{pool_name} for base box snapshot"
-            domain_volume = env[:machine].provider.driver.connection.volumes.create(
-              xml: xml,
-              pool_name: pool_name
-            )
-          rescue Fog::Errors::Error => e
-            raise Errors::FogDomainVolumeCreateError,
-                  error_message: e.message
           end
-
           @app.call(env)
         end
       end
