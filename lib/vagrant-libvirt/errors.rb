@@ -46,9 +46,14 @@ module VagrantPlugins
         error_key(:no_box_virtual_size)
       end
 
+      class NoDiskVirtualSizeSet < VagrantLibvirtError
+        error_key(:no_disk_virtual_size)
+      end
+
       class NoBoxFormatSet < VagrantLibvirtError
         error_key(:no_box_format)
       end
+
 
       class WrongBoxFormatSet < VagrantLibvirtError
         error_key(:wrong_box_format)

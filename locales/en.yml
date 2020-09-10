@@ -92,6 +92,8 @@ en:
         Error: %{stderr}
       no_box_virtual_size: |-
         No image virtual size specified for box.
+      no_disk_virtual_size: |-
+        No image virtual size specified for disk with index %{disk_index}.
       no_box_format: |-
         No image format specified for box.
       wrong_box_format: |-
