@@ -16,54 +16,55 @@ can help a lot :-)
 <!-- note in vim set "let g:vmt_list_item_char='-'" to generate the correct output -->
 <!-- vim-markdown-toc GFM -->
 
-- [Features](#features)
-- [Future work](#future-work)
-- [Installation](#installation)
-  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
-- [Vagrant Project Preparation](#vagrant-project-preparation)
-  - [Add Box](#add-box)
-  - [Create Vagrantfile](#create-vagrantfile)
-  - [Start VM](#start-vm)
-  - [How Project Is Created](#how-project-is-created)
-  - [Libvirt Configuration](#libvirt-configuration)
-  - [Provider Options](#provider-options)
-  - [Domain Specific Options](#domain-specific-options)
-    - [Reload behavior](#reload-behavior)
-- [Networks](#networks)
-  - [Private Network Options](#private-network-options)
-  - [Public Network Options](#public-network-options)
-  - [Management Network](#management-network)
-- [Additional Disks](#additional-disks)
-  - [Reload behavior](#reload-behavior-1)
-- [CDROMs](#cdroms)
-- [Input](#input)
-- [PCI device passthrough](#pci-device-passthrough)
-- [Using USB Devices](#using-usb-devices)
-  - [USB Controller Configuration](#usb-controller-configuration)
-  - [USB Device Passthrough](#usb-device-passthrough)
-  - [USB Redirector Devices](#usb-redirector-devices)
-    - [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
-- [Random number generator passthrough](#random-number-generator-passthrough)
-- [Watchdog device](#watchdog-device)
-- [Smartcard device](#smartcard-device)
-- [Hypervisor Features](#hypervisor-features)
-- [CPU features](#cpu-features)
-- [Memory Backing](#memory-backing)
-- [No box and PXE boot](#no-box-and-pxe-boot)
-- [SSH Access To VM](#ssh-access-to-vm)
-- [Forwarded Ports](#forwarded-ports)
-- [Synced Folders](#synced-folders)
-- [QEMU Session Support](#qemu-session-support)
-- [Customized Graphics](#customized-graphics)
-- [TPM Devices](#tpm-devices)
-- [Libvirt communication channels](#libvirt-communication-channels)
-- [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
-- [Box Format](#box-format)
-- [Create Box](#create-box)
-- [Package Box from VM](#package-box-from-vm)
-- [Troubleshooting VMs](#troubleshooting-vms)
-- [Development](#development)
-- [Contributing](#contributing)
+* [Features](#features)
+* [Future work](#future-work)
+* [Using Docker based Installation](#using-docker-based-installation)
+* [Installation](#installation)
+  * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+* [Vagrant Project Preparation](#vagrant-project-preparation)
+  * [Add Box](#add-box)
+  * [Create Vagrantfile](#create-vagrantfile)
+  * [Start VM](#start-vm)
+  * [How Project Is Created](#how-project-is-created)
+  * [Libvirt Configuration](#libvirt-configuration)
+  * [Provider Options](#provider-options)
+  * [Domain Specific Options](#domain-specific-options)
+    * [Reload behavior](#reload-behavior)
+* [Networks](#networks)
+  * [Private Network Options](#private-network-options)
+  * [Public Network Options](#public-network-options)
+  * [Management Network](#management-network)
+* [Additional Disks](#additional-disks)
+  * [Reload behavior](#reload-behavior-1)
+* [CDROMs](#cdroms)
+* [Input](#input)
+* [PCI device passthrough](#pci-device-passthrough)
+* [Using USB Devices](#using-usb-devices)
+  * [USB Controller Configuration](#usb-controller-configuration)
+  * [USB Device Passthrough](#usb-device-passthrough)
+  * [USB Redirector Devices](#usb-redirector-devices)
+    * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
+* [Random number generator passthrough](#random-number-generator-passthrough)
+* [Watchdog device](#watchdog-device)
+* [Smartcard device](#smartcard-device)
+* [Hypervisor Features](#hypervisor-features)
+* [CPU features](#cpu-features)
+* [Memory Backing](#memory-backing)
+* [No box and PXE boot](#no-box-and-pxe-boot)
+* [SSH Access To VM](#ssh-access-to-vm)
+* [Forwarded Ports](#forwarded-ports)
+* [Synced Folders](#synced-folders)
+* [QEMU Session Support](#qemu-session-support)
+* [Customized Graphics](#customized-graphics)
+* [TPM Devices](#tpm-devices)
+* [Libvirt communication channels](#libvirt-communication-channels)
+* [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
+* [Box Format](#box-format)
+* [Create Box](#create-box)
+* [Package Box from VM](#package-box-from-vm)
+* [Troubleshooting VMs](#troubleshooting-vms)
+* [Development](#development)
+* [Contributing](#contributing)
 
 <!-- vim-markdown-toc -->
 
@@ -91,6 +92,39 @@ can help a lot :-)
 
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
+
+## Using Docker based Installation
+
+Due to the number of issues encountered around compatibility between the ruby runtime environment
+that is part of the upstream vagrant installation and the library dependencies of libvirt that
+this project requires to communicate with libvirt, there is a docker image build and published.
+
+This should allow users to execute vagrant with vagrant-libvirt without needing to deal with
+the compatibility issues, though you may need to extend the image for your own needs should
+you make use of additional plugins.
+
+To get the image:
+```bash
+docker pull vagrantlibvirt/vagrant-libvirt:latest
+```
+
+Running the image:
+```bash
+docker run -it -rm \
+  -e LIBVIRT_DEFAULT_URI \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(pwd):$(pwd) \
+  -w $(pwd) \
+  vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant status
+```
+
+Note that if you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
 
 ## Installation
 
