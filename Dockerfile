@@ -21,7 +21,8 @@ RUN mkdir /vagrant
 ENV VAGRANT_HOME /vagrant
 
 ARG VAGRANT_VERSION
-RUN set -x \
+ENV VAGRANT_VERSION ${VAGRANT_VERSION}
+RUN set -e \
     && curl https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb -o vagrant.deb \
     && apt update \
     && apt install -y ./vagrant.deb \
