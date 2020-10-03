@@ -1,0 +1,41 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v2
+      -
+        name: Prepare
+        id: prep
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || true)
+          echo ::set-output name=previous_version::${LAST_TAG}
+      -
+        name: Changelog Generation
+        uses: CharMixer/auto-changelog-action@v1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          since_tag: ${{ steps.prep.outputs.previous_version }}
+          output: release_notes.md
+      -
+        name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+
