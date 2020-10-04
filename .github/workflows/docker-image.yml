@@ -19,7 +19,7 @@ jobs:
         name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=${DOCKERHUB_ORGANIZATION}/vagrant-libvirt
+          DOCKER_IMAGE=${DOCKERHUB_ORGANIZATION:-vagrantlibvirt}/vagrant-libvirt
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
