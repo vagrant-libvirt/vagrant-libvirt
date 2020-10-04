@@ -19,7 +19,7 @@ jobs:
         name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=vagrantlibvirt/vagrant-libvirt
+          DOCKER_IMAGE=${DOCKERHUB_ORGANIZATION:-vagrantlibvirt}/vagrant-libvirt
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
@@ -44,6 +44,8 @@ jobs:
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        env:
+          DOCKERHUB_ORGANIZATION: ${{ secrets.DOCKERHUB_ORGANIZATION }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -54,8 +56,13 @@ jobs:
           driver-opts: image=moby/buildkit:master
 
       -
+        name: Check have credentials
+        id: have_credentials
+        run: |
+          echo ::set-output name=access::${{ secrets.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+      -
         name: Login to DockerHub
-        if: github.event_name != 'pull_request'
+        if: steps.have_credentials.outputs.access == 'true'
         uses: docker/login-action@v1 
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -66,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ steps.have_credentials.outputs.access }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
             org.opencontainers.image.title=${{ github.event.repository.name }}
