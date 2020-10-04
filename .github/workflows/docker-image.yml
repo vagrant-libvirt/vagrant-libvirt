@@ -57,7 +57,7 @@ jobs:
 
       -
         name: Login to DockerHub
-        if: secrets.DOCKERHUB_USERNAME != "" && github.event_name != 'pull_request'
+        if: secrets.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request'
         uses: docker/login-action@v1 
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -68,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64
-          push: ${{ secrets.DOCKERHUB_USERNAME != "" && github.event_name != 'pull_request' }}
+          push: ${{ secrets.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
             org.opencontainers.image.title=${{ github.event.repository.name }}
