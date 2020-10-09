@@ -110,7 +110,7 @@ docker pull vagrantlibvirt/vagrant-libvirt:latest
 
 Running the image:
 ```bash
-docker run -it -rm \
+docker run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
