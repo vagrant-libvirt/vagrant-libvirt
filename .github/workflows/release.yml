@@ -13,12 +13,63 @@ jobs:
       -
         name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Determine remote default branch
+        uses: actions/github-script@v3.0.0
+        id: remote_default_branch
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            repo = await github.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+            })
+            return repo.data.default_branch
       -
         name: Prepare
         id: prep
         run: |
+          set -eu -o pipefail
+
+          # exclude unreleased in case re-running workflow
+          echo "unreleased=false" >> .github_changelog_generator
+          echo "max-issues=200" >> .github_changelog_generator
+          # in case we've tagged subsequently ensure consistent run
+          NEXT_TAG_SHA1="$(git rev-list --tags --skip=0 --no-walk | grep -B 1 ${{ github.sha }} || true)"
+          if [[ "${NEXT_TAG_SHA1:-}" != "${{ github.sha }}" ]]
+          then
+              NEXT_TAG=$(git describe --tags --abbrev=0 ${NEXT_TAG_SHA1})
+              echo "due-tag=${NEXT_TAG}" >> .github_changelog_generator
+          fi
+          # limit list to next tag if any
           LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || true)
+
+          # to ensure that releases continue to get 'x commits since release'
+          # need to pass the branch name in addition to the tag to the create
+          # release. Work out which branch the current tag is on
+          DEFAULT_BRANCH=origin/${{ steps.remote_default_branch.outputs.result }}
+          if git merge-base --is-ancestor ${{ github.ref }} ${DEFAULT_BRANCH}
+          then
+              # if the tag is in the history of the default remote branch
+              BRANCH=${DEFAULT_BRANCH}
+          else
+              # otherwise take the first match and hope for the best
+              BRANCH=$(git branch -r --format="%(refname:short)" --contains ${{ github.ref }} | head -n1)
+          fi
+          BRANCH=${BRANCH#origin/}
+
+          # set outputs for usage
           echo ::set-output name=previous_version::${LAST_TAG}
+          echo ::set-output name=release_branch::${BRANCH}
+      -
+        name: Cache Github API requests
+        id: cache-changelog-api-requests
+        uses: actions/cache@v2
+        with:
+          key: github-changelog-cache
+          path: .github_changelog_generator_cache
       -
         name: Changelog Generation
         uses: CharMixer/auto-changelog-action@v1.1
@@ -34,8 +85,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
+          commitish: ${{ steps.prep.outputs.release_branch }}
           release_name: Release ${{ github.ref }}
           body_path: release_notes.md
-          draft: false
-          prerelease: false
-
