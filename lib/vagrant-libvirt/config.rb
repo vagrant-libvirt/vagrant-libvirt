@@ -605,7 +605,8 @@ module VagrantPlugins
           allow_existing: options[:allow_existing],
           shareable: options[:shareable],
           serial: options[:serial],
-          wwn: options[:wwn]
+          pool: options[:pool], # overrides storage_pool setting for additional disks
+          wwn: options[:wwn],
         }
 
         @disks << disk # append
