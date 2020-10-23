@@ -188,7 +188,7 @@ module VagrantPlugins
               if e.message == msg and disk[:allow_existing]
                 disk[:preexisting] = true
               else
-                raise Errors::FogDomainVolumeCreateError,
+                raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
             end
