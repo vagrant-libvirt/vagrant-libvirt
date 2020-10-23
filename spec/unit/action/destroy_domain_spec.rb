@@ -33,7 +33,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
       before do
         allow(libvirt_domain).to receive(:list_snapshots).and_return([])
         allow(libvirt_domain).to receive(:has_managed_save?).and_return(nil)
-        root_disk.stub(name: 'test.img')
+        allow(root_disk).to receive(:name).and_return('test.img')
       end
 
       context 'when only has root disk' do
@@ -57,7 +57,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
 
         let(:extra_disk) { double('libvirt_extra_disk') }
         before do
-          extra_disk.stub(name: 'test-vdb.qcow2')
+          allow(extra_disk).to receive(:name).and_return('test-vdb.qcow2')
         end
 
         it 'destroys disks individually' do

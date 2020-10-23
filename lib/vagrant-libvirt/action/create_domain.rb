@@ -31,13 +31,17 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
+          @title = config.title
+          @description = config.description
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
           @cpu_fallback = config.cpu_fallback
@@ -108,6 +112,12 @@ module VagrantPlugins
           @redirdevs = config.redirdevs
           @redirfilters = config.redirfilters
 
+          # Additional QEMU commandline arguments
+          @qemu_args = config.qemu_args
+
+          # Additional QEMU commandline environment variables
+          @qemu_env = config.qemu_env
+
           # smartcard device
           @smartcard_dev = config.smartcard_dev
 
@@ -141,10 +151,7 @@ module VagrantPlugins
             if env[:machine].config.vm.box
               storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
             else
-              storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
-              raise Errors::NoStoragePool if storage_pool.nil?
-              xml = Nokogiri::XML(storage_pool.xml_desc)
-              storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+              storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
             end
           end
 
@@ -159,6 +166,16 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
+            if not disk[:pool].nil?
+              disk_pool_name = disk[:pool]
+              @logger.debug "Overriding pool name with: #{disk_pool_name}"
+              disk_storage_prefix = get_disk_storage_prefix(env, disk_pool_name)
+              disk[:absolute_path] = disk_storage_prefix + disk[:path]
+              @logger.debug "Overriding disk path with: #{disk[:absolute_path]}"
+            else
+              disk_pool_name = @storage_pool_name
+            end
+
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
@@ -168,7 +185,7 @@ module VagrantPlugins
                 path: disk[:absolute_path],
                 capacity: disk[:size],
                 #:allocation => ?,
-                pool_name: @storage_pool_name
+                pool_name: disk_pool_name
               )
             rescue Libvirt::Error => e
               # It is hard to believe that e contains just a string
@@ -178,7 +195,7 @@ module VagrantPlugins
               if e.message == msg and disk[:allow_existing]
                 disk[:preexisting] = true
               else
-                raise Errors::FogDomainVolumeCreateError,
+                raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
             end
@@ -187,6 +204,8 @@ module VagrantPlugins
           # Output the settings we're going to use to the user
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
           env[:ui].info(" -- Name:              #{@name}")
+          env[:ui].info(" -- Title:             #{@title}") if @title != ''
+          env[:ui].info(" -- Description:       #{@description}") if @description != ''
           env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
@@ -206,8 +225,14 @@ module VagrantPlugins
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
+          unless @nodeset.nil?
+            env[:ui].info(" -- Nodeset:           #{@nodeset}")
+          end
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          end
+          unless @shares.nil?
+            env[:ui].info(" -- Shares:            #{@shares}")
           end
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
@@ -264,7 +289,7 @@ module VagrantPlugins
           end
 
           @pcis.each do |pci|
-            env[:ui].info(" -- PCI passthrough:   #{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+            env[:ui].info(" -- PCI passthrough:   #{pci[:domain]}:#{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
           end
 
           unless @rng[:model].nil?
@@ -314,11 +339,18 @@ module VagrantPlugins
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
           end
 
-          @qargs = config.qemu_args
-          if not @qargs.empty?
+          unless @qemu_args.empty?
             env[:ui].info(' -- Command line args: ')
-            @qargs.each do |arg|
+            @qemu_args.each do |arg|
               msg = "    -> value=#{arg[:value]}, "
+              env[:ui].info(msg)
+            end
+          end
+
+          unless @qemu_env.empty?
+            env[:ui].info(' -- Command line environment variables: ')
+            @qemu_env.each do |env_var, env_value|
+              msg = "    -> #{env_var}=#{env_value}, "
               env[:ui].info(msg)
             end
           end
@@ -340,6 +372,14 @@ module VagrantPlugins
           env[:machine].id = server.id
 
           @app.call(env)
+        end
+
+        private
+        def get_disk_storage_prefix(env, disk_pool_name)
+          disk_storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(disk_pool_name)
+          raise Errors::NoStoragePool if disk_storage_pool.nil?
+          xml = Nokogiri::XML(disk_storage_pool.xml_desc)
+          disk_storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
         end
       end
     end

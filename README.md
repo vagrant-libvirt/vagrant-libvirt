@@ -13,50 +13,60 @@ can help a lot :-)
 
 ## Index
 
+<!-- note in vim set "let g:vmt_list_item_char='-'" to generate the correct output -->
+<!-- vim-markdown-toc GFM -->
 
-- [Features](#features)
-- [Future work](#future-work)
-- [Installation](#installation)
-  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
-- [Vagrant Project Preparation](#vagrant-project-preparation)
-  - [Add Box](#add-box)
-  - [Create Vagrantfile](#create-vagrantfile)
-  - [Start VM](#start-vm)
-  - [How Project Is Created](#how-project-is-created)
-  - [Libvirt Configuration](#libvirt-configuration)
-  - [Provider Options](#provider-options)
-  - [Domain Specific Options](#domain-specific-options)
-    - [Reload behavior](#reload-behavior)
-- [Networks](#networks)
-  - [Private Network Options](#private-network-options)
-  - [Public Network Options](#public-network-options)
-  - [Management Network](#management-network)
-- [Additional Disks](#additional-disks)
-    - [Reload behavior](#reload-behavior-1)
-- [CDROMs](#cdroms)
-- [Input](#input)
-- [PCI device passthrough](#pci-device-passthrough)
-- [Using USB Devices](#using-usb-devices)
-  - [USB Controller Configuration](#usb-controller-configuration)
-  - [USB Device Passthrough](#usb-device-passthrough)
-  - [USB Redirector Devices](#usb-redirector-devices)
-- [Random number generator passthrough](#random-number-generator-passthrough)
-- [Watchdog·Device](#watchdog-device)
-- [Smartcard device](#smartcard-device)
-- [Hypervisor Features](#hypervisor-features)
-- [CPU Features](#cpu-features)
-- [No box and PXE boot](#no-box-and-pxe-boot)
-- [SSH Access To VM](#ssh-access-to-vm)
-- [Forwarded Ports](#forwarded-ports)
-- [Synced Folders](#synced-folders)
-- [QEMU Session Support](#qemu-session-support)
-- [Customized Graphics](#customized-graphics)
-- [Box Format](#box-format)
-- [Create Box](#create-box)
-- [Package Box from VM](#package-box-from-vm)
-- [Troubleshooting VMs](#troubleshooting-vms)
-- [Development](#development)
-- [Contributing](#contributing)
+* [Features](#features)
+* [Future work](#future-work)
+* [Using Docker based Installation](#using-docker-based-installation)
+* [Installation](#installation)
+  * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+* [Vagrant Project Preparation](#vagrant-project-preparation)
+  * [Add Box](#add-box)
+  * [Create Vagrantfile](#create-vagrantfile)
+  * [Start VM](#start-vm)
+  * [How Project Is Created](#how-project-is-created)
+  * [Libvirt Configuration](#libvirt-configuration)
+  * [Provider Options](#provider-options)
+  * [Domain Specific Options](#domain-specific-options)
+    * [Reload behavior](#reload-behavior)
+* [Networks](#networks)
+  * [Private Network Options](#private-network-options)
+  * [Public Network Options](#public-network-options)
+  * [Management Network](#management-network)
+* [Additional Disks](#additional-disks)
+  * [Reload behavior](#reload-behavior-1)
+* [CDROMs](#cdroms)
+* [Input](#input)
+* [PCI device passthrough](#pci-device-passthrough)
+* [Using USB Devices](#using-usb-devices)
+  * [USB Controller Configuration](#usb-controller-configuration)
+  * [USB Device Passthrough](#usb-device-passthrough)
+  * [USB Redirector Devices](#usb-redirector-devices)
+    * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
+* [Random number generator passthrough](#random-number-generator-passthrough)
+* [Watchdog device](#watchdog-device)
+* [Smartcard device](#smartcard-device)
+* [Hypervisor Features](#hypervisor-features)
+* [CPU features](#cpu-features)
+* [Memory Backing](#memory-backing)
+* [No box and PXE boot](#no-box-and-pxe-boot)
+* [SSH Access To VM](#ssh-access-to-vm)
+* [Forwarded Ports](#forwarded-ports)
+* [Synced Folders](#synced-folders)
+* [QEMU Session Support](#qemu-session-support)
+* [Customized Graphics](#customized-graphics)
+* [TPM Devices](#tpm-devices)
+* [Libvirt communication channels](#libvirt-communication-channels)
+* [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
+* [Box Format](#box-format)
+* [Create Box](#create-box)
+* [Package Box from VM](#package-box-from-vm)
+* [Troubleshooting VMs](#troubleshooting-vms)
+* [Development](#development)
+* [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
 
 ## Features
 
@@ -82,6 +92,39 @@ can help a lot :-)
 
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
+
+## Using Docker based Installation
+
+Due to the number of issues encountered around compatibility between the ruby runtime environment
+that is part of the upstream vagrant installation and the library dependencies of libvirt that
+this project requires to communicate with libvirt, there is a docker image build and published.
+
+This should allow users to execute vagrant with vagrant-libvirt without needing to deal with
+the compatibility issues, though you may need to extend the image for your own needs should
+you make use of additional plugins.
+
+To get the image:
+```bash
+docker pull vagrantlibvirt/vagrant-libvirt:latest
+```
+
+Running the image:
+```bash
+docker run -it --rm \
+  -e LIBVIRT_DEFAULT_URI \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(pwd):$(pwd) \
+  -w $(pwd) \
+  vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant status
+```
+
+Note that if you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
 
 ## Installation
 
@@ -130,7 +173,7 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 
 * Fedora 22 and up:
 ```shell
-dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel
 ```
 
 * OpenSUSE leap 15.1:
@@ -146,8 +189,16 @@ pacman -S vagrant
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
+For some distributions you will need to specify `CONFIGURE_ARGS` variable before
+running `vagrant plugin install`:
+
+* Fedora 32 + upstream Vagrant:
+  ```shell
+  export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
+  ```
+
 ```shell
-$ vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-libvirt
 ```
 
 ### Possible problems with plugin installation on Linux
@@ -230,7 +281,7 @@ You can find more Libvirt-ready boxes at
 example:
 
 ```shell
-vagrant init fedora/24-cloud-base
+vagrant init fedora/32-cloud-base
 ```
 
 ### Create Vagrantfile
@@ -241,7 +292,7 @@ information where necessary. For example:
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :test_vm do |test_vm|
-    test_vm.vm.box = "fedora/24-cloud-base"
+    test_vm.vm.box = "fedora/32-cloud-base"
   end
 end
 ```
@@ -305,7 +356,10 @@ URI](http://libvirt.org/uri.html):
 Connection-independent options:
 
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance
-  snapshots will be stored.
+  snapshots (if `snapshot_pool_name` is not set) will be stored.
+* `snapshot_pool_name` - Libvirt storage pool name. If set, the created
+  snapshot of the instance will be stored at this location instead of
+  `storage_pool_name`.
 
 For example:
 
@@ -319,6 +373,8 @@ end
 
 ### Domain Specific Options
 
+* `title` - A short description of the domain.
+* `description` - A human readable description of the virtual machine.
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not
   set. Possible values are documented in Libvirt's [description for
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
@@ -332,10 +388,12 @@ end
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
   Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|
@@ -382,7 +440,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
 * `default_prefix` - The default Libvirt guest name becomes a concatenation of the
-   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix
    to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
@@ -792,6 +850,7 @@ It has a number of options:
   Disks with this option set to true need to be removed manually.
 * `shareable` - Set to true if you want to simulate shared SAN storage.
 * `serial` - Serial number of the disk device.
+* `wwn` - WWN number of the disk device.
 
 The following example creates two additional disks.
 
@@ -868,29 +927,30 @@ end
 
 You can specify multiple PCI devices to passthrough to the VM via
 `libvirt.pci`. Available options are listed below. Note that all options are
-required:
+required, except domain, which defaults to `0x0000`:
 
+* `domain` - The domain of the PCI device
 * `bus` - The bus of the PCI device
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
 You can extract that information from output of `lspci` command. First
-characters of each line are in format `[<bus>]:[<slot>].[<func>]`. For example:
+characters of each line are in format `[<domain>]:[<bus>]:[<slot>].[<func>]`. For example:
 
 ```shell
 $ lspci| grep NVIDIA
-03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+0000:03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
 ```
 
-In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+In that case `domain` is `0x0000`, `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
+    libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+    libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```
@@ -1412,7 +1472,7 @@ For example:
 
 ```ruby
 Vagrant.configure(2) do |config|
-  config.vm.box = "fedora/24-cloud-base"
+  config.vm.box = "fedora/32-cloud-base"
   config.vm.provider :libvirt do |libvirt|
     libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
   end
@@ -1438,8 +1498,8 @@ Vagrant.configure(2) do |config|
 end
 ```
 
-## Custom command line arguments
-You can also specify multiple qemuargs arguments for qemu-system
+## Custom command line arguments and environment variables
+You can also specify multiple qemuargs arguments or qemuenv environment variables for qemu-system
 
 * `value` - Value
 
@@ -1448,6 +1508,9 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.qemuargs :value => "-device"
     libvirt.qemuargs :value => "intel-iommu"
+    libvirt.qemuenv QEMU_AUDIO_DRV: 'pa'
+    libvirt.qemuenv QEMU_AUDIO_TIMER_PERIOD: '150'
+    libvirt.qemuenv QEMU_PA_SAMPLES: '1024', QEMU_PA_SERVER: '/run/user/1000/pulse/native'
   end
 end
 ```
@@ -1520,7 +1583,7 @@ $ vagrant package
 The first step for troubleshooting a VM image that appears to not boot correctly,
 or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
 to remember is that if the VM doesn't get an IP, then vagrant can't communicate
-with it to configure anything, so a problem at this stage is likely to come from 
+with it to configure anything, so a problem at this stage is likely to come from
 the VM, but we'll outline the tools and common problems to help you troubleshoot
 that.
 
@@ -1532,8 +1595,8 @@ out which port it's listening on, or can configure it with `graphics_port` and
 
 Note: Connecting with the console (`virsh console`) requires additional config,
 so some VMs may not show anything on the console at all, instead displaying it in
-the VNC console. The issue with the text console is that you also need to build the 
-image used to tell the kernel to output to the console during boot, and typically 
+the VNC console. The issue with the text console is that you also need to build the
+image used to tell the kernel to output to the console during boot, and typically
 most do not have this built in.
 
 Problems we've seen in the past include:
@@ -1544,9 +1607,8 @@ the VM
 If you're still confused, check the Github Issues for this repo for anything that
 looks similar to your problem.
 
-[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032) 
-contains some historical troubleshooting for VMs that appeared
-to hang. 
+[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032)
+contains some historical troubleshooting for VMs that appeared to hang.
 
 Did you hit a problem that you'd like to note here to save time in the future?
 Please do!
@@ -1594,3 +1656,8 @@ $ bundle exec vagrant up --provider=libvirt
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+<!--
+ # styling for TOC
+ vim: expandtab shiftwidth=2
+-->
