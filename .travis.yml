@@ -8,6 +8,8 @@ addons:
   apt:
     packages: libvirt-dev
     update: true
+language: ruby
+cache: bundler
 install: bundle install
 script: bundle exec rspec --color --format documentation
 notifications:
