@@ -31,6 +31,8 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
+          @title = config.title
+          @description = config.description
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpuset = config.cpuset
@@ -193,7 +195,7 @@ module VagrantPlugins
               if e.message == msg and disk[:allow_existing]
                 disk[:preexisting] = true
               else
-                raise Errors::FogDomainVolumeCreateError,
+                raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
             end
@@ -202,6 +204,8 @@ module VagrantPlugins
           # Output the settings we're going to use to the user
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
           env[:ui].info(" -- Name:              #{@name}")
+          env[:ui].info(" -- Title:             #{@title}") if @title != ''
+          env[:ui].info(" -- Description:       #{@description}") if @description != ''
           env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")

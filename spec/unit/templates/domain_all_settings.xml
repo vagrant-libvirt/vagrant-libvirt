@@ -1,5 +1,7 @@
 <domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name></name>
+  <title>title</title>
+  <description>description</description>
   <uuid></uuid>
   <memory></memory>
   <vcpu cpuset='1-4,^3,6'>1</vcpu>
