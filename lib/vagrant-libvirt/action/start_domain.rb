@@ -181,6 +181,10 @@ module VagrantPlugins
               if config.tpm_path
                 raise Errors::FogCreateServerError, 'The TPM Path must be fully qualified' unless config.tpm_path[0].chr == '/'
 
+                if config.tpm_version
+                  raise Errors::FogCreateServerError, 'The TPM Version only works with the `emulator` backend type' unless config.tpm_type == 'emulator'
+                end
+
                 tpm = REXML::XPath.first(xml_descr, '/domain/devices/tpm')
                 if tpm.nil?
                   descr_changed = true
@@ -188,6 +192,7 @@ module VagrantPlugins
                   tpm.attributes['model'] = config.tpm_model
                   tpm_backend_type = tpm.add_element('backend')
                   tpm_backend_type.attributes['type'] = config.tpm_type
+                  tpm_backend_type.attributes['version'] = config.tpm_version
                   tpm_device_path = tpm_backend_type.add_element('device')
                   tpm_device_path.attributes['path'] = config.tpm_path
                 else
@@ -198,6 +203,10 @@ module VagrantPlugins
                   if tpm.elements['backend'].attributes['type'] != config.tpm_type
                     descr_changed = true
                     tpm.elements['backend'].attributes['type'] = config.tpm_type
+                  end
+                  if tpm.elements['backend'].attributes['version'] != config.tpm_version
+                    descr_changed = true
+                    tpm.elements['backend'].attributes['version'] = config.tpm_version
                   end
                   if tpm.elements['backend'].elements['device'].attributes['path'] != config.tpm_path
                     descr_changed = true

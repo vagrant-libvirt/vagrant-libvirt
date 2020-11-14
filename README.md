@@ -467,6 +467,7 @@ end
 * `tpm_model` - The model of the TPM to which you wish to connect.
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
+* `tpm_version` - The TPM version to use.
 * `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case
   the device tree isn't added in-line to the kernel, it can be manually
   specified here.
@@ -542,6 +543,7 @@ defined domain:
 * `tpm_model` - Updated
 * `tpm_type` - Updated
 * `tpm_path` - Updated
+* `tpm_version` - Updated
 
 ## Networks
 
@@ -1370,13 +1372,14 @@ Modern versions of Libvirt support connecting to TPM devices on the host
 system. This allows you to enable Trusted Boot Extensions, among other
 features, on your guest VMs.
 
-In general, you will only need to modify the `tpm_path` variable in your guest
-configuration. However, advanced usage, such as the application of a Software
-TPM, may require modifying the `tpm_model` and `tpm_type` variables.
+To passthrough a hardware TPM, you will generally only need to modify the
+`tpm_path` variable in your guest configuration. However, advanced usage,
+such as the application of a Software TPM, may require modifying the
+`tpm_model`, `tpm_type` and `tpm_version` variables.
 
-The TPM options will only be used if you specify a TPM path. Declarations of
-any TPM options without specifying a path will result in those options being
-ignored.
+The TPM options will only be used if you specify a TPM path or version.
+Declarations of any TPM options without specifying a path or version will
+result in those options being ignored.
 
 Here is an example of using the TPM options:
 
@@ -1386,6 +1389,19 @@ Vagrant.configure("2") do |config|
     libvirt.tpm_model = 'tpm-tis'
     libvirt.tpm_type = 'passthrough'
     libvirt.tpm_path = '/dev/tpm0'
+  end
+end
+```
+
+It's also possible for Libvirt to start an emulated TPM device on the host.
+Requires `swtpm` and `swtpm-tools`
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.tpm_model = "tpm-crb"
+    libvirt.tpm_type = "emulator"
+    libvirt.tpm_version = "2.0"
   end
 end
 ```
