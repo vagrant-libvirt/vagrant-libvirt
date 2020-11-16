@@ -1,5 +1,7 @@
 <domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name></name>
+  <title>title</title>
+  <description>description</description>
   <uuid></uuid>
   <memory></memory>
   <vcpu cpuset='1-4,^3,6'>1</vcpu>
@@ -143,5 +145,9 @@
   <qemu:commandline>
     <qemu:arg value='-device'/>
     <qemu:arg value='dummy-device'/>
+    <qemu:env name='QEMU_AUDIO_DRV' value='pa'/>
+    <qemu:env name='QEMU_AUDIO_TIMER_PERIOD' value='150'/>
+    <qemu:env name='QEMU_PA_SAMPLES' value='1024'/>
+    <qemu:env name='QEMU_PA_SERVER' value='/run/user/1000/pulse/native'/>
   </qemu:commandline>
 </domain>

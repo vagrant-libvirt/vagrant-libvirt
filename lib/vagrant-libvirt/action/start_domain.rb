@@ -94,7 +94,7 @@ module VagrantPlugins
                   cpu_model.attributes['fallback'] = 'allow'
                   cpu_model.text = config.cpu_model
                 else
-                  if cpu_model.text != config.cpu_model
+                  if cpu_model.text.strip != config.cpu_model.strip
                     descr_changed = true
                     cpu_model.text = config.cpu_model
                   end

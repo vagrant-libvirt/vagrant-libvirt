@@ -1,5 +1,7 @@
 <domain type='' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name></name>
+  <title></title>
+  <description></description>
   <uuid></uuid>
   <memory></memory>
   <vcpu>1</vcpu>
