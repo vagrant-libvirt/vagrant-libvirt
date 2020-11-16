@@ -708,8 +708,8 @@ starts with `libvirt__` string. Here is a list of those options:
   only when dhcp is enabled.By default is the same host that runs the DHCP
   server.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
-* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `nat` or
-  `route` options.  This option is used only when creating new network. Mode
+* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `open`, `nat`
+  or `route` options.  This option is used only when creating new network. Mode
   `none` will create isolated network without NATing or routing outside. You
   will want to use NATed forwarding typically to reach networks outside of
   hypervisor. Routed forwarding is typically useful to reach other networks
@@ -807,8 +807,8 @@ used by this network are configurable at the provider level.
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
 * `management_network_mode` - Network mode for the Libvirt management network.
-  Specify one of veryisolated, none, nat or route options. Further documented
-  under [Private Networks](#private-network-options)
+  Specify one of veryisolated, none, open, nat or route options. Further
+  documented under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
