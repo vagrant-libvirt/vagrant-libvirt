@@ -788,6 +788,7 @@ virtual network.
 * `:portgroup` - Name of Libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an Open vSwitch bridge device. Default is
   'false'.
+* :ovs_interfaceid - Add Open vSwitch 'interfaceid' parameter.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
   are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default is 'false'.
