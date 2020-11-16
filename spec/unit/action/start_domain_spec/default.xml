@@ -1,9 +1,9 @@
-<domain type='' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
-  <name></name>
-  <title></title>
-  <description></description>
-  <uuid></uuid>
-  <memory></memory>
+<domain xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0' type=''>
+  <name/>
+  <title/>
+  <description/>
+  <uuid/>
+  <memory/>
   <vcpu>1</vcpu>
 
 
@@ -14,9 +14,9 @@
 
   <os>
         <type>hvm</type>
-    <kernel></kernel>
+    <kernel/>
     <initrd></initrd>
-    <cmdline></cmdline>
+    <cmdline/>
   </os>
   <features>
     <acpi/>
@@ -35,11 +35,11 @@
     </console>
 
 
-    <input type='mouse' bus='ps2'/>
+    <input bus='ps2' type='mouse'/>
 
-      <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'  />
+      <graphics autoport='yes' keymap='en-us' listen='127.0.0.1' port='-1' type='vnc'/>
       <video>
-        <model type='cirrus' vram='9216' heads='1'/>
+        <model heads='1' type='cirrus' vram='9216'/>
       </video>
 
 

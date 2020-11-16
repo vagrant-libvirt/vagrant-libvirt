@@ -6,6 +6,9 @@ module VagrantPlugins
     module Action
       # Action for create new box for Libvirt provider
       class PackageDomain
+        include VagrantPlugins::ProviderLibvirt::Util::Ui
+
+
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::package_domain')
           @app = app
@@ -31,12 +34,14 @@ module VagrantPlugins
           env[:ui].info("Downloading #{root_disk.name} to #{@tmp_img}")
           ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
                                root_disk.name, env) do |progress,image_size|
-            env[:ui].clear_line
-            env[:ui].report_progress(progress, image_size, false)
+            rewriting(env[:ui]) do |ui|
+              ui.clear_line
+              ui.report_progress(progress, image_size, false)
+            end
           end
           # Clear the line one last time since the progress meter doesn't
           # disappear immediately.
-          env[:ui].clear_line
+          rewriting(env[:ui]) {|ui| ui.clear_line}
           backing = `qemu-img info "#{@tmp_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
           if backing
             env[:ui].info('Image has backing image, copying image and rebasing ...')
