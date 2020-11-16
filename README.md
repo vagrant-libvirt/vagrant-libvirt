@@ -257,7 +257,7 @@ If you encounter the following load error when using the vagrant-libvirt plugin 
 /opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /usr/lib64/libk5crypto.so.3: undefined symbol: EVP_KDF_ctrl, version OPENSSL_1_1_1b - /home/rbelgrave/.vagrant.d/gems/2.4.9/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
 ```
 
-then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
+then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin without setting the `CONFIGURE_ARGS`. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
 
 ```shell
 dnf download --source krb5-libs
@@ -266,7 +266,7 @@ tar xf krb5-1.18.tar.gz
 cd krb5-1.18/src
 ./configure
 make
-sudo cp -a lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
+sudo cp -P lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
 ```
 
 ## Vagrant Project Preparation
