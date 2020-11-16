@@ -31,6 +31,8 @@ module VagrantPlugins
 
           # Gather some info about domain
           @name = env[:domain_name]
+          @title = config.title
+          @description = config.description
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpuset = config.cpuset
@@ -149,10 +151,7 @@ module VagrantPlugins
             if env[:machine].config.vm.box
               storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
             else
-              storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(@storage_pool_name)
-              raise Errors::NoStoragePool if storage_pool.nil?
-              xml = Nokogiri::XML(storage_pool.xml_desc)
-              storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+              storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
             end
           end
 
@@ -167,6 +166,16 @@ module VagrantPlugins
 
             disk[:absolute_path] = storage_prefix + disk[:path]
 
+            if not disk[:pool].nil?
+              disk_pool_name = disk[:pool]
+              @logger.debug "Overriding pool name with: #{disk_pool_name}"
+              disk_storage_prefix = get_disk_storage_prefix(env, disk_pool_name)
+              disk[:absolute_path] = disk_storage_prefix + disk[:path]
+              @logger.debug "Overriding disk path with: #{disk[:absolute_path]}"
+            else
+              disk_pool_name = @storage_pool_name
+            end
+
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
@@ -176,7 +185,7 @@ module VagrantPlugins
                 path: disk[:absolute_path],
                 capacity: disk[:size],
                 #:allocation => ?,
-                pool_name: @storage_pool_name
+                pool_name: disk_pool_name
               )
             rescue Libvirt::Error => e
               # It is hard to believe that e contains just a string
@@ -186,7 +195,7 @@ module VagrantPlugins
               if e.message == msg and disk[:allow_existing]
                 disk[:preexisting] = true
               else
-                raise Errors::FogDomainVolumeCreateError,
+                raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
             end
@@ -195,6 +204,8 @@ module VagrantPlugins
           # Output the settings we're going to use to the user
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain'))
           env[:ui].info(" -- Name:              #{@name}")
+          env[:ui].info(" -- Title:             #{@title}") if @title != ''
+          env[:ui].info(" -- Description:       #{@description}") if @description != ''
           env[:ui].info(" -- Forced UUID:       #{@uuid}") if @uuid != ''
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
@@ -361,6 +372,14 @@ module VagrantPlugins
           env[:machine].id = server.id
 
           @app.call(env)
+        end
+
+        private
+        def get_disk_storage_prefix(env, disk_pool_name)
+          disk_storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(disk_pool_name)
+          raise Errors::NoStoragePool if disk_storage_pool.nil?
+          xml = Nokogiri::XML(disk_storage_pool.xml_desc)
+          disk_storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
         end
       end
     end

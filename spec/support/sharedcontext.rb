@@ -17,7 +17,7 @@ shared_context 'unit' do
   end
   let(:env)              { { env: iso_env, machine: machine, ui: ui, root_path: '/rootpath' } }
   let(:conf)             { Vagrant::Config::V2::DummyConfig.new }
-  let(:ui)               { Vagrant::UI::Basic.new }
+  let(:ui)               { Vagrant::UI::Silent.new }
   let(:iso_env)          { test_env.create_vagrant_env ui_class: Vagrant::UI::Basic }
   let(:machine)          { iso_env.machine(:test, :libvirt) }
   # Mock the communicator to prevent SSH commands for being executed.
@@ -28,7 +28,7 @@ shared_context 'unit' do
   let(:plugin)           { register_plugin }
 
   before (:each) do
-    machine.stub(guest: guest)
-    machine.stub(communicator: communicator)
+    allow(machine).to receive(:guest).and_return(guest)
+    allow(machine).to receive(:communicator).and_return(communicator)
   end
 end
