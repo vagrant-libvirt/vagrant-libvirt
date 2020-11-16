@@ -7,6 +7,7 @@ module VagrantPlugins
       autoload :NetworkUtil, 'vagrant-libvirt/util/network_util'
       autoload :StorageUtil, 'vagrant-libvirt/util/storage_util'
       autoload :ErrorCodes, 'vagrant-libvirt/util/error_codes'
+      autoload :Ui, 'vagrant-libvirt/util/ui'
     end
   end
 end
