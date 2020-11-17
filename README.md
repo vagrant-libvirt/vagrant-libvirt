@@ -231,6 +231,43 @@ If you have issues building ruby-libvirt, try the following:
 ```shell
 CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems PATH=/opt/vagrant/embedded/bin:$PATH vagrant plugin install vagrant-libvirt
 ```
+### Additional Notes for Fedora and Similar Linux Distributions
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libssh):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /opt/vagrant/embedded/lib64/libcrypto.so.1.1: version `OPENSSL_1_1_1b' not found (required by /lib64/libssh.so.4) - /home/xxx/.vagrant.d/gems/2.4.6/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+then the following steps have been found to resolve the problem. Thanks to James Reynolds (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472). The specific version of libssh will change over time so references to the rpm in the commands below will need to be adjusted accordingly.
+
+```shell
+dnf download --source libssh
+rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
+tar xf libssh-0.9.0.tar.xz
+mkdir build
+cd build
+cmake ../libssh-0.9.0 -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
+make
+sudo cp lib/libssh* /opt/vagrant/embedded/lib64
+```
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libk5crypto):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /usr/lib64/libk5crypto.so.3: undefined symbol: EVP_KDF_ctrl, version OPENSSL_1_1_1b - /home/rbelgrave/.vagrant.d/gems/2.4.9/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+
+then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin without setting the `CONFIGURE_ARGS`. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
+
+```shell
+dnf download --source krb5-libs
+rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
+tar xf krb5-1.18.tar.gz
+cd krb5-1.18/src
+./configure
+make
+sudo cp -P lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
+```
 
 ## Vagrant Project Preparation
 
@@ -673,8 +710,8 @@ starts with `libvirt__` string. Here is a list of those options:
   only when dhcp is enabled.By default is the same host that runs the DHCP
   server.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
-* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `nat` or
-  `route` options.  This option is used only when creating new network. Mode
+* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `open`, `nat`
+  or `route` options.  This option is used only when creating new network. Mode
   `none` will create isolated network without NATing or routing outside. You
   will want to use NATed forwarding typically to reach networks outside of
   hypervisor. Routed forwarding is typically useful to reach other networks
@@ -753,6 +790,7 @@ virtual network.
 * `:portgroup` - Name of Libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an Open vSwitch bridge device. Default is
   'false'.
+* :ovs_interfaceid - Add Open vSwitch 'interfaceid' parameter.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
   are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default is 'false'.
@@ -771,8 +809,8 @@ used by this network are configurable at the provider level.
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
 * `management_network_mode` - Network mode for the Libvirt management network.
-  Specify one of veryisolated, none, nat or route options. Further documented
-  under [Private Networks](#private-network-options)
+  Specify one of veryisolated, none, open, nat or route options. Further
+  documented under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
