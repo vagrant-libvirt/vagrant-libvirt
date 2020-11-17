@@ -1532,6 +1532,23 @@ The box is a tarball containing:
 
 ## Create Box
 
+If creating a box from a modified vagrant-libvirt machine, ensure that
+you have set the `config.ssh.insert_key = false` in the original Vagrantfile
+as otherwise Vagrant will replace the default connection key-pair that is
+required on first boot with one specific to the machine and prevent
+the default key from working on the exported result.
+```ruby
+Vagrant.configure("2") do |config|
+  # this setting is only recommended if planning to export the
+  # resulting machine
+  config.ssh.insert_key = false
+
+  config.vm.define :test_vm do |test_vm|
+    test_vm.vm.box = "fedora/32-cloud-base"
+  end
+end
+```
+
 To create a vagrant-libvirt box from a qcow2 image, run `create_box.sh`
 (located in the tools directory):
 
