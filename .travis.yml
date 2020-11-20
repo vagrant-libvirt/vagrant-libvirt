@@ -30,5 +30,24 @@ jobs:
       env: VAGRANT_VERSION=v2.2.4
     - rvm: 2.6.6
       env: VAGRANT_VERSION=master
+      
+      
+#Power jobs added
+    - rvm: 2.2.10
+      arch: ppc64le
+      env: VAGRANT_VERSION=v2.0.4
+    - rvm: 2.3.5
+      arch: ppc64le
+      env: VAGRANT_VERSION=v2.1.5
+    - rvm: 2.4.10
+      arch: ppc64le
+      env: VAGRANT_VERSION=v2.2.4
+    - rvm: 2.6.6
+      arch: ppc64le
+      env: VAGRANT_VERSION=v2.2.4
+    - rvm: 2.6.6
+      arch: ppc64le
+      env: VAGRANT_VERSION=master
+
   allow_failures:
     - env: VAGRANT_VERSION=master
