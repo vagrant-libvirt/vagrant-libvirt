@@ -5,6 +5,7 @@ module VagrantPlugins
     module Action
       class CreateDomain
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+        include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
 
         def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_domain')
@@ -147,12 +148,10 @@ module VagrantPlugins
           # If we have a box, take the path from the domain volume and set our storage_prefix.
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
-          if !config.qemu_use_session
-            if env[:machine].config.vm.box
-              storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
-            else
-              storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
-            end
+          if env[:machine].config.vm.box
+            storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
+          else
+            storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
 
           @disks.each do |disk|
@@ -184,6 +183,8 @@ module VagrantPlugins
                 format_type: disk[:type],
                 path: disk[:absolute_path],
                 capacity: disk[:size],
+                owner: storage_uid(env),
+                group: storage_uid(env),
                 #:allocation => ?,
                 pool_name: disk_pool_name
               )
