@@ -3,10 +3,14 @@ require 'spec_helper'
 shared_context 'unit' do
   include_context 'vagrant-unit'
 
+  let(:vagrantfile_providerconfig) { '' }
   let(:vagrantfile) do
     <<-EOF
     Vagrant.configure('2') do |config|
       config.vm.define :test
+      config.vm.provider :libvirt do |libvirt|
+        #{vagrantfile_providerconfig}
+      end
     end
     EOF
   end

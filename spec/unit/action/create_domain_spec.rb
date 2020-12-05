@@ -27,6 +27,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
       allow(connection).to receive(:servers).and_return(servers)
       allow(connection).to receive(:volumes).and_return(volumes)
 
+      allow(logger).to receive(:info)
+
       env[:domain_name] = "vagrant-test_default"
 
       # should be ignored for system session and used for user session
