@@ -28,6 +28,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
       allow(connection).to receive(:volumes).and_return(volumes)
 
       env[:domain_name] = "vagrant-test_default"
+
+      # should be ignored for system session and used for user session
+      allow(Process).to receive(:uid).and_return(9999)
+      allow(Process).to receive(:gid).and_return(9999)
     end
 
     context 'connection => qemu:///system' do
@@ -137,8 +141,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
               expect(volumes).to receive(:create).with(
                 hash_including(
                   :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-                  :owner       => 1000,
-                  :group       => 1000,
+                  :owner       => 9999,
+                  :group       => 9999,
                   :pool_name   => "default",
                 )
               )
