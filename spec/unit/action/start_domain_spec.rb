@@ -141,6 +141,28 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           expect(subject.call(env)).to be_nil
         end
       end
+
+      context 'change from passthrough to emulated' do
+        let(:test_file) { 'default_added_tpm_path.xml' }
+        let(:updated_test_file) { 'default_added_tpm_version.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_type = 'emulator'
+          libvirt.tpm_model = 'tpm-crb'
+          libvirt.tpm_version = '2.0'
+          EOF
+        end
+
+        it 'should modify the domain' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('tpm config changed')
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
     end
   end
 end
