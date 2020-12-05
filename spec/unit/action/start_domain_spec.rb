@@ -16,6 +16,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
   let(:servers) { double('servers') }
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), test_file)) }
+  let(:updated_domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), updated_test_file)) }
 
   describe '#call' do
     before do
@@ -26,6 +27,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
       allow(connection).to receive(:servers).and_return(servers)
       allow(servers).to receive(:get).and_return(domain)
+      expect(logger).to receive(:info)
     end
 
     context 'default config' do
@@ -38,11 +40,34 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
       end
 
-      it 'should execute correctly' do
+      it 'should execute without changing' do
+        allow(libvirt_domain).to receive(:undefine)
+        expect(logger).to_not receive(:debug)
         expect(libvirt_domain).to receive(:autostart=)
         expect(domain).to receive(:start)
 
         expect(subject.call(env)).to be_nil
+      end
+
+      context 'tpm_path added' do
+        let(:updated_test_file) { 'default_added_tpm_path.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_path = '/dev/tpm0'
+          libvirt.tpm_type = 'passthrough'
+          libvirt.tpm_model = 'tpm-tis'
+          EOF
+        end
+
+        it 'should modify the domain tpm_path' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('tpm created from previously not defined')
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
       end
     end
   end
