@@ -193,46 +193,31 @@ module VagrantPlugins
               end
 
               # TPM
-              if config.tpm_path
-                raise Errors::FogCreateServerError, 'The TPM Path must be fully qualified' unless config.tpm_path[0].chr == '/'
-
-                if config.tpm_version
-                  raise Errors::FogCreateServerError, 'The TPM Version only works with the `emulator` backend type' unless config.tpm_type == 'emulator'
+              if [config.tpm_path, config.tpm_version].any?
+                if config.tpm_path
+                  raise Errors::FogCreateServerError, 'The TPM Path must be fully qualified' unless config.tpm_path[0].chr == '/'
                 end
 
-                tpm = REXML::XPath.first(xml_descr, '/domain/devices/tpm')
-                if tpm.nil?
-                  @logger.debug "tpm created from previously not defined"
+                # just build the tpm element every time
+                # check at the end if it is different
+                oldtpm = REXML::XPath.first(xml_descr, '/domain/devices/tpm')
+                REXML::XPath.first(xml_descr, '/domain/devices').delete_element("tpm")
+                newtpm = REXML::Element.new('tpm', REXML::XPath.first(xml_descr, '/domain/devices'))
+
+                newtpm.attributes['model'] = config.tpm_model
+                backend = newtpm.add_element('backend')
+                backend.attributes['type'] = config.tpm_type
+
+                case config.tpm_type
+                when 'emulator'
+                  backend.attributes['version'] = config.tpm_version
+                when 'passthrough'
+                  backend.add_element('device').attributes['path'] = config.tpm_path
+                end
+
+                unless "'#{newtpm}'".eql? "'#{oldtpm}'"
+                  @logger.debug "tpm config changed"
                   descr_changed = true
-                  tpm = REXML::Element.new('tpm', REXML::XPath.first(xml_descr, '/domain/devices'))
-                  tpm.attributes['model'] = config.tpm_model
-                  tpm_backend_type = tpm.add_element('backend')
-                  tpm_backend_type.attributes['type'] = config.tpm_type
-                  tpm_backend_type.attributes['version'] = config.tpm_version
-                  tpm_device_path = tpm_backend_type.add_element('device')
-                  tpm_device_path.attributes['path'] = config.tpm_path
-                else
-                  if tpm.attributes['model'] != config.tpm_model
-                    @logger.debug "tpm model updated from '#{tpm.attributes['model']}' to '#{config.tpm_model}'"
-                    descr_changed = true
-                    tpm.attributes['model'] = config.tpm_model
-                  end
-                  backend = tpm.elements['backend']
-                  if backend.attributes['type'] != config.tpm_type
-                    @logger.debug "tpm type updated from '#{backend.attributes['type']}' to '#{config.tpm_type}'"
-                    descr_changed = true
-                    backend.attributes['type'] = config.tpm_type
-                  end
-                  if backend.attributes['version'] != config.tpm_version
-                    @logger.debug "tpm version updated from '#{backend.attributes['version']}' to '#{config.tpm_version}'"
-                    descr_changed = true
-                    backend.attributes['version'] = config.tpm_version
-                  end
-                  if backend.elements['device'].attributes['path'] != config.tpm_path
-                    @logger.debug "tpm path updated from '#{backend.elements['device'].attributes['path']}' to '#{config.tpm_path}'"
-                    descr_changed = true
-                    backend.elements['device'].attributes['path'] = config.tpm_path
-                  end
                 end
               end
 
