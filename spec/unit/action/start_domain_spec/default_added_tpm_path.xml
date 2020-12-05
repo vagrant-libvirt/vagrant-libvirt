@@ -43,6 +43,6 @@
       </video>
 
 
-  </devices>
+  <tpm model='tpm-tis'><backend type='passthrough'><device path='/dev/tpm0'/></backend></tpm></devices>
 
 </domain>

@@ -7,6 +7,7 @@ shared_context 'libvirt' do
   let(:id)              { 'dummy-vagrant_dummy'     }
   let(:connection)      { double('connection') }
   let(:domain)          { double('domain') }
+  let(:logger)          { double('logger') }
 
   def connection_result(options = {})
     result = options.fetch(:result, nil)
@@ -26,5 +27,6 @@ shared_context 'libvirt' do
     allow(domain).to receive(:mac).and_return('9C:D5:53:F1:5A:E7')
 
     allow(machine).to receive(:id).and_return(id)
+    allow(Log4r::Logger).to receive(:new).and_return(logger)
   end
 end
