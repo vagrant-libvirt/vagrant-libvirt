@@ -26,6 +26,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
       allow(connection).to receive(:servers).and_return(servers)
       allow(connection).to receive(:volumes).and_return(volumes)
+      allow(logger).to receive(:info)
     end
 
     context 'default pool' do
