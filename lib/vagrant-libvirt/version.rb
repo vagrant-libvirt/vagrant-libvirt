@@ -26,6 +26,7 @@ module VagrantPlugins
           # tagged
           version = tag.strip.split(' ').last
         else
+          version = ""
           # arbitrary branch/commit
           Dir.mktmpdir do |dir|
             stdout_and_stderr, status = Open3.capture2e("git -C #{dir} clone --bare #{HOMEPAGE}")
@@ -33,9 +34,9 @@ module VagrantPlugins
 
             stdout_and_stderr, status = Open3.capture2e("git --git-dir=#{dir}/vagrant-libvirt.git describe --tags #{hash}")
             raise "failed to determine version for #{hash}: #{stdout_and_stderr}" unless status.success?
-          end
 
-          version = version_from_describe(stdout_and_stderr)
+            version = version_from_describe(stdout_and_stderr)
+          end
 
           # in this case write the version file to avoid cloning a second time
           File.write(VERSION_FILE, version)
@@ -61,7 +62,7 @@ module VagrantPlugins
     end
 
     def self.version_from_describe(describe)
-      version_parts = git_version.split('-').first(2) # drop the git sha if it exists
+      version_parts = describe.split('-').first(2) # drop the git sha if it exists
       if version_parts.length > 1
         # increment the patch number so that this is marked as a pre-release of the
         # next possible release

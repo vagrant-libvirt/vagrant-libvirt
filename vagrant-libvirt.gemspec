@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.test_files    = Dir.glob("{test,spec,features}/**/*.*")
   s.name          = 'vagrant-libvirt'
   s.require_paths = ['lib']
-  s.version       = VagrantPlugins::ProviderLibvirt.get_version(s.homepage)
+  s.version       = VagrantPlugins::ProviderLibvirt.get_version
 
   s.add_development_dependency "rspec-core", "~> 3.5.0"
   s.add_development_dependency "rspec-expectations", "~> 3.5.0"
