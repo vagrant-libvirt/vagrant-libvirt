@@ -12,8 +12,9 @@ RUN apt update \
         git \
         gosu \
         kmod \
-        openssh-client \
         libvirt-bin \
+        openssh-client \
+        rsync \
     && rm -rf /var/lib/apt/lists \
     ;
 
