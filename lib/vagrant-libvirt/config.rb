@@ -119,6 +119,12 @@ module VagrantPlugins
       attr_accessor :tpm_path
       attr_accessor :tpm_version
 
+      # Configure the memballoon
+      attr_accessor :memballoon_enabled
+      attr_accessor :memballoon_model
+      attr_accessor :memballoon_pci_bus
+      attr_accessor :memballoon_pci_slot
+
       # Sets the max number of NICs that can be created
       # Default set to 8. Don't change the default unless you know
       # what are doing
@@ -247,6 +253,11 @@ module VagrantPlugins
         @tpm_type          = UNSET_VALUE
         @tpm_path          = UNSET_VALUE
         @tpm_version       = UNSET_VALUE
+
+        @memballoon_enabled = UNSET_VALUE
+        @memballoon_model   = UNSET_VALUE
+        @memballoon_pci_bus = UNSET_VALUE
+        @memballoon_pci_slot = UNSET_VALUE
 
         @nic_adapter_count = UNSET_VALUE
 
@@ -784,6 +795,10 @@ module VagrantPlugins
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
         @tpm_version = nil if @tpm_version == UNSET_VALUE
+        @memballoon_enabled = nil if @memballoon_enabled == UNSET_VALUE
+        @memballoon_model = 'virtio' if @memballoon_model == UNSET_VALUE
+        @memballoon_pci_bus = '0x00' if @memballoon_pci_bus == UNSET_VALUE
+        @memballoon_pci_slot = '0x0f' if @memballoon_pci_slot == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 

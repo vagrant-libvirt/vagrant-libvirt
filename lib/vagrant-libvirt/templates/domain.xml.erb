@@ -271,6 +271,15 @@
     <%# USB Controller -%>
     <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>/>
     <% end %>
+    <% unless @memballoon_enabled.nil? %>
+    <% if @memballoon_enabled %>
+    <memballoon model='<%= @memballoon_model %>'>
+      <address type='pci' domain='0x0000' bus='<%= @memballoon_pci_bus %>' slot='<%= @memballoon_pci_slot %>' function='0x0'/>
+    </memballoon>
+    <% else %>
+    <memballoon model='none'/>
+    <% end %>
+    <% end %>
   </devices>
 
   <% if not @qemu_args.empty? or not @qemu_env.empty? %>
