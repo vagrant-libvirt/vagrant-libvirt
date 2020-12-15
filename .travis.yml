@@ -27,7 +27,7 @@ jobs:
     - rvm: 2.4.10
       env: VAGRANT_VERSION=v2.2.4
     - rvm: 2.6.6
-      env: VAGRANT_VERSION=v2.2.4
+      env: VAGRANT_VERSION=v2.2.14
     - rvm: 2.6.6
       env: VAGRANT_VERSION=master
   allow_failures:
