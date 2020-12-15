@@ -1,6 +1,6 @@
 require 'simplecov'
 SimpleCov.start do
-  enable_coverage :branch
+  enable_coverage :branch if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5')
   add_filter 'spec/'
 end
 
