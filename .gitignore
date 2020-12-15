@@ -19,3 +19,6 @@ Vagrantfile
 !example_box/Vagrantfile
 .vagrant
 *.swp
+
+# don't commit the generated version
+lib/vagrant-libvirt/version
