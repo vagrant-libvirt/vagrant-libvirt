@@ -81,6 +81,7 @@ module VagrantPlugins
           @tpm_model = config.tpm_model
           @tpm_type = config.tpm_type
           @tpm_path = config.tpm_path
+          @tpm_version = config.tpm_version
 
           # Boot order
           @boot_order = config.boot_order
@@ -254,7 +255,13 @@ module VagrantPlugins
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Sound Type:	#{@sound_type}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
-          env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+          env[:ui].info(" -- TPM Backend:       #{@tpm_type}")
+          if @tpm_type == 'emulator'
+            env[:ui].info(" -- TPM Model:         #{@tpm_model}")
+            env[:ui].info(" -- TPM Version:       #{@tpm_version}")
+          else
+            env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+          end
 
           @boot_order.each do |device|
             env[:ui].info(" -- Boot device:        #{device}")

@@ -105,4 +105,28 @@ describe 'templates/domain' do
       expect(domain.to_xml('domain')).to eq xml_expected
     end
   end
+
+  context 'when tpm 2.0 device is specified' do
+    before do
+      domain.tpm_version = '2.0'
+      domain.tpm_type = 'emulator'
+      domain.tpm_model = 'tpm-crb'
+    end
+    let(:test_file) { 'tpm/version_2.0.xml' }
+    it 'renders template' do
+      domain.finalize!
+      expect(domain.to_xml('domain')).to eq xml_expected
+    end
+  end
+
+  context 'when tpm 1.2 device is implicitly used' do
+    before do
+      domain.tpm_path = '/dev/tpm0'
+    end
+    let(:test_file) { 'tpm/version_1.2.xml' }
+    it 'renders template' do
+      domain.finalize!
+      expect(domain.to_xml('domain')).to eq xml_expected
+    end
+  end
 end

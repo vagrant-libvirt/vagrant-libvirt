@@ -257,11 +257,13 @@
       <% end %>
     <% end -%>
 
-    <% if @tpm_path -%>
+    <% if @tpm_path || @tpm_version -%>
     <%# TPM Device -%>
     <tpm model='<%= @tpm_model %>'>
-      <backend type='<%= @tpm_type %>'>
+      <backend type='<%= @tpm_type %>'<% if @tpm_version %> version='<%= @tpm_version %>'<% end %>>
+        <% if @tpm_path -%>
         <device path='<%= @tpm_path %>'/>
+        <% end -%>
       </backend>
     </tpm>
     <% end -%>
