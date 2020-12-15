@@ -129,4 +129,54 @@ describe 'templates/domain' do
       expect(domain.to_xml('domain')).to eq xml_expected
     end
   end
+
+  context 'memballoon' do
+    context 'default' do
+      it 'renders without specifying the xml tag' do
+        domain.finalize!
+
+        expect(domain.to_xml('domain')).to_not match(/memballoon/)
+      end
+    end
+
+    context 'memballon enabled' do
+      before do
+        domain.memballoon_enabled = true
+      end
+
+      it 'renders with memballon element' do
+        domain.finalize!
+
+        expect(domain.to_xml('domain')).to match(/<memballoon model='virtio'>/)
+        expect(domain.to_xml('domain')).to match(/<address type='pci' domain='0x0000' bus='0x00' slot='0x0f' function='0x0'\/>/)
+      end
+
+      context 'all settings specified' do
+        before do
+          domain.memballoon_model = "virtio-non-transitional"
+          domain.memballoon_pci_bus = "0x01"
+          domain.memballoon_pci_slot = "0x05"
+        end
+
+        it 'renders with specified values' do
+          domain.finalize!
+
+          expect(domain.to_xml('domain')).to match(/<memballoon model='virtio-non-transitional'>/)
+          expect(domain.to_xml('domain')).to match(/<address type='pci' domain='0x0000' bus='0x01' slot='0x05' function='0x0'\/>/)
+        end
+      end
+    end
+
+    context 'memballon disabled' do
+      before do
+        domain.memballoon_enabled = false
+      end
+
+      it 'renders the memballoon element with model none' do
+        domain.finalize!
+
+        expect(domain.to_xml('domain')).to match(/<memballoon model='none'\/>/)
+      end
+    end
+  end
 end

@@ -1444,6 +1444,28 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Memory balloon
+
+The configuration of the memory balloon device can be overridden. By default,
+libvirt will automatically attach a memory balloon; this behavior is preserved
+by not configuring any memballoon-related options. The memory balloon can be
+explicitly disabled by setting `memballoon_enabled` to `false`. Setting
+`memballoon_enabled` to `true` will allow additional configuration of
+memballoon-related options.
+
+Here is an example of using the memballoon options:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memballoon_enabled = true
+    libvirt.memballoon_model = 'virtio'
+    libvirt.memballoon_pci_bus = '0x00'
+    libvirt.memballoon_pci_slot = '0x0f'
+  end
+end
+```
+
 ## Libvirt communication channels
 
 For certain functionality to be available within a guest, a private
