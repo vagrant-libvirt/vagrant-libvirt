@@ -41,6 +41,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         it 'should exit' do
           expect(app).to_not receive(:call)
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
+          expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
           expect(subject.call(env)).to be_nil
         end
       end
@@ -56,7 +57,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           expect(app).to_not receive(:call)
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
           expect(ui).to receive(:info).with('Waiting for SSH to become available...')
-          logger = subject.instance_variable_get(:@logger)
           expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
           expect(logger).to receive(:info).with('Got IP address 192.168.121.2')
           expect(logger).to receive(:info).with(/Time for getting IP: .*/)
@@ -77,6 +77,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         expect(app).to receive(:call)
         expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
         expect(ui).to receive(:info).with('Waiting for SSH to become available...')
+        expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
+        expect(logger).to receive(:info).with('Got IP address 192.168.121.2')
+        expect(logger).to receive(:info).with(/Time for getting IP: .*/)
+        expect(logger).to receive(:info).with(/Time for SSH ready: .*/)
         expect(env[:machine].communicate).to receive(:ready?).and_return(true)
         expect(subject.call(env)).to be_nil
       end

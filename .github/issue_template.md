@@ -23,9 +23,9 @@ Tell us what happens instead
 
 **Output of `vagrant version; vagrant plugin list`:**
 
-**Output of `VAGRANT_LOG=debug vagrant ... --provider=libvirt`**
+**Attach Output of `VAGRANT_LOG=debug vagrant ... --provider=libvirt >vagrant.log 2>&1`**
 ```
-Insert debug output inside quotes here (replace ... with whatever command you use to trigger the issue)
+Delete this text and drag and drop the log file for github to attach and add a link here
 ```
 
 **A Vagrantfile to reproduce the issue:**
