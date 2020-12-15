@@ -117,6 +117,7 @@ module VagrantPlugins
       attr_accessor :tpm_model
       attr_accessor :tpm_type
       attr_accessor :tpm_path
+      attr_accessor :tpm_version
 
       # Sets the max number of NICs that can be created
       # Default set to 8. Don't change the default unless you know
@@ -245,6 +246,7 @@ module VagrantPlugins
         @tpm_model         = UNSET_VALUE
         @tpm_type          = UNSET_VALUE
         @tpm_path          = UNSET_VALUE
+        @tpm_version       = UNSET_VALUE
 
         @nic_adapter_count = UNSET_VALUE
 
@@ -781,6 +783,7 @@ module VagrantPlugins
         @tpm_model = 'tpm-tis' if @tpm_model == UNSET_VALUE
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
+        @tpm_version = nil if @tpm_version == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 

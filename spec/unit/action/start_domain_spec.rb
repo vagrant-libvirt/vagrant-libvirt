@@ -48,8 +48,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
         expect(subject.call(env)).to be_nil
       end
+    end
 
-      context 'tpm_path added' do
+    context 'tpm' do
+      let(:test_file) { 'default.xml' }
+
+      before do
+        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
+
+        allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
+        allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
+      end
+
+      context 'passthrough tpm added' do
         let(:updated_test_file) { 'default_added_tpm_path.xml' }
         let(:vagrantfile_providerconfig) do
           <<-EOF
@@ -61,7 +72,90 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
         it 'should modify the domain tpm_path' do
           expect(libvirt_domain).to receive(:undefine)
-          expect(logger).to receive(:debug).with('tpm created from previously not defined')
+          expect(logger).to receive(:debug).with('tpm config changed')
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'emulated tpm added' do
+        let(:updated_test_file) { 'default_added_tpm_version.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_type = 'emulator'
+          libvirt.tpm_model = 'tpm-crb'
+          libvirt.tpm_version = '2.0'
+          EOF
+        end
+
+        it 'should modify the domain tpm_path' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('tpm config changed')
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'same passthrough tpm config' do
+        let(:test_file) { 'default_added_tpm_path.xml' }
+        let(:updated_test_file) { 'default_added_tpm_path.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_path = '/dev/tpm0'
+          libvirt.tpm_type = 'passthrough'
+          libvirt.tpm_model = 'tpm-tis'
+          EOF
+        end
+
+        it 'should execute without changing' do
+          expect(logger).to_not receive(:debug)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'same emulated tpm config' do
+        let(:test_file) { 'default_added_tpm_version.xml' }
+        let(:updated_test_file) { 'default_added_tpm_version.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_type = 'emulator'
+          libvirt.tpm_model = 'tpm-crb'
+          libvirt.tpm_version = '2.0'
+          EOF
+        end
+
+        it 'should execute without changing' do
+          expect(logger).to_not receive(:debug)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'change from passthrough to emulated' do
+        let(:test_file) { 'default_added_tpm_path.xml' }
+        let(:updated_test_file) { 'default_added_tpm_version.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.tpm_type = 'emulator'
+          libvirt.tpm_model = 'tpm-crb'
+          libvirt.tpm_version = '2.0'
+          EOF
+        end
+
+        it 'should modify the domain' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('tpm config changed')
           expect(servers).to receive(:create).with(xml: updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
