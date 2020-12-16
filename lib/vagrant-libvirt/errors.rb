@@ -29,12 +29,12 @@ module VagrantPlugins
         error_key(:creating_storage_pool_error)
       end
 
-      class CreatingVolumeError < VagrantLibvirtError
-        error_key(:creating_volume_error)
-      end
-
       class ImageUploadError < VagrantLibvirtError
         error_key(:image_upload_error)
+      end
+
+      class ImageDownloadError < VagrantLibvirtError
+        error_key(:image_download_error)
       end
 
       # Box exceptions
