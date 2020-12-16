@@ -50,7 +50,7 @@ module VagrantPlugins
           # remove hw association with interface
           # working for centos with lvs default disks
           options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
-          operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir')
+          operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir,-customize')
           `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
           # add any user provided file
           extra = ''
