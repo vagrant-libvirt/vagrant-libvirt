@@ -27,7 +27,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
       allow(connection).to receive(:servers).and_return(servers)
       allow(servers).to receive(:get).and_return(domain)
+
       expect(logger).to receive(:info)
+      expect(ui).to_not receive(:error)
     end
 
     context 'default config' do
@@ -157,6 +159,67 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           expect(libvirt_domain).to receive(:undefine)
           expect(logger).to receive(:debug).with('tpm config changed')
           expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+    end
+
+    context 'clock_timers' do
+      let(:test_file) { 'clock_timer_rtc.xml' }
+
+      before do
+        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
+
+        allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
+        allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
+      end
+
+      context 'timers unchanged' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.clock_timer(:name => "rtc")
+          EOF
+        end
+
+        it 'should not modify the domain' do
+          expect(logger).to_not receive(:debug).with('clock timers config changed')
+          expect(servers).to_not receive(:create)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'timers added' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.clock_timer(:name => "rtc")
+          libvirt.clock_timer(:name => "tsc")
+          EOF
+        end
+
+        it 'should modify the domain' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('clock timers config changed')
+          expect(servers).to receive(:create).with(xml: match(/<clock offset='utc'>\s*<timer name='rtc'\/>\s*<timer name='tsc'\/>\s*<\/clock>/))
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'timers removed' do
+        let(:updated_test_file) { 'default.xml' }
+
+        it 'should modify the domain' do
+          expect(libvirt_domain).to receive(:undefine)
+          expect(logger).to receive(:debug).with('clock timers config changed')
+          expect(servers).to receive(:create).with(xml: match(/<clock offset='utc'>\s*<\/clock>/))
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 

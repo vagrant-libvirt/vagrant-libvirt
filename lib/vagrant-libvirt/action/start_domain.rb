@@ -37,6 +37,9 @@ module VagrantPlugins
               xml_descr = REXML::Document.new descr
               descr_changed = false
 
+              # For outputting XML for comparison
+              formatter = REXML::Formatters::Pretty.new
+
               # additional disk bus
               config.disks.each do |disk|
                 device = disk[:device]
@@ -149,6 +152,34 @@ module VagrantPlugins
                   cpu.elements.each do |elem|
                     cpu.delete_element(elem)
                   end
+                end
+              end
+
+              # Clock
+              clock = REXML::XPath.first(xml_descr, '/domain/clock')
+              if clock.attributes['offset'] != config.clock_offset
+                @logger.debug "clock offset changed"
+                descr_changed = true
+                clock.attributes['offset'] = config.clock_offset
+              end
+
+              # clock timers - because timers can be added/removed, just rebuild and then compare
+              if !config.clock_timers.empty? || clock.has_elements?
+                oldclock = ''
+                formatter.write(REXML::XPath.first(xml_descr, '/domain/clock'), oldclock)
+                clock.delete_element('//timer')
+                config.clock_timers.each do |clock_timer|
+                  timer = REXML::Element.new('timer', clock)
+                  clock_timer.each do |attr, value|
+                    timer.attributes[attr.to_s] = value
+                  end
+                end
+
+                newclock = ''
+                formatter.write(clock, newclock)
+                unless newclock.eql? oldclock
+                  @logger.debug "clock timers config changed"
+                  descr_changed = true
                 end
               end
 
