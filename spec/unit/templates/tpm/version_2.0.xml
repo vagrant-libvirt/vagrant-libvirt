@@ -7,8 +7,8 @@
   <vcpu>1</vcpu>
 
 
-  <cpu mode='custom'>
-      <model fallback='allow'>SandyBridge</model>
+  <cpu mode='host-model'>
+      <model fallback='allow'></model>
   </cpu>
 
 
@@ -44,6 +44,10 @@
       </video>
 
 
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0'>
+      </backend>
+    </tpm>
   </devices>
 
 </domain>

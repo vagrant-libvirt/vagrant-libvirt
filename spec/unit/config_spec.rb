@@ -6,12 +6,229 @@ require 'vagrant-libvirt/config'
 describe VagrantPlugins::ProviderLibvirt::Config do
   include_context 'unit'
 
+  let(:fake_env) { Hash.new }
+
+  describe '#clock_timer' do
+    it 'should handle all options' do
+      expect(
+        subject.clock_timer(
+          :name => 'rtc',
+          :track => 'wall',
+          :tickpolicy => 'delay',
+          :present => 'yes',
+        ).length
+      ).to be(1)
+      expect(
+        subject.clock_timer(
+          :name => 'tsc',
+          :tickpolicy => 'delay',
+          :frequency => '100',
+          :mode => 'auto',
+          :present => 'yes',
+        ).length
+      ).to be(2)
+    end
+
+    it 'should correctly save the options' do
+      opts = {:name => 'rtc', :track => 'wall'}
+      expect(subject.clock_timer(opts).length).to be(1)
+
+      expect(subject.clock_timers[0]).to eq(opts)
+
+      opts[:name] = 'tsc'
+      expect(subject.clock_timers[0]).to_not eq(opts)
+    end
+
+    it 'should error name option is missing' do
+      expect{ subject.clock_timer(:track => "wall") }.to raise_error("Clock timer name must be specified")
+    end
+
+    it 'should error if nil value for option supplied' do
+      expect{ subject.clock_timer(:name => "rtc", :track => nil) }.to raise_error("Value of timer option track is nil")
+    end
+
+    it 'should error if unrecognized option specified' do
+      expect{ subject.clock_timer(:name => "tsc", :badopt => "value") }.to raise_error("Unknown clock timer option: badopt")
+    end
+  end
+
+  describe '#finalize!' do
+    it 'is valid with defaults' do
+      subject.finalize!
+    end
+
+    context '@uri' do
+      before(:example) do
+        stub_const("ENV", fake_env)
+      end
+
+      context 'when LIBVIRT_DEFAULT_URI is defined' do
+        it 'should always use this value' do
+          fake_env['LIBVIRT_DEFAULT_URI'] = "custom:///custom_path"
+
+          subject.finalize!
+          expect(subject.uri).to eq("custom:///custom_path")
+          expect(subject.qemu_use_session).to eq(false)
+        end
+
+        context 'when LIBVIRT_DEFAULT_URI contains "qemu"' do
+          [
+            [
+              'set qemu_use_session if "session" present',
+              'qemu:///session',
+              true,
+            ],
+            [
+              'handle different protocol additions',
+              'qemu+ssh:///session',
+              true,
+            ],
+            [
+              'handle options before and after path',
+              'qemu://remote/session?keyfile=my_id_rsa',
+              true,
+            ],
+            [
+              'identify when session not set',
+              'qemu://remote/system',
+              false,
+            ],
+            [
+              'handle session appearing elsewhere',
+              'qemu://remote/system?keyfile=my_session_id',
+              false,
+            ],
+          ].each do |title, uri, session|
+            it "should #{title}" do
+              fake_env['LIBVIRT_DEFAULT_URI'] = uri
+
+              subject.finalize!
+              expect(subject.uri).to eq(uri)
+              expect(subject.qemu_use_session).to eq(session)
+            end
+          end
+        end
+      end
+
+      context 'when @driver is defined' do
+        defaults = {'id_ssh_key_file' => nil}
+        [
+          [
+            {'driver' => 'kvm'},
+            'qemu:///system?no_verify=1',
+            false,
+          ],
+          [
+            {'driver' => 'qemu'},
+            'qemu:///system?no_verify=1',
+            false,
+          ],
+          [
+            {'driver' => 'qemu', 'qemu_use_session' => true},
+            'qemu:///session?no_verify=1',
+            true,
+          ],
+          [
+            {'driver' => 'openvz'},
+            'openvz:///system?no_verify=1',
+            false,
+          ],
+          [
+            {'driver' => 'vbox'},
+            'vbox:///session?no_verify=1',
+            false,
+          ],
+        ].each do |inputs, output_uri, output_session|
+          it "should detect #{inputs}" do
+            inputs.merge(defaults).each do |k, v|
+              subject.instance_variable_set("@#{k}", v)
+            end
+
+            subject.finalize!
+            expect(subject.uri).to eq(output_uri)
+            expect(subject.qemu_use_session).to eq(output_session)
+          end
+        end
+
+        it "should raise exception for unrecognized" do
+          subject.driver = "bad-driver"
+
+          expect { subject.finalize! }.to raise_error("Require specify driver bad-driver")
+        end
+      end
+
+      context 'when @connect_via_ssh defined' do
+        defaults = {'driver' => 'qemu', 'id_ssh_key_file' => nil}
+        [
+          [
+            {'connect_via_ssh' => true},
+            'qemu+ssh://localhost/system?no_verify=1',
+          ],
+          [
+            {'connect_via_ssh' => true, 'username' => 'my_user'},
+            'qemu+ssh://my_user@localhost/system?no_verify=1',
+          ],
+          [
+            {'connect_via_ssh' => true, 'host' => 'remote_server'},
+            'qemu+ssh://remote_server/system?no_verify=1',
+          ],
+        ].each do |inputs, output_uri|
+          it "should detect #{inputs}" do
+            inputs.merge(defaults).each do |k, v|
+              subject.instance_variable_set("@#{k}", v)
+            end
+
+            subject.finalize!
+            expect(subject.uri).to eq(output_uri)
+          end
+        end
+      end
+
+      context 'when @id_ssh_key_file defined' do
+        defaults = {'driver' => 'qemu'}
+        [
+          [
+            {},
+            'qemu:///system?no_verify=1&keyfile=/home/user/.ssh/id_rsa',
+          ],
+          [
+            {'id_ssh_key_file' => '/path/to/keyfile'},
+            'qemu:///system?no_verify=1&keyfile=/path/to/keyfile',
+          ],
+        ].each do |inputs, output_uri|
+          it "should detect #{inputs}" do
+            inputs.merge(defaults).each do |k, v|
+              subject.instance_variable_set("@#{k}", v)
+            end
+
+            fake_env['HOME'] = '/home/user'
+
+            subject.finalize!
+            expect(subject.uri).to eq(output_uri)
+          end
+        end
+      end
+
+      context 'when @socket defined' do
+        it "should detect @socket set" do
+          subject.socket = '/var/run/libvirt/libvirt-sock'
+          subject.id_ssh_key_file = false
+
+          subject.finalize!
+          expect(subject.uri).to eq('qemu:///system?no_verify=1&socket=/var/run/libvirt/libvirt-sock')
+        end
+      end
+    end
+  end
+
   def assert_invalid
+    subject.finalize!
     errors = subject.validate(machine)
     raise "No errors: #{errors.inspect}" if errors.values.all?(&:empty?)
   end
 
   def assert_valid
+    subject.finalize!
     errors = subject.validate(machine)
     raise "Errors: #{errors.inspect}" unless errors.values.all?(&:empty?)
   end
@@ -107,6 +324,16 @@ describe VagrantPlugins::ProviderLibvirt::Config do
                                               include(dev: 'hdb'))
           end
         end
+      end
+    end
+
+    context 'clock_timers' do
+      it 'should merge clock_timers' do
+        one.clock_timer(:name => 'rtc', :tickpolicy => 'catchup')
+        two.clock_timer(:name => 'hpet', :present => 'no')
+
+        expect(subject.clock_timers).to include(include(name: 'rtc'),
+                                                include(name: 'hpet'))
       end
     end
   end

@@ -67,18 +67,25 @@ module VagrantPlugins
       attr_accessor :default_prefix
 
       # Domain specific settings used while creating new domain.
+      attr_accessor :title
+      attr_accessor :description
       attr_accessor :uuid
       attr_accessor :memory
+      attr_accessor :nodeset
       attr_accessor :memory_backing
       attr_accessor :channel
       attr_accessor :cpus
+      attr_accessor :cpuset
       attr_accessor :cpu_mode
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
       attr_accessor :cpu_topology
+      attr_accessor :shares
       attr_accessor :features
       attr_accessor :features_hyperv
+      attr_accessor :clock_offset
+      attr_accessor :clock_timers
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -113,6 +120,13 @@ module VagrantPlugins
       attr_accessor :tpm_model
       attr_accessor :tpm_type
       attr_accessor :tpm_path
+      attr_accessor :tpm_version
+
+      # Configure the memballoon
+      attr_accessor :memballoon_enabled
+      attr_accessor :memballoon_model
+      attr_accessor :memballoon_pci_bus
+      attr_accessor :memballoon_pci_slot
 
       # Sets the max number of NICs that can be created
       # Default set to 8. Don't change the default unless you know
@@ -163,6 +177,9 @@ module VagrantPlugins
       # Additional qemuargs arguments
       attr_accessor :qemu_args
 
+      # Additional qemuenv arguments
+      attr_accessor :qemu_env
+
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
@@ -192,17 +209,24 @@ module VagrantPlugins
         @system_uri      = UNSET_VALUE
 
         # Domain specific settings.
+        @title             = UNSET_VALUE
+        @description       = UNSET_VALUE
         @uuid              = UNSET_VALUE
         @memory            = UNSET_VALUE
+        @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
         @cpus              = UNSET_VALUE
+        @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
+        @shares            = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
+        @clock_offset      = UNSET_VALUE
+        @clock_timers      = []
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -234,6 +258,12 @@ module VagrantPlugins
         @tpm_model         = UNSET_VALUE
         @tpm_type          = UNSET_VALUE
         @tpm_path          = UNSET_VALUE
+        @tpm_version       = UNSET_VALUE
+
+        @memballoon_enabled = UNSET_VALUE
+        @memballoon_model   = UNSET_VALUE
+        @memballoon_pci_bus = UNSET_VALUE
+        @memballoon_pci_slot = UNSET_VALUE
 
         @nic_adapter_count = UNSET_VALUE
 
@@ -280,7 +310,12 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach       = UNSET_VALUE
 
-        @qemu_args  = []
+        # Additional QEMU commandline arguments
+        @qemu_args         = UNSET_VALUE
+
+        # Additional QEMU commandline environment variables
+        @qemu_env          = UNSET_VALUE
+
         @qemu_use_session  = UNSET_VALUE
       end
 
@@ -357,7 +392,29 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
-        @features_hyperv = [{name: options[:name], state: options[:state]}]  if @features_hyperv == UNSET_VALUE
+        @features_hyperv = []  if @features_hyperv == UNSET_VALUE
+
+        @features_hyperv.push(name: options[:name],
+                              state: options[:state])
+      end
+
+      def clock_timer(options = {})
+        if options[:name].nil?
+          raise 'Clock timer name must be specified'
+        end
+
+        options.each do |key, value|
+          case key
+            when :name, :track, :tickpolicy, :frequency, :mode, :present
+              if value.nil?
+                raise "Value of timer option #{key} is nil"
+              end
+            else
+              raise "Unknown clock timer option: #{key}"
+          end
+        end
+
+        @clock_timers.push(options.dup)
       end
 
       def cputopology(options = {})
@@ -439,7 +496,14 @@ module VagrantPlugins
 
         @pcis = [] if @pcis == UNSET_VALUE
 
-        @pcis.push(bus:       options[:bus],
+        if options[:domain].nil?
+          pci_domain = '0x0000'
+        else
+          pci_domain = options[:domain]
+        end
+
+        @pcis.push(domain:    pci_domain,
+                   bus:       options[:bus],
                    slot:      options[:slot],
                    function:  options[:function])
       end
@@ -588,24 +652,41 @@ module VagrantPlugins
           io: options[:io],
           copy_on_read: options[:copy_on_read],
           discard: options[:discard],
-          detect_zeroes: options[:detect_zeroes]
+          detect_zeroes: options[:detect_zeroes],
+          pool: options[:pool], # overrides storage_pool setting for additional disks
+          wwn: options[:wwn],
         }
 
         @disks << disk # append
       end
 
       def qemuargs(options = {})
+        @qemu_args = [] if @qemu_args == UNSET_VALUE
+
         @qemu_args << options if options[:value]
       end
 
-      # code to generate URI from a config moved out of the connect action
-      def _generate_uri
+      def qemuenv(options = {})
+        @qemu_env = {} if @qemu_env == UNSET_VALUE
+
+        @qemu_env.merge!(options)
+      end
+
+      # code to generate URI from from either the LIBVIRT_URI environment
+      # variable or a config moved out of the connect action
+      def _generate_uri(qemu_use_session)
+
+        # If the LIBVIRT_DEFAULT_URI var is set, we'll use that
+        if ENV.fetch('LIBVIRT_DEFAULT_URI', '') != ""
+          return ENV['LIBVIRT_DEFAULT_URI']
+        end
+
         # builds the Libvirt connection URI from the given driver config
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
                     when 'qemu', 'kvm'
-                      @qemu_use_session ? '/session' : '/system'
+                      qemu_use_session ? '/session' : '/system'
                     when 'openvz', 'uml', 'phyp', 'parallels'
                       '/system'
                     when '@en', 'esx'
@@ -623,29 +704,35 @@ module VagrantPlugins
           uri << '+ssh://'
           uri << @username + '@' if @username
 
-          uri << if @host
-                   @host
-                 else
-                   'localhost'
-                 end
+          uri << ( @host ? @host : 'localhost' )
         else
           uri << '://'
           uri << @host if @host
         end
 
         uri << virt_path
-        uri << '?no_verify=1'
+
+        params = {'no_verify' => '1'}
 
         if @id_ssh_key_file
           # set ssh key for access to Libvirt host
-          uri << "\&keyfile="
           # if no slash, prepend $HOME/.ssh/
-          @id_ssh_key_file.prepend("#{`echo ${HOME}`.chomp}/.ssh/") if @id_ssh_key_file !~ /\A\//
-          uri << @id_ssh_key_file
+          @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
+          params['keyfile'] = @id_ssh_key_file
         end
         # set path to Libvirt socket
-        uri << "\&socket=" + @socket if @socket
+        params['socket'] = @socket if @socket
+
+        uri << "?" + params.map{|pair| pair.join('=')}.join('&')
         uri
+      end
+
+      def _parse_uri(uri)
+        begin
+          URI.parse(uri)
+        rescue
+          raise "@uri set to invalid uri '#{uri}'"
+        end
       end
 
       def finalize!
@@ -656,7 +743,7 @@ module VagrantPlugins
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
-        @snapshot_pool_name = 'default' if @snapshot_pool_name == UNSET_VALUE
+        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
         @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
@@ -671,16 +758,31 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
-        @qemu_use_session = false if @qemu_use_session == UNSET_VALUE
+        # If uri isn't set then let's build one from various sources.
+        # Default to passing false for qemu_use_session if it's not set.
+        if @uri == UNSET_VALUE
+          @uri = _generate_uri(@qemu_use_session == UNSET_VALUE ? false : @qemu_use_session)
+        end
 
-        # generate a URI if none is supplied
-        @uri = _generate_uri if @uri == UNSET_VALUE
+        # Set qemu_use_session based on the URI if it wasn't set by the user
+        if @qemu_use_session == UNSET_VALUE
+          uri = _parse_uri(@uri)
+          if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
+            @qemu_use_session = true
+          else
+            @qemu_use_session = false
+          end
+        end
 
         # Domain specific settings.
+        @title = '' if @title == UNSET_VALUE
+        @description = '' if @description == UNSET_VALUE
         @uuid = '' if @uuid == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
+        @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
+        @cpuset = nil if @cpuset == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
                        'qemu64'
@@ -692,8 +794,11 @@ module VagrantPlugins
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
         @cpu_features = [] if @cpu_features == UNSET_VALUE
+        @shares = nil if @shares == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
+        @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
+        @clock_timers = [] if @clock_timers == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
@@ -727,6 +832,11 @@ module VagrantPlugins
         @tpm_model = 'tpm-tis' if @tpm_model == UNSET_VALUE
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
+        @tpm_version = nil if @tpm_version == UNSET_VALUE
+        @memballoon_enabled = nil if @memballoon_enabled == UNSET_VALUE
+        @memballoon_model = 'virtio' if @memballoon_model == UNSET_VALUE
+        @memballoon_pci_bus = '0x00' if @memballoon_pci_bus == UNSET_VALUE
+        @memballoon_pci_slot = '0x0f' if @memballoon_pci_slot == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 
@@ -782,11 +892,23 @@ module VagrantPlugins
         # Attach mgmt network
         @mgmt_attach = true if @mgmt_attach == UNSET_VALUE
 
+        # Additional QEMU commandline arguments
         @qemu_args = [] if @qemu_args == UNSET_VALUE
+
+        # Additional QEMU commandline environment variables
+        @qemu_env = {} if @qemu_env == UNSET_VALUE
       end
 
       def validate(machine)
         errors = _detected_errors
+
+        # The @uri and @qemu_use_session should not conflict
+        uri = _parse_uri(@uri)
+        if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
+          if @qemu_use_session != true
+            errors << "the URI and qemu_use_session configuration conflict: uri:'#{@uri}' qemu_use_session:'#{@qemu_use_session}'"
+          end
+        end
 
         machine.provider_config.disks.each do |disk|
           if disk[:path] && (disk[:path][0] == '/')
@@ -828,6 +950,14 @@ module VagrantPlugins
           result.cdroms = c
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
+          
+          c = clock_timers.dup
+          c += other.clock_timers
+          result.clock_timers = c
+
+          c = qemu_env != UNSET_VALUE ? qemu_env.dup : {}
+          c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
+          result.qemu_env = c
         end
       end
     end

@@ -11,6 +11,10 @@ usage() {
     echo "Usage: ${0} IMAGE [BOX] [Vagrantfile.add]"
     echo
     echo "Package a qcow2 image into a vagrant-libvirt reusable box"
+    echo ""
+    echo "If packaging from a Vagrant machine ensure 'config.ssh.insert_key = false' was "
+    echo "set in the original Vagrantfile to avoid removal of the default ssh key, "
+    echo "otherwise vagrant will not be able to connect to machines created from this box"
 }
 
 # Print the image's backing file
@@ -118,7 +122,12 @@ EOF
 
 echo "==> Creating box, tarring and gzipping"
 
-tar cvzf "$BOX" -S --totals ./metadata.json ./Vagrantfile ./box.img
+if type pigz >/dev/null 2>/dev/null; then
+  GZ="pigz"
+else
+  GZ="gzip"
+fi
+tar cv -S --totals ./metadata.json ./Vagrantfile ./box.img | $GZ -c > "$BOX"
 
 # if box is in tmpdir move it to CWD before removing tmpdir
 if ! isabspath "$BOX"; then
