@@ -104,7 +104,11 @@
     </hyperv>
     <% end %>
   </features>
-  <clock offset='utc'/>
+  <clock offset='<%= @clock_offset %>'>
+  <% @clock_timers.each do |clock_timer| %>
+    <timer<% clock_timer.each do |attr, value| %> <%= attr %>='<%= value %>'<% end %>/>
+  <% end %>
+  </clock>
   <devices>
     <% if @emulator_path %>
     <emulator><%= @emulator_path %></emulator>

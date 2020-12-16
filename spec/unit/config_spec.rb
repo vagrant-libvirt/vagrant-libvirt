@@ -8,6 +8,50 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
   let(:fake_env) { Hash.new }
 
+  describe '#clock_timer' do
+    it 'should handle all options' do
+      expect(
+        subject.clock_timer(
+          :name => 'rtc',
+          :track => 'wall',
+          :tickpolicy => 'delay',
+          :present => 'yes',
+        ).length
+      ).to be(1)
+      expect(
+        subject.clock_timer(
+          :name => 'tsc',
+          :tickpolicy => 'delay',
+          :frequency => '100',
+          :mode => 'auto',
+          :present => 'yes',
+        ).length
+      ).to be(2)
+    end
+
+    it 'should correctly save the options' do
+      opts = {:name => 'rtc', :track => 'wall'}
+      expect(subject.clock_timer(opts).length).to be(1)
+
+      expect(subject.clock_timers[0]).to eq(opts)
+
+      opts[:name] = 'tsc'
+      expect(subject.clock_timers[0]).to_not eq(opts)
+    end
+
+    it 'should error name option is missing' do
+      expect{ subject.clock_timer(:track => "wall") }.to raise_error("Clock timer name must be specified")
+    end
+
+    it 'should error if nil value for option supplied' do
+      expect{ subject.clock_timer(:name => "rtc", :track => nil) }.to raise_error("Value of timer option track is nil")
+    end
+
+    it 'should error if unrecognized option specified' do
+      expect{ subject.clock_timer(:name => "tsc", :badopt => "value") }.to raise_error("Unknown clock timer option: badopt")
+    end
+  end
+
   describe '#finalize!' do
     it 'is valid with defaults' do
       subject.finalize!
@@ -280,6 +324,16 @@ describe VagrantPlugins::ProviderLibvirt::Config do
                                               include(dev: 'hdb'))
           end
         end
+      end
+    end
+
+    context 'clock_timers' do
+      it 'should merge clock_timers' do
+        one.clock_timer(:name => 'rtc', :tickpolicy => 'catchup')
+        two.clock_timer(:name => 'hpet', :present => 'no')
+
+        expect(subject.clock_timers).to include(include(name: 'rtc'),
+                                                include(name: 'hpet'))
       end
     end
   end

@@ -1,0 +1,50 @@
+<domain xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0' type=''>
+  <name/>
+  <title/>
+  <description/>
+  <uuid/>
+  <memory/>
+  <vcpu>1</vcpu>
+
+
+  <cpu mode='host-model'>
+      <model fallback='allow'/>
+  </cpu>
+
+
+  <os>
+        <type>hvm</type>
+    <kernel/>
+    <initrd/>
+    <cmdline/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'>
+    <timer name='rtc'/>
+  </clock>
+  <devices>
+
+
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target port='0'/>
+    </console>
+
+
+    <input bus='ps2' type='mouse'/>
+
+      <graphics autoport='yes' keymap='en-us' listen='127.0.0.1' port='-1' type='vnc'/>
+      <video>
+        <model heads='1' type='cirrus' vram='9216'/>
+      </video>
+
+
+  </devices>
+
+</domain>

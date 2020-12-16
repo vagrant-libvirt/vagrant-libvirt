@@ -42,6 +42,8 @@ module VagrantPlugins
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @clock_offset = config.clock_offset
+          @clock_timers = config.clock_timers
           @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
@@ -225,6 +227,10 @@ module VagrantPlugins
           end
           @features_hyperv.each do |feature|
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
+          end
+          env[:ui].info(" -- Clock offset:      #{@clock_offset}")
+          @clock_timers.each do |timer|
+            env[:ui].info(" -- Clock timer:       #{timer.map { |k,v| "#{k}=#{v}"}.join(', ')}")
           end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           unless @nodeset.nil?

@@ -23,7 +23,8 @@
     <apic/>
     <pae/>
   </features>
-  <clock offset='utc'/>
+  <clock offset='utc'>
+  </clock>
   <devices>
 
 

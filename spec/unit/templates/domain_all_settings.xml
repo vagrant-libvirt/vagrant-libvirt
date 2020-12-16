@@ -36,7 +36,10 @@
       <BBB state='on' />
     </hyperv>
   </features>
-  <clock offset='utc'/>
+  <clock offset='variable'>
+    <timer name='t1'/>
+    <timer name='t2' track='b' tickpolicy='c' frequency='d' mode='e' present='yes'/>
+  </clock>
   <devices>
     <emulator>/usr/bin/kvm-spice</emulator>
     <disk type='file' device='disk'>
