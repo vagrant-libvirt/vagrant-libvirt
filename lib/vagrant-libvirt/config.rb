@@ -225,7 +225,7 @@ module VagrantPlugins
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
         @clock_offset      = UNSET_VALUE
-        @clock_timers      = UNSET_VALUE
+        @clock_timers      = []
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -408,17 +408,11 @@ module VagrantPlugins
                 raise "Value of timer option #{key} is nil"
               end
             else
-                raise "Unknown clock timer option: #{key}"
+              raise "Unknown clock timer option: #{key}"
           end
         end
 
-        @clock_timers = [] if @clock_timers == UNSET_VALUE
-        options2 = {}
-        options.each do |key, value|
-          options2[key] = value
-        end
-
-        @clock_timers.push(options2)
+        @clock_timers.push(options.dup)
       end
 
       def cputopology(options = {})
@@ -933,6 +927,10 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          c = clock_timers.dup
+          c += other.clock_timers
+          result.clock_timers = c
 
           c = qemu_env != UNSET_VALUE ? qemu_env.dup : {}
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
