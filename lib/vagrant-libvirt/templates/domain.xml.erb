@@ -104,15 +104,11 @@
     </hyperv>
     <% end %>
   </features>
-<% if @clock_timers.empty? %>
-  <clock offset='<%= @clock_offset %>'/>
-<% else %>
   <clock offset='<%= @clock_offset %>'>
-  <% @clock_timers.each do |timer| %>
-    <timer name='<%= timer[:name] %>'<% if !timer[:track].nil? %> track='<%= timer[:track] %>'<% end %><% if !timer[:tickpolicy].nil? %> tickpolicy='<%= timer[:tickpolicy] %>'<% end %><% if !timer[:frequency].nil? %> frequency='<%= timer[:frequency] %>'<% end %><% if !timer[:mode].nil? %> mode='<%= timer[:mode] %>'<% end %><% if !timer[:present].nil? %> present='<%= timer[:present] %>'<% end %> />
+  <% @clock_timers.each do |clock_timer| %>
+    <timer<% clock_timer.each do |attr, value| %> <%= attr %>='<%= value %>'<% end %>/>
   <% end %>
   </clock>
-<% end %>
   <devices>
     <% if @emulator_path %>
     <emulator><%= @emulator_path %></emulator>
