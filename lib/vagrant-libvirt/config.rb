@@ -84,6 +84,8 @@ module VagrantPlugins
       attr_accessor :shares
       attr_accessor :features
       attr_accessor :features_hyperv
+      attr_accessor :clock_offset
+      attr_accessor :clock_timers
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -93,9 +95,10 @@ module VagrantPlugins
       attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :disk_device
+      attr_accessor :disk_driver_opts
       attr_accessor :nic_model_type
       attr_accessor :nested
-      attr_accessor :volume_cache
+      attr_accessor :volume_cache # deprecated, kept for backwards compatibility; use disk_driver
       attr_accessor :kernel
       attr_accessor :cmd_line
       attr_accessor :initrd
@@ -222,6 +225,8 @@ module VagrantPlugins
         @shares            = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
+        @clock_offset      = UNSET_VALUE
+        @clock_timers      = []
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -230,6 +235,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
+        @disk_driver_opts  = {}
         @nic_model_type    = UNSET_VALUE
         @nested            = UNSET_VALUE
         @volume_cache      = UNSET_VALUE
@@ -390,6 +396,25 @@ module VagrantPlugins
 
         @features_hyperv.push(name: options[:name],
                               state: options[:state])
+      end
+
+      def clock_timer(options = {})
+        if options[:name].nil?
+          raise 'Clock timer name must be specified'
+        end
+
+        options.each do |key, value|
+          case key
+            when :name, :track, :tickpolicy, :frequency, :mode, :present
+              if value.nil?
+                raise "Value of timer option #{key} is nil"
+              end
+            else
+              raise "Unknown clock timer option: #{key}"
+          end
+        end
+
+        @clock_timers.push(options.dup)
       end
 
       def cputopology(options = {})
@@ -564,6 +589,12 @@ module VagrantPlugins
         @smartcard_dev[:source_service] = options[:source_service] if @smartcard_dev[:type] == 'tcp'
       end
 
+      # Disk driver options for primary disk
+      def disk_driver(options = {})
+        supported_opts = [:cache, :io, :copy_on_read, :discard, :detect_zeroes]
+        @disk_driver_opts = options.select { |k,_| supported_opts.include? k }
+      end
+
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options = {})
         if storage_type == :file
@@ -618,6 +649,10 @@ module VagrantPlugins
           allow_existing: options[:allow_existing],
           shareable: options[:shareable],
           serial: options[:serial],
+          io: options[:io],
+          copy_on_read: options[:copy_on_read],
+          discard: options[:discard],
+          detect_zeroes: options[:detect_zeroes],
           pool: options[:pool], # overrides storage_pool setting for additional disks
           wwn: options[:wwn],
         }
@@ -762,6 +797,8 @@ module VagrantPlugins
         @shares = nil if @shares == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
+        @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
+        @clock_timers = [] if @clock_timers == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
@@ -770,9 +807,10 @@ module VagrantPlugins
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_bus = 'virtio' if @disk_bus == UNSET_VALUE
         @disk_device = 'vda' if @disk_device == UNSET_VALUE
+        @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
-        @volume_cache = 'default' if @volume_cache == UNSET_VALUE
+        @volume_cache = nil if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
         @initrd = '' if @initrd == UNSET_VALUE
@@ -890,6 +928,14 @@ module VagrantPlugins
           end
         end
 
+        if !machine.provider_config.volume_cache.nil? and machine.provider_config.volume_cache != UNSET_VALUE
+          machine.ui.warn("Libvirt Provider: volume_cache is deprecated. Use disk_driver :cache => '#{machine.provider_config.volume_cache}' instead.")
+
+          if !machine.provider_config.disk_driver_opts.empty?
+            machine.ui.warn("Libvirt Provider: volume_cache has no effect when disk_driver is defined.")
+          end
+        end
+
         { 'Libvirt Provider' => errors }
       end
 
@@ -902,6 +948,12 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
+          
+          c = clock_timers.dup
+          c += other.clock_timers
+          result.clock_timers = c
 
           c = qemu_env != UNSET_VALUE ? qemu_env.dup : {}
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE

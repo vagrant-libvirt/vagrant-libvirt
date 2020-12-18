@@ -107,14 +107,22 @@
     </hyperv>
     <% end %>
   </features>
-  <clock offset='utc'/>
+  <clock offset='<%= @clock_offset %>'>
+  <% @clock_timers.each do |clock_timer| %>
+    <timer<% clock_timer.each do |attr, value| %> <%= attr %>='<%= value %>'<% end %>/>
+  <% end %>
+  </clock>
   <devices>
     <% if @emulator_path %>
     <emulator><%= @emulator_path %></emulator>
     <% end %>
     <% if @domain_volume_path %>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
+      <driver name='qemu' type='qcow2' <%=
+        @disk_driver_opts.empty? ? "cache='#{@domain_volume_cache}'" :
+            @disk_driver_opts.reject { |k,v| v.nil? }
+                             .map { |k,v| "#{k}='#{v}'"}
+                             .join(' ') -%>/>
       <source file='<%= @domain_volume_path %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
@@ -123,7 +131,12 @@
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'/>
+      <driver name='qemu' type='<%= d[:type] %>' <%=
+        d.select { |k,_| [:cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
+         .reject { |k,v| v.nil? }
+         .map { |k,v| "#{k}='#{v}'"}
+         .join(' ')
+      -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
       <% if d[:shareable] %>

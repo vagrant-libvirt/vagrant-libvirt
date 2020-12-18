@@ -21,6 +21,7 @@ can help a lot :-)
 * [Using Docker based Installation](#using-docker-based-installation)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+  * [Additional Notes for Fedora and Similar Linux Distributions](#additional-notes-for-fedora-and-similar-linux-distributions)
 * [Vagrant Project Preparation](#vagrant-project-preparation)
   * [Add Box](#add-box)
   * [Create Vagrantfile](#create-vagrantfile)
@@ -48,6 +49,7 @@ can help a lot :-)
 * [Watchdog device](#watchdog-device)
 * [Smartcard device](#smartcard-device)
 * [Hypervisor Features](#hypervisor-features)
+* [Clock](#clock)
 * [CPU features](#cpu-features)
 * [Memory Backing](#memory-backing)
 * [No box and PXE boot](#no-box-and-pxe-boot)
@@ -57,6 +59,7 @@ can help a lot :-)
 * [QEMU Session Support](#qemu-session-support)
 * [Customized Graphics](#customized-graphics)
 * [TPM Devices](#tpm-devices)
+* [Memory balloon](#memory-balloon)
 * [Libvirt communication channels](#libvirt-communication-channels)
 * [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
 * [Box Format](#box-format)
@@ -384,6 +387,14 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
+  NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
+  * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
+  * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
+  * `:copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
+  * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
+    Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
+  * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
@@ -429,10 +440,6 @@ end
   ]
   ```
 * `loader` - Sets path to custom UEFI loader.
-* `volume_cache` - Controls the cache mechanism. Possible values are "default",
-  "none", "writethrough", "writeback", "directsync" and "unsafe". [See
-  driver->cache in Libvirt
-  documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent
@@ -533,7 +540,7 @@ Vagrant.configure("2") do |config|
       domain.memory = 2048
       domain.cpus = 2
       domain.nested = true
-      domain.volume_cache = 'none'
+      domain.disk_driver :cache => 'none'
     end
   end
 
@@ -843,11 +850,6 @@ It has a number of options:
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
-* `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see
-  the [libvirt documentation for possible
-  values](http://libvirt.org/formatdomain.html#elementsDisks) or
-  [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html)
-  for a fuller explanation). Defaults to *default*.
 * `allow_existing` - Set to true if you want to allow the VM to use a
   pre-existing disk. If the disk doesn't exist it will be created.
   Disks with this option set to true need to be removed manually.
@@ -855,13 +857,25 @@ It has a number of options:
 * `serial` - Serial number of the disk device.
 * `wwn` - WWN number of the disk device.
 
+The following disk performance options can also be configured
+(see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks)
+or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation).
+In all cases, the options use the hypervisor default if not specified, or if set to `nil`.
+
+* `cache` - Cache mode to use. Value may be `default`, `none`, `writeback`, `writethrough`, `directsync` or `unsafe`.
+* `io` - Controls specific policies on I/O. Value may be `threads` or `native`.
+* `copy_on_read` - Controls whether to copy read backing file into the image file. Value may be `on` or `off`.
+* `discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Value may be `unmap` or `ignore`.
+  Note: for discard to work, you will likely also need to set `:bus => 'scsi'`
+* `detect_zeroes` - Controls whether to detect zero write requests. Value may be `off`, `on` or `unmap`.
+
 The following example creates two additional disks.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
-    libvirt.storage :file, :size => '40G', :type => 'raw'
+    libvirt.storage :file, :size => '40G', :bus => 'scsi', :type => 'raw', :discard => 'unmap', :detect_zeroes => 'on'
   end
 end
 ```
@@ -1179,6 +1193,27 @@ Vagrant.configure("2") do |config|
     libvirt.hyperv_feature :name => 'relaxed', :state => 'on'
     # Enable virtual APIC
     libvirt.hyperv_feature :name => 'vapic', :state => 'on'
+  end
+end
+```
+
+## Clock
+
+Clock offset can be specified via `libvirt.clock_offset`. (Default is utc)
+
+Additionally timers can be specified via `libvirt.clock_timer`.
+Available options for timers are: name, track, tickpolicy, frequency, mode,  present
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Set clock offset to localtime
+    libvirt.clock_offset = 'localtime'
+    # Timers ...
+    libvirt.clock_timer :name => 'rtc', :tickpolicy => 'catchup'
+    libvirt.clock_timer :name => 'pit', :tickpolicy => 'delay'
+    libvirt.clock_timer :name => 'hpet', :present => 'no'
+    libvirt.clock_timer :name => 'hypervclock', :present => 'yes'
   end
 end
 ```

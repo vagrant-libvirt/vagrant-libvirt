@@ -42,6 +42,8 @@ module VagrantPlugins
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @clock_offset = config.clock_offset
+          @clock_timers = config.clock_timers
           @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
@@ -53,11 +55,12 @@ module VagrantPlugins
           @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
           @disk_device = config.disk_device
+          @disk_driver_opts = config.disk_driver_opts
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
           @management_network_mac = config.management_network_mac
-          @domain_volume_cache = config.volume_cache
+          @domain_volume_cache = config.volume_cache || 'default'
           @kernel = config.kernel
           @cmd_line = config.cmd_line
           @emulator_path = config.emulator_path
@@ -226,6 +229,10 @@ module VagrantPlugins
           @features_hyperv.each do |feature|
             env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
           end
+          env[:ui].info(" -- Clock offset:      #{@clock_offset}")
+          @clock_timers.each do |timer|
+            env[:ui].info(" -- Clock timer:       #{timer.map { |k,v| "#{k}=#{v}"}.join(', ')}")
+          end
           env[:ui].info(" -- Memory:            #{@memory_size / 1024}M")
           unless @nodeset.nil?
             env[:ui].info(" -- Nodeset:           #{@nodeset}")
@@ -244,7 +251,13 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
-          env[:ui].info(" -- Volume Cache:      #{@domain_volume_cache}")
+
+          if not @disk_driver_opts.empty?
+            env[:ui].info(" -- Disk driver opts:  #{@disk_driver_opts.reject { |k,v| v.nil? }.map { |k,v| "#{k}='#{v}'"}.join(' ')}")
+          else
+            env[:ui].info(" -- Disk driver opts:  cache='#{@domain_volume_cache}'")
+          end
+
           env[:ui].info(" -- Kernel:            #{@kernel}")
           env[:ui].info(" -- Initrd:            #{@initrd}")
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
