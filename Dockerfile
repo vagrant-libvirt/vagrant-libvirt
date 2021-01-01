@@ -66,6 +66,8 @@ RUN for dir in boxes data tmp; \
 
 FROM base as final
 
+ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+
 COPY --from=build /vagrant /vagrant
 COPY entrypoint.sh /usr/local/bin/
 
