@@ -111,6 +111,12 @@ To get the image:
 docker pull vagrantlibvirt/vagrant-libvirt:latest
 ```
 
+Preparing the docker run, only once:
+
+```bash
+mkdir -p ~/.vagrant.d/{boxes,data,tmp}
+```
+
 Running the image:
 ```bash
 docker run -it --rm \
@@ -119,8 +125,33 @@ docker run -it --rm \
   -v ~/.vagrant.d:/.vagrant.d \
   -v $(pwd):$(pwd) \
   -w $(pwd) \
+  --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
+```
+
+It's possible to define an alias in `~/.bashrc`, for example:
+```bash
+alias vagrant='
+  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
+  docker run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v ~/.vagrant.d:/.vagrant.d \
+    -v $(pwd):$(pwd) \
+    -w $(pwd) \
+    --network host \
+    vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant'
+```
+
+Known issue of Docker based Installation: SSH command option cannot be used, so below command:
+```bash
+vagrant ssh master -c 'ls -la'
+```
+should be call below way:
+```bash
+vagrant ssh master -- 'ls -la'
 ```
 
 Note that if you are connecting to a remote system libvirt, you may omit the
