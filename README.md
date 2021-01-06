@@ -145,15 +145,6 @@ alias vagrant='
     vagrant'
 ```
 
-Known issue of Docker based Installation: SSH command option cannot be used, so below command:
-```bash
-vagrant ssh master -c 'ls -la'
-```
-should be call below way:
-```bash
-vagrant ssh master -- 'ls -la'
-```
-
 Note that if you are connecting to a remote system libvirt, you may omit the
 `-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
 vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you

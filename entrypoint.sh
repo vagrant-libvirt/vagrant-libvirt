@@ -105,4 +105,4 @@ then
     exec gosu ${USER} vagrant help
 fi
 
-exec gosu ${USER} $*
+exec gosu ${USER} "$@"
