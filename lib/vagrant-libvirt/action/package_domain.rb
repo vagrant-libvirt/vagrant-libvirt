@@ -52,6 +52,7 @@ module VagrantPlugins
           options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
           operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir,-customize')
           `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
+          `virt-sparsify --in-place #{@tmp_img}`
           # add any user provided file
           extra = ''
           @tmp_include = @tmp_dir + '/_include'
