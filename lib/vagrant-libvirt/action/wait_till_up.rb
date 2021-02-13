@@ -40,7 +40,7 @@ module VagrantPlugins
               return if env[:interrupted]
 
               # Wait for domain to obtain an ip address
-              env[:ip_address] = env[:machine].provider.driver.get_ipaddress(domain)
+              env[:ip_address] = env[:machine].provider.driver.get_domain_ipaddress(domain)
             end
           end
 

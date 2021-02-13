@@ -12,18 +12,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
   include_context 'libvirt'
   include_context 'unit'
 
+  let (:driver) { double('driver') }
+
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:get_domain).and_return(domain)
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state)
-        .and_return(:running)
+      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Provider).to receive(:driver)
+        .and_return(driver)
+      allow(driver).to receive(:get_domain).and_return(domain)
+      allow(driver).to receive(:state).and_return(:running)
     end
 
     context 'when machine does not exist' do
       before do
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-          .to receive(:get_domain).and_return(nil)
+        allow(driver).to receive(:get_domain).and_return(nil)
       end
 
       it 'raises exception' do
@@ -51,7 +52,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           allow(domain).to receive(:wait_for).and_return(true)
           allow(env).to receive(:[]).and_call_original
           allow(env).to receive(:[]).with(:interrupted).and_return(false, true, true)
-          allow(env).to receive(:[]).with(:ip_address).and_return('192.168.121.2')
+          allow(driver).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
         end
         it 'should exit after getting IP' do
           expect(app).to_not receive(:call)
@@ -71,7 +72,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         allow(domain).to receive(:wait_for).and_return(true)
         allow(env).to receive(:[]).and_call_original
         allow(env).to receive(:[]).with(:interrupted).and_return(false)
-        allow(env).to receive(:[]).with(:ip_address).and_return('192.168.121.2')
+        allow(driver).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
       end
       it 'should call the next hook' do
         expect(app).to receive(:call)
