@@ -9,6 +9,7 @@ name: Ruby
 
 on:
   push:
+    branches: [ $default-branch ]
   pull_request:
 
 jobs:
@@ -47,7 +48,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: ${{ matrix.ruby-version }}
+        ruby-version: ${{ matrix.ruby }}
     - name: Set up rubygems
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
