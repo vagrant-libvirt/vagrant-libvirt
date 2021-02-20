@@ -3,13 +3,13 @@ name: docker-image
 on:
   push:
     branches:
-      - '**'
+      - master
     tags:
       - '*.*.*'
   pull_request:
 
 jobs:
-  main:
+  build-docker-image:
     runs-on: ubuntu-latest
     steps:
       -
