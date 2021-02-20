@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec-expectations", "~> 3.5.0"
   s.add_development_dependency "rspec-mocks", "~> 3.5.0"
   s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov-lcov"
 
   s.add_runtime_dependency 'fog-libvirt', '>= 0.6.0'
   s.add_runtime_dependency 'fog-core', '~> 2.1'

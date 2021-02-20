@@ -1,9 +1,29 @@
 require 'simplecov'
-require 'coveralls'
+require 'simplecov-lcov'
 
-SimpleCov.formatter = Coveralls::SimpleCov::Formatter
+# patch simplecov configuration
+if ! SimpleCov::Configuration.method_defined? :branch_coverage?
+  module SimpleCov
+    module Configuration
+      def branch_coverage?
+        return false
+      end
+    end
+  end
+end
+
+SimpleCov::Formatter::LcovFormatter.config do |config|
+  config.report_with_single_file = true
+  config.single_report_path = 'coverage/lcov.info'
+end
+
+SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new(
+  [
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::LcovFormatter,
+  ]
+)
 SimpleCov.start do
-  enable_coverage :branch if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.5')
   add_filter 'spec/'
 end
 
