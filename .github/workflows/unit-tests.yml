@@ -1,0 +1,73 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
+# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+
+name: Ruby
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_fail }}
+    strategy:
+      matrix:
+        allow_fail: [false]
+        include:
+          - ruby: 2.2.10
+            vagrant: v2.0.4
+          - ruby: 2.3.5
+            vagrant: v2.1.5
+          - ruby: 2.4.10
+            vagrant: v2.2.4
+          - ruby: 2.6.6
+            vagrant: v2.2.14
+          - ruby: 2.6.6
+            vagrant: master
+            allow_fail: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up libvirt
+      run: |
+        sudo apt-get update
+        sudo apt-get install libvirt-dev
+    - uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+    - name: Set up rubygems
+      run: |
+        gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
+        gem update bundler --conservative
+    - name: Run bundler
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+    - name: Run tests
+      run: bundle exec rspec --color --format documentation
+
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
