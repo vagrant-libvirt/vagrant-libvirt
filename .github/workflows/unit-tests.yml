@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.allow_fail }}
     strategy:
+      fail-fast: false
       matrix:
         # need to define one entry with a single entry for each of the options
         # to allow include to expand the matrix correctly.
