@@ -63,7 +63,9 @@ jobs:
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
     - name: Run tests
-      run: bundle exec rspec --color --format documentation
+      run: |
+        bundle exec rspec --color --format documentation
+        ls -la
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
       with:
