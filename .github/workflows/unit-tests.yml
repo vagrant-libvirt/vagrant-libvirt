@@ -22,7 +22,7 @@ jobs:
         # need to define one entry with a single entry for each of the options
         # to allow include to expand the matrix correctly.
         ruby: [2.6.6]
-        vagrant: [master]
+        vagrant: [main]
         allow_fail: [true]
         include:
           - ruby: 2.2.10
