@@ -19,19 +19,24 @@ jobs:
     continue-on-error: ${{ matrix.allow_fail }}
     strategy:
       matrix:
-        allow_fail: [false]
+        # need to define one entry with a single entry for each of the options
+        # to allow include to expand the matrix correctly.
+        ruby: [2.6.6]
+        vagrant: [master]
+        allow_fail: [true]
         include:
           - ruby: 2.2.10
             vagrant: v2.0.4
+            allow_fail: false
           - ruby: 2.3.5
             vagrant: v2.1.5
+            allow_fail: false
           - ruby: 2.4.10
             vagrant: v2.2.4
+            allow_fail: false
           - ruby: 2.6.6
             vagrant: v2.2.14
-          - ruby: 2.6.6
-            vagrant: master
-            allow_fail: true
+            allow_fail: false
 
     steps:
     - uses: actions/checkout@v2
