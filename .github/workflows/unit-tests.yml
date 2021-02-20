@@ -5,7 +5,7 @@
 # This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
 # For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
 
-name: Ruby
+name: CI
 
 on:
   push:
@@ -68,6 +68,7 @@ jobs:
     - name: Run tests
       run: |
         bundle exec rspec --color --format documentation
+        cat ./coverage/lcov.info
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Coveralls Parallel
