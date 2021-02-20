@@ -36,5 +36,3 @@ end
 group :plugins do
   gemspec
 end
-
-gem 'coveralls', require: false

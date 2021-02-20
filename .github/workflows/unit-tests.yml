@@ -58,7 +58,7 @@ jobs:
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
         gem update bundler --conservative
-    - name: Run bundler
+    - name: Run bundler using cached path
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
