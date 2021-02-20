@@ -9,7 +9,8 @@ name: CI
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches:
+      - master
   pull_request:
 
 jobs:
@@ -68,7 +69,6 @@ jobs:
     - name: Run tests
       run: |
         bundle exec rspec --color --format documentation
-        cat ./coverage/lcov.info
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Coveralls Parallel
