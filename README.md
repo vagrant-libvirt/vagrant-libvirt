@@ -266,7 +266,20 @@ If you encounter the following load error when using the vagrant-libvirt plugin 
 then the following steps have been found to resolve the problem. Thanks to James Reynolds (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472). The specific version of libssh will change over time so references to the rpm in the commands below will need to be adjusted accordingly.
 
 ```shell
+# Fedora
 dnf download --source libssh
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/libssh
+cd libssh
+git checkout imports/c8s/libssh-0.9.4-1.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
 rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
 tar xf libssh-0.9.0.tar.xz
 mkdir build
@@ -285,7 +298,20 @@ If you encounter the following load error when using the vagrant-libvirt plugin 
 then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin without setting the `CONFIGURE_ARGS`. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
 
 ```shell
+# Fedora
 dnf download --source krb5-libs
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/krb5
+cd krb5
+git checkout imports/c8s/krb5-1.18.2-8.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
 rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
 tar xf krb5-1.18.tar.gz
 cd krb5-1.18/src
