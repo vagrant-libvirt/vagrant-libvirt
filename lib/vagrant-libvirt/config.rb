@@ -764,14 +764,22 @@ module VagrantPlugins
           @uri = _generate_uri(@qemu_use_session == UNSET_VALUE ? false : @qemu_use_session)
         end
 
+        # Parse uri to extract individual components
+        uri = _parse_uri(@uri)
+
         # Set qemu_use_session based on the URI if it wasn't set by the user
         if @qemu_use_session == UNSET_VALUE
-          uri = _parse_uri(@uri)
           if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
             @qemu_use_session = true
           else
             @qemu_use_session = false
           end
+        end
+
+        # Extract host and username values from uri if not set when connect_via_ssh option is used
+        if @connect_via_ssh
+          @host = uri.host if @host == nil
+          @username = uri.user if @username == nil
         end
 
         # Domain specific settings.
