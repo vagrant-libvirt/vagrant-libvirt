@@ -34,33 +34,13 @@ module VagrantPlugins
           @logger.debug("Searching for IP for MAC address: #{domain.mac}")
           env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
 
-          if env[:machine].provider_config.qemu_use_session
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # just return if interrupted and let the warden call recover
-                return if env[:interrupted]
+          env[:metrics]['instance_ip_time'] = Util::Timer.time do
+            retryable(on: Fog::Errors::TimeoutError, tries: 300) do
+              # just return if interrupted and let the warden call recover
+              return if env[:interrupted]
 
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  env[:ip_address] = env[:machine].provider.driver.get_ipaddress_system(domain.mac)
-                  !env[:ip_address].nil?
-                end
-              end
-            end
-          else
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # just return if interrupted and let the warden call recover
-                return if env[:interrupted]
-
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  addresses.each_pair do |_type, ip|
-                    env[:ip_address] = ip[0] unless ip[0].nil?
-                  end
-                  !env[:ip_address].nil?
-                end
-              end
+              # Wait for domain to obtain an ip address
+              env[:ip_address] = env[:machine].provider.driver.get_domain_ipaddress(domain)
             end
           end
 

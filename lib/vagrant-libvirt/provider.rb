@@ -55,7 +55,7 @@ module VagrantPlugins
         # be called from other threads of execution.
         return nil if state.id != :running
 
-        ip = driver.get_ipaddress(@machine)
+        ip = driver.get_ipaddress
 
         # if can't determine the IP, just return nil and let the core
         # deal with it, similar to the docker provider
