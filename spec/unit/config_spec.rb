@@ -177,6 +177,12 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:driver => 'openvz', :id_ssh_key_file => nil},
           {:uri => "openvz:///system?no_verify=1"},
         ],
+        [ # set to esx
+          {:driver => 'esx'},
+          {:uri => "esx:///"},
+          {},
+          "Should not be adding query options that don't work to esx connection uri",
+        ],
         [ # set to vbox only
           {:driver => 'vbox', :id_ssh_key_file => nil},
           {:uri => "vbox:///session?no_verify=1"},
@@ -250,13 +256,11 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
 
-      context 'when @socket defined' do
-        it "should detect @socket set" do
-          subject.socket = '/var/run/libvirt/libvirt-sock'
-          subject.id_ssh_key_file = false
+      context 'when invalid @uri is defined' do
+        it "should raise exception for unrecognized" do
+          subject.uri = "://bad-uri"
 
-          subject.finalize!
-          expect(subject.uri).to eq('qemu:///system?no_verify=1&socket=/var/run/libvirt/libvirt-sock')
+          expect { subject.finalize! }.to raise_error("@uri set to invalid uri '://bad-uri'")
         end
       end
     end
