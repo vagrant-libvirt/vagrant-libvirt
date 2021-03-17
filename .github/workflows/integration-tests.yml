@@ -39,7 +39,7 @@ jobs:
           libvirt-daemon \
           qemu-kvm \
           qemu-utils \
-          bsdtar \
+          libarchive-tools \
         ;
         sudo apt-get install \
           libvirt-dev \
