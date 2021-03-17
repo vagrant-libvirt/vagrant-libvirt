@@ -49,7 +49,7 @@ jobs:
           bats \
           fping \
         ;
-        systemctl start libvirtd
+        sudo systemctl start libvirtd
     - uses: actions/cache@v2
       with:
         path: vendor/bundle
