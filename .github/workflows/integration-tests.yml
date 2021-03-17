@@ -86,5 +86,14 @@ jobs:
         /tmp/exec/vagrant --version
     - name: Run tests
       run: |
+        mkdir $HOME/.vagrant.d/
+        # use software emulation due to lack of nested emulation
+        cat <<EOF > $HOME/.vagrant.d/Vagrantfile
+        Vagrant.configure("2") do |config|
+          config.vm.provider :libvirt do |libvirt|
+            libvirt.driver = "qemu"
+          end
+        end
+        EOF
         # run under libvirt group
         sg libvirt -c "./tests/one_test.sh ./tests/runtests.bats ${{ matrix.test_name }}"
