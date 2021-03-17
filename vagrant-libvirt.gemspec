@@ -7,18 +7,20 @@ Gem::Specification.new do |s|
   s.license       = 'MIT'
   s.description   = %q{libvirt provider for Vagrant.}
   s.summary       = %q{libvirt provider for Vagrant.}
-  s.homepage      = 'https://github.com/vagrant-libvirt/vagrant-libvirt'
+  s.homepage      = VagrantPlugins::ProviderLibvirt::HOMEPAGE
 
-  s.files         = Dir.glob("{lib,locales}/**/*.*") + %w(LICENSE README.md)
+  s.files         = Dir.glob("{lib,locales}/**/*") + %w(LICENSE README.md)
   s.executables   = Dir.glob("bin/*.*").map{ |f| File.basename(f) }
   s.test_files    = Dir.glob("{test,spec,features}/**/*.*")
   s.name          = 'vagrant-libvirt'
   s.require_paths = ['lib']
-  s.version       = VagrantPlugins::ProviderLibvirt::VERSION
+  s.version       = VagrantPlugins::ProviderLibvirt.get_version
 
   s.add_development_dependency "rspec-core", "~> 3.5.0"
   s.add_development_dependency "rspec-expectations", "~> 3.5.0"
   s.add_development_dependency "rspec-mocks", "~> 3.5.0"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov-lcov"
 
   s.add_runtime_dependency 'fog-libvirt', '>= 0.6.0'
   s.add_runtime_dependency 'fog-core', '~> 2.1'

@@ -1,0 +1,89 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
+# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_fail }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # need to define one entry with a single entry for each of the options
+        # to allow include to expand the matrix correctly.
+        ruby: [2.6.6]
+        vagrant: [main]
+        allow_fail: [true]
+        include:
+          - ruby: 2.2.10
+            vagrant: v2.0.4
+            allow_fail: false
+          - ruby: 2.3.5
+            vagrant: v2.1.5
+            allow_fail: false
+          - ruby: 2.4.10
+            vagrant: v2.2.4
+            allow_fail: false
+          - ruby: 2.6.6
+            vagrant: v2.2.14
+            allow_fail: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up libvirt
+      run: |
+        sudo apt-get update
+        sudo apt-get install libvirt-dev
+    - uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    - name: Set up rubygems
+      run: |
+        gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
+        gem update bundler --conservative
+    - name: Run bundler using cached path
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+      env:
+        VAGRANT_VERSION: ${{ matrix.vagrant }}
+    - name: Run tests
+      run: |
+        bundle exec rspec --color --format documentation
+      env:
+        VAGRANT_VERSION: ${{ matrix.vagrant }}
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel: true
+
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true

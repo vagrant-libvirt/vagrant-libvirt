@@ -27,7 +27,7 @@ group :development do
   if vagrant_gem_version <= Gem::Version.new('2.2.7')
     gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :ref => '161128f2216cee8edb7bcd30da18bd4dea86f98a'
   else
-    gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec'
+    gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :branch => "main"
   end
 
   gem 'pry'
@@ -36,5 +36,3 @@ end
 group :plugins do
   gemspec
 end
-
-gem 'coveralls', require: false

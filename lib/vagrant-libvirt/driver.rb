@@ -60,12 +60,12 @@ module VagrantPlugins
         @@system_connection
       end
 
-      def get_domain(mid)
+      def get_domain
         begin
-          domain = connection.servers.get(mid)
+          domain = connection.servers.get(@machine.id)
         rescue Libvirt::RetrieveError => e
           if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
-            @logger.debug("machine #{mid} not found #{e}.")
+            @logger.debug("machine #{@machine.name} domain not found #{e}.")
             return nil
           else
             raise e
@@ -75,47 +75,61 @@ module VagrantPlugins
         domain
       end
 
-      def created?(mid)
-        domain = get_domain(mid)
+      def created?
+        domain = get_domain
         !domain.nil?
       end
 
-      def get_ipaddress(machine)
+      def get_ipaddress
         # Find the machine
-        domain = get_domain(machine.id)
-        if @machine.provider_config.qemu_use_session
-          return get_ipaddress_system domain.mac
-        end
+        domain = get_domain
 
         if domain.nil?
           # The machine can't be found
           return nil
         end
 
+        get_domain_ipaddress(domain)
+      end
+
+      def get_domain_ipaddress(domain)
+        if @machine.provider_config.qemu_use_session
+          return get_ipaddress_from_system domain.mac
+        end
+
         # Get IP address from arp table
-        ip_address = nil
         begin
-          domain.wait_for(2) do
-            addresses.each_pair do |_type, ip|
-              # Multiple leases are separated with a newline, return only
-              # the most recent address
-              ip_address = ip[0].split("\n").first unless ip[0].nil?
-            end
-            !ip_address.nil?
-          end
+          ip_address = get_ipaddress_from_domain(domain)
         rescue Fog::Errors::TimeoutError
-          @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
+          @logger.info('Timeout at waiting for an ip address for machine %s' % @machine.name)
         end
 
         unless ip_address
-          @logger.info('No arp table entry found for machine %s' % machine.name)
+          @logger.info('No arp table entry found for machine %s' % @machine.name)
           return nil
         end
 
         ip_address
       end
 
-      def get_ipaddress_system(mac)
+      def state
+        # may be other error states with initial retreival we can't handle
+        begin
+          domain = get_domain
+        rescue Libvirt::RetrieveError => e
+          @logger.debug("Machine #{@machine.id} not found #{e}.")
+          return :not_created
+        end
+
+        # TODO: terminated no longer appears to be a valid fog state, remove?
+        return :not_created if domain.nil? || domain.state.to_sym == :terminated
+
+        domain.state.tr('-', '_').to_sym
+      end
+
+      private
+
+      def get_ipaddress_from_system(mac)
         ip_address = nil
 
         system_connection.list_all_networks.each do |net|
@@ -125,23 +139,24 @@ module VagrantPlugins
           break if ip_address
         end
 
-        return ip_address
+        ip_address
       end
 
-      def state(machine)
-        # may be other error states with initial retreival we can't handle
-        begin
-          domain = get_domain(machine.id)
-        rescue Libvirt::RetrieveError => e
-          @logger.debug("Machine #{machine.id} not found #{e}.")
-          return :not_created
+      def get_ipaddress_from_domain(domain)
+        ip_address = nil
+        domain.wait_for(2) do
+          addresses.each_pair do |type, ip|
+            # Multiple leases are separated with a newline, return only
+            # the most recent address
+            ip_address = ip[0].split("\n").first if ip[0] != nil
+          end
+
+          ip_address != nil
         end
 
-        # TODO: terminated no longer appears to be a valid fog state, remove?
-        return :not_created if domain.nil? || domain.state.to_sym == :terminated
-
-        domain.state.tr('-', '_').to_sym
+        ip_address
       end
+
     end
   end
 end
