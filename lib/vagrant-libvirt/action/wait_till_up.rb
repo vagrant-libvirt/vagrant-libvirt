@@ -21,7 +21,7 @@ module VagrantPlugins
           env[:metrics] ||= {}
 
           # Get domain object
-          domain = env[:machine].provider.driver.get_domain(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.get_domain
           if domain.nil?
             raise Errors::NoDomainError,
                   error_message: "Domain #{env[:machine].id} not found"

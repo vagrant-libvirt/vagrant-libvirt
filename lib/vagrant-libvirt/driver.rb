@@ -75,14 +75,14 @@ module VagrantPlugins
         domain
       end
 
-      def created?(mid)
-        domain = get_domain(mid)
+      def created?
+        domain = get_domain
         !domain.nil?
       end
 
       def get_ipaddress
         # Find the machine
-        domain = get_domain(@machine.id)
+        domain = get_domain
 
         if domain.nil?
           # The machine can't be found
@@ -112,12 +112,12 @@ module VagrantPlugins
         ip_address
       end
 
-      def state(machine)
+      def state
         # may be other error states with initial retreival we can't handle
         begin
-          domain = get_domain(machine.id)
+          domain = get_domain
         rescue Libvirt::RetrieveError => e
-          @logger.debug("Machine #{machine.id} not found #{e}.")
+          @logger.debug("Machine #{@machine.id} not found #{e}.")
           return :not_created
         end
 
