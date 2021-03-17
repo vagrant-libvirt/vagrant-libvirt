@@ -722,9 +722,9 @@ module VagrantPlugins
           params['no_verify'] = '1'
 
           if @id_ssh_key_file
-            if @id_ssh_key_file == UNSET_VALUE
-              @id_ssh_key_file = 'id_rsa'
-            end
+            # set default if using ssh while allowing a user using nil to disable this
+            @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
+
             # set ssh key for access to Libvirt host
             # if no slash, prepend $HOME/.ssh/
             @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
@@ -761,7 +761,6 @@ module VagrantPlugins
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
-        @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @socket = nil if @socket == UNSET_VALUE
 
         # If uri isn't set then let's build one from various sources.
