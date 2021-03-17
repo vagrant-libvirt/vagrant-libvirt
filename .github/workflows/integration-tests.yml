@@ -73,7 +73,10 @@ jobs:
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
+    - name: Install binstubs
+      run: |
+        bundle --binstubs /tmp/exec 1>/dev/null
+        /tmp/exec/vagrant --version
     - name: Run tests
       run: |
-        sudo bundle --binstubs /tmp/exec 1>/dev/null
         ./tests/one_test.sh ./tests/runtests.bats ${{ matrix.test_name }}
