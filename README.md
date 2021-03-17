@@ -404,6 +404,14 @@ URI](http://libvirt.org/uri.html):
   vagrant-libvirt should use. Overrides all other connection configuration
   options
 
+In the event that none of these are set (excluding the `driver` option) the
+provider will attempt to retrieve the uri from the environment variable
+`LIBVIRT_DEFAULT_URI` similar to how virsh works. If any of them are set, it
+will ignore the environment variable. The reason the driver option is ignored
+is that it is not uncommon for this to be explicitly set on the box itself
+and there is no easily to determine whether it is being set by the user or
+the box packager.
+
 Connection-independent options:
 
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance

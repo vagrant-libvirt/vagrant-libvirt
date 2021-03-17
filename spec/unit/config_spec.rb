@@ -123,41 +123,30 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:uri => 'qemu:///system'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
-        [ # when driver explicitly set
-          {:driver => 'qemu'},
-          {:uri => 'qemu:///system?no_verify=1'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
-        ],
         [ # when host explicitly set
           {:host => 'remote'},
-          {:uri => 'qemu://remote/system?no_verify=1'},
+          {:uri => 'qemu://remote/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
         ],
         [ # when connect_via_ssh explicitly set
           {:connect_via_ssh => true},
-          {:uri => 'qemu+ssh:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
         ],
         [ # when username explicitly set without host
           {:username => 'my_user' },
-          {:uri => 'qemu://my_user@localhost/system?no_verify=1'},
+          {:uri => 'qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
         ],
         [ # when username explicitly set with host
           {:username => 'my_user', :host => 'remote'},
-          {:uri => 'qemu://my_user@remote/system?no_verify=1'},
+          {:uri => 'qemu://remote/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
         ],
         [ # when password explicitly set
           {:password => 'some_password'},
-          {:uri => 'qemu:///system?no_verify=1'},
+          {:uri => 'qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
-          "LIBVIRT_DEFAULT_URI is not yet just a fallback behaviour"
         ],
 
         # driver settings

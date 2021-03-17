@@ -191,6 +191,7 @@ module VagrantPlugins
         @username          = UNSET_VALUE
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
+        @socket            = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
         @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
@@ -672,15 +673,25 @@ module VagrantPlugins
         @qemu_env.merge!(options)
       end
 
+      def _default_uri
+        # Determine if any settings except driver provided explicitly, if not
+        # and the LIBVIRT_DEFAULT_URI var is set, use that.
+        #
+        # Skipping driver because that may be set on individual boxes rather
+        # than by the user.
+        if [
+            @connect_via_ssh, @host, @username, @password,
+            @id_ssh_key_file, @qemu_use_session, @socket,
+        ].none?{ |v| v != UNSET_VALUE }
+          if ENV.fetch('LIBVIRT_DEFAULT_URI', '') != ""
+            @uri = ENV['LIBVIRT_DEFAULT_URI']
+          end
+        end
+      end
+
       # code to generate URI from from either the LIBVIRT_URI environment
       # variable or a config moved out of the connect action
       def _generate_uri(qemu_use_session)
-
-        # If the LIBVIRT_DEFAULT_URI var is set, we'll use that
-        if ENV.fetch('LIBVIRT_DEFAULT_URI', '') != ""
-          return ENV['LIBVIRT_DEFAULT_URI']
-        end
-
         # builds the Libvirt connection URI from the given driver config
         # Setup connection uri.
         uri = @driver.dup
@@ -736,27 +747,16 @@ module VagrantPlugins
       end
 
       def finalize!
+        _default_uri if @uri == UNSET_VALUE
+
+        # settings which _generate_uri
         @driver = 'kvm' if @driver == UNSET_VALUE
         @host = nil if @host == UNSET_VALUE
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
         @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
-        @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
-        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
-        @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
-        @random_hostname = false if @random_hostname == UNSET_VALUE
-        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
-        @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
-        @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
-        @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
-        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
-        @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
-        @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
-        @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
-        @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
-        @management_network_domain = nil if @management_network_domain == UNSET_VALUE
-        @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
+        @socket = nil if @socket == UNSET_VALUE
 
         # If uri isn't set then let's build one from various sources.
         # Default to passing false for qemu_use_session if it's not set.
@@ -781,6 +781,22 @@ module VagrantPlugins
           @host = uri.host if @host == nil
           @username = uri.user if @username == nil
         end
+
+        @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
+        @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
+        @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
+        @random_hostname = false if @random_hostname == UNSET_VALUE
+        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
+        @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
+        @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
+        @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
+        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
+        @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
+        @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
+        @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
+        @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
+        @management_network_domain = nil if @management_network_domain == UNSET_VALUE
+        @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
