@@ -10,7 +10,6 @@ jobs:
   test:
 
     runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.allow_fail }}
     strategy:
       fail-fast: false
       matrix:
