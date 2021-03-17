@@ -400,6 +400,11 @@ URI](http://libvirt.org/uri.html):
   Default is `$HOME/.ssh/id_rsa`. Prepends `$HOME/.ssh/` if no directory
 * `socket` - Path to the Libvirt unix socket (e.g.
   `/var/run/libvirt/libvirt-sock`)
+* `proxy_command` - For advanced usage. When connecting to remote libvirt
+  instances, if the default constructed proxy\_command which uses `-W %h:%p`
+  does not work, set this as needed. It performs interpolation using `%`,
+  therefore it will be necessary to escape e.g.
+  `libvirt.proxy_command = "ssh %{host} -l %{username} -i %{id_ssh_key_file} nc %%h %%p"`
 * `uri` - For advanced usage. Directly specifies what Libvirt connection URI
   vagrant-libvirt should use. Overrides all other connection configuration
   options

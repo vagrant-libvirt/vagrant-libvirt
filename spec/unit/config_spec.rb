@@ -335,6 +335,101 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
     end
+
+    context '@proxy_command' do
+      before(:example) do
+        stub_const("ENV", fake_env)
+        fake_env['HOME'] = "/home/tests"
+      end
+
+      [
+        # no connect_via_ssh
+        [
+          {:host => "remote"},
+          nil,
+        ],
+
+        # connect_via_ssh
+        [ # host
+          {:connect_via_ssh => true, :host => 'remote'},
+          "ssh 'remote' -W %h:%p",
+        ],
+        [ # include user
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser'},
+          "ssh 'remote' -l 'myuser' -W %h:%p",
+        ],
+        [ # include user and default ssh key exists
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser'},
+          "ssh 'remote' -l 'myuser' -i '/home/tests/.ssh/id_rsa' -W %h:%p",
+          {
+            :setup => ContextualProc.new {
+              expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
+            }
+          }
+        ],
+
+        # disable id_ssh_key_file
+        [
+          {:connect_via_ssh => true, :host => 'remote', :id_ssh_key_file => nil},
+          "ssh 'remote' -W %h:%p",
+        ],
+        [ # include user
+          {:connect_via_ssh => true, :host => 'remote', :id_ssh_key_file => nil},
+          "ssh 'remote' -W %h:%p",
+        ],
+
+        # use @uri
+        [
+          {:uri => 'qemu+ssh://remote/system'},
+          "ssh 'remote' -W %h:%p",
+        ],
+        [
+          {:uri => 'qemu+ssh://myuser@remote/system'},
+          "ssh 'remote' -l 'myuser' -W %h:%p",
+        ],
+        [
+          {:uri => 'qemu+ssh://remote/system?keyfile=/some/path/to/keyfile'},
+          "ssh 'remote' -i '/some/path/to/keyfile' -W %h:%p",
+          {:allow_failure => "keyfile not yet inferred from uri"},
+        ],
+
+        # provide custom template
+        [
+          {:connect_via_ssh => true, :host => 'remote', :proxy_command => "ssh %{host} nc %%h %%p" },
+          "ssh remote nc %h %p",
+        ],
+        [
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh %{host} nc %%h %%p" },
+          "ssh remote nc %h %p",
+        ],
+        [
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh %{host} -l %{username} nc %%h %%p" },
+          "ssh remote -l myuser nc %h %p",
+        ],
+      ].each do |inputs, proxy_command, options|
+        opts = {}
+        opts.merge!(options) if options
+
+        it "should handle inputs #{inputs}" do
+          # allow some of these to fail for now if marked as such
+          if !opts[:allow_failure].nil?
+            pending(opts[:allow_failure])
+          end
+
+          if !opts[:setup].nil?
+            opts[:setup].apply(binding)
+          end
+
+          inputs.each do |k, v|
+            subject.instance_variable_set("@#{k}", v)
+          end
+
+          subject.finalize!
+
+          expect(subject.proxy_command).to eq(proxy_command)
+        end
+      end
+    end
   end
 
   def assert_invalid

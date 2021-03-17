@@ -37,6 +37,8 @@ module VagrantPlugins
       # ID SSH key file
       attr_accessor :id_ssh_key_file
 
+      attr_accessor :proxy_command
+
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
       attr_accessor :storage_pool_name
@@ -192,6 +194,7 @@ module VagrantPlugins
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @socket            = UNSET_VALUE
+        @proxy_command     = UNSET_VALUE
         @storage_pool_name = UNSET_VALUE
         @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
@@ -785,6 +788,7 @@ module VagrantPlugins
         @username = uri.user
 
         finalize_id_ssh_key_file
+        finalize_proxy_command
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
@@ -1017,6 +1021,27 @@ module VagrantPlugins
         end
 
         @id_ssh_key_file = id_ssh_key_file
+      end
+
+      def finalize_proxy_command
+        if @connect_via_ssh
+          if @proxy_command == UNSET_VALUE
+            proxy_command = "ssh '#{@host}' "
+            proxy_command << "-l '#{@username}' " if @username
+            proxy_command << "-i '#{@id_ssh_key_file}' " if @id_ssh_key_file
+            proxy_command << '-W %h:%p'
+          else
+            inputs = { host: @host }
+            inputs[:username] = @username if @username
+            inputs[:id_ssh_key_file] = @id_ssh_key_file if @id_ssh_key_file
+
+            proxy_command = @proxy_command % inputs
+          end
+
+          @proxy_command = proxy_command
+        else
+          @proxy_command = nil
+        end
       end
     end
   end
