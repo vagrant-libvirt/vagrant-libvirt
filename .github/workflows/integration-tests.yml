@@ -49,6 +49,7 @@ jobs:
           bats \
           fping \
         ;
+        systemctl start libvirtd
     - uses: actions/cache@v2
       with:
         path: vendor/bundle
@@ -75,7 +76,7 @@ jobs:
         bundle install --jobs 4 --retry 3
     - name: Install binstubs
       run: |
-        bundle --binstubs /tmp/exec 1>/dev/null
+        bundle binstubs --all --path=/tmp/exec 1>/dev/null
         /tmp/exec/vagrant --version
     - name: Run tests
       run: |
