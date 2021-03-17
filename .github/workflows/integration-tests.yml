@@ -37,6 +37,7 @@ jobs:
           ebtables \
           libvirt-clients \
           libvirt-daemon \
+          libvirt-daemon-system \
           qemu-kvm \
           qemu-utils \
           libarchive-tools \
@@ -50,8 +51,11 @@ jobs:
           fping \
         ;
 
-        sudo systemctl list-unit-files
-        sudo systemctl start libvirt
+        # start daemon
+        sudo systemctl start libvirtd
+
+        # add user to group
+        sudo usermod -a -G libvirt $USER
     - uses: actions/cache@v2
       with:
         path: vendor/bundle
@@ -82,4 +86,5 @@ jobs:
         /tmp/exec/vagrant --version
     - name: Run tests
       run: |
-        ./tests/one_test.sh ./tests/runtests.bats ${{ matrix.test_name }}
+        # run under libvirt group
+        sg libvirt -c "./tests/one_test.sh ./tests/runtests.bats ${{ matrix.test_name }}"
