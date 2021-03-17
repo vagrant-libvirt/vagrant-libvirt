@@ -69,12 +69,11 @@ module VagrantPlugins
         }
 
         if @machine.provider_config.connect_via_ssh
-          ssh_info[:proxy_command] =
-            "ssh '#{@machine.provider_config.host}' " \
-            "-l '#{@machine.provider_config.username}' " \
-            "-i '#{@machine.provider_config.id_ssh_key_file}' " \
-            'nc %h %p'
-
+          proxy_command = "ssh '#{@machine.provider_config.host}' "
+          proxy_command << "-l '#{@machine.provider_config.username}' " if @machine.provider_config.username
+          proxy_command << "-i '#{@machine.provider_config.id_ssh_key_file}' " if @machine.provider_config.id_ssh_key_file
+          proxy_command << '-W %h:%p'
+          ssh_info[:proxy_command] = proxy_command
         end
 
         ssh_info
