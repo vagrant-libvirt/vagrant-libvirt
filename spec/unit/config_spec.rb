@@ -70,7 +70,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # settings
         [ # all default
           {},
-          {:uri => "qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa"},
+          {:uri => "qemu:///system"},
         ],
 
         # with LIBVIRT_DEFAULT_URI
@@ -125,7 +125,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
         [ # when host explicitly set
           {:host => 'remote'},
-          {:uri => 'qemu://remote/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
+          {:uri => 'qemu://remote/system'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
         [ # when connect_via_ssh explicitly set
@@ -133,48 +133,46 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
-        [ # when username explicitly set without host
+        [ # when username explicitly set without ssh
           {:username => 'my_user' },
-          {:uri => 'qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
+          {:uri => 'qemu:///system'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
-        [ # when username explicitly set with host
+        [ # when username explicitly set with host but without ssh
           {:username => 'my_user', :host => 'remote'},
-          {:uri => 'qemu://remote/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
+          {:uri => 'qemu://remote/system'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
         [ # when password explicitly set
           {:password => 'some_password'},
-          {:uri => 'qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
+          {:uri => 'qemu:///system'},
           {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
         ],
 
         # driver settings
         [ # set to kvm only
-          {:driver => 'kvm', :id_ssh_key_file => nil},
-          {:uri => "qemu:///system?no_verify=1"},
+          {:driver => 'kvm'},
+          {:uri => "qemu:///system"},
         ],
         [ # set to qemu only
-          {:driver => 'qemu', :id_ssh_key_file => nil},
-          {:uri => "qemu:///system?no_verify=1"},
+          {:driver => 'qemu'},
+          {:uri => "qemu:///system"},
         ],
         [ # set to qemu with session enabled
-          {:driver => 'qemu', :qemu_use_session => true, :id_ssh_key_file => nil},
-          {:uri => "qemu:///session?no_verify=1"},
+          {:driver => 'qemu', :qemu_use_session => true},
+          {:uri => "qemu:///session"},
         ],
         [ # set to openvz only
-          {:driver => 'openvz', :id_ssh_key_file => nil},
-          {:uri => "openvz:///system?no_verify=1"},
+          {:driver => 'openvz'},
+          {:uri => "openvz:///system"},
         ],
         [ # set to esx
           {:driver => 'esx'},
           {:uri => "esx:///"},
-          {},
-          "Should not be adding query options that don't work to esx connection uri",
         ],
         [ # set to vbox only
-          {:driver => 'vbox', :id_ssh_key_file => nil},
-          {:uri => "vbox:///session?no_verify=1"},
+          {:driver => 'vbox'},
+          {:uri => "vbox:///session"},
         ],
 
         # connect_via_ssh settings
@@ -192,13 +190,9 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
 
         # id_ssh_key_file behaviour
-        [ # set
+        [ # set should infer use of ssh
           {:id_ssh_key_file => '/path/to/keyfile'},
-          {:uri => "qemu:///system?no_verify=1&keyfile=/path/to/keyfile"},
-        ],
-        [ # set infer use of ssh
-          {:id_ssh_key_file => '/path/to/keyfile'},
-          {:uri => "qemu+ssh:///system?no_verify=1&keyfile=/path/to/keyfile"},
+          {:uri => "qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile"},
           {},
           "setting of ssh key file does not yet enable connect via ssh",
         ],
@@ -206,7 +200,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # socket behaviour
         [ # set
           {:socket => '/var/run/libvirt/libvirt-sock'},
-          {:uri => "qemu:///system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa&socket=/var/run/libvirt/libvirt-sock"},
+          {:uri => "qemu:///system?socket=/var/run/libvirt/libvirt-sock"},
         ],
       ].each do |inputs, outputs, env, allow_failure|
         it "should handle inputs #{inputs} with env #{env}" do

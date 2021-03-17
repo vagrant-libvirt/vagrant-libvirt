@@ -711,11 +711,25 @@ module VagrantPlugins
           uri = 'qemu' # use QEMU uri for KVM domain type
         end
 
+        params = {}
+
         if @connect_via_ssh
           uri << '+ssh://'
           uri << @username + '@' if @username
 
           uri << ( @host ? @host : 'localhost' )
+
+          params['no_verify'] = '1'
+
+          if @id_ssh_key_file
+            # set default if using ssh while allowing a user using nil to disable this
+            @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
+
+            # set ssh key for access to Libvirt host
+            # if no slash, prepend $HOME/.ssh/
+            @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
+            params['keyfile'] = @id_ssh_key_file
+          end
         else
           uri << '://'
           uri << @host if @host
@@ -723,18 +737,10 @@ module VagrantPlugins
 
         uri << virt_path
 
-        params = {'no_verify' => '1'}
-
-        if @id_ssh_key_file
-          # set ssh key for access to Libvirt host
-          # if no slash, prepend $HOME/.ssh/
-          @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
-          params['keyfile'] = @id_ssh_key_file
-        end
         # set path to Libvirt socket
         params['socket'] = @socket if @socket
 
-        uri << "?" + params.map{|pair| pair.join('=')}.join('&')
+        uri << "?" + params.map{|pair| pair.join('=')}.join('&') if !params.empty?
         uri
       end
 
@@ -755,7 +761,6 @@ module VagrantPlugins
         @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
         @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
-        @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
         @socket = nil if @socket == UNSET_VALUE
 
         # If uri isn't set then let's build one from various sources.
