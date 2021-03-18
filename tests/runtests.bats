@@ -12,6 +12,7 @@ cleanup() {
 }
 
 @test "Spin up and destroy simple virtual machine" {
+  export VAGRANT_LOG=debug
   export VAGRANT_CWD=tests/simple
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
   echo "${output}"
