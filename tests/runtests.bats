@@ -11,7 +11,7 @@ cleanup() {
     fi
 }
 
-@test "Spin up and destroy simple virtual machine" {
+@test "destroy simple vm" {
   export VAGRANT_LOG=debug
   export VAGRANT_CWD=tests/simple
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -21,7 +21,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up simple virtual machine, provision via shell" {
+@test "simple vm rovision via shell" {
   export VAGRANT_CWD=tests/simple_provision_shell
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -33,7 +33,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up simple virtual machine with custom default_prefix" {
+@test "bring up with custom default_prefix" {
   export VAGRANT_CWD=tests/default_prefix
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -45,7 +45,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up virtual machine with second disk" {
+@test "bring up with second disk" {
   export VAGRANT_CWD=tests/second_disk
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -57,7 +57,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up virtual machine, adjust memory settings" {
+@test "bring up with adjusted memory settings" {
   export VAGRANT_CWD=tests/memory
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -69,7 +69,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up virtual machine, adjust cpu settings" {
+@test "bring up with adjusted cpu settings" {
   export VAGRANT_CWD=tests/cpus
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -81,7 +81,7 @@ cleanup() {
   cleanup
 }
 
-@test "Spin up virtual machine, add private network, check if IP is reachable" {
+@test "ip is reachable with private network" {
   export VAGRANT_CWD=tests/private_network
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}

@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         test_name:
-        - test_Spin_up_and_destroy_simple_virtual_machine
-        - test_Spin_up_simple_virtual_machine-2c_provision_via_shell
-        - test_Spin_up_simple_virtual_machine_with_custom_default-2d5fprefix
-        - test_Spin_up_virtual_machine_with_second_disk
-        - test_Spin_up_virtual_machine-2c_adjust_memory_settings
-        - test_Spin_up_virtual_machine-2c_adjust_cpu_settings
-        - test_Spin_up_virtual_machine-2c_add_private_network-2c_check_if_IP_is_reachable
+        - test_destroy_simple_vm
+        - test_simple_vm_provision_via_shell
+        - test_bring_up_with_custom_default_prefix
+        - test_bring_up_with_second_disk
+        - test_bring_up_with_adjusted_memory_settings
+        - test_bring_up_with_adjusted_cpu_settings
+        - test_ip_is_reachable_with_private_network
 
     env:
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
