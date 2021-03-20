@@ -714,22 +714,15 @@ module VagrantPlugins
         params = {}
 
         if @connect_via_ssh
+          finalize_id_ssh_key_file
+
           uri << '+ssh://'
           uri << @username + '@' if @username
 
           uri << ( @host ? @host : 'localhost' )
 
           params['no_verify'] = '1'
-
-          if @id_ssh_key_file
-            # set default if using ssh while allowing a user using nil to disable this
-            @id_ssh_key_file = 'id_rsa' if @id_ssh_key_file == UNSET_VALUE
-
-            # set ssh key for access to Libvirt host
-            # if no slash, prepend $HOME/.ssh/
-            @id_ssh_key_file.prepend("#{ENV['HOME']}/.ssh/") if @id_ssh_key_file !~ /\A\//
-            params['keyfile'] = @id_ssh_key_file
-          end
+          params['keyfile'] = @id_ssh_key_file if @id_ssh_key_file
         else
           uri << '://'
           uri << @host if @host
@@ -786,6 +779,8 @@ module VagrantPlugins
           @host = uri.host if @host == nil
           @username = uri.user if @username == nil
         end
+
+        finalize_id_ssh_key_file
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
@@ -988,6 +983,36 @@ module VagrantPlugins
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
           result.qemu_env = c
         end
+      end
+
+      private
+
+      def resolve_ssh_key_file(key_file)
+        # set ssh key for access to Libvirt host
+        # if no slash, prepend $HOME/.ssh/
+        key_file.prepend("#{ENV['HOME']}/.ssh/") if key_file && key_file !~ /\A\//
+
+        key_file
+      end
+
+      def finalize_id_ssh_key_file
+        # resolve based on the following roles
+        #  1) if @connect_via_ssh is set to true, and id_ssh_key_file not current set,
+        #     set default if the file exists
+        #  2) if supplied the key name, attempt to expand based on user home
+        #  3) otherwise set to nil
+
+        if @connect_via_ssh && @id_ssh_key_file == UNSET_VALUE
+          # set default if using ssh while allowing a user using nil to disable this
+          id_ssh_key_file = resolve_ssh_key_file('id_rsa')
+          id_ssh_key_file = nil if !File.file?(id_ssh_key_file)
+        elsif @id_ssh_key_file != UNSET_VALUE
+          id_ssh_key_file = resolve_ssh_key_file(@id_ssh_key_file)
+        else
+          id_ssh_key_file = nil
+        end
+
+        @id_ssh_key_file = id_ssh_key_file
       end
     end
   end
