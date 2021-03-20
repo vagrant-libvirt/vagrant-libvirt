@@ -711,21 +711,26 @@ module VagrantPlugins
           uri = 'qemu' # use QEMU uri for KVM domain type
         end
 
+        # turn on ssh if an ssh key file is explicitly provided
+        if @connect_via_ssh == UNSET_VALUE && @id_ssh_key_file && @id_ssh_key_file != UNSET_VALUE
+          @connect_via_ssh = true
+        end
+
         params = {}
 
-        if @connect_via_ssh
+        if @connect_via_ssh == true
           finalize_id_ssh_key_file
 
           uri << '+ssh://'
-          uri << @username + '@' if @username
+          uri << @username + '@' if @username && @username != UNSET_VALUE
 
-          uri << ( @host ? @host : 'localhost' )
+          uri << ( @host && @host != UNSET_VALUE ? @host : 'localhost' )
 
           params['no_verify'] = '1'
           params['keyfile'] = @id_ssh_key_file if @id_ssh_key_file
         else
           uri << '://'
-          uri << @host if @host
+          uri << @host if @host && @host != UNSET_VALUE
         end
 
         uri << virt_path
@@ -750,9 +755,6 @@ module VagrantPlugins
 
         # settings which _generate_uri
         @driver = 'kvm' if @driver == UNSET_VALUE
-        @host = nil if @host == UNSET_VALUE
-        @connect_via_ssh = false if @connect_via_ssh == UNSET_VALUE
-        @username = nil if @username == UNSET_VALUE
         @password = nil if @password == UNSET_VALUE
         @socket = nil if @socket == UNSET_VALUE
 
@@ -765,6 +767,10 @@ module VagrantPlugins
         # Parse uri to extract individual components
         uri = _parse_uri(@uri)
 
+        # only set @connect_via_ssh if not explicitly to avoid overriding
+        # and allow an error to occur if the @uri and @connect_via_ssh disagree
+        @connect_via_ssh = uri.scheme.include? "ssh" if @connect_via_ssh == UNSET_VALUE
+
         # Set qemu_use_session based on the URI if it wasn't set by the user
         if @qemu_use_session == UNSET_VALUE
           if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
@@ -774,11 +780,9 @@ module VagrantPlugins
           end
         end
 
-        # Extract host and username values from uri if not set when connect_via_ssh option is used
-        if @connect_via_ssh
-          @host = uri.host if @host == nil
-          @username = uri.user if @username == nil
-        end
+        # Extract host and username values from uri if provided, otherwise nil
+        @host = uri.host
+        @username = uri.user
 
         finalize_id_ssh_key_file
 
@@ -1002,7 +1006,7 @@ module VagrantPlugins
         #  2) if supplied the key name, attempt to expand based on user home
         #  3) otherwise set to nil
 
-        if @connect_via_ssh && @id_ssh_key_file == UNSET_VALUE
+        if @connect_via_ssh == true && @id_ssh_key_file == UNSET_VALUE
           # set default if using ssh while allowing a user using nil to disable this
           id_ssh_key_file = resolve_ssh_key_file('id_rsa')
           id_ssh_key_file = nil if !File.file?(id_ssh_key_file)

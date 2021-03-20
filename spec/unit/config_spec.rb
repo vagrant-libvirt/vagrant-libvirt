@@ -75,6 +75,53 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:uri => "qemu:///system"},
         ],
 
+        # explicit uri settings
+        [ # transport and hostname
+          {:uri => "qemu+ssh://localhost/system"},
+          {:uri => "qemu+ssh://localhost/system", :connect_via_ssh => true, :host => "localhost", :username => nil},
+        ],
+        [ # tcp transport with port
+          {:uri => "qemu+tcp://localhost:5000/system"},
+          {:uri => "qemu+tcp://localhost:5000/system", :connect_via_ssh => false, :host => "localhost", :username => nil},
+        ],
+        [ # connect explicit to unix socket
+          {:uri => "qemu+unix:///system"},
+          {:uri => "qemu+unix:///system", :connect_via_ssh => false, :host => nil, :username => nil},
+        ],
+        [ # via libssh2 should enable ssh as well
+          {:uri => "qemu+libssh2://user@remote/system?known_hosts=/home/user/.ssh/known_hosts"},
+          {
+            :uri => "qemu+libssh2://user@remote/system?known_hosts=/home/user/.ssh/known_hosts",
+            :connect_via_ssh => true, :host => "remote", :username => "user",
+          },
+        ],
+        [ # xen
+          {:uri => "xen://remote/system?no_verify=1"},
+          {
+            :uri => "xen://remote/system?no_verify=1",
+            :connect_via_ssh => false, :host => "remote", :username => nil,
+            :id_ssh_key_file => nil,
+          },
+          {
+            :setup => ContextualProc.new {
+              expect(File).to_not receive(:file?)
+            }
+          }
+        ],
+        [ # xen
+          {:uri => "xen+ssh://remote/system?no_verify=1"},
+          {
+            :uri => "xen+ssh://remote/system?no_verify=1",
+            :connect_via_ssh => true, :host => "remote", :username => nil,
+            :id_ssh_key_file => "/home/tests/.ssh/id_rsa",
+          },
+          {
+            :setup => ContextualProc.new {
+              expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
+            }
+          }
+        ],
+
         # with LIBVIRT_DEFAULT_URI
         [ # all other set to default
           {},
@@ -90,26 +137,11 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             :env => {'LIBVIRT_DEFAULT_URI' => "qemu:///session"},
           }
         ],
-        [ # with session and using ssh infer connect by ssh and ignore host
+        [ # with session and using ssh infer connect by ssh and ignore host as not provided
           {},
-          {:uri => "qemu+ssh:///session", :qemu_use_session => true},
+          {:uri => "qemu+ssh:///session", :qemu_use_session => true, :connect_via_ssh => true, :host => nil},
           {
             :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
-          }
-        ],
-        [ # with session and using ssh infer host and connect by ssh
-          {},
-          {:uri => "qemu+ssh:///session", :qemu_use_session => true, :connect_via_ssh => true, :host => 'localhost'},
-          {
-            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
-            :allow_failure => "not yet inferring connect_via_ssh", # once working remove the preceding test
-          }
-        ],
-        [ # with session and using ssh to specific host with additional query options provided
-          {},
-          {:uri => "qemu+ssh://remote/session?keyfile=my_id_rsa", :qemu_use_session => true},
-          {
-            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
           }
         ],
         [ # with session and using ssh to specific host with additional query options provided, infer host and ssh
@@ -117,7 +149,6 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:uri => "qemu+ssh://remote/session?keyfile=my_id_rsa", :qemu_use_session => true, :connect_via_ssh => true, :host => 'remote'},
           {
             :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
-            :allow_failure => "not yet inferring host correctly", # once working remove the preceding test
           }
         ],
         [ # when session not set
@@ -227,9 +258,6 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         [ # set should infer use of ssh
           {:id_ssh_key_file => '/path/to/keyfile'},
           {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile', :connect_via_ssh => true},
-          {
-            :allow_failure => 'setting id_ssh_key_file explicitly does not yet infer ssh connection', # once fixed replace above
-          }
         ],
         [ # connect_via_ssh should enable default but ignore due to not existing
           {:connect_via_ssh => true},
