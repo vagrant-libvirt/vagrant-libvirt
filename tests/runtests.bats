@@ -21,7 +21,7 @@ cleanup() {
   cleanup
 }
 
-@test "simple vm rovision via shell" {
+@test "simple vm provision via shell" {
   export VAGRANT_CWD=tests/simple_provision_shell
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
@@ -33,7 +33,7 @@ cleanup() {
   cleanup
 }
 
-@test "bring up with custom default_prefix" {
+@test "bring up with custom default prefix" {
   export VAGRANT_CWD=tests/default_prefix
   cleanup
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
