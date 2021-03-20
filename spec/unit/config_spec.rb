@@ -1,3 +1,5 @@
+require 'contextual_proc'
+
 require 'spec_helper'
 require 'support/sharedcontext'
 
@@ -77,76 +79,104 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         [ # all other set to default
           {},
           {:uri => "custom:///custom_path", :qemu_use_session => false},
-          {'LIBVIRT_DEFAULT_URI' => "custom:///custom_path"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "custom:///custom_path"},
+          }
         ],
         [ # with session
           {},
           {:uri => "qemu:///session", :qemu_use_session => true},
-          {'LIBVIRT_DEFAULT_URI' => "qemu:///session"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu:///session"},
+          }
         ],
-        [ # with session and using ssh
+        [ # with session and using ssh infer connect by ssh and ignore host
           {},
           {:uri => "qemu+ssh:///session", :qemu_use_session => true},
-          {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
+          }
         ],
         [ # with session and using ssh infer host and connect by ssh
           {},
           {:uri => "qemu+ssh:///session", :qemu_use_session => true, :connect_via_ssh => true, :host => 'localhost'},
-          {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
-          "not yet inferring connect_via_ssh", # once working remove the preceding test
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
+            :allow_failure => "not yet inferring connect_via_ssh", # once working remove the preceding test
+          }
         ],
         [ # with session and using ssh to specific host with additional query options provided
           {},
           {:uri => "qemu+ssh://remote/session?keyfile=my_id_rsa", :qemu_use_session => true},
-          {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
+          }
         ],
         [ # with session and using ssh to specific host with additional query options provided, infer host and ssh
           {},
           {:uri => "qemu+ssh://remote/session?keyfile=my_id_rsa", :qemu_use_session => true, :connect_via_ssh => true, :host => 'remote'},
-          {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
-          "not yet inferring host correctly", # once working remove the preceding test
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh://remote/session?keyfile=my_id_rsa"},
+            :allow_failure => "not yet inferring host correctly", # once working remove the preceding test
+          }
         ],
         [ # when session not set
           {},
           {:uri => "qemu:///system", :qemu_use_session => false},
-          {'LIBVIRT_DEFAULT_URI' => "qemu:///system"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu:///system"},
+          }
         ],
         [ # when session appearing elsewhere
           {},
           {:uri => "qemu://remote/system?keyfile=my_session_id", :qemu_use_session => false},
-          {'LIBVIRT_DEFAULT_URI' => "qemu://remote/system?keyfile=my_session_id"},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => "qemu://remote/system?keyfile=my_session_id"},
+          }
         ],
 
         # ignore LIBVIRT_DEFAULT_URI due to explicit settings
         [ # when uri explicitly set
           {:uri => 'qemu:///system'},
           {:uri => 'qemu:///system'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
         [ # when host explicitly set
           {:host => 'remote'},
           {:uri => 'qemu://remote/system'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
         [ # when connect_via_ssh explicitly set
           {:connect_via_ssh => true},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
         [ # when username explicitly set without ssh
           {:username => 'my_user' },
           {:uri => 'qemu:///system'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
         [ # when username explicitly set with host but without ssh
           {:username => 'my_user', :host => 'remote'},
           {:uri => 'qemu://remote/system'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
         [ # when password explicitly set
           {:password => 'some_password'},
-          {:uri => 'qemu:///system'},
-          {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          {:uri => 'qemu:///system', :password => 'some_password'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+          }
         ],
 
         # driver settings
@@ -178,23 +208,46 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # connect_via_ssh settings
         [ # enabled
           {:connect_via_ssh => true},
-          {:uri => "qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa"},
+          {:uri => "qemu+ssh://localhost/system?no_verify=1"},
         ],
         [ # enabled with user
           {:connect_via_ssh => true, :username => 'my_user'},
-          {:uri => "qemu+ssh://my_user@localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa"},
+          {:uri => "qemu+ssh://my_user@localhost/system?no_verify=1"},
         ],
         [ # enabled with host
           {:connect_via_ssh => true, :host => 'remote_server'},
-          {:uri => "qemu+ssh://remote_server/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa"},
+          {:uri => "qemu+ssh://remote_server/system?no_verify=1"},
         ],
 
         # id_ssh_key_file behaviour
+        [ # set should take given value
+          {:connect_via_ssh => true, :id_ssh_key_file => '/path/to/keyfile'},
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile', :connect_via_ssh => true},
+        ],
         [ # set should infer use of ssh
           {:id_ssh_key_file => '/path/to/keyfile'},
-          {:uri => "qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile"},
-          {},
-          "setting of ssh key file does not yet enable connect via ssh",
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile', :connect_via_ssh => true},
+          {
+            :allow_failure => 'setting id_ssh_key_file explicitly does not yet infer ssh connection', # once fixed replace above
+          }
+        ],
+        [ # connect_via_ssh should enable default but ignore due to not existing
+          {:connect_via_ssh => true},
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1', :id_ssh_key_file => nil},
+          {
+            :setup => ContextualProc.new {
+              expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(false)
+            }
+          }
+        ],
+        [ # connect_via_ssh should enable default and include due to existing
+          {:connect_via_ssh => true},
+          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa', :id_ssh_key_file => '/home/tests/.ssh/id_rsa'},
+          {
+            :setup => ContextualProc.new {
+              expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
+            }
+          }
         ],
 
         # socket behaviour
@@ -202,19 +255,26 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:socket => '/var/run/libvirt/libvirt-sock'},
           {:uri => "qemu:///system?socket=/var/run/libvirt/libvirt-sock"},
         ],
-      ].each do |inputs, outputs, env, allow_failure|
-        it "should handle inputs #{inputs} with env #{env}" do
+      ].each do |inputs, outputs, options|
+        opts = {}
+        opts.merge!(options) if options
+
+        it "should handle inputs #{inputs} with env (#{opts[:env]})" do
           # allow some of these to fail for now if marked as such
-          if !allow_failure.nil?
-            pending(allow_failure)
+          if !opts[:allow_failure].nil?
+            pending(opts[:allow_failure])
+          end
+
+          if !opts[:setup].nil?
+            opts[:setup].apply(binding)
           end
 
           inputs.each do |k, v|
             subject.instance_variable_set("@#{k}", v)
           end
 
-          if !env.nil?
-            env.each do |k, v|
+          if !opts[:env].nil?
+            opts[:env].each do |k, v|
               fake_env[k] = v
             end
           end
