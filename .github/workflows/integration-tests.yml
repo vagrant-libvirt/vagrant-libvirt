@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         test_name:
-        - test_destroy_simple_vm
-        - test_simple_vm_provision_via_shell
-        - test_bring_up_with_custom_default_prefix
-        - test_bring_up_with_second_disk
-        - test_bring_up_with_adjusted_memory_settings
-        - test_bring_up_with_adjusted_cpu_settings
-        - test_ip_is_reachable_with_private_network
+        - destroy simple vm
+        - simple vm provision via shell
+        - bring up with custom default prefix
+        - bring up with second disk
+        - bring up with adjusted memory settings
+        - bring up with adjusted cpu settings
+        - ip is reachable with private network
 
     env:
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
@@ -82,8 +82,8 @@ jobs:
         bundle install --jobs 4 --retry 3
     - name: Install binstubs
       run: |
-        bundle binstubs --all --path=/tmp/exec 1>/dev/null
-        /tmp/exec/vagrant --version
+        bundle binstubs --all --path=./bin 1>/dev/null
+        ./bin/vagrant --version
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
@@ -96,4 +96,4 @@ jobs:
         end
         EOF
         # run under libvirt group
-        sg libvirt -c "./tests/one_test.sh ./tests/runtests.bats ${{ matrix.test_name }}"
+        sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
