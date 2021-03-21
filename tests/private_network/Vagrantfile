@@ -1,0 +1,12 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # private network doesnt work with tinycore, use
+  # debian10 box for test
+  config.vm.box = "generic/debian10"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.define :test_vm1 do |test_vm1|
+    test_vm1.vm.network :private_network, :ip => "10.20.30.40"
+  end
+end
