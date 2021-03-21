@@ -1,6 +1,29 @@
-VAGRANT_CMD=/tmp/exec/vagrant
-#VAGRANT_CMD=vagrant
+SCRIPT_DIR="$( cd "$BATS_TEST_DIRNAME" &> /dev/null && pwd )"
+export PATH=$(dirname ${SCRIPT_DIR})/bin:${PATH}
+
+VAGRANT_CMD=vagrant
 VAGRANT_OPT="--provider=libvirt"
+
+TEMPDIR=
+
+setup_file() {
+  # set VAGRANT_HOME to something else to reuse for tests to avoid clashes with
+  # user installed plugins when running tests locally.
+  #
+  # note this doesn't get called if using the one_test.sh script
+  # so it is necessary in those cases to supply VAGRANT_HOME manually.
+  if [ -z "${VAGRANT_HOME:-}" ]
+  then
+    TEMPDIR=$(mktemp -d 2>/dev/null)
+
+    export VAGRANT_HOME=${TEMPDIR}/.vagrant.d
+    echo "# Using ${VAGRANT_HOME} for VAGRANT_HOME" >&3
+  fi
+}
+
+teardown_file() {
+  [ -n "${TEMPDIR:-}" ] && [ -d "${TEMPDIR:-}" ] && rm -rf ${TEMPDIR}
+}
 
 cleanup() {
     ${VAGRANT_CMD} destroy -f
