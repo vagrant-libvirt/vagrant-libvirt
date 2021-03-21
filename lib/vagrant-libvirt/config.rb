@@ -1039,7 +1039,11 @@ module VagrantPlugins
             inputs[:username] = @username if @username
             inputs[:id_ssh_key_file] = @id_ssh_key_file if @id_ssh_key_file
 
-            proxy_command = @proxy_command % inputs
+            proxy_command = @proxy_command
+            # avoid needing to escape '%' symbols
+            inputs.each do |key, value|
+              proxy_command.gsub!("{#{key}}", value)
+            end
           end
 
           @proxy_command = proxy_command

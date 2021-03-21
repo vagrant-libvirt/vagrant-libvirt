@@ -395,15 +395,15 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         # provide custom template
         [
-          {:connect_via_ssh => true, :host => 'remote', :proxy_command => "ssh %{host} nc %%h %%p" },
+          {:connect_via_ssh => true, :host => 'remote', :proxy_command => "ssh {host} nc %h %p" },
           "ssh remote nc %h %p",
         ],
         [
-          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh %{host} nc %%h %%p" },
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh {host} nc %h %p" },
           "ssh remote nc %h %p",
         ],
         [
-          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh %{host} -l %{username} nc %%h %%p" },
+          {:connect_via_ssh => true, :host => 'remote', :username => 'myuser', :proxy_command => "ssh {host} -l {username} nc %h %p" },
           "ssh remote -l myuser nc %h %p",
         ],
       ].each do |inputs, proxy_command, options|
