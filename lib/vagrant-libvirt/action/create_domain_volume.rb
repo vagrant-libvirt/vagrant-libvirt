@@ -25,15 +25,15 @@ module VagrantPlugins
           @name = "#{env[:domain_name]}.img"
 
           # Verify the volume doesn't exist already.
-          domain_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:machine].provider.driver.connection.volumes.all, @name
-          )
-          raise Errors::DomainVolumeExists if domain_volume
+          domain_volume = env[:machine].provider.driver.connection.volumes.all(
+            name: @name
+          ).first
+          raise Errors::DomainVolumeExists if domain_volume && domain_volume.id
 
           # Get path to backing image - box volume.
-          box_volume = ProviderLibvirt::Util::Collection.find_matching(
-            env[:machine].provider.driver.connection.volumes.all, env[:box_volume_name]
-          )
+          box_volume = env[:machine].provider.driver.connection.volumes.all(
+            name: env[:box_volume_name]
+          ).first
           @backing_file = box_volume.path
 
           # Virtual size of image. Take value worked out by HandleBoxImage
@@ -51,7 +51,6 @@ module VagrantPlugins
                   xml.permissions do
                     xml.owner storage_uid(env)
                     xml.group storage_gid(env)
-                    xml.mode '0600'
                     xml.label 'virt_image_t'
                   end
                 end
@@ -61,7 +60,6 @@ module VagrantPlugins
                   xml.permissions do
                     xml.owner storage_uid(env)
                     xml.group storage_gid(env)
-                    xml.mode '0600'
                     xml.label 'virt_image_t'
                   end
                 end
@@ -71,7 +69,7 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
-            if config.snapshot_pool_name != 'default'
+            if config.snapshot_pool_name != config.storage_pool_name
                 pool_name = config.snapshot_pool_name
             else
                 pool_name = config.storage_pool_name

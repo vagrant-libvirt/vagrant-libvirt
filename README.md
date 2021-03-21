@@ -13,49 +13,63 @@ can help a lot :-)
 
 ## Index
 
+<!-- note in vim set "let g:vmt_list_item_char='-'" to generate the correct output -->
+<!-- vim-markdown-toc GFM -->
 
-- [Features](#features)
-- [Future work](#future-work)
-- [Installation](#installation)
-  - [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
-- [Vagrant Project Preparation](#vagrant-project-preparation)
-  - [Add Box](#add-box)
-  - [Create Vagrantfile](#create-vagrantfile)
-  - [Start VM](#start-vm)
-  - [How Project Is Created](#how-project-is-created)
-  - [Libvirt Configuration](#libvirt-configuration)
-  - [Provider Options](#provider-options)
-  - [Domain Specific Options](#domain-specific-options)
-    - [Reload behavior](#reload-behavior)
-- [Networks](#networks)
-  - [Private Network Options](#private-network-options)
-  - [Public Network Options](#public-network-options)
-  - [Management Network](#management-network)
-- [Additional Disks](#additional-disks)
-    - [Reload behavior](#reload-behavior-1)
-- [CDROMs](#cdroms)
-- [Input](#input)
-- [PCI device passthrough](#pci-device-passthrough)
-- [Using USB Devices](#using-usb-devices)
-  - [USB Controller Configuration](#usb-controller-configuration)
-  - [USB Device Passthrough](#usb-device-passthrough)
-  - [USB Redirector Devices](#usb-redirector-devices)
-- [Random number generator passthrough](#random-number-generator-passthrough)
-- [Watchdog·Device](#watchdog-device)
-- [Smartcard device](#smartcard-device)
-- [Hypervisor Features](#hypervisor-features)
-- [CPU Features](#cpu-features)
-- [No box and PXE boot](#no-box-and-pxe-boot)
-- [SSH Access To VM](#ssh-access-to-vm)
-- [Forwarded Ports](#forwarded-ports)
-- [Synced Folders](#synced-folders)
-- [QEMU Session Support](#qemu-session-support)
-- [Customized Graphics](#customized-graphics)
-- [Box Format](#box-format)
-- [Create Box](#create-box)
-- [Package Box from VM](#package-box-from-vm)
-- [Development](#development)
-- [Contributing](#contributing)
+* [Features](#features)
+* [Future work](#future-work)
+* [Using Docker based Installation](#using-docker-based-installation)
+* [Installation](#installation)
+  * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
+  * [Additional Notes for Fedora and Similar Linux Distributions](#additional-notes-for-fedora-and-similar-linux-distributions)
+* [Vagrant Project Preparation](#vagrant-project-preparation)
+  * [Add Box](#add-box)
+  * [Create Vagrantfile](#create-vagrantfile)
+  * [Start VM](#start-vm)
+  * [How Project Is Created](#how-project-is-created)
+  * [Libvirt Configuration](#libvirt-configuration)
+  * [Provider Options](#provider-options)
+  * [Domain Specific Options](#domain-specific-options)
+    * [Reload behavior](#reload-behavior)
+* [Networks](#networks)
+  * [Private Network Options](#private-network-options)
+  * [Public Network Options](#public-network-options)
+  * [Management Network](#management-network)
+* [Additional Disks](#additional-disks)
+  * [Reload behavior](#reload-behavior-1)
+* [CDROMs](#cdroms)
+* [Input](#input)
+* [PCI device passthrough](#pci-device-passthrough)
+* [Using USB Devices](#using-usb-devices)
+  * [USB Controller Configuration](#usb-controller-configuration)
+  * [USB Device Passthrough](#usb-device-passthrough)
+  * [USB Redirector Devices](#usb-redirector-devices)
+    * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
+* [Random number generator passthrough](#random-number-generator-passthrough)
+* [Watchdog device](#watchdog-device)
+* [Smartcard device](#smartcard-device)
+* [Hypervisor Features](#hypervisor-features)
+* [Clock](#clock)
+* [CPU features](#cpu-features)
+* [Memory Backing](#memory-backing)
+* [No box and PXE boot](#no-box-and-pxe-boot)
+* [SSH Access To VM](#ssh-access-to-vm)
+* [Forwarded Ports](#forwarded-ports)
+* [Synced Folders](#synced-folders)
+* [QEMU Session Support](#qemu-session-support)
+* [Customized Graphics](#customized-graphics)
+* [TPM Devices](#tpm-devices)
+* [Memory balloon](#memory-balloon)
+* [Libvirt communication channels](#libvirt-communication-channels)
+* [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
+* [Box Format](#box-format)
+* [Create Box](#create-box)
+* [Package Box from VM](#package-box-from-vm)
+* [Troubleshooting VMs](#troubleshooting-vms)
+* [Development](#development)
+* [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
 
 ## Features
 
@@ -82,6 +96,61 @@ can help a lot :-)
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
 
+## Using Docker based Installation
+
+Due to the number of issues encountered around compatibility between the ruby runtime environment
+that is part of the upstream vagrant installation and the library dependencies of libvirt that
+this project requires to communicate with libvirt, there is a docker image build and published.
+
+This should allow users to execute vagrant with vagrant-libvirt without needing to deal with
+the compatibility issues, though you may need to extend the image for your own needs should
+you make use of additional plugins.
+
+To get the image:
+```bash
+docker pull vagrantlibvirt/vagrant-libvirt:latest
+```
+
+Preparing the docker run, only once:
+
+```bash
+mkdir -p ~/.vagrant.d/{boxes,data,tmp}
+```
+
+Running the image:
+```bash
+docker run -it --rm \
+  -e LIBVIRT_DEFAULT_URI \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(pwd):$(pwd) \
+  -w $(pwd) \
+  --network host \
+  vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant status
+```
+
+It's possible to define an alias in `~/.bashrc`, for example:
+```bash
+alias vagrant='
+  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
+  docker run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v ~/.vagrant.d:/.vagrant.d \
+    -v $(pwd):$(pwd) \
+    -w $(pwd) \
+    --network host \
+    vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant'
+```
+
+Note that if you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
+
 ## Installation
 
 First, you should have both QEMU and Libvirt installed if you plan to run VMs
@@ -94,14 +163,26 @@ KVM type virtual machines with `virsh` or `virt-manager`.
 
 Next, you must have [Vagrant
 installed](http://docs.vagrantup.com/v2/installation/index.html).
-Vagrant-libvirt supports Vagrant 1.5, 1.6, 1.7 and 1.8.
+Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
+releases from 1.5 onwards but they are not actively tested.
+
+Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+for the current list of tested versions.
+
 *We only test with the upstream version!* If you decide to install your distro's
 version and you run into problems, as a first step you should switch to upstream.
 
 Now you need to make sure your have all the build dependencies installed for
 vagrant-libvirt. This depends on your distro. An overview:
 
-* Ubuntu, Debian:
+* Ubuntu 18.10, Debian 9 and up:
+```shell
+apt-get build-dep vagrant ruby-libvirt
+apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+```
+
+* Ubuntu 18.04, Debian 8 and older:
 ```shell
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq-base
@@ -117,7 +198,12 @@ yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 
 * Fedora 22 and up:
 ```shell
-dnf -y install qemu libvirt libvirt-devel ruby-devel gcc
+dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel
+```
+
+* OpenSUSE leap 15.1:
+```shell
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
 ```
 
 * Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
@@ -128,8 +214,16 @@ pacman -S vagrant
 Now you're ready to install vagrant-libvirt using standard [Vagrant
 plugin](http://docs.vagrantup.com/v2/plugins/usage.html) installation methods.
 
+For some distributions you will need to specify `CONFIGURE_ARGS` variable before
+running `vagrant plugin install`:
+
+* Fedora 32 + upstream Vagrant:
+  ```shell
+  export CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64"
+  ```
+
 ```shell
-$ vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-libvirt
 ```
 
 ### Possible problems with plugin installation on Linux
@@ -162,6 +256,69 @@ If you have issues building ruby-libvirt, try the following:
 ```shell
 CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems PATH=/opt/vagrant/embedded/bin:$PATH vagrant plugin install vagrant-libvirt
 ```
+### Additional Notes for Fedora and Similar Linux Distributions
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libssh):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /opt/vagrant/embedded/lib64/libcrypto.so.1.1: version `OPENSSL_1_1_1b' not found (required by /lib64/libssh.so.4) - /home/xxx/.vagrant.d/gems/2.4.6/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+then the following steps have been found to resolve the problem. Thanks to James Reynolds (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472). The specific version of libssh will change over time so references to the rpm in the commands below will need to be adjusted accordingly.
+
+```shell
+# Fedora
+dnf download --source libssh
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/libssh
+cd libssh
+git checkout imports/c8s/libssh-0.9.4-1.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
+rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
+tar xf libssh-0.9.0.tar.xz
+mkdir build
+cd build
+cmake ../libssh-0.9.0 -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
+make
+sudo cp lib/libssh* /opt/vagrant/embedded/lib64
+```
+
+If you encounter the following load error when using the vagrant-libvirt plugin (note the required by libk5crypto):
+
+```shell
+/opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /usr/lib64/libk5crypto.so.3: undefined symbol: EVP_KDF_ctrl, version OPENSSL_1_1_1b - /home/rbelgrave/.vagrant.d/gems/2.4.9/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+```
+
+then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin without setting the `CONFIGURE_ARGS`. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
+
+```shell
+# Fedora
+dnf download --source krb5-libs
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/krb5
+cd krb5
+git checkout imports/c8s/krb5-1.18.2-8.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
+rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
+tar xf krb5-1.18.tar.gz
+cd krb5-1.18/src
+./configure
+make
+sudo cp -P lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
+```
 
 ## Vagrant Project Preparation
 
@@ -175,7 +332,7 @@ You can find more Libvirt-ready boxes at
 example:
 
 ```shell
-vagrant init fedora/24-cloud-base
+vagrant init fedora/32-cloud-base
 ```
 
 ### Create Vagrantfile
@@ -186,7 +343,7 @@ information where necessary. For example:
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.define :test_vm do |test_vm|
-    test_vm.vm.box = "fedora/24-cloud-base"
+    test_vm.vm.box = "fedora/32-cloud-base"
   end
 end
 ```
@@ -243,14 +400,32 @@ URI](http://libvirt.org/uri.html):
   Default is `$HOME/.ssh/id_rsa`. Prepends `$HOME/.ssh/` if no directory
 * `socket` - Path to the Libvirt unix socket (e.g.
   `/var/run/libvirt/libvirt-sock`)
+* `proxy_command` - For advanced usage. When connecting to remote libvirt
+  instances, if the default constructed proxy\_command which uses `-W %h:%p`
+  does not work, set this as needed. It performs interpolation using `{key}`
+  and supports only `{host}`, `{username}`, and `{id_ssh_key_file}`. This is
+  to try and avoid issues with escaping `%` and `$` which might be necessary
+  to the ssh command itself. e.g.:
+  `libvirt.proxy_command = "ssh {host} -l {username} -i {id_ssh_key_file} nc %h %p"`
 * `uri` - For advanced usage. Directly specifies what Libvirt connection URI
   vagrant-libvirt should use. Overrides all other connection configuration
   options
 
+In the event that none of these are set (excluding the `driver` option) the
+provider will attempt to retrieve the uri from the environment variable
+`LIBVIRT_DEFAULT_URI` similar to how virsh works. If any of them are set, it
+will ignore the environment variable. The reason the driver option is ignored
+is that it is not uncommon for this to be explicitly set on the box itself
+and there is no easily to determine whether it is being set by the user or
+the box packager.
+
 Connection-independent options:
 
 * `storage_pool_name` - Libvirt storage pool name, where box image and instance
-  snapshots will be stored.
+  snapshots (if `snapshot_pool_name` is not set) will be stored.
+* `snapshot_pool_name` - Libvirt storage pool name. If set, the created
+  snapshot of the instance will be stored at this location instead of
+  `storage_pool_name`.
 
 For example:
 
@@ -264,6 +439,8 @@ end
 
 ### Domain Specific Options
 
+* `title` - A short description of the domain.
+* `description` - A human readable description of the virtual machine.
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not
   set. Possible values are documented in Libvirt's [description for
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
@@ -273,25 +450,37 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
+  NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
+  * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
+  * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
+  * `:copy_on_read` - Controls whether to copy read backing file into the image file. The value can be either "on" or "off".
+  * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
+    Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
+  * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
   Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
+* `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|
     config.vm.provider :libvirt do |libvirt|
       libvirt.cpus = 4
+      libvirt.cpuset = '1-4,^3,6'
       libvirt.cputopology :sockets => '2', :cores => '2', :threads => '1'
     end
   end
   ```
 
 * `nested` - [Enable nested
-  virtualization](https://github.com/torvalds/linux/blob/master/Documentation/virtual/kvm/nested-vmx.txt).
+  virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
 * `cpu_mode` - [CPU emulation
   mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
@@ -314,10 +503,6 @@ end
   ]
   ```
 * `loader` - Sets path to custom UEFI loader.
-* `volume_cache` - Controls the cache mechanism. Possible values are "default",
-  "none", "writethrough", "writeback", "directsync" and "unsafe". [See
-  driver->cache in Libvirt
-  documentation](http://libvirt.org/formatdomain.html#elementsDisks).
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
 * `initrd` - To specify the initramfs/initrd to use for the guest. Equivalent
@@ -325,7 +510,7 @@ end
 * `random_hostname` - To create a domain name with extra information on the end
   to prevent hostname conflicts.
 * `default_prefix` - The default Libvirt guest name becomes a concatenation of the
-   `<current_directory>_<guest_name>`. The current working directory is the default prefix 
+   `<current_directory>_<guest_name>`. The current working directory is the default prefix
    to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `cmd_line` - Arguments passed on to the guest kernel initramfs or initrd to
   use. Equivalent to qemu `-append`, only possible to use in combination with `initrd` and `kernel`.
@@ -389,6 +574,7 @@ end
 * `tpm_model` - The model of the TPM to which you wish to connect.
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
+* `tpm_version` - The TPM version to use.
 * `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case
   the device tree isn't added in-line to the kernel, it can be manually
   specified here.
@@ -417,7 +603,7 @@ Vagrant.configure("2") do |config|
       domain.memory = 2048
       domain.cpus = 2
       domain.nested = true
-      domain.volume_cache = 'none'
+      domain.disk_driver :cache => 'none'
     end
   end
 
@@ -464,6 +650,7 @@ defined domain:
 * `tpm_model` - Updated
 * `tpm_type` - Updated
 * `tpm_path` - Updated
+* `tpm_version` - Updated
 
 ## Networks
 
@@ -593,8 +780,8 @@ starts with `libvirt__` string. Here is a list of those options:
   only when dhcp is enabled.By default is the same host that runs the DHCP
   server.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
-* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `nat` or
-  `route` options.  This option is used only when creating new network. Mode
+* `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `open`, `nat`
+  or `route` options.  This option is used only when creating new network. Mode
   `none` will create isolated network without NATing or routing outside. You
   will want to use NATed forwarding typically to reach networks outside of
   hypervisor. Routed forwarding is typically useful to reach other networks
@@ -673,6 +860,7 @@ virtual network.
 * `:portgroup` - Name of Libvirt portgroup to connect to.
 * `:ovs` - Support to connect to an Open vSwitch bridge device. Default is
   'false'.
+* :ovs_interfaceid - Add Open vSwitch 'interfaceid' parameter.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
   are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default is 'false'.
@@ -691,8 +879,8 @@ used by this network are configurable at the provider level.
   connected. Must include the address and subnet mask. If not specified the
   default is '192.168.121.0/24'.
 * `management_network_mode` - Network mode for the Libvirt management network.
-  Specify one of veryisolated, none, nat or route options. Further documented
-  under [Private Networks](#private-network-options)
+  Specify one of veryisolated, none, open, nat or route options. Further
+  documented under [Private Networks](#private-network-options)
 * `management_network_guest_ipv6` - Enable or disable guest-to-guest IPv6
   communication. See
   [here](https://libvirt.org/formatnetwork.html#examplesPrivate6), and
@@ -725,16 +913,24 @@ It has a number of options:
 * `size` - Size of the disk image. If unspecified, defaults to 10G.
 * `type` - Type of disk image to create. Defaults to *qcow2*.
 * `bus` - Type of bus to connect device to. Defaults to *virtio*.
-* `cache` - Cache mode to use, e.g. `none`, `writeback`, `writethrough` (see
-  the [libvirt documentation for possible
-  values](http://libvirt.org/formatdomain.html#elementsDisks) or
-  [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html)
-  for a fuller explanation). Defaults to *default*.
 * `allow_existing` - Set to true if you want to allow the VM to use a
   pre-existing disk. If the disk doesn't exist it will be created.
   Disks with this option set to true need to be removed manually.
 * `shareable` - Set to true if you want to simulate shared SAN storage.
 * `serial` - Serial number of the disk device.
+* `wwn` - WWN number of the disk device.
+
+The following disk performance options can also be configured
+(see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks)
+or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation).
+In all cases, the options use the hypervisor default if not specified, or if set to `nil`.
+
+* `cache` - Cache mode to use. Value may be `default`, `none`, `writeback`, `writethrough`, `directsync` or `unsafe`.
+* `io` - Controls specific policies on I/O. Value may be `threads` or `native`.
+* `copy_on_read` - Controls whether to copy read backing file into the image file. Value may be `on` or `off`.
+* `discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Value may be `unmap` or `ignore`.
+  Note: for discard to work, you will likely also need to set `:bus => 'scsi'`
+* `detect_zeroes` - Controls whether to detect zero write requests. Value may be `off`, `on` or `unmap`.
 
 The following example creates two additional disks.
 
@@ -742,7 +938,7 @@ The following example creates two additional disks.
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.storage :file, :size => '20G'
-    libvirt.storage :file, :size => '40G', :type => 'raw'
+    libvirt.storage :file, :size => '40G', :bus => 'scsi', :type => 'raw', :discard => 'unmap', :detect_zeroes => 'on'
   end
 end
 ```
@@ -811,29 +1007,30 @@ end
 
 You can specify multiple PCI devices to passthrough to the VM via
 `libvirt.pci`. Available options are listed below. Note that all options are
-required:
+required, except domain, which defaults to `0x0000`:
 
+* `domain` - The domain of the PCI device
 * `bus` - The bus of the PCI device
 * `slot` - The slot of the PCI device
 * `function` - The function of the PCI device
 
 You can extract that information from output of `lspci` command. First
-characters of each line are in format `[<bus>]:[<slot>].[<func>]`. For example:
+characters of each line are in format `[<domain>]:[<bus>]:[<slot>].[<func>]`. For example:
 
 ```shell
 $ lspci| grep NVIDIA
-03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
+0000:03:00.0 VGA compatible controller: NVIDIA Corporation GK110B [GeForce GTX TITAN Black] (rev a1)
 ```
 
-In that case `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
+In that case `domain` is `0x0000`, `bus` is `0x03`, `slot` is `0x00` and `function` is `0x0`.
 
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    libvirt.pci :bus => '0x06', :slot => '0x12', :function => '0x5'
+    libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
     # Add another one if it is neccessary
-    libvirt.pci :bus => '0x03', :slot => '0x00', :function => '0x0'
+    libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
 ```
@@ -1063,6 +1260,27 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Clock
+
+Clock offset can be specified via `libvirt.clock_offset`. (Default is utc)
+
+Additionally timers can be specified via `libvirt.clock_timer`.
+Available options for timers are: name, track, tickpolicy, frequency, mode,  present
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Set clock offset to localtime
+    libvirt.clock_offset = 'localtime'
+    # Timers ...
+    libvirt.clock_timer :name => 'rtc', :tickpolicy => 'catchup'
+    libvirt.clock_timer :name => 'pit', :tickpolicy => 'delay'
+    libvirt.clock_timer :name => 'hpet', :present => 'no'
+    libvirt.clock_timer :name => 'hypervclock', :present => 'yes'
+  end
+end
+```
+
 ## CPU features
 
 You can specify CPU feature policies via `libvirt.cpu_feature`. Available
@@ -1245,7 +1463,14 @@ public network interface and you must connect to Libvirt via ssh.
 
 ## QEMU Session Support
 
-vagrant-libvirt supports using the QEMU session connection to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+vagrant-libvirt supports using QEMU user sessions to maintain Vagrant VMs. As the session connection does not have root access to the system features which require root will not work. Access to networks created by the system QEMU connection can be granted by using the [QEMU bridge helper](https://wiki.qemu.org/Features/HelperNetworking). The bridge helper is enabled by default on some distros but may need to be enabled/installed on others.
+
+There must be a virbr network defined in the QEMU system session. The libvirt `default` network which comes by default, the vagrant `vagrant-libvirt` network which is generated if you run a Vagrantfile using the System session, or a manually defined network can be used. These networks can be set to autostart with `sudo virsh net-autostart <net-name>`, which'll mean no further root access is required even after reboots.
+
+The QEMU bridge helper is configured via `/etc/qemu/bridge.conf`. This file must include the virbr you wish to use (e.g. virbr0, virbr1, etc). You can find this out via `sudo virsh net-dumpxml <net-name>`.
+```
+allow virbr0
+```
 
 An example configuration of a machine using the QEMU session connection:
 
@@ -1256,11 +1481,11 @@ Vagrant.configure("2") do |config|
     libvirt.qemu_use_session = true
     # URI of QEMU session connection, default is as below
     libvirt.uri = 'qemu:///session'
-    # URI of QEMU system connection, use to obtain IP address for management
+    # URI of QEMU system connection, use to obtain IP address for management, default is below
     libvirt.system_uri = 'qemu:///system'
     # Path to store Libvirt images for the virtual machine, default is as ~/.local/share/libvirt/images
     libvirt.storage_pool_path = '/home/user/.local/share/libvirt/images'
-    # Management network device
+    # Management network device, default is below
     libvirt.management_network_device = 'virbr0'
   end
 
@@ -1297,13 +1522,14 @@ Modern versions of Libvirt support connecting to TPM devices on the host
 system. This allows you to enable Trusted Boot Extensions, among other
 features, on your guest VMs.
 
-In general, you will only need to modify the `tpm_path` variable in your guest
-configuration. However, advanced usage, such as the application of a Software
-TPM, may require modifying the `tpm_model` and `tpm_type` variables.
+To passthrough a hardware TPM, you will generally only need to modify the
+`tpm_path` variable in your guest configuration. However, advanced usage,
+such as the application of a Software TPM, may require modifying the
+`tpm_model`, `tpm_type` and `tpm_version` variables.
 
-The TPM options will only be used if you specify a TPM path. Declarations of
-any TPM options without specifying a path will result in those options being
-ignored.
+The TPM options will only be used if you specify a TPM path or version.
+Declarations of any TPM options without specifying a path or version will
+result in those options being ignored.
 
 Here is an example of using the TPM options:
 
@@ -1313,6 +1539,41 @@ Vagrant.configure("2") do |config|
     libvirt.tpm_model = 'tpm-tis'
     libvirt.tpm_type = 'passthrough'
     libvirt.tpm_path = '/dev/tpm0'
+  end
+end
+```
+
+It's also possible for Libvirt to start an emulated TPM device on the host.
+Requires `swtpm` and `swtpm-tools`
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.tpm_model = "tpm-crb"
+    libvirt.tpm_type = "emulator"
+    libvirt.tpm_version = "2.0"
+  end
+end
+```
+
+## Memory balloon
+
+The configuration of the memory balloon device can be overridden. By default,
+libvirt will automatically attach a memory balloon; this behavior is preserved
+by not configuring any memballoon-related options. The memory balloon can be
+explicitly disabled by setting `memballoon_enabled` to `false`. Setting
+`memballoon_enabled` to `true` will allow additional configuration of
+memballoon-related options.
+
+Here is an example of using the memballoon options:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memballoon_enabled = true
+    libvirt.memballoon_model = 'virtio'
+    libvirt.memballoon_pci_bus = '0x00'
+    libvirt.memballoon_pci_slot = '0x0f'
   end
 end
 ```
@@ -1362,7 +1623,7 @@ For example:
 
 ```ruby
 Vagrant.configure(2) do |config|
-  config.vm.box = "fedora/24-cloud-base"
+  config.vm.box = "fedora/32-cloud-base"
   config.vm.provider :libvirt do |libvirt|
     libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
   end
@@ -1388,8 +1649,8 @@ Vagrant.configure(2) do |config|
 end
 ```
 
-## Custom command line arguments
-You can also specify multiple qemuargs arguments for qemu-system
+## Custom command line arguments and environment variables
+You can also specify multiple qemuargs arguments or qemuenv environment variables for qemu-system
 
 * `value` - Value
 
@@ -1398,6 +1659,9 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.qemuargs :value => "-device"
     libvirt.qemuargs :value => "intel-iommu"
+    libvirt.qemuenv QEMU_AUDIO_DRV: 'pa'
+    libvirt.qemuenv QEMU_AUDIO_TIMER_PERIOD: '150'
+    libvirt.qemuenv QEMU_PA_SAMPLES: '1024', QEMU_PA_SERVER: '/run/user/1000/pulse/native'
   end
 end
 ```
@@ -1417,6 +1681,23 @@ The box is a tarball containing:
   configuration for this provider
 
 ## Create Box
+
+If creating a box from a modified vagrant-libvirt machine, ensure that
+you have set the `config.ssh.insert_key = false` in the original Vagrantfile
+as otherwise Vagrant will replace the default connection key-pair that is
+required on first boot with one specific to the machine and prevent
+the default key from working on the exported result.
+```ruby
+Vagrant.configure("2") do |config|
+  # this setting is only recommended if planning to export the
+  # resulting machine
+  config.ssh.insert_key = false
+
+  config.vm.define :test_vm do |test_vm|
+    test_vm.vm.box = "fedora/32-cloud-base"
+  end
+end
+```
 
 To create a vagrant-libvirt box from a qcow2 image, run `create_box.sh`
 (located in the tools directory):
@@ -1447,6 +1728,14 @@ documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
 further details especially on default sysprep operations enabled for
 your system.
 
+Options to the virt-sysprep command call can be passed via
+`VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS` environment variable.
+
+```shell
+$ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS="--delete /etc/hostname"
+$ vagrant package
+```
+
 For example, on Chef [bento](https://github.com/chef/bento) VMs that
 require SSH hostkeys already set (e.g. bento/debian-7) as well as leave
 existing LVM UUIDs untouched (e.g. bento/ubuntu-18.04), these can be
@@ -1456,6 +1745,42 @@ packaged into vagrant-libvirt boxes like so:
 $ export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS="defaults,-ssh-userdir,-ssh-hostkeys,-lvm-uuids"
 $ vagrant package
 ```
+
+## Troubleshooting VMs
+
+The first step for troubleshooting a VM image that appears to not boot correctly,
+or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
+to remember is that if the VM doesn't get an IP, then vagrant can't communicate
+with it to configure anything, so a problem at this stage is likely to come from
+the VM, but we'll outline the tools and common problems to help you troubleshoot
+that.
+
+By default, when you create a new VM, a vnc server will listen on `127.0.0.1` on
+port `TCP5900`. If you connect with a vnc viewer you can see the boot process. If
+your VM isn't listening on `5900` by default, you can use `virsh dumpxml` to find
+out which port it's listening on, or can configure it with `graphics_port` and
+`graphics_ip` (see 'Domain Specific Options' above).
+
+Note: Connecting with the console (`virsh console`) requires additional config,
+so some VMs may not show anything on the console at all, instead displaying it in
+the VNC console. The issue with the text console is that you also need to build the
+image used to tell the kernel to output to the console during boot, and typically
+most do not have this built in.
+
+Problems we've seen in the past include:
+- Forgetting to remove `/etc/udev/rules.d/70-persistent-net.rules` before packaging
+the VM
+- VMs expecting a specific disk device to be connected
+
+If you're still confused, check the Github Issues for this repo for anything that
+looks similar to your problem.
+
+[Github Issue #1032](https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032)
+contains some historical troubleshooting for VMs that appeared to hang.
+
+Did you hit a problem that you'd like to note here to save time in the future?
+Please do!
+
 
 ## Development
 
@@ -1499,3 +1824,8 @@ $ bundle exec vagrant up --provider=libvirt
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+<!--
+ # styling for TOC
+ vim: expandtab shiftwidth=2
+-->

@@ -21,7 +21,7 @@ module VagrantPlugins
           env[:metrics] ||= {}
 
           # Get domain object
-          domain = env[:machine].provider.driver.get_domain(env[:machine].id.to_s)
+          domain = env[:machine].provider.driver.get_domain(env[:machine])
           if domain.nil?
             raise Errors::NoDomainError,
                   error_message: "Domain #{env[:machine].id} not found"
@@ -34,33 +34,13 @@ module VagrantPlugins
           @logger.debug("Searching for IP for MAC address: #{domain.mac}")
           env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ip'))
 
-          if env[:machine].provider_config.qemu_use_session
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
+          env[:metrics]['instance_ip_time'] = Util::Timer.time do
+            retryable(on: Fog::Errors::TimeoutError, tries: 300) do
+              # just return if interrupted and let the warden call recover
+              return if env[:interrupted]
 
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  env[:ip_address] = env[:machine].provider.driver.get_ipaddress_system(domain.mac)
-                  !env[:ip_address].nil?
-                end
-              end
-            end
-          else
-            env[:metrics]['instance_ip_time'] = Util::Timer.time do
-              retryable(on: Fog::Errors::TimeoutError, tries: 300) do
-                # If we're interrupted don't worry about waiting
-                return terminate(env) if env[:interrupted]
-
-                # Wait for domain to obtain an ip address
-                domain.wait_for(2) do
-                  addresses.each_pair do |_type, ip|
-                    env[:ip_address] = ip[0] unless ip[0].nil?
-                  end
-                  !env[:ip_address].nil?
-                end
-              end
+              # Wait for domain to obtain an ip address
+              env[:ip_address] = env[:machine].provider.driver.get_domain_ipaddress(env[:machine], domain)
             end
           end
 
@@ -84,8 +64,8 @@ module VagrantPlugins
               end
             end
           end
-          # if interrupted above, just terminate immediately
-          return terminate(env) if env[:interrupted]
+          # just return if interrupted and let the warden call recover
+          return if env[:interrupted]
           @logger.info("Time for SSH ready: #{env[:metrics]['instance_ssh_time']}")
 
           # Booted and ready for use.
@@ -95,8 +75,6 @@ module VagrantPlugins
         end
 
         def recover(env)
-          return if env['vagrant.error'].is_a?(Vagrant::Errors::VagrantError)
-
           # Undo the import
           terminate(env)
         end

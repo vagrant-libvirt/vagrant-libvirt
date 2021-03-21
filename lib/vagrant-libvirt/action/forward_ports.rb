@@ -98,6 +98,7 @@ module VagrantPlugins
             Port=#{ssh_info[:port]}
             UserKnownHostsFile=/dev/null
             ExitOnForwardFailure=yes
+            ControlMaster=no
             StrictHostKeyChecking=no
             PasswordAuthentication=no
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
@@ -106,10 +107,10 @@ module VagrantPlugins
                 "IdentityFile='\"#{pk}\"'"
               end).map { |s| s.prepend('-o ') }.join(' ')
 
-          options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.connect_via_ssh
+          options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.proxy_command
 
           # TODO: instead of this, try and lock and get the stdin from spawn...
-          ssh_cmd = 'exec '
+          ssh_cmd = ''
           if host_port <= 1024
             @@lock.synchronize do
               # TODO: add i18n
@@ -127,7 +128,7 @@ module VagrantPlugins
           log_file = ssh_forward_log_file(host_ip, host_port,
                                           guest_ip, guest_port)
           @logger.info "Logging to #{log_file}"
-          spawn(ssh_cmd, [:out, :err] => [log_file, 'w'])
+          spawn(ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
         end
 
         def ssh_forward_log_file(host_ip, host_port, guest_ip, guest_port)

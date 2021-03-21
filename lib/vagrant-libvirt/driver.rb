@@ -60,12 +60,12 @@ module VagrantPlugins
         @@system_connection
       end
 
-      def get_domain(mid)
+      def get_domain(machine)
         begin
-          domain = connection.servers.get(mid)
+          domain = connection.servers.get(machine.id)
         rescue Libvirt::RetrieveError => e
           if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
-            @logger.debug("machine #{mid} not found #{e}.")
+            @logger.debug("machine #{machine.name} domain not found #{e}.")
             return nil
           else
             raise e
@@ -75,34 +75,31 @@ module VagrantPlugins
         domain
       end
 
-      def created?(mid)
-        domain = get_domain(mid)
+      def created?(machine)
+        domain = get_domain(machine)
         !domain.nil?
       end
 
       def get_ipaddress(machine)
         # Find the machine
-        domain = get_domain(machine.id)
-        if @machine.provider_config.qemu_use_session
-          return get_ipaddress_system domain.mac
-        end
+        domain = get_domain(machine)
 
         if domain.nil?
           # The machine can't be found
           return nil
         end
 
+        get_domain_ipaddress(machine, domain)
+      end
+
+      def get_domain_ipaddress(machine, domain)
+        if @machine.provider_config.qemu_use_session
+          return get_ipaddress_from_system domain.mac
+        end
+
         # Get IP address from arp table
-        ip_address = nil
         begin
-          domain.wait_for(2) do
-            addresses.each_pair do |_type, ip|
-              # Multiple leases are separated with a newline, return only
-              # the most recent address
-              ip_address = ip[0].split("\n").first unless ip[0].nil?
-            end
-            !ip_address.nil?
-          end
+          ip_address = get_ipaddress_from_domain(domain)
         rescue Fog::Errors::TimeoutError
           @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
         end
@@ -115,23 +112,10 @@ module VagrantPlugins
         ip_address
       end
 
-      def get_ipaddress_system(mac)
-        ip_address = nil
-
-        system_connection.list_all_networks.each do |net|
-          leases = net.dhcp_leases(mac, 0)
-          # Assume the lease expiring last is the current IP address
-          ip_address = leases.sort_by { |lse| lse["expirytime"] }.last["ipaddr"] if !leases.empty?
-          break if ip_address
-        end
-
-        return ip_address
-      end
-
       def state(machine)
         # may be other error states with initial retreival we can't handle
         begin
-          domain = get_domain(machine.id)
+          domain = get_domain(machine)
         rescue Libvirt::RetrieveError => e
           @logger.debug("Machine #{machine.id} not found #{e}.")
           return :not_created
@@ -142,6 +126,37 @@ module VagrantPlugins
 
         domain.state.tr('-', '_').to_sym
       end
+
+      private
+
+      def get_ipaddress_from_system(mac)
+        ip_address = nil
+
+        system_connection.list_all_networks.each do |net|
+          leases = net.dhcp_leases(mac, 0)
+          # Assume the lease expiring last is the current IP address
+          ip_address = leases.sort_by { |lse| lse["expirytime"] }.last["ipaddr"] if !leases.empty?
+          break if ip_address
+        end
+
+        ip_address
+      end
+
+      def get_ipaddress_from_domain(domain)
+        ip_address = nil
+        domain.wait_for(2) do
+          addresses.each_pair do |type, ip|
+            # Multiple leases are separated with a newline, return only
+            # the most recent address
+            ip_address = ip[0].split("\n").first if ip[0] != nil
+          end
+
+          ip_address != nil
+        end
+
+        ip_address
+      end
+
     end
   end
 end

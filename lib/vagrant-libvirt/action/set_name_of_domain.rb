@@ -13,19 +13,16 @@ module VagrantPlugins
           env[:domain_name] = build_domain_name(env)
 
           begin
-            @logger.info("Looking for domain #{env[:domain_name]} through list " \
-                         "#{env[:machine].provider.driver.connection.servers.all}")
+            @logger.info("Looking for domain #{env[:domain_name]}")
             # Check if the domain name is not already taken
 
-            domain = ProviderLibvirt::Util::Collection.find_matching(
-              env[:machine].provider.driver.connection.servers.all, env[:domain_name]
+            domain = env[:machine].provider.driver.connection.servers.all(
+              name: env[:domain_name]
             )
-          rescue Fog::Errors::Error => e
+          rescue Libvirt::RetrieveError => e
             @logger.info(e.to_s)
             domain = nil
           end
-
-          @logger.info("Looking for domain #{env[:domain_name]}")
 
           unless domain.nil?
             raise ProviderLibvirt::Errors::DomainNameExists,

@@ -12,18 +12,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
   include_context 'libvirt'
   include_context 'unit'
 
+  let (:driver) { double('driver') }
+
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:get_domain).and_return(domain)
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state)
-        .and_return(:running)
+      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Provider).to receive(:driver)
+        .and_return(driver)
+      allow(driver).to receive(:get_domain).and_return(domain)
+      allow(driver).to receive(:state).and_return(:running)
     end
 
     context 'when machine does not exist' do
       before do
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-          .to receive(:get_domain).and_return(nil)
+        allow(driver).to receive(:get_domain).and_return(nil)
       end
 
       it 'raises exception' do
@@ -41,6 +42,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         it 'should exit' do
           expect(app).to_not receive(:call)
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
+          expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
           expect(subject.call(env)).to be_nil
         end
       end
@@ -50,13 +52,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           allow(domain).to receive(:wait_for).and_return(true)
           allow(env).to receive(:[]).and_call_original
           allow(env).to receive(:[]).with(:interrupted).and_return(false, true, true)
-          allow(env).to receive(:[]).with(:ip_address).and_return('192.168.121.2')
+          allow(driver).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
         end
         it 'should exit after getting IP' do
           expect(app).to_not receive(:call)
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
           expect(ui).to receive(:info).with('Waiting for SSH to become available...')
-          logger = subject.instance_variable_get(:@logger)
           expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
           expect(logger).to receive(:info).with('Got IP address 192.168.121.2')
           expect(logger).to receive(:info).with(/Time for getting IP: .*/)
@@ -71,12 +72,16 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         allow(domain).to receive(:wait_for).and_return(true)
         allow(env).to receive(:[]).and_call_original
         allow(env).to receive(:[]).with(:interrupted).and_return(false)
-        allow(env).to receive(:[]).with(:ip_address).and_return('192.168.121.2')
+        allow(driver).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
       end
       it 'should call the next hook' do
         expect(app).to receive(:call)
         expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
         expect(ui).to receive(:info).with('Waiting for SSH to become available...')
+        expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
+        expect(logger).to receive(:info).with('Got IP address 192.168.121.2')
+        expect(logger).to receive(:info).with(/Time for getting IP: .*/)
+        expect(logger).to receive(:info).with(/Time for SSH ready: .*/)
         expect(env[:machine].communicate).to receive(:ready?).and_return(true)
         expect(subject.call(env)).to be_nil
       end
