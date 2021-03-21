@@ -60,12 +60,12 @@ module VagrantPlugins
         @@system_connection
       end
 
-      def get_domain
+      def get_domain(machine)
         begin
-          domain = connection.servers.get(@machine.id)
+          domain = connection.servers.get(machine.id)
         rescue Libvirt::RetrieveError => e
           if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
-            @logger.debug("machine #{@machine.name} domain not found #{e}.")
+            @logger.debug("machine #{machine.name} domain not found #{e}.")
             return nil
           else
             raise e
@@ -75,24 +75,24 @@ module VagrantPlugins
         domain
       end
 
-      def created?
-        domain = get_domain
+      def created?(machine)
+        domain = get_domain(machine)
         !domain.nil?
       end
 
-      def get_ipaddress
+      def get_ipaddress(machine)
         # Find the machine
-        domain = get_domain
+        domain = get_domain(machine)
 
         if domain.nil?
           # The machine can't be found
           return nil
         end
 
-        get_domain_ipaddress(domain)
+        get_domain_ipaddress(machine, domain)
       end
 
-      def get_domain_ipaddress(domain)
+      def get_domain_ipaddress(machine, domain)
         if @machine.provider_config.qemu_use_session
           return get_ipaddress_from_system domain.mac
         end
@@ -101,23 +101,23 @@ module VagrantPlugins
         begin
           ip_address = get_ipaddress_from_domain(domain)
         rescue Fog::Errors::TimeoutError
-          @logger.info('Timeout at waiting for an ip address for machine %s' % @machine.name)
+          @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
         end
 
         unless ip_address
-          @logger.info('No arp table entry found for machine %s' % @machine.name)
+          @logger.info('No arp table entry found for machine %s' % machine.name)
           return nil
         end
 
         ip_address
       end
 
-      def state
+      def state(machine)
         # may be other error states with initial retreival we can't handle
         begin
-          domain = get_domain
+          domain = get_domain(machine)
         rescue Libvirt::RetrieveError => e
-          @logger.debug("Machine #{@machine.id} not found #{e}.")
+          @logger.debug("Machine #{machine.id} not found #{e}.")
           return :not_created
         end
 
