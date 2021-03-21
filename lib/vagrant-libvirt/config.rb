@@ -767,27 +767,7 @@ module VagrantPlugins
           @uri = _generate_uri(@qemu_use_session == UNSET_VALUE ? false : @qemu_use_session)
         end
 
-        # Parse uri to extract individual components
-        uri = _parse_uri(@uri)
-
-        # only set @connect_via_ssh if not explicitly to avoid overriding
-        # and allow an error to occur if the @uri and @connect_via_ssh disagree
-        @connect_via_ssh = uri.scheme.include? "ssh" if @connect_via_ssh == UNSET_VALUE
-
-        # Set qemu_use_session based on the URI if it wasn't set by the user
-        if @qemu_use_session == UNSET_VALUE
-          if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
-            @qemu_use_session = true
-          else
-            @qemu_use_session = false
-          end
-        end
-
-        # Extract host and username values from uri if provided, otherwise nil
-        @host = uri.host
-        @username = uri.user
-
-        finalize_id_ssh_key_file
+        finalize_from_uri
         finalize_proxy_command
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
@@ -994,6 +974,30 @@ module VagrantPlugins
       end
 
       private
+
+      def finalize_from_uri
+        # Parse uri to extract individual components
+        uri = _parse_uri(@uri)
+
+        # only set @connect_via_ssh if not explicitly to avoid overriding
+        # and allow an error to occur if the @uri and @connect_via_ssh disagree
+        @connect_via_ssh = uri.scheme.include? "ssh" if @connect_via_ssh == UNSET_VALUE
+
+        # Set qemu_use_session based on the URI if it wasn't set by the user
+        if @qemu_use_session == UNSET_VALUE
+          if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
+            @qemu_use_session = true
+          else
+            @qemu_use_session = false
+          end
+        end
+
+        # Extract host and username values from uri if provided, otherwise nil
+        @host = uri.host
+        @username = uri.user
+
+        finalize_id_ssh_key_file
+      end
 
       def resolve_ssh_key_file(key_file)
         # set ssh key for access to Libvirt host
