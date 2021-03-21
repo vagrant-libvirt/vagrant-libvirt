@@ -402,9 +402,11 @@ URI](http://libvirt.org/uri.html):
   `/var/run/libvirt/libvirt-sock`)
 * `proxy_command` - For advanced usage. When connecting to remote libvirt
   instances, if the default constructed proxy\_command which uses `-W %h:%p`
-  does not work, set this as needed. It performs interpolation using `%`,
-  therefore it will be necessary to escape e.g.
-  `libvirt.proxy_command = "ssh %{host} -l %{username} -i %{id_ssh_key_file} nc %%h %%p"`
+  does not work, set this as needed. It performs interpolation using `{key}`
+  and supports only `{host}`, `{username}`, and `{id_ssh_key_file}`. This is
+  to try and avoid issues with escaping `%` and `$` which might be necessary
+  to the ssh command itself. e.g.:
+  `libvirt.proxy_command = "ssh {host} -l {username} -i {id_ssh_key_file} nc %h %p"`
 * `uri` - For advanced usage. Directly specifies what Libvirt connection URI
   vagrant-libvirt should use. Overrides all other connection configuration
   options
