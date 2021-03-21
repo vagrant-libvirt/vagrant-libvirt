@@ -97,3 +97,5 @@ jobs:
         EOF
         # run under libvirt group
         sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
+      env:
+        VAGRANT_HOME: ~/.vagrant.d
