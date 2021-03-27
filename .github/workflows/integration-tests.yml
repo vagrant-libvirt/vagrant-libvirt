@@ -18,6 +18,7 @@ jobs:
         - simple vm provision via shell
         - bring up with custom default prefix
         - bring up with second disk
+        - bring up with two disks
         - bring up with adjusted memory settings
         - bring up with adjusted cpu settings
         - ip is reachable with private network
@@ -95,6 +96,7 @@ jobs:
           end
         end
         EOF
+        bash ./tools/create_box_with_two_disks.sh $HOME/.vagrant.d/ ./bin/vagrant
         # run under libvirt group
         sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
       env:
