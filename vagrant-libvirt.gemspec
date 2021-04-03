@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.version       = VagrantPlugins::ProviderLibvirt.get_version
 
-  s.add_development_dependency "contextual_proc"
   s.add_development_dependency "rspec-core", "~> 3.5.0"
   s.add_development_dependency "rspec-expectations", "~> 3.5.0"
   s.add_development_dependency "rspec-mocks", "~> 3.5.0"
