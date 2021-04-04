@@ -44,7 +44,7 @@ module VagrantPlugins
 
             @env[:ui].info(I18n.t(
                              'vagrant.actions.vm.forward_ports.forwarding_entry',
-                             message_attributes
+                             **message_attributes
             ))
 
             if fp[:protocol] == 'udp'
