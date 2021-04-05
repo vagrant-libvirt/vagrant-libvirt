@@ -10,9 +10,10 @@ group :development do
   vagrant_version = ENV['VAGRANT_VERSION']
   if vagrant_version
     gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git',
-      tag: vagrant_version
+      :ref => vagrant_version
   else
-    gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git'
+    gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git',
+      :branch => 'main'
   end
 
   begin
@@ -28,6 +29,10 @@ group :development do
     gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :ref => '161128f2216cee8edb7bcd30da18bd4dea86f98a'
   else
     gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :branch => "main"
+  end
+
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0.0')
+    gem 'rexml'
   end
 
   gem 'pry'
