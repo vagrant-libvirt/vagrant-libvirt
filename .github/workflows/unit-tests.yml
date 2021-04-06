@@ -113,7 +113,7 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel: true
-        base-path: vagrant-libvirt
+        path-to-lcov: ./vagrant-libvirt/coverage/lcov.info
 
 
   finish:
