@@ -87,7 +87,7 @@ jobs:
         pushd ../vagrant/
         # ensure main branch exists
         git checkout -b main
-        sed -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
+        sed -i -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
         bundle config local.vagrant `pwd`
         popd
 
