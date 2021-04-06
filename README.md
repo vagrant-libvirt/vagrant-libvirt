@@ -892,6 +892,8 @@ used by this network are configurable at the provider level.
 * `management_network_pci_slot` -  The slot of the PCI device.
 * `management_network_mac` - MAC address of management network interface.
 * `management_network_domain` - Domain name assigned to the management network.
+* `management_network_mtu` - MTU size of management network. If not specified,
+  the Libvirt default (1500) will be used.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.
