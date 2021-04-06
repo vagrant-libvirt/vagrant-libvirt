@@ -53,7 +53,7 @@ jobs:
       with:
         repository: hashicorp/vagrant
         path: vagrant
-        ref: f7973f00edb9438d0b36085f210c80af71cfe5c5
+        ref: main
     - name: Clone ruby-libvirt for ruby 3.0 support
       if: ${{ matrix.ruby == '3.0.0' }}
       uses: actions/checkout@v2
@@ -85,6 +85,8 @@ jobs:
       run: |
         # ensure vagrant gemspec allows ruby 3.0
         pushd ../vagrant/
+        # pick a known sha1
+        git reset --hard f7973f00edb9438d0b36085f210c80af71cfe5c5
         sed -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
         bundle config local.vagrant `pwd`
         popd
