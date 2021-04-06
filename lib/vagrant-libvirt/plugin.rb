@@ -26,6 +26,7 @@ module VagrantPlugins
       end
 
       action_hook(:remove_libvirt_image) do |hook|
+        require_relative 'action'
         hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
       end
 

@@ -12,7 +12,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
   include_context 'libvirt'
   include_context 'unit'
 
-  let (:driver) { double('driver') }
+  let (:driver) { VagrantPlugins::ProviderLibvirt::Driver.new env[:machine] }
 
   describe '#call' do
     before do
@@ -44,6 +44,24 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
           expect(logger).to receive(:debug).with(/Searching for IP for MAC address: .*/)
           expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'multiple timeouts waiting for IP' do
+        before do
+          allow(env).to receive(:[]).and_call_original
+          allow(env).to receive(:[]).with(:interrupted).and_return(false)
+          allow(logger).to receive(:debug)
+          allow(logger).to receive(:info)
+        end
+
+        it 'should abort after hitting limit' do
+          expect(domain).to receive(:wait_for).at_least(300).times.and_raise(::Fog::Errors::TimeoutError)
+          expect(app).to_not receive(:call)
+          expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
+          expect(ui).to_not receive(:info).with('Waiting for SSH to become available...')
+          expect(env[:machine].communicate).to_not receive(:ready?)
+          expect {subject.call(env) }.to raise_error(::Fog::Errors::TimeoutError)
         end
       end
 

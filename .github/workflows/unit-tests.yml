@@ -39,6 +39,7 @@ jobs:
           - ruby: 2.6.6
             vagrant: v2.2.14
             allow_fail: false
+          # TODO: We should add ruby 3.0, once vagrant can be tested with it.
 
     steps:
     - uses: actions/checkout@v2
