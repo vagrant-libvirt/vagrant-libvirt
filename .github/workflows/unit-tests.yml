@@ -40,7 +40,7 @@ jobs:
             vagrant: v2.2.14
             allow_fail: false
           - ruby: 3.0.0
-            vagrant: HEAD
+            vagrant:
             allow_fail: false
 
     steps:
