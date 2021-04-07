@@ -32,6 +32,8 @@ RUN set -e \
     ;
 
 
+ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+
 FROM base as build
 
 # allow caching of packages for build
@@ -64,12 +66,14 @@ RUN for dir in boxes data tmp; \
     done \
     ;
 
-FROM base as final
-
-ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+FROM base as slim
 
 COPY --from=build /vagrant /vagrant
 COPY entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
+
+FROM build as final
+COPY entrypoint.sh /usr/local/bin/
+
 # vim: set expandtab sw=4:
