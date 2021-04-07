@@ -19,6 +19,7 @@ can help a lot :-)
 * [Features](#features)
 * [Future work](#future-work)
 * [Using Docker based Installation](#using-docker-based-installation)
+  * [Extending the Docker image with additional vagrant plugins](#extending-the-docker-image-with-additional-vagrant-plugins)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
   * [Additional Notes for Fedora and Similar Linux Distributions](#additional-notes-for-fedora-and-similar-linux-distributions)
@@ -106,6 +107,10 @@ This should allow users to execute vagrant with vagrant-libvirt without needing 
 the compatibility issues, though you may need to extend the image for your own needs should
 you make use of additional plugins.
 
+Note the default image contains the full toolchain required to build and install vagrant-libvirt
+and it's dependencies. There is also a smaller image published with the `-slim` suffix if you
+just need vagrant-libvirt and don't need to install any additional plugins for your environment.
+
 To get the image:
 ```bash
 docker pull vagrantlibvirt/vagrant-libvirt:latest
@@ -150,6 +155,20 @@ Note that if you are connecting to a remote system libvirt, you may omit the
 vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
 may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
 looking to use this in place of your distribution provided installation.
+
+### Extending the Docker image with additional vagrant plugins
+
+By default the image published and used contains the entire tool chain required
+to reinstall the vagrant-libvirt plugin and it's dependencies, as this is the
+default behaviour of vagrant anytime a new plugin is installed. This means it
+should be possible to use a simple `FROM` statement and ask vagrant to install
+additional plugins.
+
+```
+FROM vagrantlibvirt/vagrant-libvirt:latest
+
+RUN vagrant plugin install <plugin>
+```
 
 ## Installation
 
