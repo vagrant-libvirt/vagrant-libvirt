@@ -88,14 +88,20 @@ jobs:
         # ensure main branch exists
         git checkout -b main
         sed -i -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
-        bundle config local.vagrant `pwd`
         popd
+
+        bundle config local.vagrant ${PWD}/../vagrant/
 
         # build gem of latest bindings that contain fix for ruby include path
         pushd ../libvirt-ruby
         rake gem
-        gem install pkg/ruby-libvirt-*.gem
         popd
+
+        mkdir -p vendor/bundle/ruby/3.0.0/cache/
+        cp ../libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
+        # need the following to allow the local provided gem to be used instead of the
+        # one from rubygems
+        bundle config set --local disable_checksum_validation true
       working-directory: vagrant-libvirt
     - name: Run bundler using cached path
       run: |
