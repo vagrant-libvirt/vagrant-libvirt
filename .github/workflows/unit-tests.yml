@@ -39,16 +39,35 @@ jobs:
           - ruby: 2.6.6
             vagrant: v2.2.14
             allow_fail: false
+          - ruby: 3.0.0
+            vagrant:
+            allow_fail: false
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        path: vagrant-libvirt
+    - name: Clone vagrant for ruby 3.0 support
+      if: ${{ matrix.ruby == '3.0.0' }}
+      uses: actions/checkout@v2
+      with:
+        repository: hashicorp/vagrant
+        path: vagrant
+        ref: f7973f00edb9438d0b36085f210c80af71cfe5c5
+    - name: Clone ruby-libvirt for ruby 3.0 support
+      if: ${{ matrix.ruby == '3.0.0' }}
+      uses: actions/checkout@v2
+      with:
+        repository: libvirt/libvirt-ruby
+        path: libvirt-ruby
+        ref: 43444be184e4d877c5ce110ee5475c952d7590f7
     - name: Set up libvirt
       run: |
         sudo apt-get update
         sudo apt-get install libvirt-dev
     - uses: actions/cache@v2
       with:
-        path: vendor/bundle
+        path: vagrant-libvirt/vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
         restore-keys: |
           ${{ runner.os }}-gems-
@@ -60,15 +79,41 @@ jobs:
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
         gem update bundler --conservative
+      working-directory: vagrant-libvirt
+    - name: Handle additional ruby 3.0 setup
+      if: ${{ matrix.ruby == '3.0.0' }}
+      run: |
+        # ensure vagrant gemspec allows ruby 3.0
+        pushd ../vagrant/
+        # ensure main branch exists
+        git checkout -b main
+        sed -i -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
+        popd
+
+        bundle config local.vagrant ${PWD}/../vagrant/
+
+        # build gem of latest bindings that contain fix for ruby include path
+        pushd ../libvirt-ruby
+        rake gem
+        popd
+
+        mkdir -p vendor/bundle/ruby/3.0.0/cache/
+        cp ../libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
+        # need the following to allow the local provided gem to be used instead of the
+        # one from rubygems
+        bundle config set --local disable_checksum_validation true
+      working-directory: vagrant-libvirt
     - name: Run bundler using cached path
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
+      working-directory: vagrant-libvirt
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Run tests
       run: |
         bundle exec rspec --color --format documentation
+      working-directory: vagrant-libvirt
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Coveralls Parallel
@@ -76,6 +121,7 @@ jobs:
       with:
         github-token: ${{ secrets.github_token }}
         parallel: true
+        path-to-lcov: ./vagrant-libvirt/coverage/lcov.info
 
 
   finish:

@@ -1,4 +1,4 @@
-require 'contextual_proc'
+require 'support/binding_proc'
 
 require 'spec_helper'
 require 'support/sharedcontext'
@@ -103,7 +103,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             :id_ssh_key_file => nil,
           },
           {
-            :setup => ContextualProc.new {
+            :setup => ProcWithBinding.new {
               expect(File).to_not receive(:file?)
             }
           }
@@ -116,7 +116,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             :id_ssh_key_file => "/home/tests/.ssh/id_rsa",
           },
           {
-            :setup => ContextualProc.new {
+            :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
             }
           }
@@ -263,7 +263,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:connect_via_ssh => true},
           {:uri => 'qemu+ssh://localhost/system?no_verify=1', :id_ssh_key_file => nil},
           {
-            :setup => ContextualProc.new {
+            :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(false)
             }
           }
@@ -272,7 +272,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:connect_via_ssh => true},
           {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa', :id_ssh_key_file => '/home/tests/.ssh/id_rsa'},
           {
-            :setup => ContextualProc.new {
+            :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
             }
           }
@@ -294,7 +294,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           end
 
           if !opts[:setup].nil?
-            opts[:setup].apply(binding)
+            opts[:setup].apply_binding(binding)
           end
 
           inputs.each do |k, v|
@@ -362,7 +362,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:connect_via_ssh => true, :host => 'remote', :username => 'myuser'},
           "ssh 'remote' -l 'myuser' -i '/home/tests/.ssh/id_rsa' -W %h:%p",
           {
-            :setup => ContextualProc.new {
+            :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
             }
           }
@@ -417,7 +417,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           end
 
           if !opts[:setup].nil?
-            opts[:setup].apply(binding)
+            opts[:setup].apply_binding(binding)
           end
 
           inputs.each do |k, v|

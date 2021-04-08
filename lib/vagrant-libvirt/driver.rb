@@ -97,11 +97,13 @@ module VagrantPlugins
           return get_ipaddress_from_system domain.mac
         end
 
-        # Get IP address from arp table
+        # Get IP address from dhcp leases table
         begin
           ip_address = get_ipaddress_from_domain(domain)
         rescue Fog::Errors::TimeoutError
           @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
+
+          raise
         end
 
         unless ip_address
