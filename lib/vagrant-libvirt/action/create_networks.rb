@@ -297,6 +297,9 @@ module VagrantPlugins
 
           @network_ipv6_address = @interface_network[:ipv6_address]
           @network_ipv6_prefix = @interface_network[:ipv6_prefix]
+          
+          @network_bridge_stp = @options[:bridge_stp].nil? ? 'on' : @options[:bridge_stp] ? 'on' : 'off'
+          @network_bridge_delay = @options[:bridge_delay] ? @options[:bridge_delay] : 0
 
           @network_forward_mode = @options[:forward_mode]
           if @options[:forward_device]
