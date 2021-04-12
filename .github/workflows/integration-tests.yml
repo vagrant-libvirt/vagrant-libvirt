@@ -96,7 +96,6 @@ jobs:
           end
         end
         EOF
-        bash ./tools/create_box_with_two_disks.sh $HOME/.vagrant.d/ ./bin/vagrant
         # run under libvirt group
         sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
       env:

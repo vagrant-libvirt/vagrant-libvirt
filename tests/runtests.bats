@@ -16,8 +16,6 @@ setup_file() {
 
     export VAGRANT_HOME=${TEMPDIR}/.vagrant.d
     echo "# Using ${VAGRANT_HOME} for VAGRANT_HOME" >&3
-
-    bash "${SCRIPT_DIR}/../tools/create_box_with_two_disks.sh" "${VAGRANT_HOME}" "${VAGRANT_CMD}"
   fi
 }
 
@@ -83,8 +81,6 @@ cleanup() {
 @test "bring up with two disks" {
   export VAGRANT_CWD=tests/two_disks
   cleanup
-  run create_box_with_two_disks
-  echo "${output}"
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
   echo "${output}"
   echo "status = ${status}"

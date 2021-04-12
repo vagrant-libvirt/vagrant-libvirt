@@ -2,7 +2,8 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "infernix/tinycore-two-disks"
+  config.vm.box = "yamatoRT/tinycore-two-disks"
+  config.vm.box_version = "0.0.2"
   config.ssh.shell = "/bin/sh"
   config.vm.synced_folder ".", "/vagrant", disabled: true
 

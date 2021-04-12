@@ -57,7 +57,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             {
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_0.img", 
-              :virtual_size=>5
+              :virtual_size=>5,
+              :box_format=>"qcow2"
             }
           ]
         )
@@ -115,7 +116,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           'disks' => [
             {
               'name'=>'send_box_name.img',
-              'virtual_size'=> 5
+              'virtual_size'=> 5,
             },
             {
               'path' => 'disk.qcow2',
@@ -139,17 +140,20 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             {
               :path=>"/test/box.img",
               :name=>"send_box_name.img",
-              :virtual_size=>5
+              :virtual_size=>5,
+              :box_format=>"qcow2"
             },
             {
               :path=>"/test/disk.qcow2",
               :name=>"test_vagrant_box_image_1.1.1_1.img", 
-              :virtual_size=>10
+              :virtual_size=>10,
+              :box_format=>"qcow2"
             },
             {
               :path=>"/test/box_2.img",
               :name=>"test_vagrant_box_image_1.1.1_2.img", 
-              :virtual_size=>20
+              :virtual_size=>20,
+              :box_format=>"qcow2"
             }
           ]
         )
