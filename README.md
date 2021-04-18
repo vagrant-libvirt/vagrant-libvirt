@@ -83,7 +83,7 @@ can help a lot :-)
 * SSH into domains.
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
-* Synced folder support via `rsync`, `nfs` or `9p`.
+* Synced folder support via `rsync`, `nfs`, `9p` or `virtiofs`.
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara).
 * Package caching via
   [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
@@ -1416,38 +1416,134 @@ Default is `eth0`.
 
 ## Synced Folders
 
-Vagrant automatically syncs the project folder on the host to `/vagrant` in the guest. You can also configure
-additional synced folders.
+Vagrant automatically syncs the project folder on the host to `/vagrant` in
+the guest. You can also configure additional synced folders.
 
-`vagrant-libvirt` supports bidirectional synced folders via [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [VirtFS](http://www.linux-kvm.org/page/VirtFS) ([9p or Plan 9](https://en.wikipedia.org/wiki/9P_(protocol))) and
-unidirectional via rsync. The default is NFS. Difference between NFS and 9p is explained [here](https://unix.stackexchange.com/questions/240281/virtfs-plan-9-vs-nfs-as-tool-for-share-folder-for-virtual-machine).
+**SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
+public network interface and you must connect to Libvirt via ssh.
 
-You can change the synced folder type for `/vagrant` by explicity configuring
-it an setting the type, e.g.
+**NFS**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: 'rsync'
+`vagrant-libvirt` supports
+[NFS](https://www.vagrantup.com/docs/synced-folders/nfs) as default with
+bidirectional synced folders.
+
+Example with NFS:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant"
+end
 ```
 
-or
+**RSync**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "1000"
+`vagrant-libvirt` supports
+[rsync](https://www.vagrantup.com/docs/synced-folders/rsync) with
+unidirectional synced folders.
+
+Example with rsync:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "rsync"
+end
 ```
 
-or
+**9P**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped", mount: false
-```
+`vagrant-libvirt` supports [VirtFS](http://www.linux-kvm.org/page/VirtFS) ([9p
+or Plan 9](https://en.wikipedia.org/wiki/9P_\(protocol\))) with bidirectional
+synced folders.
+
+Difference between NFS and 9p is explained
+[here](https://unix.stackexchange.com/questions/240281/virtfs-plan-9-vs-nfs-as-tool-for-share-folder-for-virtual-machine).
 
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
 
-Further documentation on using 9p can be found in [kernel docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in [QEMU wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
+Example for `accessmode: "squash"` with 9p:
 
-**SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
-public network interface and you must connect to Libvirt via ssh.
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "9p", disabled: false, accessmode: "squash", owner: "1000"
+end
+```
+
+Example for `accessmode: "mapped"` with 9p:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "9p", disabled: false, accessmode: "mapped", mount: false
+end
+```
+
+Further documentation on using 9p can be found in [kernel
+docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in
+[QEMU
+wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly).
+
+Please do note that 9p depends on support in the guest and not all distros
+come with the 9p module by default.
+
+**Virtio-fs**
+
+`vagrant-libvirt` supports [Virtio-fs](https://virtio-fs.gitlab.io/) with
+bidirectional synced folders.
+
+For virtiofs shares, a `mount: false` option allows to define synced folders
+without mounting them at boot.
+
+So far, passthrough is the only supported access mode and it requires running
+the virtiofsd daemon as root.
+
+QEMU needs to allocate the backing memory for all the guest RAM as shared
+memory, e.g. [Use file-backed
+memory](https://libvirt.org/kbase/virtiofs.html#host-setup) by enable
+`memory_backing_dir` option in `/etc/libvirt/qemu.conf`:
+
+``` shell
+memory_backing_dir = "/dev/shm"
+```
+
+Example for Libvirt \>= 6.2.0 (e.g. Ubuntu 20.10 with Linux 5.8.0 + QEMU 5.0 +
+Libvirt 6.6.0, i.e. NUMA nodes required) with virtiofs:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.numa_nodes = [{ :cpus => "0-1", :memory => 8192, :memAccess => "shared" }]
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+  config.vm.synced_folder "./", "/vagrant", type: "virtiofs"
+end
+```
+
+Example for Libvirt \>= 6.9.0 (e.g. Ubuntu 21.04 with Linux 5.11.0 + QEMU 5.2 +
+Libvirt 7.0.0, or Ubuntu 20.04 + [PPA
+enabled](https://launchpad.net/~savoury1/+archive/ubuntu/virtualisation)) with
+virtiofs:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.memory = 8192
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+  config.vm.synced_folder "./", "/vagrant", type: "virtiofs"
+end
+```
+
+Further documentation on using virtiofs can be found in [official
+HowTo](https://virtio-fs.gitlab.io/index.html#howto) and in [Libvirt
+KB](https://libvirt.org/kbase/virtiofs.html).
+
+Please do note that virtiofs depends on:
+
+  - Host: Linux \>= 5.4, QEMU \>= 4.2 and Libvirt \>= 6.2 (e.g. Ubuntu 20.10)
+  - Guest: Linux \>= 5.4 (e.g. Ubuntu 20.04)
 
 ## QEMU Session Support
 

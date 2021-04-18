@@ -30,9 +30,13 @@ module VagrantPlugins
         hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
       end
 
-      guest_capability('linux', 'mount_p9_shared_folder') do
-        require_relative 'cap/mount_p9'
-        Cap::MountP9
+      guest_capability('linux', 'mount_9p_shared_folder') do
+        require_relative 'cap/mount_9p'
+        Cap::Mount9P
+      end
+      guest_capability('linux', 'mount_virtiofs_shared_folder') do
+        require_relative 'cap/mount_virtiofs'
+        Cap::MountVirtioFS
       end
 
       provider_capability(:libvirt, :nic_mac_addresses) do
@@ -48,8 +52,12 @@ module VagrantPlugins
       # lower priority than nfs or rsync
       # https://github.com/vagrant-libvirt/vagrant-libvirt/pull/170
       synced_folder('9p', 4) do
-        require_relative 'cap/synced_folder'
-        VagrantPlugins::SyncedFolder9p::SyncedFolder
+        require_relative 'cap/synced_folder_9p'
+        VagrantPlugins::SyncedFolder9P::SyncedFolder
+      end
+      synced_folder('virtiofs', 5) do
+        require_relative 'cap/synced_folder_virtiofs'
+        VagrantPlugins::SyncedFolderVirtioFS::SyncedFolder
       end
 
       # This initializes the internationalization strings.
