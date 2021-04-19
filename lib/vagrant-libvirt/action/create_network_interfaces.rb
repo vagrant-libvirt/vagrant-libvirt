@@ -194,7 +194,7 @@ module VagrantPlugins
               # It's used for provisioning and it has to be available during provisioning,
               # ifdown command is not acceptable here.
               next if slot_number.zero?
-              next if !options[:auto_config]
+              next if options[:auto_config] === false
               @logger.debug "Configuring interface slot_number #{slot_number} options #{options}"
 
               network = {
