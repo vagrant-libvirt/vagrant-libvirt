@@ -133,12 +133,13 @@ docker run -it --rm \
 It's possible to define an alias in `~/.bashrc`, for example:
 ```bash
 alias vagrant='
-  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
+  VAGRANT_HOME=~/.vagrant.d
+  mkdir -p $VAGRANT_HOME/{boxes,data,tmp}; \
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
-    -v ~/.vagrant.d:/.vagrant.d \
-    -v $(pwd):$(pwd) \
+    -v $VAGRANT_HOME:/.vagrant.d \
+    -v $(realpath "$(pwd)"):$(pwd) \
     -w $(pwd) \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \

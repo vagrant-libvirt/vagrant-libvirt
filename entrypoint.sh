@@ -40,33 +40,27 @@ then
     echo "WARNING! Running as root, if this breaks, you get to keep both pieces"
 fi
 
-
 export USER=vagrant
 export GROUP=users
 export HOME=/home/${USER}
 
 echo "Starting with UID: ${USER_UID}, GID: ${USER_GID}"
-if [[ "${USER_GID}" != "0" ]]
-then
-    if getent group ${GROUP} > /dev/null
-    then
-        GROUPCMD=groupmod
-    else
-        GROUPCMD=groupadd
-    fi
-    ${GROUPCMD} -g ${USER_GID} ${GROUP} >/dev/null || exit 3
-fi
 
-if [[ "${USER_UID}" != "0" ]]
+if getent group ${GROUP} > /dev/null
 then
-    if getent passwd ${USER} > /dev/null
-    then
-        USERCMD=usermod
-    else
-        USERCMD=useradd
-    fi
-    ${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" -m ${USER} >/dev/null 2>&1 || exit 3
+    GROUPCMD=groupmod
+else
+    GROUPCMD=groupadd
 fi
+${GROUPCMD} -o -g ${USER_GID} ${GROUP} >/dev/null || exit 3
+
+if getent passwd ${USER} > /dev/null
+then
+    USERCMD=usermod
+else
+    USERCMD=useradd
+fi
+${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" -m ${USER} >/dev/null 2>&1 || exit 3
 
 # make sure the directories can be written to by vagrant otherwise will
 # get a start up error
