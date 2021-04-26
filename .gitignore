@@ -1,10 +1,16 @@
+!example_box/Vagrantfile
+!tests/*/Vagrantfile
+*.box
 *.gem
 *.rbc
+*.swp
 .bundle
 .config
+.vagrant
 .yardoc
 Gemfile.lock
 InstalledFiles
+Vagrantfile
 _yardoc
 bin/
 coverage
@@ -16,11 +22,6 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
-Vagrantfile
-!tests/*/Vagrantfile
-!example_box/Vagrantfile
-.vagrant
-*.swp
 
 # don't commit the generated version
 lib/vagrant-libvirt/version

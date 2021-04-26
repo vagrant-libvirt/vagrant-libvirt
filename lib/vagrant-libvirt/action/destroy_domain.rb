@@ -1,4 +1,5 @@
 require 'log4r'
+require 'nokogiri'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -47,10 +48,30 @@ module VagrantPlugins
             domain.destroy(destroy_volumes: true)
           else
             domain.destroy(destroy_volumes: false)
+            
+            root_diskname = []
+            begin
+              box_xml = env[:machine].box.directory.join('box.xml').to_s
+              xml = Nokogiri::XML(File.open(box_xml))
+              xml.xpath('/domain/devices/disk/source/@file').each_with_index do |volume, index|
+                device = (index + 1).vdev.to_s
+                root_diskname << "#{libvirt_domain.name}-#{device}.qcow2"
+              end
+            rescue
+              root_diskname << "#{libvirt_domain.name}-vda.qcow2"
+            end
+            
+            # remove root storage
+            domain.volumes.select do |root_disk|
+              if root_diskname.include? root_disk.name 
+                root_disk.destroy
+              end
+            end
 
-            env[:machine].provider_config.disks.each do |disk|
+            env[:machine].provider_config.disks.each_with_index do |disk, index|
               # shared disks remove only manually or ???
               next if disk[:allow_existing]
+              disk[:device] = (index + 5).vdev.to_s
               diskname = libvirt_domain.name + '-' + disk[:device] + '.' + disk[:type].to_s
               # diskname is unique
               libvirt_disk = domain.volumes.select do |x|
@@ -67,12 +88,6 @@ module VagrantPlugins
                 libvirt_disk.destroy if libvirt_disk
               end
             end
-
-            # remove root storage
-            root_disk = domain.volumes.select do |x|
-              x.name == libvirt_domain.name + '.img'
-            end.first
-            root_disk.destroy if root_disk
           end
 
           @app.call(env)

@@ -330,9 +330,9 @@ module VagrantPlugins
       end
 
       def _get_device(disks)
-        # skip existing devices and also the first one (vda)
-        exist = disks.collect { |x| x[:device] } + [1.vdev.to_s]
-        skip = 1 # we're 1 based, not 0 based...
+        # skip existing devices and also the first four (vda/vdb/vdc/vdd)
+        exist = disks.collect { |x| x[:device] } + [4.vdev.to_s]
+        skip = 4 # we're 1 based, not 0 based...
         loop do
           dev = skip.vdev # get lettered device
           return dev unless exist.include?(dev)

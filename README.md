@@ -1758,9 +1758,9 @@ That directory also contains instructions on how to build a box.
 
 The box is a tarball containing:
 
-* qcow2 image file named `box.img`
-* `metadata.json` file describing box image (`provider`, `virtual_size`,
-  `format`)
+* `box.xml` created by `virsh dumpxml`
+* qcow2 images as mentioned in `box.xml`
+* `metadata.json` file describing box image `provider`
 * `Vagrantfile` that does default settings for the provider-specific
   configuration for this provider
 
@@ -1811,6 +1811,12 @@ virt-sysprep operations can be customized via the
 documentation](http://libguestfs.org/virt-sysprep.1.html#operations) for
 further details especially on default sysprep operations enabled for
 your system.
+
+In order to preserve the [Vagrant Insecure Public
+Key](https://github.com/hashicorp/vagrant/tree/master/keys) for `vagrant
+up` and `vagrant ssh`, your original `Vagrantfile` may need to setup
+with [`config.ssh.insert_key =
+false`](https://www.vagrantup.com/docs/vagrantfile/ssh_settings#config-ssh-insert_key).
 
 Options to the virt-sysprep command call can be passed via
 `VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS` environment variable.

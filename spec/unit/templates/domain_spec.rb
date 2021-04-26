@@ -44,10 +44,10 @@ describe 'templates/domain' do
       domain.boot('cdrom')
       domain.boot('hd')
       domain.emulator_path = '/usr/bin/kvm-spice'
-      domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
+      domain.instance_variable_set('@domain_volume_path', ['/var/lib/libvirt/images/test.qcow2'])
       domain.instance_variable_set('@domain_volume_cache', 'deprecated')
       domain.disk_bus = 'ide'
-      domain.disk_device = 'vda'
+      domain.disk_device = ['vda']
       domain.disk_driver(:cache => 'unsafe', :io => 'threads', :copy_on_read => 'on', :discard => 'unmap', :detect_zeroes => 'on')
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')

@@ -73,7 +73,7 @@ cleanup() {
   echo "status = ${status}"
   [ "$status" -eq 0 ]
   echo "${output}"
-  [ $(expr "$output" : ".*second_disk_default-vdb.*") -ne 0  ]
+  [ $(expr "$output" : ".*second_disk_default-vde.*") -ne 0  ]
   cleanup
 }
 

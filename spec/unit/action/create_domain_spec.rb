@@ -77,7 +77,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
               expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
               expect(volumes).to receive(:create).with(
                 hash_including(
-                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
+                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vde.qcow2",
                   :owner       => 0,
                   :group       => 0,
                   :pool_name   => "default",
@@ -142,7 +142,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
               expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
               expect(volumes).to receive(:create).with(
                 hash_including(
-                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
+                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vde.qcow2",
                   :owner       => 9999,
                   :group       => 9999,
                   :pool_name   => "default",

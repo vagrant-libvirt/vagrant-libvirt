@@ -16,12 +16,6 @@ module VagrantPlugins
           "#{name}-#{disk[:device]}.#{disk[:type]}" # disk name
         end
 
-        def _disks_print(disks)
-          disks.collect do |x|
-            "#{x[:device]}(#{x[:type]},#{x[:size]})"
-          end.join(', ')
-        end
-
         def _cdroms_print(cdroms)
           cdroms.collect { |x| x[:dev] }.join(', ')
         end
@@ -54,7 +48,7 @@ module VagrantPlugins
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
           @disk_bus = config.disk_bus
-          @disk_device = config.disk_device
+          @disk_device = [config.disk_device]
           @disk_driver_opts = config.disk_driver_opts
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
@@ -135,6 +129,7 @@ module VagrantPlugins
           @os_type = 'hvm'
 
           # Get path to domain image from the storage pool selected if we have a box.
+          @domain_volume_path = []
           if env[:machine].config.vm.box
             if @snapshot_pool_name != @storage_pool_name
                 pool_name = @snapshot_pool_name
@@ -142,23 +137,28 @@ module VagrantPlugins
                 pool_name = @storage_pool_name
             end
             @logger.debug "Search for volume in pool: #{pool_name}"
-            domain_volume = env[:machine].provider.driver.connection.volumes.all(
-              name: "#{@name}.img"
-            ).find { |x| x.pool_name == pool_name }
-            raise Errors::DomainVolumeExists if domain_volume.nil?
-            @domain_volume_path = domain_volume.path
+            env[:box_volume_name].each_index do |index|
+              device = (index + 1).vdev.to_s
+              domain_volume = env[:machine].provider.driver.connection.volumes.all(
+                name: "#{@name}-#{device}.qcow2"
+              ).find { |x| x.pool_name == pool_name }
+              raise Errors::DomainVolumeExists if domain_volume.nil?
+              @domain_volume_path[index] = domain_volume.path
+              @disk_device[index] = device
+            end
           end
 
           # If we have a box, take the path from the domain volume and set our storage_prefix.
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
           if env[:machine].config.vm.box
-            storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
+            storage_prefix = File.dirname(@domain_volume_path[0]) + '/' # steal
           else
             storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
 
-          @disks.each do |disk|
+          @disks.each_with_index do |disk, index|
+            disk[:device] = (index + 5).vdev.to_s
             disk[:path] ||= _disk_name(@name, disk)
 
             # On volume creation, the <path> element inside <target>
@@ -246,11 +246,23 @@ module VagrantPlugins
           env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
           env[:ui].info(" -- Loader:            #{@loader}")
           env[:ui].info(" -- Nvram:             #{@nvram}")
+
           if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
-          env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
+          unless @domain_volume_path.nil?
+            @domain_volume_path.each_index do |index|
+              env[:ui].info(" -- Image:             #{@domain_volume_path[index]} (#{env[:box_virtual_size][index]}G)")
+            end
+          end
+          @disks.each do |disk|
+            msg = " -- Disk:              #{disk[:absolute_path]} (#{disk[:size]})"
+            msg += ' Shared' if disk[:shareable]
+            msg += ' (Remove only manually)' if disk[:allow_existing]
+            msg += ' Not created - using existed.' if disk[:preexisting]
+            env[:ui].info(msg)
+          end
 
           if not @disk_driver_opts.empty?
             env[:ui].info(" -- Disk driver opts:  #{@disk_driver_opts.reject { |k,v| v.nil? }.map { |k,v| "#{k}='#{v}'"}.join(' ')}")
@@ -278,18 +290,6 @@ module VagrantPlugins
 
           @boot_order.each do |device|
             env[:ui].info(" -- Boot device:        #{device}")
-          end
-
-          unless @disks.empty?
-            env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
-          end
-
-          @disks.each do |disk|
-            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
-            msg += ' Shared' if disk[:shareable]
-            msg += ' (Remove only manually)' if disk[:allow_existing]
-            msg += ' Not created - using existed.' if disk[:preexisting]
-            env[:ui].info(msg)
           end
 
           unless @cdroms.empty?

@@ -496,11 +496,11 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       context 'with disks' do
         context 'assigned specific devices' do
           it 'should merge disks with specific devices' do
-            one.storage(:file, device: 'vdb')
-            two.storage(:file, device: 'vdc')
+            one.storage(:file, device: 'vde')
+            two.storage(:file, device: 'vdf')
             subject.finalize!
-            expect(subject.disks).to include(include(device: 'vdb'),
-                                             include(device: 'vdc'))
+            expect(subject.disks).to include(include(device: 'vde'),
+                                             include(device: 'vdf'))
           end
         end
 
@@ -509,8 +509,8 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             one.storage(:file)
             two.storage(:file)
             subject.finalize!
-            expect(subject.disks).to include(include(device: 'vdb'),
-                                             include(device: 'vdc'))
+            expect(subject.disks).to include(include(device: 'vde'),
+                                             include(device: 'vdf'))
           end
         end
       end
