@@ -59,6 +59,10 @@ module VagrantPlugins
         error_key(:wrong_box_format)
       end
 
+      class WrongDiskFormatSet < VagrantLibvirtError
+        error_key(:wrong_disk_format)
+      end
+
       # Fog Libvirt exceptions
       class FogError < VagrantLibvirtError
         error_key(:fog_error)

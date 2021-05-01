@@ -58,7 +58,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_0.img", 
               :virtual_size=>5,
-              :box_format=>"qcow2"
+              :format=>"qcow2"
             }
           ]
         )
@@ -141,19 +141,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :path=>"/test/box.img",
               :name=>"send_box_name.img",
               :virtual_size=>5,
-              :box_format=>"qcow2"
+              :format=>"qcow2"
             },
             {
               :path=>"/test/disk.qcow2",
               :name=>"test_vagrant_box_image_1.1.1_1.img", 
               :virtual_size=>10,
-              :box_format=>"qcow2"
+              :format=>"qcow2"
             },
             {
               :path=>"/test/box_2.img",
               :name=>"test_vagrant_box_image_1.1.1_2.img", 
               :virtual_size=>20,
-              :box_format=>"qcow2"
+              :format=>"qcow2"
             }
           ]
         )
@@ -272,6 +272,63 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           expect(subject).not_to receive(:upload_image)
           expect(subject.call(env)).to be_nil
         end
+      end
+    end
+
+    context 'When has wrong box format in metadata.json' do
+      before do
+
+        allow(all).to receive(:first).and_return(box_volume)
+        allow(box_volume).to receive(:id).and_return(1)
+        allow(env[:machine]).to receive_message_chain("box.name") { 'test' }
+        allow(env[:machine]).to receive_message_chain("box.version") { '1.1.1' }
+        allow(env[:machine]).to receive_message_chain("box.metadata") { Hash[
+          'virtual_size'=> 5,
+          'format' => 'wrongFormat'
+          ]
+        }
+        allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
+          '/test/'.concat(arg.to_s)
+        end
+      end
+
+      it 'WrongBoxFormatSet exception must be raised' do
+        expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::WrongBoxFormatSet) 
+      end
+
+    end
+
+    context 'When has good box format and wrong disk format in metadata.json' do
+      before do
+
+        allow(all).to receive(:first).and_return(box_volume)
+        allow(box_volume).to receive(:id).and_return(1)
+        allow(env[:machine]).to receive_message_chain("box.name") { 'test' }
+        allow(env[:machine]).to receive_message_chain("box.version") { '1.1.1' }
+        allow(env[:machine]).to receive_message_chain("box.metadata") {
+          Hash[
+            'disks' => [
+              {
+                'name'=>'send_box_name.img',
+                'virtual_size'=> 5,
+                'format'=> 'wrongFormat'
+              },
+              {
+                'path' => 'disk.qcow2',
+                'virtual_size'=> 10
+              },
+              {'virtual_size'=> 20}
+              ],
+            'format' => 'qcow2'
+          ]
+        }
+        allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
+          '/test/'.concat(arg.to_s)
+        end
+      end
+
+      it 'WrongDiskFormatSet exception must be raised' do
+        expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::WrongDiskFormatSet)
       end
     end
 

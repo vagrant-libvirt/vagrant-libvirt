@@ -41,6 +41,20 @@ module VagrantPlugins
           return env[:machine].box.directory.join(box_name).to_s
         end
 
+        def self.verify_box_format(box_format, disk_index=nil)
+          if box_format.nil?
+            raise Errors::NoBoxFormatSet
+          elsif box_format != 'qcow2'
+            if disk_index.nil?
+              raise Errors::WrongBoxFormatSet
+            else
+              raise Errors::WrongDiskFormatSet,
+                disk_index: disk_index
+            end
+          end
+          return box_format
+        end
+
         def self.verify_virtual_size_in_disks(disks)
           disks.each_with_index do |disk, index|
             raise Errors::NoDiskVirtualSizeSet, disk_index:index if disk['virtual_size'].nil?
@@ -69,7 +83,7 @@ module VagrantPlugins
               name: box_volume[:name],
               allocation: "#{box_image_size / 1024 / 1024}M",
               capacity: "#{box_volume[:virtual_size]}G",
-              format_type: box_volume[:box_format],
+              format_type: box_volume[:format],
               owner: @storage_volume_uid,
               group: @storage_volume_gid,
               pool_name: config.storage_pool_name
@@ -120,11 +134,7 @@ module VagrantPlugins
           # Support qcow2 format only for now, but other formats with backing
           # store capability should be usable.
           box_format = env[:machine].box.metadata['format']
-          if box_format.nil?
-            raise Errors::NoBoxFormatSet
-          elsif box_format != 'qcow2'
-            raise Errors::WrongBoxFormatSet
-          end
+          HandleBoxImage.verify_box_format(box_format)
 
           env[:box_volume_number] = disks.length()
           env[:box_volumes] = Array.new(env[:box_volume_number]) {|i| {
@@ -134,7 +144,10 @@ module VagrantPlugins
               ),
               :name => disks[i].fetch('name', HandleBoxImage.get_volume_name(env, i)),
               :virtual_size => disks[i]['virtual_size'],
-              :box_format => box_format
+              :format => HandleBoxImage.verify_box_format(
+                disks[i].fetch('format', box_format),
+                i
+              )
             }
           }
 
