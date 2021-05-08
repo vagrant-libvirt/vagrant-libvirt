@@ -122,6 +122,7 @@ jobs:
         github-token: ${{ secrets.github_token }}
         parallel: true
         path-to-lcov: ./vagrant-libvirt/coverage/lcov.info
+        flag-name: run-${{ matrix.vagrant }}-ruby-${{ matrix.ruby }}
 
 
   finish:
