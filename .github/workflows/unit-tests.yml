@@ -46,7 +46,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        path: vagrant-libvirt
+        path: src
     - name: Clone vagrant for ruby 3.0 support
       if: ${{ matrix.ruby == '3.0.0' }}
       uses: actions/checkout@v2
@@ -67,7 +67,7 @@ jobs:
         sudo apt-get install libvirt-dev
     - uses: actions/cache@v2
       with:
-        path: vagrant-libvirt/vendor/bundle
+        path: src/vendor/bundle
         key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
         restore-keys: |
           ${{ runner.os }}-gems-
@@ -79,7 +79,7 @@ jobs:
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
         gem update bundler --conservative
-      working-directory: vagrant-libvirt
+      working-directory: src
     - name: Handle additional ruby 3.0 setup
       if: ${{ matrix.ruby == '3.0.0' }}
       run: |
@@ -102,28 +102,31 @@ jobs:
         # need the following to allow the local provided gem to be used instead of the
         # one from rubygems
         bundle config set --local disable_checksum_validation true
-      working-directory: vagrant-libvirt
+      working-directory: src
     - name: Run bundler using cached path
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
-      working-directory: vagrant-libvirt
+      working-directory: src
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Run tests
       run: |
         bundle exec rspec --color --format documentation
-      working-directory: vagrant-libvirt
+      working-directory: src
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: lcov.info
+        path: ./src/coverage/lcov.info
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.github_token }}
         parallel: true
-        path-to-lcov: ./vagrant-libvirt/coverage/lcov.info
+        path-to-lcov: ./src/coverage/lcov.info
         flag-name: run-${{ matrix.vagrant }}-ruby-${{ matrix.ruby }}
-
 
   finish:
     needs: test
