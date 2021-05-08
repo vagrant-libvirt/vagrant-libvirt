@@ -110,10 +110,6 @@ jobs:
         bundle exec rspec --color --format documentation
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
-    - uses: actions/upload-artifact@v2
-      with:
-        name: lcov.info
-        path: ./coverage/lcov.info
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
       with:
