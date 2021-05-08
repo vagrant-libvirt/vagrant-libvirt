@@ -6,6 +6,7 @@ VAGRANT_OPT="--provider=libvirt"
 
 TEMPDIR=
 
+
 setup_file() {
   # set VAGRANT_HOME to something else to reuse for tests to avoid clashes with
   # user installed plugins when running tests locally.
@@ -74,6 +75,19 @@ cleanup() {
   [ "$status" -eq 0 ]
   echo "${output}"
   [ $(expr "$output" : ".*second_disk_default-vdb.*") -ne 0  ]
+  cleanup
+}
+
+@test "bring up with two disks" {
+  export VAGRANT_CWD=tests/two_disks
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  echo "${output}"
+  [ $(expr "$output" : ".*Image.*2G")  -ne 0  ]
+  [ $(expr "$output" : ".*Image.*10G") -ne 0  ]
   cleanup
 }
 

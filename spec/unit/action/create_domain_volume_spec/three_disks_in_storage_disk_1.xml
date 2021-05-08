@@ -1,0 +1,21 @@
+<volume>
+  <name>test_1.img</name>
+  <capacity unit="G">10</capacity>
+  <target>
+    <format type="qcow2"></format>
+    <permissions>
+      <owner>0</owner>
+      <group>0</group>
+      <label>virt_image_t</label>
+    </permissions>
+  </target>
+  <backingStore>
+    <path>/test/path_1.img</path>
+    <format type="qcow2"></format>
+    <permissions>
+      <owner>0</owner>
+      <group>0</group>
+      <label>virt_image_t</label>
+    </permissions>
+  </backingStore>
+</volume>

@@ -92,10 +92,14 @@ en:
         Error: %{stderr}
       no_box_virtual_size: |-
         No image virtual size specified for box.
+      no_disk_virtual_size: |-
+        No image virtual size specified for disk with index %{disk_index}.
       no_box_format: |-
         No image format specified for box.
       wrong_box_format: |-
         Wrong image format specified for box.
+      wrong_disk_format: |-
+        Wrong image format specified for disk with index %{disk_index}.
       fog_libvirt_connection_error: |-
         Error while connecting to Libvirt: %{error_message}
       fog_create_volume_error: |-

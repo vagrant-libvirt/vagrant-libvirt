@@ -113,18 +113,18 @@
     <% if @emulator_path %>
     <emulator><%= @emulator_path %></emulator>
     <% end %>
-    <% if @domain_volume_path %>
+<% @domain_volumes.each do |volume| -%>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' <%=
-        @disk_driver_opts.empty? ? "cache='#{@domain_volume_cache}'" :
+        @disk_driver_opts.empty? ? "cache='#{volume[:cache]}'" :
             @disk_driver_opts.reject { |k,v| v.nil? }
                              .map { |k,v| "#{k}='#{v}'"}
                              .join(' ') -%>/>
-      <source file='<%= @domain_volume_path %>'/>
+      <source file='<%= volume[:path] %>'/>
       <%# we need to ensure a unique target dev -%>
-      <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
+      <target dev='<%= volume[:dev] %>' bus='<%= volume[:bus] %>'/>
     </disk>
-    <% end %>
+<% end -%>
 <%# additional disks -%>
 <% @disks.each do |d| -%>
     <disk type='file' device='disk'>

@@ -48,6 +48,11 @@
       <target dev='vda' bus='ide'/>
     </disk>
     <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='unsafe' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
+      <source file='/var/lib/libvirt/images/test2.qcow2'/>
+      <target dev='vdb' bus='ide'/>
+    </disk>
+    <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/test-disk1.qcow2'/>
       <target dev='vdb' bus='virtio'/>
