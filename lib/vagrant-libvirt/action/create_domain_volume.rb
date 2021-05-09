@@ -53,6 +53,7 @@ module VagrantPlugins
                     xml.permissions do
                       xml.owner storage_uid(env)
                       xml.group storage_gid(env)
+                      xml.mode '0744'
                       xml.label 'virt_image_t'
                     end
                   end
@@ -62,6 +63,7 @@ module VagrantPlugins
                     xml.permissions do
                       xml.owner storage_uid(env)
                       xml.group storage_gid(env)
+                      xml.mode '0744'
                       xml.label 'virt_image_t'
                     end
                   end

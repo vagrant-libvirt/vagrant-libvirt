@@ -6,6 +6,7 @@
     <permissions>
       <owner>0</owner>
       <group>0</group>
+      <mode>0744</mode>
       <label>virt_image_t</label>
     </permissions>
   </target>
@@ -15,6 +16,7 @@
     <permissions>
       <owner>0</owner>
       <group>0</group>
+      <mode>0744</mode>
       <label>virt_image_t</label>
     </permissions>
   </backingStore>
