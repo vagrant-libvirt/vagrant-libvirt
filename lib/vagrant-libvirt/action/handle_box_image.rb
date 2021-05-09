@@ -16,38 +16,49 @@ module VagrantPlugins
         end
 
         def call(env)
-          # Verify box metadata for mandatory values.
-          #
-          # Verify disk number
+          # Handle box formats converting between v1 => v2 and ensuring
+          # any obsolete settings are rejected.
+
           disks = env[:machine].box.metadata.fetch('disks', [])
           if disks.empty?
-            disks.push({
-              'path' => HandleBoxImage.get_default_box_image_path(0),
-              'name' => HandleBoxImage.get_volume_name(env, 0),
-              'virtual_size' => HandleBoxImage.get_virtual_size(env),
-            })
-          end
-          HandleBoxImage.verify_virtual_size_in_disks(disks)
+            # Handle box v1 format
 
-          # Support qcow2 format only for now, but other formats with backing
-          # store capability should be usable.
-          box_format = env[:machine].box.metadata['format']
-          HandleBoxImage.verify_box_format(box_format)
+            # Only qcow2 format is supported in v1, but other formats with backing
+            # store capability should be usable.
+            box_format = env[:machine].box.metadata['format']
+            HandleBoxImage.verify_box_format(box_format)
 
-          env[:box_volume_number] = disks.length()
-          env[:box_volumes] = Array.new(env[:box_volume_number]) {|i| {
-              :path => HandleBoxImage.get_box_image_path(
+            env[:box_volume_number] = 1
+            env[:box_volumes] = [{
+              :path => HandleBoxImage.get_box_image_path(env, HandleBoxImage.get_default_box_image_path(0)),
+              :name => HandleBoxImage.get_volume_name(env, 0),
+              :virtual_size => HandleBoxImage.get_virtual_size(env),
+              :format => box_format,
+            }]
+          else
+            # Handle box v2 format
+            # {
+            #   'path': '<path-of-file-box>', # can be inferred
+            #   'name': '<name-to-use-in-storage>'
+            # }
+            #
+
+            env[:box_volume_number] = disks.length()
+            env[:box_volumes] = Array.new(env[:box_volume_number]) { |i|
+              image_path = HandleBoxImage.get_box_image_path(
                 env,
                 disks[i].fetch('path', HandleBoxImage.get_default_box_image_path(i))
-              ),
-              :name => disks[i].fetch('name', HandleBoxImage.get_volume_name(env, i)),
-              :virtual_size => disks[i]['virtual_size'],
-              :format => HandleBoxImage.verify_box_format(
-                disks[i].fetch('format', box_format),
-                i
               )
+              format, virtual_size = HandleBoxImage.get_box_disk_settings(image_path)
+
+              {
+                :path => image_path,
+                :name => disks[i].fetch('name', HandleBoxImage.get_volume_name(env, i)),
+                :virtual_size => virtual_size.to_i,
+                :format => HandleBoxImage.verify_box_format(format)
+              }
             }
-          }
+          end
 
           # Get config options
           config = env[:machine].provider_config
@@ -134,10 +145,17 @@ module VagrantPlugins
           return box_format
         end
 
-        def self.verify_virtual_size_in_disks(disks)
-          disks.each_with_index do |disk, index|
-            raise Errors::NoDiskVirtualSizeSet, disk_index:index if disk['virtual_size'].nil?
+        def self.get_box_disk_settings(image_path)
+          stdout, stderr, status = Open3.capture3('qemu-img', 'info', image_path)
+          if !status.success?
+            raise Errors::BadBoxImage, image: image_path, out: stdout, err: stderr
           end
+
+          image_info_lines = stdout.split("\n")
+          format = image_info_lines.find { |l| l.start_with?('file format:') }.split(' ')[2]
+          virtual_size = image_info_lines.find { |l| l.start_with?('virtual size:') }.split(' ')[2]
+
+          return format, virtual_size
         end
 
         def send_box_image(env, config, box_image_file, box_volume)

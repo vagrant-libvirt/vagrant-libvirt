@@ -38,6 +38,10 @@ module VagrantPlugins
       end
 
       # Box exceptions
+      class BadBoxImage < VagrantLibvirtError
+        error_key(:bad_box_image)
+      end
+
       class NoBoxVolume < VagrantLibvirtError
         error_key(:no_box_volume)
       end

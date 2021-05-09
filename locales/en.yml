@@ -72,6 +72,10 @@ en:
       no_storage_pool: |-
         No usable storage pool found! Please check if storage pool is
         created and available.
+      bad_box_image: |-
+        Received error when query the box image details from '%{image}'.
+        Stdout: %{out}
+        Stderr: %{err}
       no_box_volume: |-
         Volume for box image is missing in storage pools. Try to run vagrant
         again, or check if storage volume is accessible.
