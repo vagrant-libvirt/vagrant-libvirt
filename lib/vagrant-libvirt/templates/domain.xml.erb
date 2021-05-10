@@ -153,6 +153,7 @@
 
 <% @cdroms.each do |c| %>
     <disk type='file' device='cdrom'>
+      <driver name='qemu' type='<%= c[:type] %>' />
       <source file='<%= c[:path] %>'/>
       <target dev='<%= c[:dev] %>' bus='<%= c[:bus] %>'/>
       <readonly/>

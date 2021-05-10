@@ -624,11 +624,13 @@ module VagrantPlugins
         # as will the address unit number (unit=0, unit=1, etc)
 
         options = {
+          type: 'raw',
           bus: 'ide',
           path: nil
         }.merge(options)
 
         cdrom = {
+          type: options[:type],
           dev: options[:dev],
           bus: options[:bus],
           path: options[:path]
