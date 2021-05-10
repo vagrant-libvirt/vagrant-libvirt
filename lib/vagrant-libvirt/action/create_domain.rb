@@ -198,7 +198,7 @@ module VagrantPlugins
                 path: disk[:absolute_path],
                 capacity: disk[:size],
                 owner: storage_uid(env),
-                group: storage_uid(env),
+                group: storage_gid(env),
                 #:allocation => ?,
                 pool_name: disk_pool_name
               )
