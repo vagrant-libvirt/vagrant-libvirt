@@ -17,15 +17,12 @@ then
     cat > "${NEW_PATH}/${BOX_VERSION}/libvirt/metadata.json" <<EOF
 {
   "provider": "libvirt",
-  "format": "qcow2",
   "disks" : [
-      {
-          "virtual_size": 2
-      },
-      {
+    {
+    },
+    {
           "path":"disk2.qcow2",
-          "virtual_size":10
-      }
+    }
   ]
 }
 EOF

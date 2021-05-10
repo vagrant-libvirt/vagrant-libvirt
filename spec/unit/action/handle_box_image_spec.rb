@@ -97,6 +97,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
     end
 
     context 'when three disks in metadata.json' do
+      let(:status) { double }
+
       before do
         allow(all).to receive(:first).and_return(box_volume)
         allow(box_volume).to receive(:id).and_return(1)
@@ -106,22 +108,26 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           'disks' => [
             {
               'name'=>'send_box_name.img',
-              'virtual_size'=> 5,
             },
             {
               'path' => 'disk.qcow2',
-              'virtual_size'=> 10
             },
-            {
-              'virtual_size'=> 20,
-            },
+            { },
           ],
-          'format' => 'qcow2'
-          ]
-        }
+        ]}
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
           '/test/'.concat(arg.to_s)
         end
+        allow(status).to receive(:success?).and_return(true)
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box.img').and_return([
+            "image: /test/box.img\nfile format: qcow2\nvirtual size: 5 GiB (5368709120 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/disk.qcow2').and_return([
+          "image: /test/disk.qcow2\nfile format: qcow2\nvirtual size: 10 GiB (10737418240 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box_2.img').and_return([
+          "image: /test/box_2.img\nfile format: qcow2\nvirtual size: 20 GiB (21474836480 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
       end
 
       it 'should have three disks in machine env' do
@@ -258,6 +264,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
     end
 
     context 'when one of a multi disk definition has wrong disk format in metadata.json' do
+      let(:status) { double }
+
       before do
         allow(all).to receive(:first).and_return(box_volume)
         allow(box_volume).to receive(:id).and_return(1)
@@ -268,27 +276,32 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             'disks' => [
               {
                 'name'=>'send_box_name.img',
-                'virtual_size'=> 5,
                 'format'=> 'wrongFormat'
               },
               {
                 'path' => 'disk.qcow2',
-                'virtual_size'=> 10
               },
-              {
-                'virtual_size'=> 20,
-              },
+              { },
             ],
-            'format' => 'qcow2',
           ]
         }
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
           '/test/'.concat(arg.to_s)
         end
+        allow(status).to receive(:success?).and_return(true)
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box.img').and_return([
+            "image: /test/box.img\nfile format: qcow2\nvirtual size: 5 GiB (5368709120 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/disk.qcow2').and_return([
+          "image: /test/disk.qcow2\nfile format: qcow2\nvirtual size: 10 GiB (10737418240 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box_2.img').and_return([
+          "image: /test/box_2.img\nfile format: qcow2\nvirtual size: 20 GiB (21474836480 bytes)\ndisk size: 1.45 GiB\n", "", status
+        ])
       end
 
-      it 'should raise WrongDiskFormatSet exception' do
-        expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::WrongDiskFormatSet)
+      it 'should be ignored' do
+        expect(subject.call(env)).to be_nil
       end
     end
 
