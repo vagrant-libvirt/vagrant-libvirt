@@ -90,6 +90,8 @@ jobs:
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
+        # use export with full path to avoid needing to resolve ~
+        export VAGRANT_HOME=$HOME/.vagrant.d
         # use software emulation due to lack of nested emulation
         cat <<EOF > $HOME/.vagrant.d/Vagrantfile
         Vagrant.configure("2") do |config|
@@ -100,5 +102,3 @@ jobs:
         EOF
         # run under libvirt group
         sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
-      env:
-        VAGRANT_HOME: ~/.vagrant.d
