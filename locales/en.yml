@@ -72,6 +72,10 @@ en:
       no_storage_pool: |-
         No usable storage pool found! Please check if storage pool is
         created and available.
+      bad_box_image: |-
+        Received error when query the box image details from '%{image}'.
+        Stdout: %{out}
+        Stderr: %{err}
       no_box_volume: |-
         Volume for box image is missing in storage pools. Try to run vagrant
         again, or check if storage volume is accessible.
@@ -92,10 +96,14 @@ en:
         Error: %{stderr}
       no_box_virtual_size: |-
         No image virtual size specified for box.
+      no_disk_virtual_size: |-
+        No image virtual size specified for disk with index %{disk_index}.
       no_box_format: |-
         No image format specified for box.
       wrong_box_format: |-
         Wrong image format specified for box.
+      wrong_disk_format: |-
+        Wrong image format specified for disk with index %{disk_index}.
       fog_libvirt_connection_error: |-
         Error while connecting to Libvirt: %{error_message}
       fog_create_volume_error: |-

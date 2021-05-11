@@ -17,6 +17,11 @@ module VagrantPlugins
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain.nil?
 
+          if env[:force_halt]
+            domain.poweroff
+            return @app.call(env)
+          end
+
           begin
             Timeout.timeout(timeout) do
               begin
@@ -38,6 +43,9 @@ module VagrantPlugins
             end
           rescue Timeout::Error
             @logger.info('VM is still running. Calling force poweroff.')
+            domain.poweroff
+          rescue
+            @logger.error('Failed to shutdown cleanly. Calling force poweroff.')
             domain.poweroff
           end
 

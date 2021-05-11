@@ -85,7 +85,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
 
         it 'uses explicit removal of disks' do
           allow(libvirt_domain).to receive(:name).and_return('test')
-          allow(domain).to receive(:volumes).and_return([root_disk])
+          allow(domain).to receive(:volumes).and_return([root_disk, nil])
 
           expect(domain).to_not receive(:destroy).with(destroy_volumes: true)
           expect(root_disk).to receive(:destroy)  # root disk remove
