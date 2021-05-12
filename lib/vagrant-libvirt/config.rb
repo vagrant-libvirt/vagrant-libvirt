@@ -398,10 +398,20 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
+        if options[:name] == 'spinlocks' && options[:retries].nil?
+          raise 'Feature spinlocks requires retries parameter'
+        end
+
         @features_hyperv = []  if @features_hyperv == UNSET_VALUE
 
-        @features_hyperv.push(name: options[:name],
-                              state: options[:state])
+        if options[:name] == 'spinlocks'
+          @features_hyperv.push(name:   options[:name],
+                             state: options[:state],
+                             retries: options[:retries])
+        else
+          @features_hyperv.push(name:   options[:name],
+                             state: options[:state])
+        end
       end
 
       def clock_timer(options = {})

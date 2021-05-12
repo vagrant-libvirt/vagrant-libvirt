@@ -99,7 +99,7 @@
     <% if !@features_hyperv.empty? %>
     <hyperv>
       <% @features_hyperv.each do |feature| %>
-      <<%= feature[:name] %> state='<%= feature[:state] %>' />
+      <<%= feature[:name] %> state='<%= feature[:state] %>'<% if feature[:name] == 'spinlocks' %> retries='<%= feature[:retries] %>'<% end %> />
       <% end %>
     </hyperv>
     <% end %>
