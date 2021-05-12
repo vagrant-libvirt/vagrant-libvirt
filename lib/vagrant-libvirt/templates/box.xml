@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<domain type='kvm'>
+  <name>box</name>
+  <memory unit='KiB'>2097152</memory>
+  <currentMemory unit='KiB'>2097152</currentMemory>
+  <vcpu>1</vcpu>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+  </os>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='box.img'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <interface type='network'>
+      <source network='default'/>
+      <model type='virtio'/>
+    </interface>
+    <video>
+      <model type='qxl' ram='65536' heads='1'/>
+    </video>
+    <graphics type='sdl' autoport='yes' port='-1'/>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+    </rng>
+    <memballoon model='virtio'/>
+    <panic model='isa'>
+      <address type='isa' iobase='0x505'/>
+    </panic>
+    <viosock model='none'/>
+    <input type='tablet' bus='usb'/>
+    <input type='mouse' bus='ps2'/>
+    <console type='pty'/>
+  </devices>
+</domain>

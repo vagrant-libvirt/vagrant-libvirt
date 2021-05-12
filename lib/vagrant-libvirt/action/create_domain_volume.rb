@@ -18,10 +18,11 @@ module VagrantPlugins
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.creating_domain_volume'))
 
+          # Get config options.
+          config = env[:machine].provider_config
+
           env[:box_volumes].each_index do |index|
             suffix_index = index > 0 ? "_#{index}" : ''
-            # Get config options.
-            config = env[:machine].provider_config
 
             # This is name of newly created image for vm.
             @name = "#{env[:domain_name]}#{suffix_index}.img"

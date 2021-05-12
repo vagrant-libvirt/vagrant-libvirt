@@ -78,19 +78,6 @@ cleanup() {
   cleanup
 }
 
-@test "bring up with two disks" {
-  export VAGRANT_CWD=tests/two_disks
-  cleanup
-  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
-  echo "${output}"
-  echo "status = ${status}"
-  [ "$status" -eq 0 ]
-  echo "${output}"
-  [ $(expr "$output" : ".*Image.*2G")  -ne 0  ]
-  [ $(expr "$output" : ".*Image.*10G") -ne 0  ]
-  cleanup
-}
-
 @test "bring up with adjusted memory settings" {
   export VAGRANT_CWD=tests/memory
   cleanup

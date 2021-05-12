@@ -17,6 +17,7 @@ test/tmp
 test/version_tmp
 tmp
 Vagrantfile
+*.box
 !tests/*/Vagrantfile
 !example_box/Vagrantfile
 .vagrant

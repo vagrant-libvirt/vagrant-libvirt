@@ -4,9 +4,47 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-      # Include the built-in modules so we can use them as top-level things.
+      autoload :ClearForwardedPorts, File.expand_path("../action/forward_ports", __FILE__)
+      autoload :CreateDomain, File.expand_path("../action/create_domain", __FILE__)
+      autoload :CreateDomainVolume, File.expand_path("../action/create_domain_volume", __FILE__)
+      autoload :CreateNetworkInterfaces, File.expand_path("../action/create_network_interfaces", __FILE__)
+      autoload :CreateNetworks, File.expand_path("../action/create_networks", __FILE__)
+      autoload :DestroyDomain, File.expand_path("../action/destroy_domain", __FILE__)
+      autoload :DestroyNetworks, File.expand_path("../action/destroy_networks", __FILE__)
+      autoload :ForwardPorts, File.expand_path("../action/forward_ports", __FILE__)
+      autoload :HaltDomain, File.expand_path("../action/halt_domain", __FILE__)
+      autoload :HandleBoxImage, File.expand_path("../action/handle_box_image", __FILE__)
+      autoload :HandleStoragePool, File.expand_path("../action/handle_storage_pool", __FILE__)
+      autoload :IsCreated, File.expand_path("../action/is_created", __FILE__)
+      autoload :IsRunning, File.expand_path("../action/is_running", __FILE__)
+      autoload :IsSuspended, File.expand_path("../action/is_suspended", __FILE__)
+      autoload :MessageAlreadyCreated, File.expand_path("../action/message_already_created", __FILE__)
+      autoload :MessageNotCreated, File.expand_path("../action/message_not_created", __FILE__)
+      autoload :MessageNotRunning, File.expand_path("../action/message_not_running", __FILE__)
+      autoload :MessageNotSuspended, File.expand_path("../action/message_not_suspended", __FILE__)
+      autoload :MessageWillNotDestroy, File.expand_path("../action/message_will_not_destroy", __FILE__)
+      autoload :PackageDomain, File.expand_path("../action/package_domain", __FILE__)
+      autoload :PrepareNFSSettings, File.expand_path("../action/prepare_nfs_settings", __FILE__)
+      autoload :PrepareNFSValidIds, File.expand_path("../action/prepare_nfs_valid_ids", __FILE__)
+      autoload :PruneNFSExports, File.expand_path("../action/prune_nfs_exports", __FILE__)
+      autoload :ReadMacAddresses, File.expand_path("../action/read_mac_addresses", __FILE__)
+      autoload :RemoveLibvirtImage, File.expand_path("../action/remove_libvirt_image", __FILE__)
+      autoload :RemoveStaleVolume, File.expand_path("../action/remove_stale_volume", __FILE__)
+      autoload :ResumeDomain, File.expand_path("../action/resume_domain", __FILE__)
+      autoload :SetBootOrder, File.expand_path("../action/set_boot_order", __FILE__)
+      autoload :SetNameOfDomain, File.expand_path("../action/set_name_of_domain", __FILE__)
+
+      # @deprecated
+      autoload :PrepareNFSValidIds, File.expand_path("../action/prepare_nfs_valid_ids", __FILE__)
+      autoload :ShareFolders, File.expand_path("../action/share_folders", __FILE__)
+      autoload :StartDomain, File.expand_path("../action/start_domain", __FILE__)
+      autoload :SuspendDomain, File.expand_path("../action/suspend_domain", __FILE__)
+      autoload :TimedProvision, File.expand_path("../action/timed_provision", __FILE__)
+      autoload :WaitTillUp, File.expand_path("../action/wait_till_up", __FILE__)
+
+      # Include the built-in modules so that we can use them as top-level
+      # things.
       include Vagrant::Action::Builtin
-      @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
       # remove image from Libvirt storage pool
       def self.remove_libvirt_image
@@ -15,11 +53,20 @@ module VagrantPlugins
         end
       end
 
-      # This action is called to bring the box up from nothing.
+      # This action brings the machine up from nothing, including importing
+      # the box, configuring metadata, and booting.
       def self.action_up
         Vagrant::Action::Builder.new.tap do |b|
+          # Handle box_url downloading early so that if the Vagrantfile
+          # references any files in the box or something it all just
+          # works fine.
+          b.use Call, IsCreated do |env, b2|
+            if !env[:result]
+              b2.use HandleBox
+            end
+          end
+
           b.use ConfigValidate
-          b.use BoxCheckOutdated
           b.use Call, IsCreated do |env, b2|
             # Create VM if not yet created.
             if !env[:result]
@@ -32,7 +79,6 @@ module VagrantPlugins
                 b2.use StartDomain
               else
                 b2.use HandleStoragePool
-                b2.use HandleBox
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
                 b2.use CreateDomain
@@ -62,12 +108,12 @@ module VagrantPlugins
         end
       end
 
-      # Assuming VM is created, just start it. This action is not called
-      # directly by any subcommand. VM can be suspended, already running or in
-      # poweroff state.
+      # This action starts a VM, assuming it is already imported and exists.
+      # A precondition of this action is that the VM exists.
       def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
+          b.use BoxCheckOutdated
           b.use Call, IsRunning do |env, b2|
             # If the VM is running, run the necessary provisioners
             if env[:result]
@@ -161,11 +207,19 @@ module VagrantPlugins
         end
       end
 
-      # not implemented and looks like not require
+      # This action packages the virtual machine into a single box file.
       def self.action_package
         Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
-          b.use PackageDomain
+          b.use Call, IsCreated do |env1, b2|
+            if !env1[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use ConfigValidate
+            b2.use action_halt
+            b2.use PackageDomain
+          end
         end
       end
 
@@ -317,55 +371,6 @@ module VagrantPlugins
           end
         end
       end
-
-      action_root = Pathname.new(File.expand_path('../action', __FILE__))
-      autoload :PackageDomain, action_root.join('package_domain')
-      autoload :CreateDomain, action_root.join('create_domain')
-      autoload :CreateDomainVolume, action_root.join('create_domain_volume')
-      autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
-      autoload :CreateNetworks, action_root.join('create_networks')
-      autoload :DestroyDomain, action_root.join('destroy_domain')
-      autoload :DestroyNetworks, action_root.join('destroy_networks')
-      autoload :ForwardPorts, action_root.join('forward_ports')
-      autoload :ClearForwardedPorts, action_root.join('forward_ports')
-      autoload :HaltDomain, action_root.join('halt_domain')
-      autoload :HandleBoxImage, action_root.join('handle_box_image')
-      autoload :HandleStoragePool, action_root.join('handle_storage_pool')
-      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
-      autoload :IsCreated, action_root.join('is_created')
-      autoload :IsRunning, action_root.join('is_running')
-      autoload :IsSuspended, action_root.join('is_suspended')
-      autoload :MessageAlreadyCreated, action_root.join('message_already_created')
-      autoload :MessageNotCreated, action_root.join('message_not_created')
-      autoload :MessageNotRunning, action_root.join('message_not_running')
-      autoload :MessageNotSuspended, action_root.join('message_not_suspended')
-      autoload :MessageWillNotDestroy, action_root.join('message_will_not_destroy')
-
-      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
-
-      autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
-      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
-      autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
-
-      autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
-      autoload :ResumeDomain, action_root.join('resume_domain')
-      autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
-      autoload :SetBootOrder, action_root.join('set_boot_order')
-
-      # I don't think we need it anymore
-      autoload :ShareFolders, action_root.join('share_folders')
-      autoload :StartDomain, action_root.join('start_domain')
-      autoload :SuspendDomain, action_root.join('suspend_domain')
-      autoload :TimedProvision, action_root.join('timed_provision')
-
-      autoload :WaitTillUp, action_root.join('wait_till_up')
-      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
-
-      autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
-      autoload :HandleBox, 'vagrant/action/builtin/handle_box'
-      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
-      autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
-      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
     end
   end
 end

@@ -6,7 +6,7 @@ To turn this into a box create a Vagrant image according documentation (don't
 forget to install rsync command) and create box with following command:
 
 ```
-$ tar cvzf custom_box.box ./metadata.json ./Vagrantfile ./box.img
+$ tar zcvf ../package.box ./*
 ```
 
 This box works by using Vagrant's built-in Vagrantfile merging to setup
@@ -15,11 +15,9 @@ Vagrantfiles (such as project root Vagrantfiles).
 
 ## Box Metadata
 
-Libvirt box should define at least three data fields in `metadata.json` file.
+Libvirt box should define only one data fields in `metadata.json` file.
 
 * provider - Provider name is libvirt.
-* format - Currently supported format is qcow2.
-* virtual_size - Virtual size of image in GBytes.
 
 ## Converting Boxes
 

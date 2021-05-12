@@ -1758,11 +1758,18 @@ That directory also contains instructions on how to build a box.
 
 The box is a tarball containing:
 
-* qcow2 image file named `box.img`
-* `metadata.json` file describing box image (`provider`, `virtual_size`,
-  `format`)
-* `Vagrantfile` that does default settings for the provider-specific
+* `box.img`: Root disk image in qcow2 format
+* `metadata.json`: describing box provider
+* `Vagrantfile`: default settings for the provider-specific
   configuration for this provider
+
+In case additional disk images provided, besides above file we also need:
+
+* `box.xml`: Initial template for import, with both root disk and
+  additional disk defined. Could be exported by `virt-v2v` from live
+  instance
+* `box-sdb`, `box-sdc`, etc: Additional disk images with filename as
+  mentioned in above `box.xml`
 
 ## Create Box
 

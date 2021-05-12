@@ -8,7 +8,6 @@ module VagrantPlugins
       class PackageDomain
         include VagrantPlugins::ProviderLibvirt::Util::Ui
 
-
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::package_domain')
           @app = app
@@ -18,100 +17,76 @@ module VagrantPlugins
 
         def call(env)
           env[:ui].info(I18n.t('vagrant_libvirt.package_domain'))
-          libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
-            env[:machine].id
-          )
-          domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
-          root_disk = domain.volumes.select do |x|
-            x.name == libvirt_domain.name + '.img'
-          end.first
-          raise Errors::NoDomainVolume if root_disk.nil?
+          domain = env[:machine].provider.driver.get_domain(env[:machine])
+
           boxname = env['package.output']
           raise "#{boxname}: Already exists" if File.exist?(boxname)
-          @tmp_dir = Dir.pwd + '/_tmp_package'
-          @tmp_img = @tmp_dir + '/box.img'
-          FileUtils.mkdir_p(@tmp_dir)
-          env[:ui].info("Downloading #{root_disk.name} to #{@tmp_img}")
-          ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
-                               root_disk.name, env) do |progress,image_size|
-            rewriting(env[:ui]) do |ui|
-              ui.clear_line
-              ui.report_progress(progress, image_size, false)
-            end
-          end
-          # Clear the line one last time since the progress meter doesn't
-          # disappear immediately.
-          rewriting(env[:ui]) {|ui| ui.clear_line}
-          backing = `qemu-img info "#{@tmp_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
-          if backing
-            env[:ui].info('Image has backing image, copying image and rebasing ...')
-            `qemu-img rebase -p -b "" #{@tmp_img}`
-          end
-          # remove hw association with interface
-          # working for centos with lvs default disks
+
           options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
           operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir,-customize')
-          `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
-          `virt-sparsify --in-place #{@tmp_img}`
-          # add any user provided file
-          extra = ''
-          @tmp_include = @tmp_dir + '/_include'
-          if env['package.include']
-            extra = './_include'
-            Dir.mkdir(@tmp_include)
-            env['package.include'].each do |f|
-              env[:ui].info("Including user file: #{f}")
-              FileUtils.cp(f, @tmp_include)
-            end
-          end
-          if env['package.vagrantfile']
-            extra = './_include'
-            Dir.mkdir(@tmp_include) unless File.directory?(@tmp_include)
-            env[:ui].info('Including user Vagrantfile')
-            FileUtils.cp(env['package.vagrantfile'], @tmp_include + '/Vagrantfile')
-          end
-          Dir.chdir(@tmp_dir)
-          info = JSON.parse(`qemu-img info --output=json #{@tmp_img}`)
-          img_size = (Float(info['virtual-size'])/(1024**3)).ceil
-          File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
-          File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
-          assemble_box(boxname, extra)
-          FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
-          FileUtils.rm_rf(@tmp_dir)
-          env[:ui].info('Box created')
-          env[:ui].info('You can now add the box:')
-          env[:ui].info("vagrant box add #{boxname} --name any_comfortable_name")
-          @app.call(env)
-        end
 
-        def assemble_box(boxname, extra)
-          `tar cvzf "#{boxname}" --totals ./metadata.json ./Vagrantfile ./box.img #{extra}`
-        end
-
-        def vagrantfile_content
-          <<-EOF
-            Vagrant.configure("2") do |config|
-              config.vm.provider :libvirt do |libvirt|
-                libvirt.driver = "kvm"
-                libvirt.host = ""
-                libvirt.connect_via_ssh = false
-                libvirt.storage_pool_name = "default"
+          @tmp_dir = Dir.mktmpdir(nil, Dir.pwd)
+          domain.volumes.each_with_index do |volume, index|
+            @tmp_img = File.join(@tmp_dir, (index == 0 ? "box.img" : "box-sd#{('a'..'z').to_a[index]}"))
+            env[:ui].info("Downloading #{volume.name} to #{@tmp_img}")
+            ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
+                                 volume.name, env) do |progress,image_size|
+              rewriting(env[:ui]) do |ui|
+                ui.clear_line
+                ui.report_progress(progress, image_size, false)
               end
             end
 
-            user_vagrantfile = File.expand_path('../_include/Vagrantfile', __FILE__)
-            load user_vagrantfile if File.exists?(user_vagrantfile)
-          EOF
-        end
+            # Clear the line one last time since the progress meter doesn't
+            # disappear immediately.
+            rewriting(env[:ui]) {|ui| ui.clear_line}
+            backing = `qemu-img info "#{@tmp_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
+            if backing
+              env[:ui].info('Image has backing image, copying image and rebasing ...')
+              `qemu-img rebase -p -b "" #{@tmp_img}`
+            end
+          
+            if index == 0
+              # reset image with `virt-sysprep`
+              env[:ui].info('Resetting image with `virt-sysprep`...')
+              `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
+            end
 
-        def metadata_content(filesize)
-          <<-EOF
-            {
-              "provider": "libvirt",
-              "format": "qcow2",
-              "virtual_size": #{filesize}
-            }
-          EOF
+            # spare image with `virt-sparsify`
+            env[:ui].info('Sparsing image with `virt-sparsify`...')
+            `virt-sparsify --in-place #{@tmp_img}`
+
+            # compress image with `qemu-img`
+            env[:ui].info('Compress image with `qemu-img`...')
+            `qemu-img convert -f qcow2 -O qcow2 -c #{@tmp_img} #{@tmp_img}.convert`
+            FileUtils.mv("#{@tmp_img}.convert", "#{@tmp_img}")
+          end
+
+          # copy templates
+          FileUtils.cp(File.join(File.dirname(__FILE__), '../templates/metadata.json'), @tmp_dir)
+          FileUtils.cp(File.join(File.dirname(__FILE__), '../templates/Vagrantfile'), @tmp_dir)
+          FileUtils.cp(File.join(File.dirname(__FILE__), '../templates/box.xml'), @tmp_dir)
+
+          # add any user provided file
+          if env['package.include']
+            env['package.include'].each do |f|
+              env[:ui].info("Including user file: #{f}")
+              FileUtils.cp(f, @tmp_dir)
+            end
+          end
+          if env['package.vagrantfile']
+            env[:ui].info('Including user Vagrantfile')
+            FileUtils.cp(env['package.vagrantfile'], @tmp_dir + '/_Vagrantfile')
+          end
+
+          Dir.chdir(@tmp_dir)
+          env[:ui].info('Creating box, tarring and gzipping...')
+          `tar zcvf ../#{boxname} ./*`
+          FileUtils.rm_rf(@tmp_dir)
+          env[:ui].info("#{boxname} created")
+          env[:ui].info("You can now add the box:")
+          env[:ui].info("  'vagrant box add #{boxname} --name any_comfortable_name'")
+          @app.call(env)
         end
 
         protected
