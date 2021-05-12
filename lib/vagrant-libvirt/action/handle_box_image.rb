@@ -18,7 +18,10 @@ module VagrantPlugins
           # Support qcow2 format only for now, but other formats with backing
           # store capability should be usable.
           box_volumes = []
-          Dir[env[:machine].box.directory.join('*')].sort.each_with_index do |path, index|
+          files = env[:box_xml].xpath("/domain/devices/disk[@device='disk']/source[@file]")
+          files.each_with_index do |xml, index|
+            file = File.basename(xml.attr('file').to_s)
+            path = env[:machine].box.directory.join(file)
             box_format = `qemu-img info #{path} | grep 'file format:' | sed 's/^.*: \\(.*\\)$/\\1/g'`.chomp
             box_virtual_size = `qemu-img info #{path} | grep 'virtual size:' | sed 's/^.*: \\([0-9]*\\) GiB.*$/\\1/g'`.chomp
             if !box_format.nil? && box_format == 'qcow2' && !box_virtual_size.nil?

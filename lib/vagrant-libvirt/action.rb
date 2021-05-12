@@ -15,6 +15,7 @@ module VagrantPlugins
       autoload :HaltDomain, File.expand_path("../action/halt_domain", __FILE__)
       autoload :HandleBoxImage, File.expand_path("../action/handle_box_image", __FILE__)
       autoload :HandleStoragePool, File.expand_path("../action/handle_storage_pool", __FILE__)
+      autoload :ImportMaster, File.expand_path("../action/import_master", __FILE__)
       autoload :IsCreated, File.expand_path("../action/is_created", __FILE__)
       autoload :IsRunning, File.expand_path("../action/is_running", __FILE__)
       autoload :IsSuspended, File.expand_path("../action/is_suspended", __FILE__)
@@ -78,6 +79,7 @@ module VagrantPlugins
                 b2.use SetBootOrder
                 b2.use StartDomain
               else
+                b2.use ImportMaster
                 b2.use HandleStoragePool
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
