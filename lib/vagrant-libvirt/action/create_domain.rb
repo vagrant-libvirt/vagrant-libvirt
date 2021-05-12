@@ -237,7 +237,11 @@ module VagrantPlugins
             env[:ui].info(" -- Feature:           #{feature}")
           end
           @features_hyperv.each do |feature|
-            env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
+            if feature[:name] == 'spinlocks'
+              env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}, retries=#{feature[:retries]}")
+            else
+              env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
+            end
           end
           env[:ui].info(" -- Clock offset:      #{@clock_offset}")
           @clock_timers.each do |timer|

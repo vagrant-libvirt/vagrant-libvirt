@@ -1258,6 +1258,8 @@ Vagrant.configure("2") do |config|
     libvirt.hyperv_feature :name => 'relaxed', :state => 'on'
     # Enable virtual APIC
     libvirt.hyperv_feature :name => 'vapic', :state => 'on'
+    # Enable spinlocks (requires retries to be specified)
+    libvirt.hyperv_feature :name => 'spinlocks', :state => 'on', :retries => '8191'
   end
 end
 ```
