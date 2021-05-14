@@ -20,7 +20,10 @@ setup_file() {
 }
 
 teardown_file() {
-  [ -n "${TEMPDIR:-}" ] && [ -d "${TEMPDIR:-}" ] && rm -rf ${TEMPDIR}
+  if [ -n "${TEMPDIR:-}" ] && [ -d "${TEMPDIR:-}" ]
+  then
+    rm -rf ${TEMPDIR:-}
+  fi
 }
 
 cleanup() {
@@ -81,6 +84,7 @@ cleanup() {
 @test "bring up with two disks" {
   export VAGRANT_CWD=tests/two_disks
   cleanup
+  tools/create_box_with_two_disks.sh ${VAGRANT_HOME} ${VAGRANT_CMD}
   run ${VAGRANT_CMD} up ${VAGRANT_OPT}
   echo "${output}"
   echo "status = ${status}"
