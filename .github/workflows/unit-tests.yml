@@ -45,6 +45,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Clone vagrant for ruby 3.0 support
       if: ${{ matrix.ruby == '3.0.0' }}
       uses: actions/checkout@v2
