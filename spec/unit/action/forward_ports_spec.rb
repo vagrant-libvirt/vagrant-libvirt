@@ -152,7 +152,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ClearForwardedPorts do
 
         expect(subject.call(env)).to be_nil
 
-        expect(Dir.entries(machine.data_dir.join('pids'))).to eq(['.', '..'])
+        expect(Dir.entries(machine.data_dir.join('pids'))).to match_array(['.', '..'])
       end
     end
   end
