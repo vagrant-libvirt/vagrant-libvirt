@@ -1882,14 +1882,32 @@ $ bundle install
 Once you have the dependencies, verify the unit tests pass with `rspec`:
 
 ```shell
-$ bundle exec rspec spec/
+$ export VAGRANT_HOME=$(mktemp -d)
+$ bundle exec rspec --fail-fast --color --format documentation
 ```
 
-If those pass, you're ready to start developing the plugin. You can test the
-plugin without installing it into your Vagrant environment by just creating a
-`Vagrantfile` in the top level of this directory (it is gitignored) that uses
-it. You can add the following line to your Vagrantfile while in development to
-ensure vagrant checks that the plugin is installed:
+If those pass, you're ready to start developing the plugin.
+
+Setting `VAGRANT_HOME` is to avoid issues with conflicting with other
+plugins/gems or data already present under `~/.vagrant.d`.
+
+Additionally if you wish to test against a specific version of vagrant you
+can control the version using the following before running the tests:
+
+```shell
+$ export VAGRANT_VERSION=v2.2.14
+```
+
+**Note** rvm is used by the maintainers to help provide an environment to test
+against multiple ruby versions that align with the ones used by vagrant for
+their embedded ruby depending on the release. You can see what version is used
+by looking at the current [unit tests](.github/workflows/unit-tests.yml)
+workflow.
+
+You can test the plugin without installing it into your Vagrant environment by
+just creating a `Vagrantfile` in the top level of this directory (it is
+gitignored) that uses it. You can add the following line to your Vagrantfile
+while in development to ensure vagrant checks that the plugin is installed:
 
 ```ruby
 Vagrant.configure("2") do |config|
