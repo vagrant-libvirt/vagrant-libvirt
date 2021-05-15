@@ -31,5 +31,7 @@ require 'vagrant-libvirt'
 require 'support/environment_helper'
 require 'vagrant-spec/unit'
 
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
+
 RSpec.configure do |spec|
 end
