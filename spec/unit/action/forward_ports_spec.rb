@@ -27,25 +27,28 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
       end
     end
 
-    context 'with forwarded port defined' do
+    context 'with network includes a forwarded port' do
+      let(:networks) { [
+        [:private_network, {:ip=>"10.20.30.40", :protocol=>"tcp", :id=>"6b8175ed-3220-4b63-abaf-0bb8d7cdd723"}],
+        [:forwarded_port, port_options],
+      ]}
+
+      let(:port_options){ {guest: 80, host: 8080} }
+
+      it 'should be called only once' do
+        expect(vm_config).to receive(:networks).and_return(networks)
+        expect(ui).to_not receive(:warn)
+        expect(subject).to receive(:forward_ports).and_return(nil)
+
+        expect(subject.call(env)).to be_nil
+      end
+
       context 'when host port in protected range' do
         let(:port_options){ {guest: 8080, host: 80} }
 
         it 'should emit a warning' do
-          expect(vm_config).to receive(:networks).and_return([[:forwarded_port, port_options]])
+          expect(vm_config).to receive(:networks).and_return(networks)
           expect(ui).to receive(:warn).with(include("You are trying to forward to privileged ports"))
-          expect(subject).to receive(:forward_ports).and_return(nil)
-
-          expect(subject.call(env)).to be_nil
-        end
-      end
-
-      context 'when guest port in protected range' do
-        let(:port_options){ {guest: 80, host: 8080} }
-
-        it 'should not trigger any warning' do
-          expect(vm_config).to receive(:networks).and_return([[:forwarded_port, port_options]])
-          expect(ui).to_not receive(:warn)
           expect(subject).to receive(:forward_ports).and_return(nil)
 
           expect(subject.call(env)).to be_nil
