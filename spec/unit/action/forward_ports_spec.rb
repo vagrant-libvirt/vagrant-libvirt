@@ -19,7 +19,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
     allow(machine).to receive(:provider_config).and_return(provider_config)
     allow(machine_config).to receive(:vm).and_return(vm_config)
     allow(vm_config).to receive(:networks).and_return([])
-    allow(provider_config).to receive(:forward_ssh_port).and_return(true)
+    allow(provider_config).to receive(:forward_ssh_port).and_return(false)
   end
 
   describe '#call' do
@@ -30,7 +30,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
       end
     end
 
-    context 'with network includes a forwarded port' do
+    context 'with network including one forwarded port' do
       let(:networks) { [
         [:private_network, {:ip=>"10.20.30.40", :protocol=>"tcp", :id=>"6b8175ed-3220-4b63-abaf-0bb8d7cdd723"}],
         [:forwarded_port, port_options],
@@ -38,12 +38,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
 
       let(:port_options){ {guest: 80, host: 8080} }
 
-      it 'should be called only once' do
+      it 'should compile a single port forward to set up' do
         expect(vm_config).to receive(:networks).and_return(networks)
         expect(ui).to_not receive(:warn)
         expect(subject).to receive(:forward_ports).and_return(nil)
 
         expect(subject.call(env)).to be_nil
+
+        expect(env[:forwarded_ports]).to eq([networks[1][1]])
       end
 
       context 'when host port in protected range' do
@@ -79,6 +81,21 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
       ]}
 
       context 'with default config' do
+        it 'should not forward the ssh port' do
+          expect(vm_config).to receive(:networks).and_return(networks)
+          expect(subject).to receive(:forward_ports)
+
+          expect(subject.call(env)).to be_nil
+
+          expect(env[:forwarded_ports]).to eq([networks[1][1]])
+        end
+      end
+
+      context 'with forward_ssh_port enabled' do
+        before do
+          allow(provider_config).to receive(:forward_ssh_port).and_return(true)
+        end
+
         it 'should forward the port' do
           expect(vm_config).to receive(:networks).and_return(networks)
           expect(subject).to receive(:forward_ports)
@@ -86,21 +103,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
           expect(subject.call(env)).to be_nil
 
           expect(env[:forwarded_ports]).to eq(networks.drop(1).map { |_, opts| opts })
-        end
-      end
-
-      context 'with forward_ssh_port disabled' do
-        before do
-          allow(provider_config).to receive(:forward_ssh_port).and_return(false)
-        end
-
-        it 'should not forward the port' do
-          expect(vm_config).to receive(:networks).and_return(networks)
-          expect(subject).to receive(:forward_ports)
-
-          expect(subject.call(env)).to be_nil
-
-          expect(env[:forwarded_ports]).to eq([networks[1][1]])
         end
       end
     end
