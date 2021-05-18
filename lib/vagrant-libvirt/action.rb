@@ -179,6 +179,7 @@ module VagrantPlugins
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
               b2.use RemoveStaleVolume if env[:machine].config.vm.box
+              b2.use CleanMachineFolder, quiet: true
               b2.use MessageNotCreated unless env[:result]
 
               next
@@ -191,6 +192,7 @@ module VagrantPlugins
                 b3.use PruneNFSExports
                 b3.use DestroyDomain
                 b3.use DestroyNetworks
+                b3.use CleanMachineFolder
               else
                 b3.use MessageWillNotDestroy
               end
@@ -324,6 +326,7 @@ module VagrantPlugins
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
       autoload :CreateNetworks, action_root.join('create_networks')
+      autoload :CleanMachineFolder, action_root.join('clean_machine_folder')
       autoload :DestroyDomain, action_root.join('destroy_domain')
       autoload :DestroyNetworks, action_root.join('destroy_networks')
       autoload :ForwardPorts, action_root.join('forward_ports')
