@@ -789,7 +789,7 @@ module VagrantPlugins
         finalize_proxy_command
 
         # forward port with id 'ssh'
-        @forward_ssh_port = true if @forward_ssh_port == UNSET_VALUE
+        @forward_ssh_port = false if @forward_ssh_port == UNSET_VALUE
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE

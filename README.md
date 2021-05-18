@@ -1419,21 +1419,24 @@ Default is `eth0`.
 
 ### Forwarding the ssh-port
 
-By default vagrant-libvirt now allows the standard ssh-port to be forwarded to
-the localhost to allow for consistent provisioning steps/ports used when
+Vagrant-libvirt now supports forwarding the standard ssh-port on port 2222 from
+the localhost to allow for consistent provisioning steps/ports to be used when
 defining across multiple providers.
 
-Previously by default libvirt skipped the forwarding of the ssh-port because
-you can access the machine directly. To return to this behaviour set the
-option `forward_ssh_port` to `false` in the Vagrantfile.
-
+To enable, set the following:
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
-    # Disable forwarding of forwarded_port with id 'ssh'.
-    libvirt.forward_ssh_port = false
+    # Enable forwarding of forwarded_port with id 'ssh'.
+    libvirt.forward_ssh_port = true
   end
+end
 ```
+
+Previously by default libvirt skipped the forwarding of the ssh-port because
+you can access the machine directly. In the future it is expected that this
+will be enabled by default once autocorrect support is added to handle port
+collisions for multi machine environments gracefully.
 
 ## Synced Folders
 
