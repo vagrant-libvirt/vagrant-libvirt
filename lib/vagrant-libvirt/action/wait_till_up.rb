@@ -47,30 +47,6 @@ module VagrantPlugins
           @logger.info("Got IP address #{env[:ip_address]}")
           @logger.info("Time for getting IP: #{env[:metrics]['instance_ip_time']}")
 
-          # Machine has ip address assigned, now wait till we are able to
-          # connect via ssh.
-          env[:metrics]['instance_ssh_time'] = Util::Timer.time do
-            env[:ui].info(I18n.t('vagrant_libvirt.waiting_for_ssh'))
-            retryable(on: Fog::Errors::TimeoutError, tries: 60) do
-              # If we're interrupted don't worry about waiting
-              next if env[:interrupted]
-
-              # Wait till we are able to connect via ssh.
-              loop do
-                # If we're interrupted then just back out
-                break if env[:interrupted]
-                break if env[:machine].communicate.ready?
-                sleep 2
-              end
-            end
-          end
-          # just return if interrupted and let the warden call recover
-          return if env[:interrupted]
-          @logger.info("Time for SSH ready: #{env[:metrics]['instance_ssh_time']}")
-
-          # Booted and ready for use.
-          # env[:ui].info(I18n.t("vagrant_libvirt.ready"))
-
           @app.call(env)
         end
 
@@ -80,7 +56,7 @@ module VagrantPlugins
         end
 
         def terminate(env)
-          if env[:machine].provider.state.id != :not_created
+          if env[:machine].state.id != :not_created
             # If we're not supposed to destroy on error then just return
             return unless env[:destroy_on_error]
 

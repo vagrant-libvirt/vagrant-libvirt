@@ -49,6 +49,7 @@ module VagrantPlugins
 
                 b2.use StartDomain
                 b2.use WaitTillUp
+                b2.use WaitForCommunicator, [:running]
 
                 b2.use ForwardPorts
                 b2.use SetHostname
@@ -107,6 +108,7 @@ module VagrantPlugins
                 # Machine should gain IP address when comming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
+                b3.use WaitForCommunicator, [:running]
 
                 b3.use ForwardPorts
                 b3.use PrepareNFSSettings
@@ -369,6 +371,7 @@ module VagrantPlugins
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
       autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
+      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
     end
   end
 end
