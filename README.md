@@ -63,7 +63,9 @@ can help a lot :-)
 * [Memory balloon](#memory-balloon)
 * [Libvirt communication channels](#libvirt-communication-channels)
 * [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
-* [Box Format](#box-format)
+* [Box Formats](#box-formats)
+  * [Version 1](#version-1)
+  * [Version 2 (Experimental)](#version-2-experimental)
 * [Create Box](#create-box)
 * [Package Box from VM](#package-box-from-vm)
 * [Troubleshooting VMs](#troubleshooting-vms)
@@ -1774,7 +1776,11 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-## Box Format
+## Box Formats
+
+### Version 1
+
+This is the original format that most boxes currently use.
 
 You can view an example box in the
 [`example_box/directory`](https://github.com/vagrant-libvirt/vagrant-libvirt/tree/master/example_box).
@@ -1787,6 +1793,45 @@ The box is a tarball containing:
   `format`)
 * `Vagrantfile` that does default settings for the provider-specific
   configuration for this provider
+
+
+### Version 2 (Experimental)
+
+Due to the limitation of only being able to handle a single disk with the version 1 format, a new
+format was added to support boxes that need to specify multiple disks. This is still currently
+experimental and as such support for packaging has yet to be added. There is a script in the tools
+folder (tools/create_box_with_two_disks.sh) that should provide a guideline on how to create such
+a box for those that wish to experiment and provide early feedback.
+
+At it's most basic, it expects an array of disks to allow a specific order to be presented. Disks
+will be attached in this order and as such assume device names base on this within the VM. The
+'path' attribute is required, and is expected to be relative to the base of the box. This should
+allow placing the disk images within a nested directory within the box if it useful for those
+with a larger number of disks. The name allows overriding the target volume name that will be
+used in the libvirt storage pool. Note that vagrant-libvirt will still prefix the volume name
+with `#{box_name}_vagrant_box_image_#{box_version}_` to avoid accidental clashes with other boxes.
+
+Format and virtual size need no longer be specified as they are now retrieved directly from the
+provided image using `qemu-img info ...`.
+
+Example format:
+```json
+{
+  'disks': [
+      {
+          'path': 'disk1.img'
+      },
+      {
+          'path': 'disk2.img',
+          'name': 'secondary_disk'
+      },
+      {
+          'path': 'disk3.img'
+      }
+  ],
+  'provider': 'libvirt'
+}
+```
 
 ## Create Box
 

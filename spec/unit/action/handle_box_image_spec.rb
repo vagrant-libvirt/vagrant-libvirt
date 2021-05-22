@@ -50,7 +50,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           [
             {
               :path=>"/test/box.img",
-              :name=>"test_vagrant_box_image_1.1.1_0.img", 
+              :name=>"test_vagrant_box_image_1.1.1_box.img",
               :virtual_size=>5,
               :format=>"qcow2"
             }
@@ -69,10 +69,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
         it 'should upload disk' do
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_0.img in storage pool default.')
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_box.img in storage pool default.')
           expect(volumes).to receive(:create).with(
             hash_including(
-              :name => "test_vagrant_box_image_1.1.1_0.img",
+              :name => "test_vagrant_box_image_1.1.1_box.img",
               :allocation => "5120M",
               :capacity => "5G",
             )
@@ -107,12 +107,15 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         allow(env[:machine]).to receive_message_chain("box.metadata") { Hash[
           'disks' => [
             {
-              'name'=>'send_box_name.img',
+              'path' => 'box.img',
+              'name' => 'send_box_name',
             },
             {
               'path' => 'disk.qcow2',
             },
-            { },
+            {
+              'path' => 'box_2.img',
+            },
           ],
         ]}
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
@@ -137,19 +140,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           [
             {
               :path=>"/test/box.img",
-              :name=>"send_box_name.img",
+              :name=>"test_vagrant_box_image_1.1.1_send_box_name.img",
               :virtual_size=>5,
               :format=>"qcow2"
             },
             {
               :path=>"/test/disk.qcow2",
-              :name=>"test_vagrant_box_image_1.1.1_1.img", 
+              :name=>"test_vagrant_box_image_1.1.1_disk.img",
               :virtual_size=>10,
               :format=>"qcow2"
             },
             {
               :path=>"/test/box_2.img",
-              :name=>"test_vagrant_box_image_1.1.1_2.img", 
+              :name=>"test_vagrant_box_image_1.1.1_box_2.img",
               :virtual_size=>20,
               :format=>"qcow2"
             }
@@ -168,30 +171,30 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
         it 'should upload all 3 disks' do
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume send_box_name.img in storage pool default.')
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_send_box_name.img in storage pool default.')
           expect(volumes).to receive(:create).with(
             hash_including(
-              :name => "send_box_name.img",
+              :name => "test_vagrant_box_image_1.1.1_send_box_name.img",
               :allocation => "5120M",
               :capacity => "5G",
             )
           )
           expect(subject).to receive(:upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_1.img in storage pool default.')
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_disk.img in storage pool default.')
           expect(volumes).to receive(:create).with(
             hash_including(
-              :name => "test_vagrant_box_image_1.1.1_1.img",
+              :name => "test_vagrant_box_image_1.1.1_disk.img",
               :allocation => "10240M",
               :capacity => "10G",
             )
           )
           expect(subject).to receive(:upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_2.img in storage pool default.')
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_box_2.img in storage pool default.')
           expect(volumes).to receive(:create).with(
             hash_including(
-              :name => "test_vagrant_box_image_1.1.1_2.img",
+              :name => "test_vagrant_box_image_1.1.1_box_2.img",
               :allocation => "20480M",
               :capacity => "20G",
             )
@@ -214,12 +217,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
         it 'upload disks 1 and 2 only' do
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_1.img in storage pool default.')
-          expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_1.img"))
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_disk.img in storage pool default.')
+          expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_disk.img"))
           expect(subject).to receive(:upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
-          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_2.img in storage pool default.')
-          expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_2.img"))
+          expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_box_2.img in storage pool default.')
+          expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_box_2.img"))
           expect(subject).to receive(:upload_image)
 
           expect(subject.call(env)).to be_nil
@@ -263,7 +266,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
     end
 
-    context 'when one of a multi disk definition has wrong disk format in metadata.json' do
+    context 'when invalid format in metadata.json' do
       let(:status) { double }
 
       before do
@@ -271,20 +274,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         allow(box_volume).to receive(:id).and_return(1)
         allow(env[:machine]).to receive_message_chain("box.name") { 'test' }
         allow(env[:machine]).to receive_message_chain("box.version") { '1.1.1' }
-        allow(env[:machine]).to receive_message_chain("box.metadata") {
-          Hash[
-            'disks' => [
-              {
-                'name'=>'send_box_name.img',
-                'format'=> 'wrongFormat'
-              },
-              {
-                'path' => 'disk.qcow2',
-              },
-              { },
-            ],
-          ]
-        }
+        allow(env[:machine]).to receive_message_chain("box.metadata") { box_metadata }
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
           '/test/'.concat(arg.to_s)
         end
@@ -300,10 +290,74 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         ])
       end
 
-      it 'should be ignored' do
-        expect(subject.call(env)).to be_nil
+      context 'with one disk having wrong disk format' do
+        let(:box_metadata) {
+          Hash[
+            'disks' => [
+              {
+                'path'   => 'box.img',
+                'name'   =>'send_box_name.img',
+                'format' => 'wrongFormat'
+              },
+              {
+                'path' => 'disk.qcow2',
+              },
+              {
+                'path' => 'box_2.img',
+              },
+            ],
+          ]
+        }
+
+        it 'should be ignored' do
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'with one disk missing path' do
+        let(:box_metadata) {
+          Hash[
+            'disks' => [
+              {
+                'path' => 'box.img',
+              },
+              {
+                'name' => 'send_box_name',
+              },
+              {
+                'path' => 'box_2.img',
+              },
+            ],
+          ]
+        }
+
+        it 'should raise an exception' do
+          expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::BoxFormatMissingAttribute, /: 'disks\[1\]\['path'\]'/)
+        end
+      end
+
+      context 'with one disk name duplicating a path of another' do
+        let(:box_metadata) {
+          Hash[
+            'disks' => [
+              {
+                'path' => 'box.img',
+                'name' => 'box_2',
+              },
+              {
+                'path' => 'disk.qcow2',
+              },
+              {
+                'path' => 'box_2.img',
+              },
+            ],
+          ]
+        }
+
+        it 'should raise an exception' do
+          expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::BoxFormatDuplicateVolume, /test_vagrant_box_image_1.1.1_box_2.img.*'disks\[2\]'.*'disks\[0\]'/)
+        end
       end
     end
-
   end
 end
