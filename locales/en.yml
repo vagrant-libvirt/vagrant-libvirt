@@ -72,6 +72,10 @@ en:
       no_storage_pool: |-
         No usable storage pool found! Please check if storage pool is
         created and available.
+      box_format_duplicate_volume: |-
+        Encountered a duplicate volume name '%{volume}' generated for disk '%{new_disk}', due to already allocated for disk '%{orig_disk}'.
+      box_format_missing_attribute: |-
+        Invalid box metadata, missing expected attribute: '%{attribute}'
       bad_box_image: |-
         Received error when query the box image details from '%{image}'.
         Stdout: %{out}

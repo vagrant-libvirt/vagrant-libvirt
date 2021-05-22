@@ -37,7 +37,18 @@ module VagrantPlugins
         error_key(:image_download_error)
       end
 
-      # Box exceptions
+      # Box exceptions, capture all under one
+      class BoxError < VagrantLibvirtError
+      end
+
+      class BoxFormatMissingAttribute < BoxError
+        error_key(:box_format_missing_attribute)
+      end
+
+      class BoxFormatDuplicateVolume < BoxError
+        error_key(:box_format_duplicate_volume)
+      end
+
       class BadBoxImage < VagrantLibvirtError
         error_key(:bad_box_image)
       end

@@ -30,30 +30,40 @@ module VagrantPlugins
 
             env[:box_volume_number] = 1
             env[:box_volumes] = [{
-              :path => HandleBoxImage.get_box_image_path(env, HandleBoxImage.get_default_box_image_path(0)),
-              :name => HandleBoxImage.get_volume_name(env, 0),
+              :path => HandleBoxImage.get_box_image_path(env[:machine].box, 'box.img'),
+              :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box'),
               :virtual_size => HandleBoxImage.get_virtual_size(env),
               :format => box_format,
             }]
           else
             # Handle box v2 format
             # {
-            #   'path': '<path-of-file-box>', # can be inferred
-            #   'name': '<name-to-use-in-storage>'
+            #   'path': '<path-of-file-box>',
+            #   'name': '<name-to-use-in-storage>' # optional, will use index
             # }
             #
-
             env[:box_volume_number] = disks.length()
+            target_volumes = Hash[]
             env[:box_volumes] = Array.new(env[:box_volume_number]) { |i|
-              image_path = HandleBoxImage.get_box_image_path(
-                env,
-                disks[i].fetch('path', HandleBoxImage.get_default_box_image_path(i))
-              )
+              raise Errors::BoxFormatMissingAttribute, attribute: "disks[#{i}]['path']" if disks[i]['path'].nil?
+
+              image_path = HandleBoxImage.get_box_image_path(env[:machine].box, disks[i]['path'])
               format, virtual_size = HandleBoxImage.get_box_disk_settings(image_path)
+              volume_name = HandleBoxImage.get_volume_name(
+                env[:machine].box,
+                disks[i].fetch('name', disks[i]['path'].sub(/#{File.extname(disks[i]['path'])}$/, '')),
+              )
+
+              # allowing name means needing to check that it doesn't cause a clash
+              existing = target_volumes[volume_name]
+              if !existing.nil?
+                raise Errors::BoxFormatDuplicateVolume, volume: volume_name, new_disk: "disks[#{i}]", orig_disk: "disks[#{existing}]"
+              end
+              target_volumes[volume_name] = i
 
               {
                 :path => image_path,
-                :name => disks[i].fetch('name', HandleBoxImage.get_volume_name(env, i)),
+                :name => volume_name,
                 :virtual_size => virtual_size.to_i,
                 :format => HandleBoxImage.verify_box_format(format)
               }
@@ -105,15 +115,15 @@ module VagrantPlugins
 
         protected
 
-        def self.get_volume_name(env, index)
-          name = env[:machine].box.name.to_s.dup.gsub('/', '-VAGRANTSLASH-')
-          name << "_vagrant_box_image_#{
-          begin
-            env[:machine].box.version.to_s
-          rescue
-            ''
-          end}_#{index}.img"
-          return name
+        def self.get_volume_name(box, name)
+          vol_name = box.name.to_s.dup.gsub('/', '-VAGRANTSLASH-')
+          vol_name << "_vagrant_box_image_#{
+            begin
+              box.version.to_s
+            rescue
+              ''
+            end
+          }_#{name.dup.gsub('/', '-SLASH-')}.img"
         end
 
         def self.get_virtual_size(env)
@@ -123,12 +133,8 @@ module VagrantPlugins
           return box_virtual_size
         end
 
-        def self.get_default_box_image_path(index)
-          return index <= 0 ? 'box.img' : "box_#{index}.img"
-        end
-
-        def self.get_box_image_path(env, box_name)
-          return env[:machine].box.directory.join(box_name).to_s
+        def self.get_box_image_path(box, box_name)
+          return box.directory.join(box_name).to_s
         end
 
         def self.verify_box_format(box_format, disk_index=nil)
