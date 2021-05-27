@@ -1,3 +1,5 @@
+require 'cgi'
+
 require 'vagrant'
 
 class Numeric
@@ -1019,6 +1021,10 @@ module VagrantPlugins
         @host = uri.host
         @port = uri.port
         @username = uri.user
+        if uri.query
+          params = CGI.parse(uri.query)
+          @id_ssh_key_file = params['keyfile'].first if params.has_key?('keyfile')
+        end
 
         finalize_id_ssh_key_file
       end
