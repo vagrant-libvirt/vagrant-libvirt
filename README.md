@@ -1389,6 +1389,24 @@ Name of network "foreman_managed" is key for define boot order
       end
 ```
 
+An example VM that is PXE booted from the `br1` device (which must already be configured in the host machine), and if that fails, is booted from the disk:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.network :public_network,
+      dev: 'br1',
+      auto_config: false
+    pxeclient.vm.provider :libvirt do |domain|
+      boot_network = {'dev' => 'br1'}
+      domain.storage :file, :size => '100G'
+      domain.boot boot_network
+      domain.boot 'hd'
+    end
+  end
+end
+```
+
 ## SSH Access To VM
 
 vagrant-libvirt supports vagrant's [standard ssh
