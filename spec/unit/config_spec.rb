@@ -394,7 +394,6 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         [
           {:uri => 'qemu+ssh://remote/system?keyfile=/some/path/to/keyfile'},
           "ssh 'remote' -i '/some/path/to/keyfile' -W %h:%p",
-          {:allow_failure => "keyfile not yet inferred from uri"},
         ],
 
         # provide custom template
