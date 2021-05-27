@@ -2,8 +2,8 @@
 require File.expand_path('../lib/vagrant-libvirt/version', __FILE__)
 
 Gem::Specification.new do |s|
-  s.authors       = ['Lukas Stanek','Dima Vasilets','Brian Pitts']
-  s.email         = ['ls@elostech.cz','pronix.service@gmail.com','brian@polibyte.com']
+  s.authors       = ['Lukas Stanek','Dima Vasilets','Brian Pitts','Darragh Bailey']
+  s.email         = ['ls@elostech.cz','pronix.service@gmail.com','brian@polibyte.com','daragh.bailey@gmail.com']
   s.license       = 'MIT'
   s.description   = %q{libvirt provider for Vagrant.}
   s.summary       = %q{libvirt provider for Vagrant.}
