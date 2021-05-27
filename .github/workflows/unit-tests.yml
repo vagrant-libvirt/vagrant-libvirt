@@ -119,7 +119,7 @@ jobs:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - uses: actions/upload-artifact@v2
       with:
-        name: lcov.info
+        name: lcov.info-${{ matrix.vagrant }}-${{ matrix.ruby }}
         path: ./vagrant-libvirt/coverage/lcov.info
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
