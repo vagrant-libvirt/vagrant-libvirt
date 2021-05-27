@@ -358,6 +358,10 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           {:connect_via_ssh => true, :host => 'remote', :username => 'myuser'},
           "ssh 'remote' -l 'myuser' -W %h:%p",
         ],
+        [ # remote contains port
+          {:connect_via_ssh => true, :host => 'remote:2222'},
+          "ssh 'remote' -p 2222 -W %h:%p",
+        ],
         [ # include user and default ssh key exists
           {:connect_via_ssh => true, :host => 'remote', :username => 'myuser'},
           "ssh 'remote' -l 'myuser' -i '/home/tests/.ssh/id_rsa' -W %h:%p",

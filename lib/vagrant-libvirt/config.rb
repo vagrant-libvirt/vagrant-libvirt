@@ -193,6 +193,7 @@ module VagrantPlugins
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
+        @port              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
         @username          = UNSET_VALUE
         @password          = UNSET_VALUE
@@ -1016,6 +1017,7 @@ module VagrantPlugins
 
         # Extract host and username values from uri if provided, otherwise nil
         @host = uri.host
+        @port = uri.port
         @username = uri.user
 
         finalize_id_ssh_key_file
@@ -1053,11 +1055,13 @@ module VagrantPlugins
         if @connect_via_ssh
           if @proxy_command == UNSET_VALUE
             proxy_command = "ssh '#{@host}' "
+            proxy_command << "-p #{@port} " if @port
             proxy_command << "-l '#{@username}' " if @username
             proxy_command << "-i '#{@id_ssh_key_file}' " if @id_ssh_key_file
             proxy_command << '-W %h:%p'
           else
             inputs = { host: @host }
+            inputs << { port: @port } if @port
             inputs[:username] = @username if @username
             inputs[:id_ssh_key_file] = @id_ssh_key_file if @id_ssh_key_file
 
