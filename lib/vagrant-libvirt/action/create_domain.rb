@@ -33,7 +33,8 @@ module VagrantPlugins
           # Gather some info about domain
           @name = env[:domain_name]
           @title = config.title
-          @description = config.description
+          vagrantfile = File.join(env[:root_path], (env[:vagrantfile_name] || "Vagrantfile"))
+          @description = !config.description.empty? ? config.description : "Source: #{vagrantfile}"
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpuset = config.cpuset
