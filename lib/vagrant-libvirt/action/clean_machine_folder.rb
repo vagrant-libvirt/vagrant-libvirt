@@ -19,6 +19,8 @@ module VagrantPlugins
 
           @logger.debug("Recursively removing: #{machine_folder}")
           FileUtils.rm_rf(machine_folder, :secure => true)
+          # need to recreate to prevent exception during a cancelled up
+          FileUtils.mkdir_p(machine_folder)
 
           @app.call(env)
         end
