@@ -22,6 +22,7 @@ jobs:
         - bring up with adjusted memory settings
         - bring up with adjusted cpu settings
         - ip is reachable with private network
+        - package simple domain
 
     env:
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
