@@ -43,12 +43,13 @@ jobs:
           bridge-utils \
           dnsmasq-base \
           ebtables \
+          libarchive-tools \
+          libguestfs-tools \
           libvirt-clients \
           libvirt-daemon \
           libvirt-daemon-system \
           qemu-kvm \
           qemu-utils \
-          libarchive-tools \
         ;
         sudo apt-get install \
           libvirt-dev \

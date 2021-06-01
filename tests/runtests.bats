@@ -134,3 +134,31 @@ cleanup() {
   [ $(expr "$output" : ".*alive.*") -ne 0  ]
   cleanup
 }
+
+@test "package simple domain" {
+  export VAGRANT_CWD=tests/package_simple
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} halt
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} package
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box add package.box --name test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box remove test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  rm -f package.box
+
+  cleanup
+}
