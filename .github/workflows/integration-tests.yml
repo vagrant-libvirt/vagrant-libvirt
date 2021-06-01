@@ -7,21 +7,26 @@ on:
   pull_request:
 
 jobs:
-  test:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Generate matrix
+      id: generate-matrix
+      run: |
+        tests="$(awk -f tests/parse_tests.awk < tests/runtests.bats)"
+        echo "::set-output name=matrix::${tests}"
+
+  run-tests:
+    needs: generate-matrix
 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        test_name:
-        - destroy simple vm
-        - simple vm provision via shell
-        - bring up with custom default prefix
-        - bring up with second disk
-        - bring up with two disks
-        - bring up with adjusted memory settings
-        - bring up with adjusted cpu settings
-        - ip is reachable with private network
+        test_name: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
     env:
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
