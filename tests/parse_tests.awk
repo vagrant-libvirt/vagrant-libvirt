@@ -1,14 +1,14 @@
 BEGIN {
-    print "["
+    printf "["
     previous=""
 }
 match($0, /@test "(.*)" \{/, arr) {
     if ( previous != "" ) {
-	print previous","
+	printf "%s, ",previous
     }
-    previous = sprintf("  \"%s\"", arr[1])
+    previous = sprintf("\"%s\"", arr[1])
 }
 END {
-    print previous
+    printf "%s",previous
     print "]"
 }
