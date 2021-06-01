@@ -1,6 +1,12 @@
 require 'fileutils'
 require 'log4r'
 
+class String
+  def unindent
+    gsub(/^#{scan(/^\s*/).min_by{|l|l.length}}/, "")
+  end
+end
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -12,8 +18,9 @@ module VagrantPlugins
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::package_domain')
           @app = app
-          env['package.files'] ||= {}
-          env['package.output'] ||= 'package.box'
+
+          @options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
+          @operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir,-ssh-hostkeys,-customize')
         end
 
         def call(env)
@@ -26,13 +33,11 @@ module VagrantPlugins
             x.name == libvirt_domain.name + '.img'
           end.first
           raise Errors::NoDomainVolume if root_disk.nil?
-          boxname = env['package.output']
-          raise "#{boxname}: Already exists" if File.exist?(boxname)
-          @tmp_dir = Dir.pwd + '/_tmp_package'
-          @tmp_img = @tmp_dir + '/box.img'
-          FileUtils.mkdir_p(@tmp_dir)
-          env[:ui].info("Downloading #{root_disk.name} to #{@tmp_img}")
-          ret = download_image(@tmp_img, env[:machine].provider_config.storage_pool_name,
+
+          package_directory = env["package.directory"]
+          domain_img = package_directory + '/box.img'
+          env[:ui].info("Downloading #{root_disk.name} to #{domain_img}")
+          ret = download_image(domain_img, env[:machine].provider_config.storage_pool_name,
                                root_disk.name, env) do |progress,image_size|
             rewriting(env[:ui]) do |ui|
               ui.clear_line
@@ -42,70 +47,52 @@ module VagrantPlugins
           # Clear the line one last time since the progress meter doesn't
           # disappear immediately.
           rewriting(env[:ui]) {|ui| ui.clear_line}
-          backing = `qemu-img info "#{@tmp_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
+
+          # Prep domain disk
+          backing = `qemu-img info "#{domain_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
           if backing
             env[:ui].info('Image has backing image, copying image and rebasing ...')
-            `qemu-img rebase -p -b "" #{@tmp_img}`
+            `qemu-img rebase -p -b "" #{domain_img}`
           end
           # remove hw association with interface
           # working for centos with lvs default disks
-          options = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS', '')
-          operations = ENV.fetch('VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS', 'defaults,-ssh-userdir,-ssh-hostkeys,-customize')
-          `virt-sysprep --no-logfile --operations #{operations} -a #{@tmp_img} #{options}`
-          `virt-sparsify --in-place #{@tmp_img}`
-          # add any user provided file
-          extra = ''
-          @tmp_include = @tmp_dir + '/_include'
-          if env['package.include']
-            extra = './_include'
-            Dir.mkdir(@tmp_include)
-            env['package.include'].each do |f|
-              env[:ui].info("Including user file: #{f}")
-              FileUtils.cp(f, @tmp_include)
-            end
-          end
-          if env['package.vagrantfile']
-            extra = './_include'
-            Dir.mkdir(@tmp_include) unless File.directory?(@tmp_include)
-            env[:ui].info('Including user Vagrantfile')
-            FileUtils.cp(env['package.vagrantfile'], @tmp_include + '/Vagrantfile')
-          end
-          Dir.chdir(@tmp_dir)
-          info = JSON.parse(`qemu-img info --output=json #{@tmp_img}`)
+          `virt-sysprep --no-logfile --operations #{@operations} -a #{domain_img} #{@options}`
+          `virt-sparsify --in-place #{domain_img}`
+
+          # metadata / Vagrantfile
+          info = JSON.parse(`qemu-img info --output=json #{domain_img}`)
           img_size = (Float(info['virtual-size'])/(1024**3)).ceil
-          File.write(@tmp_dir + '/metadata.json', metadata_content(img_size))
-          File.write(@tmp_dir + '/Vagrantfile', vagrantfile_content)
-          assemble_box(boxname, extra)
-          FileUtils.mv(@tmp_dir + '/' + boxname, '../' + boxname)
-          FileUtils.rm_rf(@tmp_dir)
-          env[:ui].info('Box created')
-          env[:ui].info('You can now add the box:')
-          env[:ui].info("vagrant box add #{boxname} --name any_comfortable_name")
+          File.write(package_directory + '/metadata.json', metadata_content(img_size))
+          File.write(package_directory + '/Vagrantfile', vagrantfile_content(env))
+
           @app.call(env)
         end
 
-        def assemble_box(boxname, extra)
-          `tar cvzf "#{boxname}" --totals ./metadata.json ./Vagrantfile ./box.img #{extra}`
-        end
+        def vagrantfile_content(env)
+          include_vagrantfile = ""
 
-        def vagrantfile_content
-          <<-EOF
+          if env["package.vagrantfile"]
+            include_vagrantfile = <<-EOF
+
+              # Load include vagrant file if it exists after the auto-generated
+              # so it can override any of the settings
+              include_vagrantfile = File.expand_path("../include/_Vagrantfile", __FILE__)
+              load include_vagrantfile if File.exist?(include_vagrantfile)
+            EOF
+          end
+
+          <<-EOF.unindent
             Vagrant.configure("2") do |config|
               config.vm.provider :libvirt do |libvirt|
                 libvirt.driver = "kvm"
-                libvirt.host = ""
-                libvirt.connect_via_ssh = false
-                libvirt.storage_pool_name = "default"
               end
+            #{include_vagrantfile}
             end
-
-            user_vagrantfile = File.expand_path('../_include/Vagrantfile', __FILE__)
-            load user_vagrantfile if File.exists?(user_vagrantfile)
           EOF
         end
 
         def metadata_content(filesize)
-          <<-EOF
+          <<-EOF.unindent
             {
               "provider": "libvirt",
               "format": "qcow2",

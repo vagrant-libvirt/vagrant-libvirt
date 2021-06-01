@@ -142,19 +142,61 @@ cleanup() {
   echo "${output}"
   echo "status = ${status}"
   [ "$status" -eq 0 ]
-  run ${VAGRANT_CMD} halt
-  echo "${output}"
-  echo "status = ${status}"
-  [ "$status" -eq 0 ]
+  rm -f package.box
   run ${VAGRANT_CMD} package
   echo "${output}"
   echo "status = ${status}"
   [ "$status" -eq 0 ]
-  run ${VAGRANT_CMD} box add package.box --name test-package-simple-domain
+  run ${VAGRANT_CMD} destroy -f
   echo "${output}"
   echo "status = ${status}"
   [ "$status" -eq 0 ]
-  run ${VAGRANT_CMD} box remove test-package-simple-domain
+  run ${VAGRANT_CMD} box add --force package.box --name test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  VAGRANT_VAGRANTFILE=Vagrantfile.testbox run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box remove --force test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  rm -f package.box
+
+  cleanup
+}
+
+@test "package complex example" {
+  export VAGRANT_CWD=tests/package_complex_example
+  # this will allow the host keys to be removed, and part of the sysprep script
+  # adds a step to trigger the regeneration.
+  export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS='defaults,-ssh-userdir,customize'
+  export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPTIONS="--run $(pwd)/tests/package_complex_example/scripts/sysprep.sh"
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  rm -f package.box
+  run ${VAGRANT_CMD} package
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} destroy -f
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box add --force package.box --name test-package-complex-example
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  VAGRANT_VAGRANTFILE=Vagrantfile.testbox run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box remove --force test-package-complex-example
   echo "${output}"
   echo "status = ${status}"
   [ "$status" -eq 0 ]
