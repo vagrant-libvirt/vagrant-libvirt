@@ -183,6 +183,7 @@ vagrant-libvirt. This depends on your distro. An overview:
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+a[t-get install libguestfs-tools
 ```
 
 * Ubuntu 18.04, Debian 8 and older:
@@ -190,23 +191,24 @@ apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+apt-get install libguestfs-tools
 ```
 
 (It is possible some users will already have libraries from the third line installed, but this is the way to make it work OOTB.)
 
 * CentOS 6, 7, Fedora 21:
 ```shell
-yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm libguestfs-tools
 ```
 
 * Fedora 22 and up:
 ```shell
-dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel
+dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel libguestfs-tools
 ```
 
 * OpenSUSE leap 15.1:
 ```shell
-zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm libguestfs
 ```
 
 * Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
@@ -241,8 +243,7 @@ On Ubuntu, Debian, make sure you are running all three of the `apt` commands abo
 On RedHat, Centos, Fedora, ...
 
 ```shell
-$ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
-  libguestfs-tools-c ruby-devel gcc
+$ sudo dnf install libxslt-devel libxml2-devel libvirt-devel ruby-devel gcc
 ```
 
 On Arch Linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
