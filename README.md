@@ -183,7 +183,7 @@ vagrant-libvirt. This depends on your distro. An overview:
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
-a[t-get install libguestfs-tools
+apt-get install libguestfs-tools
 ```
 
 * Ubuntu 18.04, Debian 8 and older:
