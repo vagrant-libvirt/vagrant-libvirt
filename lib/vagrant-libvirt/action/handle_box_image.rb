@@ -1,4 +1,5 @@
 require 'log4r'
+require 'open3'
 
 module VagrantPlugins
   module ProviderLibvirt
