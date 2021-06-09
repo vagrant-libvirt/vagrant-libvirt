@@ -1,7 +1,7 @@
 SCRIPT_DIR="$( cd "$BATS_TEST_DIRNAME" &> /dev/null && pwd )"
 export PATH=$(dirname ${SCRIPT_DIR})/bin:${PATH}
 
-VAGRANT_CMD=vagrant
+VAGRANT_CMD="vagrant"
 VAGRANT_OPT="--provider=libvirt"
 
 TEMPDIR=

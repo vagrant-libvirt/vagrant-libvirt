@@ -266,7 +266,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           @domain_volumes.each do |volume|
-            env[:ui].info(" -- Image(#{volume[:device]}):     #{volume[:path]}, #{volume[:virtual_size]}G")
+            env[:ui].info(" -- Image(#{volume[:device]}):     #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
           end
 
           if not @disk_driver_opts.empty?

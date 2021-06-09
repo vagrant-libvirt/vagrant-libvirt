@@ -39,7 +39,7 @@ module VagrantPlugins
             @backing_file = box_volume.path
 
             # Virtual size of image. Take value worked out by HandleBoxImage
-            @capacity = env[:box_volumes][index][:virtual_size] # G
+            @capacity = env[:box_volumes][index][:virtual_size].to_B # Byte
 
             # Create new volume from xml template. Fog currently doesn't support
             # volume snapshots directly.
@@ -47,7 +47,7 @@ module VagrantPlugins
               xml = Nokogiri::XML::Builder.new do |xml|
                 xml.volume do
                   xml.name(@name)
-                  xml.capacity(@capacity, unit: 'G')
+                  xml.capacity(@capacity, unit: 'B')
                   xml.target do
                     xml.format(type: 'qcow2')
                     xml.permissions do

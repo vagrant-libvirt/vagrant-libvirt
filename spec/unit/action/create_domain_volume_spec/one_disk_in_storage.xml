@@ -1,6 +1,6 @@
 <volume>
   <name>test.img</name>
-  <capacity unit="G">5</capacity>
+  <capacity unit="B">5368709120</capacity>
   <target>
     <format type="qcow2"></format>
     <permissions>
