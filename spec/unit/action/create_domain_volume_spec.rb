@@ -3,6 +3,8 @@ require 'support/sharedcontext'
 require 'support/libvirt_context'
 
 require 'vagrant-libvirt/action/destroy_domain'
+require 'vagrant-libvirt/util/byte_number'
+
 
 describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
   subject { described_class.new(app, env) }
@@ -38,7 +40,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
         env[:box_volumes] = [
           {
             :name=>"test_vagrant_box_image_1.1.1_0.img",
-            :virtual_size=>5
+            :virtual_size=>ByteNumber.new(5368709120)
           }
         ]
       end
@@ -65,15 +67,15 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
         env[:box_volumes] = [
           {
             :name=>"test_vagrant_box_image_1.1.1_0.img",
-            :virtual_size=>5
+            :virtual_size=>ByteNumber.new(5368709120)
           },
           {
             :name=>"test_vagrant_box_image_1.1.1_1.img",
-            :virtual_size=>10
+            :virtual_size=>ByteNumber.new(10737423360)
           },
           {
             :name=>"test_vagrant_box_image_1.1.1_2.img",
-            :virtual_size=>20
+            :virtual_size=>ByteNumber.new(21474836480)
           }
         ]
       end

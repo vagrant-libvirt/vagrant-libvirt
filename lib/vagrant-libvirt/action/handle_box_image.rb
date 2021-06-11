@@ -1,5 +1,8 @@
 require 'log4r'
 require 'open3'
+require 'json'
+
+require 'vagrant-libvirt/util/byte_number'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -65,7 +68,7 @@ module VagrantPlugins
               {
                 :path => image_path,
                 :name => volume_name,
-                :virtual_size => virtual_size.to_i,
+                :virtual_size => virtual_size,
                 :format => HandleBoxImage.verify_box_format(format)
               }
             }
@@ -81,16 +84,18 @@ module VagrantPlugins
           # Override box_virtual_size
           box_virtual_size = env[:box_volumes][0][:virtual_size]
           if config.machine_virtual_size
-            if config.machine_virtual_size < box_virtual_size
+            config_machine_virtual_size = ByteNumber.from_GB(config.machine_virtual_size)
+            puts config_machine_virtual_size < box_virtual_size
+            if config_machine_virtual_size < box_virtual_size
               # Warn that a virtual size less than the box metadata size
               # is not supported and will be ignored
               env[:ui].warn I18n.t(
                 'vagrant_libvirt.warnings.ignoring_virtual_size_too_small',
-                  requested: config.machine_virtual_size, minimum: box_virtual_size
+                  requested: config_machine_virtual_size.to_GB, minimum: box_virtual_size.to_GB
               )
             else
               env[:ui].info I18n.t('vagrant_libvirt.manual_resize_required')
-              box_virtual_size = config.machine_virtual_size
+              box_virtual_size = config_machine_virtual_size
             end
           end
           # save for use by later actions
@@ -131,7 +136,7 @@ module VagrantPlugins
           # Virtual size has to be set for allocating space in storage pool.
           box_virtual_size = env[:machine].box.metadata['virtual_size']
           raise Errors::NoBoxVirtualSizeSet if box_virtual_size.nil?
-          return box_virtual_size
+          return ByteNumber.from_GB(box_virtual_size)
         end
 
         def self.get_box_image_path(box, box_name)
@@ -153,14 +158,14 @@ module VagrantPlugins
         end
 
         def self.get_box_disk_settings(image_path)
-          stdout, stderr, status = Open3.capture3('qemu-img', 'info', image_path)
+          stdout, stderr, status = Open3.capture3('qemu-img', 'info', '--output=json', image_path)
           if !status.success?
             raise Errors::BadBoxImage, image: image_path, out: stdout, err: stderr
           end
 
-          image_info_lines = stdout.split("\n")
-          format = image_info_lines.find { |l| l.start_with?('file format:') }.split(' ')[2]
-          virtual_size = image_info_lines.find { |l| l.start_with?('virtual size:') }.split(' ')[2]
+          image_info = JSON.parse(stdout)
+          format = image_info['format']
+          virtual_size = ByteNumber.new(image_info['virtual-size'])
 
           return format, virtual_size
         end
@@ -178,12 +183,11 @@ module VagrantPlugins
           message = "Creating volume #{box_volume[:name]}"
           message << " in storage pool #{config.storage_pool_name}."
           @logger.info(message)
-
           begin
             fog_volume = env[:machine].provider.driver.connection.volumes.create(
               name: box_volume[:name],
               allocation: "#{box_image_size / 1024 / 1024}M",
-              capacity: "#{box_volume[:virtual_size]}G",
+              capacity: "#{box_volume[:virtual_size].to_B}B",
               format_type: box_volume[:format],
               owner: storage_uid(env),
               group: storage_gid(env),

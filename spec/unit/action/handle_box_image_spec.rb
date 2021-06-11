@@ -1,8 +1,11 @@
 require 'spec_helper'
+require 'json'
 require 'support/sharedcontext'
 require 'support/libvirt_context'
 
 require 'vagrant-libvirt/action/destroy_domain'
+require 'vagrant-libvirt/util/byte_number'
+
 
 describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
   subject { described_class.new(app, env) }
@@ -15,6 +18,41 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
   let(:all) { double('all') }
   let(:box_volume) { double('box_volume') }
   let(:fog_volume) { double('fog_volume') }
+  let(:config) { double('config') }
+
+  qemu_json_return_5G = JSON.dump({
+    "virtual-size": 5368709120,
+    "filename": "/test/box.img",
+    "cluster-size": 65536,
+    "format": "qcow2",
+    "actual-size": 655360,
+    "dirty-flag": false
+  })
+  byte_number_5G = ByteNumber.new(5368709120)
+
+
+  qemu_json_return_10G = JSON.dump({
+    "virtual-size": 10737423360,
+    "filename": "/test/disk.qcow2",
+    "cluster-size": 65536,
+    "format": "qcow2",
+    "actual-size": 655360,
+    "dirty-flag": false
+  })
+  byte_number_10G = ByteNumber.new(10737423360)
+
+  qemu_json_return_20G = JSON.dump({
+    "virtual-size": 21474836480,
+    "filename": "/test/box_2.img",
+    "cluster-size": 65536,
+    "format": "qcow2",
+    "actual-size": 1508708352,
+    "dirty-flag": false
+  })
+  byte_number_20G = ByteNumber.new(21474836480)
+
+
+
 
   describe '#call' do
     before do
@@ -51,11 +89,51 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             {
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_box.img",
-              :virtual_size=>5,
+              :virtual_size=>byte_number_5G,
               :format=>"qcow2"
             }
           ]
         )
+      end
+
+      context 'When config.machine_virtual_size is set and smaller than box_virtual_size' do
+        before do
+          allow(env[:machine]).to receive_message_chain("provider_config.machine_virtual_size").and_return(1)
+        end
+        it 'should warning must be raise' do
+          expect(ui).to receive(:warn).with("Ignoring requested virtual disk size of '1' as it is below\nthe minimum box image size of '5'.")
+          expect(subject.call(env)).to be_nil
+          expect(env[:box_volumes]).to eq(
+            [
+              {
+                :path=>"/test/box.img",
+                :name=>"test_vagrant_box_image_1.1.1_box.img",
+                :virtual_size=>byte_number_5G,
+                :format=>"qcow2"
+              }
+            ]
+          )
+        end
+      end
+
+      context 'When config.machine_virtual_size is set and higher than box_virtual_size' do
+        before do
+          allow(env[:machine]).to receive_message_chain("provider_config.machine_virtual_size").and_return(20)
+        end
+        it 'should be use' do
+          expect(ui).to receive(:info).with("Created volume larger than box defaults, will require manual resizing of\nfilesystems to utilize.")
+          expect(subject.call(env)).to be_nil
+          expect(env[:box_volumes]).to eq(
+            [
+              {
+                :path=>"/test/box.img",
+                :name=>"test_vagrant_box_image_1.1.1_box.img",
+                :virtual_size=>byte_number_20G,
+                :format=>"qcow2"
+              }
+            ]
+          )
+        end
       end
 
       context 'when disk image not in storage pool' do
@@ -74,7 +152,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             hash_including(
               :name => "test_vagrant_box_image_1.1.1_box.img",
               :allocation => "5120M",
-              :capacity => "5G",
+              :capacity => "5368709120B",
             )
           )
           expect(subject).to receive(:upload_image)
@@ -122,14 +200,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           '/test/'.concat(arg.to_s)
         end
         allow(status).to receive(:success?).and_return(true)
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box.img').and_return([
-            "image: /test/box.img\nfile format: qcow2\nvirtual size: 5 GiB (5368709120 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '--output=json', '/test/box.img').and_return([
+          qemu_json_return_5G, "", status
         ])
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/disk.qcow2').and_return([
-          "image: /test/disk.qcow2\nfile format: qcow2\nvirtual size: 10 GiB (10737418240 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '--output=json', '/test/disk.qcow2').and_return([
+          qemu_json_return_10G, "", status
         ])
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box_2.img').and_return([
-          "image: /test/box_2.img\nfile format: qcow2\nvirtual size: 20 GiB (21474836480 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '--output=json', '/test/box_2.img').and_return([
+          qemu_json_return_20G, "", status
         ])
       end
 
@@ -141,19 +219,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             {
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_send_box_name.img",
-              :virtual_size=>5,
+              :virtual_size=>byte_number_5G,
               :format=>"qcow2"
             },
             {
               :path=>"/test/disk.qcow2",
               :name=>"test_vagrant_box_image_1.1.1_disk.img",
-              :virtual_size=>10,
+              :virtual_size=>byte_number_10G,
               :format=>"qcow2"
             },
             {
               :path=>"/test/box_2.img",
               :name=>"test_vagrant_box_image_1.1.1_box_2.img",
-              :virtual_size=>20,
+              :virtual_size=>byte_number_20G,
               :format=>"qcow2"
             }
           ]
@@ -176,7 +254,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             hash_including(
               :name => "test_vagrant_box_image_1.1.1_send_box_name.img",
               :allocation => "5120M",
-              :capacity => "5G",
+              :capacity => "5368709120B",
             )
           )
           expect(subject).to receive(:upload_image)
@@ -186,7 +264,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             hash_including(
               :name => "test_vagrant_box_image_1.1.1_disk.img",
               :allocation => "10240M",
-              :capacity => "10G",
+              :capacity => "10737423360B",
             )
           )
           expect(subject).to receive(:upload_image)
@@ -196,7 +274,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
             hash_including(
               :name => "test_vagrant_box_image_1.1.1_box_2.img",
               :allocation => "20480M",
-              :capacity => "20G",
+              :capacity => "21474836480B",
             )
           )
           expect(subject).to receive(:upload_image)
@@ -279,14 +357,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           '/test/'.concat(arg.to_s)
         end
         allow(status).to receive(:success?).and_return(true)
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box.img').and_return([
-            "image: /test/box.img\nfile format: qcow2\nvirtual size: 5 GiB (5368709120 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', "--output=json", '/test/box.img').and_return([
+          qemu_json_return_5G, "", status
         ])
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/disk.qcow2').and_return([
-          "image: /test/disk.qcow2\nfile format: qcow2\nvirtual size: 10 GiB (10737418240 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', "--output=json", '/test/disk.qcow2').and_return([
+          qemu_json_return_10G, "", status
         ])
-        allow(Open3).to receive(:capture3).with('qemu-img', 'info', '/test/box_2.img').and_return([
-          "image: /test/box_2.img\nfile format: qcow2\nvirtual size: 20 GiB (21474836480 bytes)\ndisk size: 1.45 GiB\n", "", status
+        allow(Open3).to receive(:capture3).with('qemu-img', 'info', "--output=json", '/test/box_2.img').and_return([
+          qemu_json_return_20G, "", status
         ])
       end
 
