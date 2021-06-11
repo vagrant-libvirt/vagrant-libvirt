@@ -143,7 +143,11 @@ module VagrantPlugins
               next unless env2[:result]
 
               # VM is running, halt it.
-              b3.use HaltDomain
+              b3.use Call, GracefulHalt, :shutoff, :running do |env3, b4|
+                if !env3[:result]
+                  b4.use HaltDomain
+                end
+              end
             end
           end
         end
