@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'support/sharedcontext'
 require 'support/libvirt_context'
-require 'vagrant-libvirt/action/destroy_domain'
+require 'vagrant-libvirt/action/halt_domain'
 
 describe VagrantPlugins::ProviderLibvirt::Action::HaltDomain do
   subject { described_class.new(app, env) }
