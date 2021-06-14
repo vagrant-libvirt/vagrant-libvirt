@@ -145,7 +145,11 @@ module VagrantPlugins
               # VM is running, halt it.
               b3.use Call, GracefulHalt, :shutoff, :running do |env3, b4|
                 if !env3[:result]
-                  b4.use HaltDomain
+                  b4.use Call, ShutdownDomain, :shutoff, :running do |env4, b5|
+                    if !env4[:result]
+                      b5.use HaltDomain
+                    end
+                  end
                 end
               end
             end
@@ -352,6 +356,7 @@ module VagrantPlugins
       autoload :ForwardPorts, action_root.join('forward_ports')
       autoload :ClearForwardedPorts, action_root.join('forward_ports')
       autoload :HaltDomain, action_root.join('halt_domain')
+      autoload :ShutdownDomain, action_root.join('shutdown_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')
       autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
