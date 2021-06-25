@@ -13,6 +13,16 @@ then
     exit 2
 fi
 
+for dir in boxes data tmp
+do
+    # if the directory hasn't been explicitly mounted over, remove it.
+    if [[ -e "/vagrant/${dir}/.remove" ]]
+    then
+        rm -rf /vagrant/${dir}
+        ln -s ${vdir}/${dir} /vagrant/${dir}
+    fi
+done
+
 vdir_mnt=$(stat -c %m ${vdir})
 case "${vdir_mnt%%/}" in
     /*)
