@@ -60,7 +60,11 @@ COPY . .
 RUN rake build
 RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
 
-RUN touch /vagrant/data/.remove /vagrant/boxes/.remove /vagrant/tmp/.remove
+RUN for dir in boxes data tmp; \
+    do \
+        touch /vagrant/${dir}/.remove; \
+    done \
+    ;
 
 FROM base as slim
 
