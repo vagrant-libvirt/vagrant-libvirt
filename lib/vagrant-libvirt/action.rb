@@ -4,8 +4,9 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-      # Include the built-in modules so we can use them as top-level things.
+      # Include the built-in & general modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
+      include Vagrant::Action::General
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
       # remove image from Libvirt storage pool
@@ -167,7 +168,18 @@ module VagrantPlugins
       def self.action_package
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use PackageDomain
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use PackageSetupFolders
+            b2.use PackageSetupFiles
+            b2.use action_halt
+            b2.use Package
+            b2.use PackageDomain
+          end
         end
       end
 
@@ -366,6 +378,9 @@ module VagrantPlugins
       autoload :WaitTillUp, action_root.join('wait_till_up')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
 
+      autoload :Package, 'vagrant/action/general/package'
+      autoload :PackageSetupFiles, 'vagrant/action/general/package_setup_files'
+      autoload :PackageSetupFolders, 'vagrant/action/general/package_setup_folders'
       autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
       autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
