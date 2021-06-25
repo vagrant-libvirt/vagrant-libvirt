@@ -33,6 +33,8 @@ RUN set -e \
     ;
 
 
+ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+
 FROM base as build
 
 # allow caching of packages for build
@@ -58,19 +60,24 @@ COPY . .
 RUN rake build
 RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
 
-
 RUN for dir in boxes data tmp; \
     do \
-        rm -rf /vagrant/${dir} && ln -s /.vagrant.d/${dir} /vagrant/${dir}; \
+        touch /vagrant/${dir}/.remove; \
     done \
     ;
 
-FROM base as final
-
-ENV VAGRANT_DEFAULT_PROVIDER=libvirt
+FROM base as slim
 
 COPY --from=build /vagrant /vagrant
+
 COPY entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
+
+FROM build as final
+
+COPY entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["entrypoint.sh"]
+
 # vim: set expandtab sw=4:
