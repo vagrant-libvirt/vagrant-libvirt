@@ -1,3 +1,5 @@
+require 'cgi'
+
 require 'vagrant'
 
 class Numeric
@@ -38,6 +40,9 @@ module VagrantPlugins
       attr_accessor :id_ssh_key_file
 
       attr_accessor :proxy_command
+
+      # Forward port with id 'ssh'
+      attr_accessor :forward_ssh_port
 
       # Libvirt storage pool name, where box image and instance snapshots will
       # be stored.
@@ -190,12 +195,14 @@ module VagrantPlugins
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
+        @port              = UNSET_VALUE
         @connect_via_ssh   = UNSET_VALUE
         @username          = UNSET_VALUE
         @password          = UNSET_VALUE
         @id_ssh_key_file   = UNSET_VALUE
         @socket            = UNSET_VALUE
         @proxy_command     = UNSET_VALUE
+        @forward_ssh_port  = UNSET_VALUE # forward port with id 'ssh'
         @storage_pool_name = UNSET_VALUE
         @snapshot_pool_name = UNSET_VALUE
         @random_hostname   = UNSET_VALUE
@@ -398,10 +405,20 @@ module VagrantPlugins
           raise 'Feature name AND state must be specified'
         end
 
+        if options[:name] == 'spinlocks' && options[:retries].nil?
+          raise 'Feature spinlocks requires retries parameter'
+        end
+
         @features_hyperv = []  if @features_hyperv == UNSET_VALUE
 
-        @features_hyperv.push(name: options[:name],
-                              state: options[:state])
+        if options[:name] == 'spinlocks'
+          @features_hyperv.push(name:   options[:name],
+                             state: options[:state],
+                             retries: options[:retries])
+        else
+          @features_hyperv.push(name:   options[:name],
+                             state: options[:state])
+        end
       end
 
       def clock_timer(options = {})
@@ -624,11 +641,13 @@ module VagrantPlugins
         # as will the address unit number (unit=0, unit=1, etc)
 
         options = {
+          type: 'raw',
           bus: 'ide',
           path: nil
         }.merge(options)
 
         cdrom = {
+          type: options[:type],
           dev: options[:dev],
           bus: options[:bus],
           path: options[:path]
@@ -771,6 +790,9 @@ module VagrantPlugins
 
         finalize_from_uri
         finalize_proxy_command
+
+        # forward port with id 'ssh'
+        @forward_ssh_port = false if @forward_ssh_port == UNSET_VALUE
 
         @storage_pool_name = 'default' if @storage_pool_name == UNSET_VALUE
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
@@ -997,7 +1019,12 @@ module VagrantPlugins
 
         # Extract host and username values from uri if provided, otherwise nil
         @host = uri.host
+        @port = uri.port
         @username = uri.user
+        if uri.query
+          params = CGI.parse(uri.query)
+          @id_ssh_key_file = params['keyfile'].first if params.has_key?('keyfile')
+        end
 
         finalize_id_ssh_key_file
       end
@@ -1034,11 +1061,13 @@ module VagrantPlugins
         if @connect_via_ssh
           if @proxy_command == UNSET_VALUE
             proxy_command = "ssh '#{@host}' "
+            proxy_command << "-p #{@port} " if @port
             proxy_command << "-l '#{@username}' " if @username
             proxy_command << "-i '#{@id_ssh_key_file}' " if @id_ssh_key_file
             proxy_command << '-W %h:%p'
           else
             inputs = { host: @host }
+            inputs << { port: @port } if @port
             inputs[:username] = @username if @username
             inputs[:id_ssh_key_file] = @id_ssh_key_file if @id_ssh_key_file
 

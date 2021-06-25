@@ -37,7 +37,22 @@ module VagrantPlugins
         error_key(:image_download_error)
       end
 
-      # Box exceptions
+      # Box exceptions, capture all under one
+      class BoxError < VagrantLibvirtError
+      end
+
+      class BoxFormatMissingAttribute < BoxError
+        error_key(:box_format_missing_attribute)
+      end
+
+      class BoxFormatDuplicateVolume < BoxError
+        error_key(:box_format_duplicate_volume)
+      end
+
+      class BadBoxImage < VagrantLibvirtError
+        error_key(:bad_box_image)
+      end
+
       class NoBoxVolume < VagrantLibvirtError
         error_key(:no_box_volume)
       end
@@ -46,12 +61,20 @@ module VagrantPlugins
         error_key(:no_box_virtual_size)
       end
 
+      class NoDiskVirtualSizeSet < VagrantLibvirtError
+        error_key(:no_disk_virtual_size)
+      end
+
       class NoBoxFormatSet < VagrantLibvirtError
         error_key(:no_box_format)
       end
 
       class WrongBoxFormatSet < VagrantLibvirtError
         error_key(:wrong_box_format)
+      end
+
+      class WrongDiskFormatSet < VagrantLibvirtError
+        error_key(:wrong_disk_format)
       end
 
       # Fog Libvirt exceptions

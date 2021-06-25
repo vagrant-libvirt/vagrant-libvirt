@@ -9,6 +9,13 @@ describe 'templates/domain' do
   class DomainTemplateHelper < VagrantPlugins::ProviderLibvirt::Config
     include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
 
+    attr_accessor :domain_volumes
+
+    def initialize
+      super
+      @domain_volumes = []
+    end
+
     def finalize!
       super
     end
@@ -36,6 +43,7 @@ describe 'templates/domain' do
       domain.clock_offset = 'variable'
       domain.clock_timer(name: 't1')
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
+      domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
@@ -44,11 +52,22 @@ describe 'templates/domain' do
       domain.boot('cdrom')
       domain.boot('hd')
       domain.emulator_path = '/usr/bin/kvm-spice'
-      domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
       domain.instance_variable_set('@domain_volume_cache', 'deprecated')
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
       domain.disk_driver(:cache => 'unsafe', :io => 'threads', :copy_on_read => 'on', :discard => 'unmap', :detect_zeroes => 'on')
+      domain.domain_volumes.push({
+        :dev => 1.vdev.to_s,
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :path => '/var/lib/libvirt/images/test.qcow2'
+      })
+      domain.domain_volumes.push({
+        :dev => 2.vdev.to_s,
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :path => '/var/lib/libvirt/images/test2.qcow2'
+      })
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
       domain.disks.each do |disk|

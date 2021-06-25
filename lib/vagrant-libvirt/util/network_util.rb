@@ -1,5 +1,14 @@
+require 'ipaddr'
 require 'nokogiri'
 require 'vagrant/util/network_ip'
+
+class IPAddr
+  def get_mask
+    if @addr
+      _to_string(@mask_addr)
+    end
+  end
+end
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -102,14 +111,18 @@ module VagrantPlugins
             # store type in options
             # use default values if not already set
             options = {
-              iface_type:  type,
-              netmask:      '255.255.255.0',
+              iface_type:   type,
+              netmask:      options[:network_address] ?
+                            IPAddr.new(options[:network_address]).get_mask :
+                            '255.255.255.0',
               dhcp_enabled: true,
               forward_mode: 'nat'
             }.merge(options)
 
             if options[:type].to_s == 'dhcp' && options[:ip].nil?
-              options[:network_name] = 'vagrant-private-dhcp'
+              options[:network_name] = options[:network_name] ?
+                                       options[:network_name] :
+                                       'vagrant-private-dhcp'
             end
 
             # add to list of networks to check

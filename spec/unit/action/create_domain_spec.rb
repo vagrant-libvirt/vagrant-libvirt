@@ -15,7 +15,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
   let(:servers) { double('servers') }
   let(:volumes) { double('volumes') }
 
-  let(:storage_pool_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), test_file)) }
+  let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), domain_xml_file)) }
+  let(:storage_pool_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), storage_pool_xml_file)) }
   let(:libvirt_storage_pool) { double('storage_pool') }
 
   describe '#call' do
@@ -31,6 +32,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
       env[:domain_name] = "vagrant-test_default"
 
+      env[:box_volumes] = []
+      env[:box_volumes].push({
+        :path=>"/test/box.img",
+        :name=>"test_vagrant_box_image_1.1.1_0.img", 
+        :virtual_size=>5
+      })
       # should be ignored for system session and used for user session
       allow(Process).to receive(:uid).and_return(9999)
       allow(Process).to receive(:gid).and_return(9999)
@@ -38,12 +45,13 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
     context 'connection => qemu:///system' do
       context 'default pool' do
-        let(:test_file) { 'default_system_storage_pool.xml' }
+        let(:domain_xml_file) { 'default_domain.xml' }
+        let(:storage_pool_xml_file) { 'default_system_storage_pool.xml' }
 
         it 'should execute correctly' do
           expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)
           expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
-          expect(servers).to receive(:create).and_return(machine)
+          expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
           expect(volumes).to_not receive(:create) # additional disks only
 
           expect(subject.call(env)).to be_nil
@@ -72,6 +80,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
           end
 
           context 'volume create succeeded' do
+            let(:domain_xml_file) { 'additional_disks_domain.xml' }
+
             it 'should complete' do
               expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)
               expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
@@ -83,7 +93,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
                   :pool_name   => "default",
                 )
               )
-              expect(servers).to receive(:create).and_return(machine)
+              expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
 
               expect(subject.call(env)).to be_nil
             end
@@ -113,7 +123,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
       end
 
       context 'default pool' do
-        let(:test_file) { 'default_user_storage_pool.xml' }
+        let(:storage_pool_xml_file) { 'default_user_storage_pool.xml' }
 
         it 'should execute correctly' do
           expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)

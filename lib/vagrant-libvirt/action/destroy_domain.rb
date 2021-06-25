@@ -70,7 +70,7 @@ module VagrantPlugins
 
             # remove root storage
             root_disk = domain.volumes.select do |x|
-              x.name == libvirt_domain.name + '.img'
+              x.name == libvirt_domain.name + '.img' if x
             end.first
             root_disk.destroy if root_disk
           end

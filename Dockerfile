@@ -14,6 +14,7 @@ RUN apt update \
         kmod \
         libvirt-bin \
         openssh-client \
+        qemu-utils \
         rsync \
     && rm -rf /var/lib/apt/lists \
     ;

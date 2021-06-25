@@ -49,6 +49,7 @@ module VagrantPlugins
 
                 b2.use StartDomain
                 b2.use WaitTillUp
+                b2.use WaitForCommunicator, [:running]
 
                 b2.use ForwardPorts
                 b2.use SetHostname
@@ -107,6 +108,7 @@ module VagrantPlugins
                 # Machine should gain IP address when comming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
+                b3.use WaitForCommunicator, [:running]
 
                 b3.use ForwardPorts
                 b3.use PrepareNFSSettings
@@ -179,6 +181,7 @@ module VagrantPlugins
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
               b2.use RemoveStaleVolume if env[:machine].config.vm.box
+              b2.use CleanMachineFolder, quiet: true
               b2.use MessageNotCreated unless env[:result]
 
               next
@@ -191,6 +194,7 @@ module VagrantPlugins
                 b3.use PruneNFSExports
                 b3.use DestroyDomain
                 b3.use DestroyNetworks
+                b3.use CleanMachineFolder
               else
                 b3.use MessageWillNotDestroy
               end
@@ -324,6 +328,7 @@ module VagrantPlugins
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
       autoload :CreateNetworks, action_root.join('create_networks')
+      autoload :CleanMachineFolder, action_root.join('clean_machine_folder')
       autoload :DestroyDomain, action_root.join('destroy_domain')
       autoload :DestroyNetworks, action_root.join('destroy_networks')
       autoload :ForwardPorts, action_root.join('forward_ports')
@@ -366,6 +371,7 @@ module VagrantPlugins
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
       autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
+      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
     end
   end
 end

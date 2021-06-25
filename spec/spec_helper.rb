@@ -31,5 +31,13 @@ require 'vagrant-libvirt'
 require 'support/environment_helper'
 require 'vagrant-spec/unit'
 
-RSpec.configure do |spec|
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
+
+RSpec.configure do |config|
+  # ensure that setting of LIBVIRT_DEFAULT_URI in the environment is not picked
+  # up directly by tests, instead they must set as needed. Some build envs will
+  # may have it set to 'qemu:///session'.
+  config.before(:suite) do
+    ENV.delete('LIBVIRT_DEFAULT_URI')
+  end
 end

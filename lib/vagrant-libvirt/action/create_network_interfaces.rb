@@ -214,9 +214,6 @@ module VagrantPlugins
                 network[:type] = :dhcp
               end
 
-              # do not run configure_networks for tcp tunnel interfaces
-              next if options.fetch(:tunnel_type, nil)
-
               networks_to_configure << network
             end
 

@@ -7,20 +7,26 @@ on:
   pull_request:
 
 jobs:
-  test:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Generate matrix
+      id: generate-matrix
+      run: |
+        tests="$(awk -f tests/parse_tests.awk < tests/runtests.bats)"
+        echo "::set-output name=matrix::${tests}"
+
+  run-tests:
+    needs: generate-matrix
 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        test_name:
-        - destroy simple vm
-        - simple vm provision via shell
-        - bring up with custom default prefix
-        - bring up with second disk
-        - bring up with adjusted memory settings
-        - bring up with adjusted cpu settings
-        - ip is reachable with private network
+        test_name: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
     env:
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
@@ -28,6 +34,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Set up libvirt
       run: |
         sudo apt-get update
@@ -35,12 +43,13 @@ jobs:
           bridge-utils \
           dnsmasq-base \
           ebtables \
+          libarchive-tools \
+          libguestfs-tools \
           libvirt-clients \
           libvirt-daemon \
           libvirt-daemon-system \
           qemu-kvm \
           qemu-utils \
-          libarchive-tools \
         ;
         sudo apt-get install \
           libvirt-dev \
@@ -87,6 +96,8 @@ jobs:
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
+        # use export with full path to avoid needing to resolve ~
+        export VAGRANT_HOME=$HOME/.vagrant.d
         # use software emulation due to lack of nested emulation
         cat <<EOF > $HOME/.vagrant.d/Vagrantfile
         Vagrant.configure("2") do |config|
@@ -97,5 +108,3 @@ jobs:
         EOF
         # run under libvirt group
         sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
-      env:
-        VAGRANT_HOME: ~/.vagrant.d

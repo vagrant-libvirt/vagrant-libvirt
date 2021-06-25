@@ -1,10 +1,11 @@
 SCRIPT_DIR="$( cd "$BATS_TEST_DIRNAME" &> /dev/null && pwd )"
 export PATH=$(dirname ${SCRIPT_DIR})/bin:${PATH}
 
-VAGRANT_CMD=vagrant
+VAGRANT_CMD="vagrant"
 VAGRANT_OPT="--provider=libvirt"
 
 TEMPDIR=
+
 
 setup_file() {
   # set VAGRANT_HOME to something else to reuse for tests to avoid clashes with
@@ -19,7 +20,10 @@ setup_file() {
 }
 
 teardown_file() {
-  [ -n "${TEMPDIR:-}" ] && [ -d "${TEMPDIR:-}" ] && rm -rf ${TEMPDIR}
+  if [ -n "${TEMPDIR:-}" ] && [ -d "${TEMPDIR:-}" ]
+  then
+    rm -rf ${TEMPDIR:-}
+  fi
 }
 
 cleanup() {
@@ -77,6 +81,20 @@ cleanup() {
   cleanup
 }
 
+@test "bring up with two disks" {
+  export VAGRANT_CWD=tests/two_disks
+  cleanup
+  tools/create_box_with_two_disks.sh ${VAGRANT_HOME} ${VAGRANT_CMD}
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  echo "${output}"
+  [ $(expr "$output" : ".*Image.*2G")  -ne 0  ]
+  [ $(expr "$output" : ".*Image.*10G") -ne 0  ]
+  cleanup
+}
+
 @test "bring up with adjusted memory settings" {
   export VAGRANT_CWD=tests/memory
   cleanup
@@ -114,5 +132,33 @@ cleanup() {
   [ "$status" -eq 0 ]
   echo "${output}"
   [ $(expr "$output" : ".*alive.*") -ne 0  ]
+  cleanup
+}
+
+@test "package simple domain" {
+  export VAGRANT_CWD=tests/package_simple
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} halt
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} package
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box add package.box --name test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} box remove test-package-simple-domain
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  rm -f package.box
+
   cleanup
 }
