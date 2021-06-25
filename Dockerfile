@@ -60,21 +60,20 @@ COPY . .
 RUN rake build
 RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
 
-
-RUN for dir in boxes data tmp; \
-    do \
-        rm -rf /vagrant/${dir} && ln -s /.vagrant.d/${dir} /vagrant/${dir}; \
-    done \
-    ;
+RUN touch /vagrant/data/.remove /vagrant/boxes/.remove /vagrant/tmp/.remove
 
 FROM base as slim
 
 COPY --from=build /vagrant /vagrant
+
 COPY entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["entrypoint.sh"]
 
 FROM build as final
+
 COPY entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["entrypoint.sh"]
 
 # vim: set expandtab sw=4:
