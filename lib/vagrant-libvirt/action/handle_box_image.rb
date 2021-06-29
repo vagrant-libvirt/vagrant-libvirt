@@ -85,7 +85,6 @@ module VagrantPlugins
           box_virtual_size = env[:box_volumes][0][:virtual_size]
           if config.machine_virtual_size
             config_machine_virtual_size = ByteNumber.from_GB(config.machine_virtual_size)
-            puts config_machine_virtual_size < box_virtual_size
             if config_machine_virtual_size < box_virtual_size
               # Warn that a virtual size less than the box metadata size
               # is not supported and will be ignored
