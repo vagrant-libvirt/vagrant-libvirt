@@ -1,5 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+#
+# frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
   # private network doesnt work with tinycore, use

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'

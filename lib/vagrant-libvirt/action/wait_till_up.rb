@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/timer'

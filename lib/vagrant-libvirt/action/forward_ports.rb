@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -104,7 +106,7 @@ module VagrantPlugins
             IdentitiesOnly=#{ssh_info[:keys_only] ? 'yes' : 'no'}
           ) + ssh_info[:private_key_path].map do |pk|
                 "IdentityFile='\"#{pk}\"'"
-              end).map { |s| s.prepend('-o ') }.join(' ')
+              end).map { |s| "-o #{s}" }.join(' ')
 
           options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.proxy_command
 
@@ -116,12 +118,12 @@ module VagrantPlugins
               env[:ui].info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
-                ssh_cmd << 'sudo ' # add sudo prefix
+                ssh_cmd += 'sudo ' # add sudo prefix
               end
             end
           end
 
-          ssh_cmd << "ssh -n #{options} #{params}"
+          ssh_cmd += "ssh -n #{options} #{params}"
 
           @logger.debug "Forwarding port with `#{ssh_cmd}`"
           log_file = ssh_forward_log_file(
@@ -180,10 +182,10 @@ module VagrantPlugins
               kill_cmd = ''
 
               if tag[:port] <= 1024
-                kill_cmd << 'sudo ' # add sudo prefix
+                kill_cmd += 'sudo ' # add sudo prefix
               end
 
-              kill_cmd << "kill #{tag[:pid]}"
+              kill_cmd += "kill #{tag[:pid]}"
               @@lock.synchronize do
                 system(kill_cmd)
               end

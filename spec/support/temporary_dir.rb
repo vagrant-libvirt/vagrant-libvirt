@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 shared_context 'temporary_dir' do
   around do |example|
     Dir.mktmpdir("rspec-") do |dir|

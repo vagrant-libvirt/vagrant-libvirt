@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cgi'
 
 require 'vagrant'
@@ -5,10 +7,10 @@ require 'vagrant'
 class Numeric
   Alphabet = ('a'..'z').to_a
   def vdev
-    s = ''
+    s = String.new
     q = self
     (q, r = (q - 1).divmod(26)) && s.prepend(Alphabet[r]) until q.zero?
-    'vd' + s
+    "vd#{s}"
   end
 end
 
@@ -352,7 +354,7 @@ module VagrantPlugins
         # hda - hdc
         curr = 'a'.ord
         while curr <= 'd'.ord
-          dev = 'hd' + curr.chr
+          dev = "hd#{curr.chr}"
           if exist[dev]
             curr += 1
             next
@@ -745,24 +747,24 @@ module VagrantPlugins
         if @connect_via_ssh == true
           finalize_id_ssh_key_file
 
-          uri << '+ssh://'
-          uri << @username + '@' if @username && @username != UNSET_VALUE
+          uri += '+ssh://'
+          uri += "#{@username}@" if @username && @username != UNSET_VALUE
 
-          uri << ( @host && @host != UNSET_VALUE ? @host : 'localhost' )
+          uri += (@host && @host != UNSET_VALUE ? @host : 'localhost')
 
           params['no_verify'] = '1'
           params['keyfile'] = @id_ssh_key_file if @id_ssh_key_file
         else
-          uri << '://'
-          uri << @host if @host && @host != UNSET_VALUE
+          uri += '://'
+          uri += @host if @host && @host != UNSET_VALUE
         end
 
-        uri << virt_path
+        uri += virt_path
 
         # set path to Libvirt socket
         params['socket'] = @socket if @socket
 
-        uri << "?" + params.map{|pair| pair.join('=')}.join('&') if !params.empty?
+        uri += '?' + params.map { |pair| pair.join('=') }.join('&') unless params.empty?
         uri
       end
 
@@ -955,11 +957,10 @@ module VagrantPlugins
 
         machine.config.vm.networks.each do |_type, opts|
           if opts[:mac]
-            opts[:mac].downcase!
-            if opts[:mac] =~ /\A([0-9a-f]{12})\z/
+            if opts[:mac] =~ /\A([0-9a-fA-F]{12})\z/
               opts[:mac] = opts[:mac].scan(/../).join(':')
             end
-            unless opts[:mac] =~ /\A([0-9a-f]{2}:){5}([0-9a-f]{2})\z/
+            unless opts[:mac] =~ /\A([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})\z/
               errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
             end
           end
@@ -1032,7 +1033,7 @@ module VagrantPlugins
       def resolve_ssh_key_file(key_file)
         # set ssh key for access to Libvirt host
         # if no slash, prepend $HOME/.ssh/
-        key_file.prepend("#{ENV['HOME']}/.ssh/") if key_file && key_file !~ /\A\//
+        key_file = "#{ENV['HOME']}/.ssh/#{key_file}" if key_file && key_file !~ /\A\//
 
         key_file
       end
@@ -1061,17 +1062,17 @@ module VagrantPlugins
         if @connect_via_ssh
           if @proxy_command == UNSET_VALUE
             proxy_command = "ssh '#{@host}' "
-            proxy_command << "-p #{@port} " if @port
-            proxy_command << "-l '#{@username}' " if @username
-            proxy_command << "-i '#{@id_ssh_key_file}' " if @id_ssh_key_file
-            proxy_command << '-W %h:%p'
+            proxy_command += "-p #{@port} " if @port
+            proxy_command += "-l '#{@username}' " if @username
+            proxy_command += "-i '#{@id_ssh_key_file}' " if @id_ssh_key_file
+            proxy_command += '-W %h:%p'
           else
             inputs = { host: @host }
             inputs << { port: @port } if @port
             inputs[:username] = @username if @username
             inputs[:id_ssh_key_file] = @id_ssh_key_file if @id_ssh_key_file
 
-            proxy_command = @proxy_command
+            proxy_command = String.new(@proxy_command)
             # avoid needing to escape '%' symbols
             inputs.each do |key, value|
               proxy_command.gsub!("{#{key}}", value)

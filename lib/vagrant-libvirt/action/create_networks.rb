@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
@@ -312,8 +314,7 @@ module VagrantPlugins
 
           if @options[:dhcp_enabled]
             # Find out DHCP addresses pool range.
-            network_address = "#{@interface_network[:network_address]}/"
-            network_address << (@interface_network[:netmask]).to_s
+            network_address = "#{@interface_network[:network_address]}/#{(@interface_network[:netmask]).to_s}"
             net = @interface_network[:network_address] ? IPAddr.new(network_address) : nil
 
             # First is address of network, second is gateway (by default).
@@ -345,10 +346,9 @@ module VagrantPlugins
 
           created_networks_file = env[:machine].data_dir + 'created_networks'
 
-          message = 'Saving information about created network '
-          message << "#{@interface_network[:name]}, "
-          message << "UUID=#{@interface_network[:libvirt_network].uuid} "
-          message << "to file #{created_networks_file}."
+          message = 'Saving information about created network ' \
+            "#{@interface_network[:name]}, UUID=#{@interface_network[:libvirt_network].uuid} " \
+            "to file #{created_networks_file}."
           @logger.info(message)
 
           File.open(created_networks_file, 'a') do |file|

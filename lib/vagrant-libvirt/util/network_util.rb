@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'ipaddr'
 require 'nokogiri'
 require 'vagrant/util/network_ip'

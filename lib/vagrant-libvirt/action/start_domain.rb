@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'rexml/document'
 
@@ -165,7 +167,7 @@ module VagrantPlugins
 
               # clock timers - because timers can be added/removed, just rebuild and then compare
               if !config.clock_timers.empty? || clock.has_elements?
-                oldclock = ''
+                oldclock = String.new
                 formatter.write(REXML::XPath.first(xml_descr, '/domain/clock'), oldclock)
                 clock.delete_element('//timer')
                 config.clock_timers.each do |clock_timer|
@@ -175,7 +177,7 @@ module VagrantPlugins
                   end
                 end
 
-                newclock = ''
+                newclock = String.new
                 formatter.write(clock, newclock)
                 unless newclock.eql? oldclock
                   @logger.debug "clock timers config changed"
@@ -337,22 +339,22 @@ module VagrantPlugins
               if descr_changed
                 begin
                   libvirt_domain.undefine
-                  new_descr = ''
+                  new_descr = String.new
                   xml_descr.write new_descr
-                  server = env[:machine].provider.driver.connection.servers.create(xml: new_descr)
+                  env[:machine].provider.driver.connection.servers.create(xml: new_descr)
                 rescue Fog::Errors::Error => e
-                  server = env[:machine].provider.driver.connection.servers.create(xml: descr)
+                  env[:machine].provider.driver.connection.servers.create(xml: descr)
                   raise Errors::FogCreateServerError, error_message: e.message
                 end
               end
-            rescue => e
+            rescue Errors::VagrantLibvirtError => e
               env[:ui].error("Error when updating domain settings: #{e.message}")
             end
             # Autostart with host if enabled in Vagrantfile
             libvirt_domain.autostart = config.autostart
             # Actually start the domain
             domain.start
-          rescue => e
+          rescue Fog::Errors::Error, Errors::VagrantLibvirtError => e
             raise Errors::FogError, message: e.message
           end
 
