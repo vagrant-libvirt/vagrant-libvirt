@@ -131,8 +131,8 @@ docker run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
-  -v $(pwd):$(pwd) \
-  -w $(pwd) \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w $(realpath "${PWD}") \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
@@ -141,13 +141,12 @@ docker run -it --rm \
 It's possible to define an alias in `~/.bashrc`, for example:
 ```bash
 alias vagrant='
-  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
-    -v $(pwd):$(pwd) \
-    -w $(pwd) \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
     vagrant'
