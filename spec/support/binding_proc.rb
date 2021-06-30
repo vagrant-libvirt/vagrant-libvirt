@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # A simple extension of the Proc class that supports setting a custom binding
 # and evaluates everything in the Proc using the new binding.

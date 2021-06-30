@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'json'
 require 'support/sharedcontext'
@@ -77,7 +79,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           ]
         }
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
-          '/test/'.concat(arg.to_s)
+          '/test/' + arg.to_s
         end
       end
 
@@ -197,7 +199,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           ],
         ]}
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
-          '/test/'.concat(arg.to_s)
+          '/test/' + arg.to_s
         end
         allow(status).to receive(:success?).and_return(true)
         allow(Open3).to receive(:capture3).with('qemu-img', 'info', '--output=json', '/test/box.img').and_return([
@@ -334,7 +336,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           ]
         }
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
-          '/test/'.concat(arg.to_s)
+          '/test/' + arg.to_s
         end
       end
 
@@ -354,7 +356,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         allow(env[:machine]).to receive_message_chain("box.version") { '1.1.1' }
         allow(env[:machine]).to receive_message_chain("box.metadata") { box_metadata }
         allow(env[:machine]).to receive_message_chain("box.directory.join") do |arg|
-          '/test/'.concat(arg.to_s)
+          '/test/' + arg.to_s
         end
         allow(status).to receive(:success?).and_return(true)
         allow(Open3).to receive(:capture3).with('qemu-img', 'info', "--output=json", '/test/box.img').and_return([

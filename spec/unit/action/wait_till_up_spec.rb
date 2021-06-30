@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'vagrant-libvirt/action/wait_till_up'
 require 'vagrant-libvirt/errors'
 

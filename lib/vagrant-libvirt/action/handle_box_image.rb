@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'open3'
 require 'json'
@@ -179,8 +181,7 @@ module VagrantPlugins
             raise Vagrant::Errors::BoxNotFound, name: env[:machine].box.name
           end
           box_image_size = File.size(box_image_file) # B
-          message = "Creating volume #{box_volume[:name]}"
-          message << " in storage pool #{config.storage_pool_name}."
+          message = "Creating volume #{box_volume[:name]} in storage pool #{config.storage_pool_name}."
           @logger.info(message)
           begin
             fog_volume = env[:machine].provider.driver.connection.volumes.create(

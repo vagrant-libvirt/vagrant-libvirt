@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'support/sharedcontext'
 
 require 'vagrant-libvirt/config'

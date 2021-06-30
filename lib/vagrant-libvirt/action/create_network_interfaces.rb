@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
@@ -128,10 +130,10 @@ module VagrantPlugins
             end
 
             message = "Creating network interface eth#{@iface_number}"
-            message << " connected to network #{@network_name}."
+            message += " connected to network #{@network_name}."
             if @mac
               @mac = @mac.scan(/(\h{2})/).join(':')
-              message << " Using MAC address: #{@mac}"
+              message += " Using MAC address: #{@mac}"
             end
             @logger.info(message)
 

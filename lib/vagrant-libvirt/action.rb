@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'vagrant/action/builder'
 require 'log4r'
 

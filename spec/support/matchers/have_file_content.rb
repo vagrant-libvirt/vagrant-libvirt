@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rspec/expectations/version"
 #
 # Taken from https://github.com/cucumber/aruba/blob/main/lib/aruba/matchers/file/have_file_content.rb
