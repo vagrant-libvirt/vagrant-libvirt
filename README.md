@@ -131,8 +131,8 @@ docker run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
-  -v $(pwd):$(pwd) \
-  -w $(pwd) \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w $(realpath "${PWD}") \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
@@ -145,8 +145,8 @@ alias vagrant='
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
-    -v $(pwd):$(pwd) \
-    -w $(pwd) \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
     vagrant'
