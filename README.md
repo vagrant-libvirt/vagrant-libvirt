@@ -141,7 +141,6 @@ docker run -it --rm \
 It's possible to define an alias in `~/.bashrc`, for example:
 ```bash
 alias vagrant='
-  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
