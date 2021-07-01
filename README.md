@@ -114,10 +114,18 @@ Note the default image contains the full toolchain required to build and install
 and it's dependencies. There is also a smaller image published with the `-slim` suffix if you
 just need vagrant-libvirt and don't need to install any additional plugins for your environment.
 
-To get the image:
+To get the image with the most recent release:
 ```bash
 docker pull vagrantlibvirt/vagrant-libvirt:latest
 ```
+
+---
+**Note** If you want the very latest code you can use the `edge` tag instead.
+
+```bash
+docker pull vagrantlibvirt/vagrant-libvirt:edge
+```
+---
 
 Preparing the docker run, only once:
 
