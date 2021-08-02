@@ -139,18 +139,22 @@ module VagrantPlugins
               b3.use ResumeDomain if env2[:result]
             end
 
+            # only perform shutdown if VM is running
             b2.use Call, IsRunning do |env2, b3|
               next unless env2[:result]
 
-              # VM is running, halt it.
-              b3.use Call, GracefulHalt, :shutoff, :running do |env3, b4|
-                if !env3[:result]
-                  b4.use Call, ShutdownDomain, :shutoff, :running do |env4, b5|
-                    if !env4[:result]
-                      b5.use HaltDomain
-                    end
-                  end
-                end
+              b3.use Call, Message, "Attempting nice shutdowns..." do |_, b4|
+                # ShutdownDomain will perform the domain shutdown on the out calls
+                # so it runs after the remaining actions in the same action builder.
+                b4.use ShutdownDomain, :shutoff, :running
+                b4.use GracefulHalt, :shutoff, :running
+              end
+
+              # Only force halt if previous actions insufficient.
+              b3.use Call, IsRunning do |env3, b4|
+                next unless env3[:result]
+
+                b4.use HaltDomain
               end
             end
           end

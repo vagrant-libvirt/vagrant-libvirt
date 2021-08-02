@@ -66,7 +66,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
 
       context "when final state is not shutoff" do
         before do
-          expect(domain).to receive(:state).and_return('running').exactly(4).times
+          expect(domain).to receive(:state).and_return('running').exactly(6).times
         end
 
         it "should provide a false result" do
@@ -77,13 +77,45 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
 
       context "when final state is shutoff" do
         before do
-          expect(domain).to receive(:state).and_return('running').exactly(3).times
-          expect(domain).to receive(:state).and_return('shutoff')
+          expect(domain).to receive(:state).and_return('running').exactly(4).times
+          expect(domain).to receive(:state).and_return('shutoff').exactly(2).times
         end
 
         it "should provide a true result" do
           subject.call(env)
           expect(env[:result]).to be_truthy
+        end
+      end
+
+      context "when timeout exceeded" do
+        before do
+          expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(1)
+          expect(app).to receive(:call) { sleep 1.5 }
+          expect(domain).to receive(:state).and_return('running').exactly(2).times
+          expect(domain).to_not receive(:wait_for)
+          expect(domain).to_not receive(:shutdown)
+        end
+
+        it "should provide a false result" do
+          subject.call(env)
+          expect(env[:result]).to be_falsey
+        end
+      end
+
+      context "when timeout not exceeded" do
+        before do
+          expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(2)
+          expect(app).to receive(:call) { sleep 1 }
+          expect(domain).to receive(:state).and_return('running').exactly(6).times
+          expect(domain).to receive(:wait_for) do |time|
+            expect(time).to be < 1
+            expect(time).to be > 0
+          end
+        end
+
+        it "should wait for the reduced time" do
+          subject.call(env)
+          expect(env[:result]).to be_falsey
         end
       end
     end
