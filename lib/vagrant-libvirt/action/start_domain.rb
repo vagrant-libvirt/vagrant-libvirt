@@ -58,7 +58,7 @@ module VagrantPlugins
               # disk_bus
               REXML::XPath.each(xml_descr, '/domain/devices/disk[@device="disk"]/target[@dev="vda"]') do |disk_target|
                 next unless disk_target.attributes['bus'] != config.disk_bus
-                @logger.debug "domain disk bus updated from '#{disk_target.attributes['bus']}' to '#{bus}'"
+                @logger.debug "domain disk bus updated from '#{disk_target.attributes['bus']}' to '#{config.disk_bus}'"
                 descr_changed = true
                 disk_target.attributes['bus'] = config.disk_bus
                 disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
