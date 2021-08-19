@@ -32,9 +32,7 @@ module VagrantPlugins
           )
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           root_disk = domain.volumes.select do |x|
-            !x.nil?
-          end.select do |x|
-            x.name == libvirt_domain.name + '.img'
+            !x.nil? && x.name == libvirt_domain.name + '.img'
           end.first
           raise Errors::NoDomainVolume if root_disk.nil?
 
