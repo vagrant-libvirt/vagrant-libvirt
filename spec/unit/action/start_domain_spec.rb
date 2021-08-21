@@ -21,6 +21,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
   let(:updated_domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), updated_test_file)) }
 
   describe '#call' do
+    let(:test_file) { 'default.xml' }
+
     before do
       allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
         .to receive(:connection).and_return(connection)
@@ -32,17 +34,24 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
       expect(logger).to receive(:info)
       expect(ui).to_not receive(:error)
+
+      allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
+
+      allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
+      allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
     end
 
-    context 'default config' do
-      let(:test_file) { 'default.xml' }
+    it 'should execute without changing' do
+      allow(libvirt_domain).to receive(:undefine)
+      expect(logger).to_not receive(:debug)
+      expect(libvirt_domain).to receive(:autostart=)
+      expect(domain).to receive(:start)
 
-      before do
-        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
+      expect(subject.call(env)).to be_nil
+    end
 
-        allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
-        allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
-      end
+    context 'when previously running default config' do
+      let(:test_file) { 'existing.xml' }
 
       it 'should execute without changing' do
         allow(libvirt_domain).to receive(:undefine)
@@ -55,15 +64,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
     end
 
     context 'tpm' do
-      let(:test_file) { 'default.xml' }
-
-      before do
-        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
-
-        allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
-        allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
-      end
-
       context 'passthrough tpm added' do
         let(:updated_test_file) { 'default_added_tpm_path.xml' }
         let(:vagrantfile_providerconfig) do
@@ -172,13 +172,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
     context 'clock_timers' do
       let(:test_file) { 'clock_timer_rtc.xml' }
 
-      before do
-        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
-
-        allow(libvirt_domain).to receive(:max_memory).and_return(512*1024)
-        allow(libvirt_domain).to receive(:num_vcpus).and_return(1)
-      end
-
       context 'timers unchanged' do
         let(:vagrantfile_providerconfig) do
           <<-EOF
@@ -216,8 +209,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
 
       context 'timers removed' do
-        let(:updated_test_file) { 'default.xml' }
-
         it 'should modify the domain' do
           expect(libvirt_domain).to receive(:undefine)
           expect(logger).to receive(:debug).with('clock timers config changed')

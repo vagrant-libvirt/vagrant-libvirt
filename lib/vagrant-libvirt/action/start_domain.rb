@@ -101,11 +101,13 @@ module VagrantPlugins
               if config.cpu_mode != 'host-passthrough'
                 cpu_model = REXML::XPath.first(xml_descr, '/domain/cpu/model')
                 if cpu_model.nil?
-                  @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
-                  descr_changed = true
-                  cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
-                  cpu_model.attributes['fallback'] = 'allow'
-                  cpu_model.text = config.cpu_model
+                  if config.cpu_model.strip != ''
+                    @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
+                    descr_changed = true
+                    cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
+                    cpu_model.attributes['fallback'] = 'allow'
+                    cpu_model.text = config.cpu_model
+                  end
                 else
                   if (cpu_model.text or '').strip != config.cpu_model.strip
                     @logger.debug "cpu_model text updated from #{cpu_model.text} to '#{config.cpu_model}'"
@@ -322,10 +324,12 @@ module VagrantPlugins
               if config.initrd
                 initrd = REXML::XPath.first(xml_descr, '/domain/os/initrd')
                 if initrd.nil?
-                  @logger.debug "initrd updated from not set to '#{config.initrd}'"
-                  descr_changed = true
-                  initrd = REXML::Element.new('initrd', REXML::XPath.first(xml_descr, '/domain/os'))
-                  initrd.text = config.initrd
+                  if config.initrd.strip != ''
+                    @logger.debug "initrd updated from not set to '#{config.initrd}'"
+                    descr_changed = true
+                    initrd = REXML::Element.new('initrd', REXML::XPath.first(xml_descr, '/domain/os'))
+                    initrd.text = config.initrd
+                  end
                 else
                   if (initrd.text or '').strip != config.initrd
                     @logger.debug "initrd updated from '#{initrd.text}' to '#{config.initrd}'"
