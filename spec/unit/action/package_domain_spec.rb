@@ -60,6 +60,31 @@ describe VagrantPlugins::ProviderLibvirt::Action::PackageDomain do
         expect(File.exist?(File.join(temp_dir, 'Vagrantfile'))).to eq(true)
       end
     end
+
+    context 'with nil volume' do
+      let(:root_disk) { double('libvirt_domain_disk') }
+      before do
+        allow(root_disk).to receive(:name).and_return('default_domain.img')
+        allow(domain).to receive(:volumes).and_return([nil, root_disk])
+        allow(libvirt_domain).to receive(:name).and_return('default_domain')
+        allow(subject).to receive(:download_image).and_return(true)
+      end
+
+      it 'should succeed' do
+        expect(ui).to receive(:info).with('Packaging domain...')
+        expect(ui).to receive(:info).with(/Downloading default_domain.img to .*\/box.img/)
+        expect(ui).to receive(:info).with('Image has backing image, copying image and rebasing ...')
+        expect(subject).to receive(:`).with(/qemu-img info .*\/box.img | grep 'backing file:' | cut -d ':' -f2/).and_return("some image")
+        expect(subject).to receive(:`).with(/qemu-img rebase -p -b "" .*\/box.img/)
+        expect(subject).to receive(:`).with(/virt-sysprep --no-logfile --operations .* -a .*\/box.img .*/)
+        expect(subject).to receive(:`).with(/virt-sparsify --in-place .*\/box.img/)
+        expect(subject).to receive(:`).with(/qemu-img info --output=json .*\/box.img/).and_return(
+          { 'virtual-size': 5*1024*1024*1024 }.to_json
+        )
+
+        expect(subject.call(env)).to be_nil
+      end
+    end
   end
 
   describe '#vagrantfile_content' do
