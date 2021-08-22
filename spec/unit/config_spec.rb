@@ -873,6 +873,26 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
     end
+
+    context 'with cdroms and floppies' do
+      it 'should be invalid if too many cdroms' do
+        subject.storage :file, :device => :cdrom
+        subject.storage :file, :device => :cdrom
+        subject.storage :file, :device => :cdrom
+        subject.storage :file, :device => :cdrom
+        subject.storage :file, :device => :cdrom
+
+        expect{ subject.finalize! }.to raise_error('Only four cdroms may be attached at a time')
+      end
+
+      it 'sould be invalid if too many floppies' do
+        subject.storage :file, :device => :floppy
+        subject.storage :file, :device => :floppy
+        subject.storage :file, :device => :floppy
+
+        expect{ subject.finalize! }.to raise_error('Only two floppies may be attached at a time')
+      end
+    end
   end
 
   describe '#merge' do
