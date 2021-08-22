@@ -84,6 +84,10 @@
       <target dev='hdb' bus='ide'/>
       <readonly/>
     </disk>
+    <disk type='file' device='floppy'>
+      <source file=''/>
+      <target dev='fda' bus='fdc'/>
+    </disk>
     <serial type='file'>
       <source path='/var/log/vm_consoles/machine.log'/>
       <target port='0'/>

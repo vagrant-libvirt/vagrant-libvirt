@@ -925,6 +925,28 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           end
         end
       end
+
+      context 'with floppies only' do
+        context 'assigned specific devs' do
+          it 'should merge floppies with specific devices' do
+            one.storage(:file, device: :floppy, dev: 'fda')
+            two.storage(:file, device: :floppy, dev: 'fdb')
+            subject.finalize!
+            expect(subject.floppies).to include(include(dev: 'fda'),
+                                                include(dev: 'fdb'))
+          end
+        end
+
+        context 'without devs given' do
+          it 'should merge floppies with different devs assigned automatically' do
+            one.storage(:file, device: :floppy)
+            two.storage(:file, device: :floppy)
+            subject.finalize!
+            expect(subject.floppies).to include(include(dev: 'fda'),
+                                                include(dev: 'fdb'))
+          end
+        end
+      end
     end
 
     context 'clock_timers' do
