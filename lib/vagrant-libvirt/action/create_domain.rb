@@ -100,6 +100,7 @@ module VagrantPlugins
           @domain_volumes = env[:domain_volumes] || []
           @disks = env[:disks] || []
           @cdroms = config.cdroms
+          @floppies = config.floppies
 
           # Input
           @inputs = config.inputs
@@ -322,6 +323,14 @@ module VagrantPlugins
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
           end
 
+          unless @floppies.empty?
+            env[:ui].info(" -- Floppies:          #{_floppies_print(@floppies)}")
+          end
+
+          @floppies.each do |floppy|
+            env[:ui].info(" -- Floppy(#{floppy[:dev]}):      #{floppy[:path]}")
+          end
+
           @inputs.each do |input|
             env[:ui].info(" -- INPUT:             type=#{input[:type]}, bus=#{input[:bus]}")
           end
@@ -438,6 +447,10 @@ module VagrantPlugins
 
         def _cdroms_print(cdroms)
           cdroms.collect { |x| x[:dev] }.join(', ')
+        end
+
+        def _floppies_print(floppies)
+          floppies.collect { |x| x[:dev] }.join(', ')
         end
       end
     end

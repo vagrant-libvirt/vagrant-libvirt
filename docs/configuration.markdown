@@ -674,6 +674,25 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Floppies
+
+You can attach up to two floppies to a VM via `libvirt.storage :file,
+:device => :floppy`. Available options are:
+
+* `path` - The path to the vfd image to be used for the floppy drive.
+* `dev` - The device to use (`fda` or `fdb`). This will be
+  automatically determined if unspecified.
+
+The following example creates a floppy drive in the VM:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :device => :floppy, :path => '/path/to/floppy.vfs'
+  end
+end
+```
+
 ## Input
 
 You can specify multiple inputs to the VM via `libvirt.input`. Available
