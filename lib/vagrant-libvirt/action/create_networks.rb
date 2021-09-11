@@ -337,8 +337,12 @@ module VagrantPlugins
           @network_domain_name = @options[:domain_name]
 
           begin
+            xml = to_xml('private_network')
+            @logger.debug {
+              "Creating private network with XML:\n#{xml}"
+            }
             @interface_network[:libvirt_network] = \
-              @libvirt_client.define_network_xml(to_xml('private_network'))
+              @libvirt_client.define_network_xml(xml)
             @logger.debug 'created network'
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message

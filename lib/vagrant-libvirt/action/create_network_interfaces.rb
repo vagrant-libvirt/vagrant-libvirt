@@ -159,6 +159,9 @@ module VagrantPlugins
                     else
                       to_xml(template_name)
                     end
+              @logger.debug {
+                "Attaching Network Device with XML:\n#{xml}"
+              }
               domain.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,

@@ -356,6 +356,9 @@ module VagrantPlugins
             end
             # Autostart with host if enabled in Vagrantfile
             libvirt_domain.autostart = config.autostart
+            @logger.debug {
+              "Starting Domain with XML:\n#{libvirt_domain.xml_desc}"
+            }
             # Actually start the domain
             domain.start
           rescue Fog::Errors::Error, Errors::VagrantLibvirtError => e
