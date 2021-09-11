@@ -78,6 +78,9 @@ module VagrantPlugins
               else
                   pool_name = config.storage_pool_name
               end
+              @logger.debug {
+                "Creating Volume with XML:\n#{xml}"
+              }
               @logger.debug "Using pool #{pool_name} for base box snapshot"
               domain_volume = env[:machine].provider.driver.connection.volumes.create(
                 xml: xml,

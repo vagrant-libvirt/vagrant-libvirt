@@ -34,6 +34,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
       allow(all).to receive(:first).and_return(box_volume)
       allow(box_volume).to receive(:id).and_return(nil)
       env[:domain_name] = 'test'
+
+      allow(logger).to receive(:debug)
     end
 
     context 'when one disk' do

@@ -30,6 +30,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       allow(connection).to receive(:servers).and_return(servers)
       allow(servers).to receive(:get).and_return(domain)
 
+      allow(logger).to receive(:debug)
       expect(logger).to receive(:info)
       expect(ui).to_not receive(:error)
     end
@@ -46,7 +47,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
       it 'should execute without changing' do
         allow(libvirt_domain).to receive(:undefine)
-        expect(logger).to_not receive(:debug)
         expect(libvirt_domain).to receive(:autostart=)
         expect(domain).to receive(:start)
 
@@ -118,7 +118,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should execute without changing' do
-          expect(logger).to_not receive(:debug)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -138,7 +137,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should execute without changing' do
-          expect(logger).to_not receive(:debug)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 

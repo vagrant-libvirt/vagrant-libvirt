@@ -47,7 +47,6 @@ module VagrantPlugins
 
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
-            #xml = to_xml('filesystem', folder_opts)
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: folder_opts[:accessmode]) do
                 xml.driver(type: 'path', wrpolicy: 'immediate')
@@ -60,7 +59,9 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
-            # puts "<<<<< XML:\n #{xml}\n >>>>>"
+            @logger.debug {
+              "Attaching Synced Folder device with XML:\n#{xml}"
+            }
             @conn.lookup_domain_by_uuid(machine.id).attach_device(xml, 0)
           end
         rescue => e
