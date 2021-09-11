@@ -44,7 +44,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
     it 'should execute without changing' do
       allow(libvirt_domain).to receive(:undefine)
-      expect(logger).to_not receive(:debug)
       expect(libvirt_domain).to receive(:autostart=)
       expect(domain).to receive(:start)
 
