@@ -31,6 +31,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
       allow(connection).to receive(:volumes).and_return(volumes)
 
       allow(logger).to receive(:info)
+      allow(logger).to receive(:debug)
 
       env[:domain_name] = "vagrant-test_default"
 
