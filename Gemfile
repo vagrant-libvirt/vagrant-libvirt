@@ -27,7 +27,10 @@ group :development do
     vagrant_gem_version = Gem::Version.new('2.2.8')
   end
 
-  if vagrant_gem_version <= Gem::Version.new('2.2.7')
+  vagrant_spec_verison = ENV['VAGRANT_SPEC_VERSION']
+  if !vagrant_spec_verison.nil? && !vagrant_spec_verison.empty?
+    gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :ref => vagrant_spec_verison
+  elsif vagrant_gem_version <= Gem::Version.new('2.2.7')
     gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :ref => '161128f2216cee8edb7bcd30da18bd4dea86f98a'
   else
     gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :branch => "main"
