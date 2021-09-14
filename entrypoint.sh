@@ -33,7 +33,7 @@ esac
 # from the current working directory anyway
 vagrantfile="${VAGRANT_VAGRANTFILE:-Vagrantfile}"
 path="$(pwd)"
-while [[ "$path" != "" && ! -e "$path/$1" ]]
+while [[ "$path" != "" && ! -e "$path/$vagrantfile" ]]
 do
     path=${path%/*}
 done
