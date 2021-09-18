@@ -1018,10 +1018,12 @@ module VagrantPlugins
           end
         end
 
-        # Extract host and username values from uri if provided, otherwise nil
+        # Extract host values from uri if provided, otherwise nil
         @host = uri.host
         @port = uri.port
-        @username = uri.user
+        # only override username if there is a value provided
+        @username = nil if @username == UNSET_VALUE
+        @username = uri.user if uri.user
         if uri.query
           params = CGI.parse(uri.query)
           @id_ssh_key_file = params['keyfile'].first if params.has_key?('keyfile')

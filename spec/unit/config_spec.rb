@@ -192,14 +192,14 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
         [ # when username explicitly set without ssh
           {:username => 'my_user' },
-          {:uri => 'qemu:///system'},
+          {:uri => 'qemu:///system', :username => 'my_user'},
           {
             :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
           }
         ],
         [ # when username explicitly set with host but without ssh
           {:username => 'my_user', :host => 'remote'},
-          {:uri => 'qemu://remote/system'},
+          {:uri => 'qemu://remote/system', :username => 'my_user'},
           {
             :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
           }
