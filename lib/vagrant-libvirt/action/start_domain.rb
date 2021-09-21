@@ -187,6 +187,48 @@ module VagrantPlugins
                 end
               end
 
+              
+              # Launch security
+              launchSecurity = REXML::XPath.first(xml_descr, '/domain/launchSecurity')
+
+              if !config.launchsecurity_data.nil?
+
+                if launchSecurity.nil ?
+                  @logger.debug "Launch security has been added"
+                  descr_changed = true
+                else
+                    
+                  newLaunchSecurity = REXML::Element.new('launchSecurity', REXML::XPath.first(xml_descr, '/domain/launchSecurity'))
+                  newLaunchSecurity.attributes['type'] = config.launchsecurity_data.type
+                  cbitpos = newLaunchSecurity.add_element('cbitpos')
+                  cbitpos.text = config.launchsecurity_data.cbitpos
+                  
+                  reducedPhysBits = newLaunchSecurity.add_element('reducedPhysBits')
+                  reducedPhysBits.text = config.launchsecurity_data.reducedPhysBits
+                  
+                  policy = newLaunchSecurity.add_element('policy')
+                  policy.text = config.launchsecurity_data.policy
+                  
+                  unless "'#{newLaunchSecurity}'".eql? "'#{launchSecurity}'"
+                    @logger.debug "launchSecurity config changed"
+                    descr_changed = true
+                  end
+
+                end
+              else
+                if ! launchSecurity.nil?
+                  @logger.debug "Launch security has been deleted"
+                  descr_changed = true
+              end
+
+              if launchSecurity.attributes['type'] != config.launchsecurity_data.type
+                @logger.debug "Launch security type has changed"
+                descr_changed = true
+                clock.attributes['offset'] = config.clock_offset
+              end
+
+
+
               # Graphics
               graphics = REXML::XPath.first(xml_descr, '/domain/devices/graphics')
               if config.graphics_type != 'none'

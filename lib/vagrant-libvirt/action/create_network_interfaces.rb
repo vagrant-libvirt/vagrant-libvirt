@@ -76,6 +76,7 @@ module VagrantPlugins
             @mac = iface_configuration.fetch(:mac, false)
             @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
             @driver_name = iface_configuration.fetch(:driver_name, false)
+            @driver_iommu = iface_configuration.fetch(:driver_iommu, false )
             @driver_queues = iface_configuration.fetch(:driver_queues, false)
             @device_name = iface_configuration.fetch(:iface_name, false)
             @mtu = iface_configuration.fetch(:mtu, nil)
@@ -90,6 +91,8 @@ module VagrantPlugins
               @mode = iface_configuration.fetch(:mode, 'bridge')
               @type = iface_configuration.fetch(:type, 'direct')
               @model_type = iface_configuration.fetch(:model_type, @nic_model_type)
+            
+              @driver_iommu = iface_configuration.fetch(:driver_iommu, false )
               @driver_name = iface_configuration.fetch(:driver_name, false)
               @driver_queues = iface_configuration.fetch(:driver_queues, false)
               @portgroup = iface_configuration.fetch(:portgroup, nil)
@@ -124,6 +127,8 @@ module VagrantPlugins
               }
               @tunnel_type = iface_configuration.fetch(:model_type, @nic_model_type)
               @driver_name = iface_configuration.fetch(:driver_name, false)
+            
+              @driver_iommu = iface_configuration.fetch(:driver_iommu, false )
               @driver_queues = iface_configuration.fetch(:driver_queues, false)
               template_name = 'tunnel_interface'
               @logger.info("Setting up #{@type} tunnel interface using  #{@tunnel_ip} port #{@tunnel_port}")
@@ -141,6 +146,7 @@ module VagrantPlugins
               # FIXME: all options for network driver should be hash from Vagrantfile
               driver_options = {}
               driver_options[:name] = @driver_name if @driver_name
+              driver_options[:iommu] = "on" if @driver_iommu else "off"
               driver_options[:queues] = @driver_queues if @driver_queues
               @udp_tunnel ||= {}
               xml = if template_name == 'interface' or

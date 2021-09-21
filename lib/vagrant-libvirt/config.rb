@@ -83,6 +83,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :nodeset
       attr_accessor :memory_backing
+      attr_accessor :memtunes
       attr_accessor :channel
       attr_accessor :cpus
       attr_accessor :cpuset
@@ -96,6 +97,7 @@ module VagrantPlugins
       attr_accessor :features_hyperv
       attr_accessor :clock_offset
       attr_accessor :clock_timers
+      attr_accessor :launchsecurity
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -230,6 +232,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
+        @memtunes          = UNSET_VALUE
         @cpus              = UNSET_VALUE
         @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -242,6 +245,7 @@ module VagrantPlugins
         @features_hyperv   = UNSET_VALUE
         @clock_offset      = UNSET_VALUE
         @clock_timers      = []
+        @launchsecurity_data = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -469,6 +473,36 @@ module VagrantPlugins
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @memory_backing.push(name: option,
                              config: config)
+      end
+
+      def memtune(config={})
+        if config[:type].nil?
+          raise "Missing memtune type"
+        end
+
+        unless ['hard_limit', 'soft_limit', 'swap_hard_limit'].include? config[:type]
+          raise "Memtune type not allowed (hard_limit, soft_limit, swap_hard_limit are allowed)"
+        end
+
+        if config[:value].nil?
+          raise "Missing memtune value"
+        end
+        
+        opts = config[:options] || {}
+        opts.unit = options.unit || 'KiB'
+        @memtunes.push( name: config[:type], value: config[:value], config: cfg )
+
+
+      def launchsecurity(options = {})
+        if options[:type].nil?)
+          raise "Lauch security type only supports SEV. Expliciately set 'sev' as a type"
+        end
+
+        @launchsecurity_data[:type] = options[:type]
+        @launchsecurity_data[:cbitpos] = options[:cbitpos] || 47
+        @launchsecurity_data[:reducedPhysBits] = options[:reducedPhysBits] || 1
+        @launchsecurity_data[:policy] = options[:policy] || "0x0003"
+
       end
 
       def input(options = {})
@@ -838,6 +872,7 @@ module VagrantPlugins
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
         @clock_timers = [] if @clock_timers == UNSET_VALUE
+        @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE

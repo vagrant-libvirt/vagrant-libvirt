@@ -47,6 +47,7 @@ module VagrantPlugins
           @features_hyperv = config.features_hyperv
           @clock_offset = config.clock_offset
           @clock_timers = config.clock_timers
+          @launchsecurity_data = config.launchsecurity_data
           @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
@@ -62,6 +63,7 @@ module VagrantPlugins
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
+          @memtunes = config.memtunes
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache || 'default'
           @kernel = config.kernel
@@ -257,6 +259,10 @@ module VagrantPlugins
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
           end
+
+          @memtunes.each do |memtune|
+            env[:ui].info(" -- Memory tuning:    #{memtune[:type]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}, value: #{memtune[:value]}")
+          end
           unless @shares.nil?
             env[:ui].info(" -- Shares:            #{@shares}")
           end
@@ -302,6 +308,9 @@ module VagrantPlugins
           unless @disks.empty?
             env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
           end
+
+          if not @launchsecurity_data.nil?
+            env[:ui].info(" -- Launch security: type=#{@launchsecurity_data.type}, cbitpos=#{@launchsecurity_data.cbitpos}, reducedPhysBits=#{@launchsecurity_data.reducedPhysBits}, policy=#{@launchsecurity_data.policy}")
 
           @disks.each do |disk|
             msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
