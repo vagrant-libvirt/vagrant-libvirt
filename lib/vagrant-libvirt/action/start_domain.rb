@@ -193,7 +193,7 @@ module VagrantPlugins
 
               if !config.launchsecurity_data.nil?
 
-                if launchSecurity.nil ?
+                if launchSecurity.nil?
                   @logger.debug "Launch security has been added"
                   descr_changed = true
                 else
