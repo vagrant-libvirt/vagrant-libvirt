@@ -97,7 +97,7 @@ module VagrantPlugins
       attr_accessor :features_hyperv
       attr_accessor :clock_offset
       attr_accessor :clock_timers
-      attr_accessor :launchsecurity
+      attr_accessor :launchsecurity_data
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -499,7 +499,7 @@ module VagrantPlugins
         if options[:type].nil?
           raise "Lauch security type only supports SEV. Expliciately set 'sev' as a type"
         end
-
+        @launchsecurity_data = {}
         @launchsecurity_data[:type] = options[:type]
         @launchsecurity_data[:cbitpos] = options[:cbitpos] || 47
         @launchsecurity_data[:reducedPhysBits] = options[:reducedPhysBits] || 1
