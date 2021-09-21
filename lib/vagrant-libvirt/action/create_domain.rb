@@ -261,7 +261,7 @@ module VagrantPlugins
           end
 
           @memtunes.each do |memtune|
-            env[:ui].info(" -- Memory tuning:    #{memtune[:type]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}, value: #{memtune[:value]}")
+            env[:ui].info(" -- Memory tuning:    #{memtune[:type]}: #{memtune[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}, value: #{memtune[:value]}")
           end
           unless @shares.nil?
             env[:ui].info(" -- Shares:            #{@shares}")
@@ -312,7 +312,7 @@ module VagrantPlugins
           if not @launchsecurity_data.nil?
             env[:ui].info(" -- Launch security: type=#{@launchsecurity_data.type}, cbitpos=#{@launchsecurity_data.cbitpos}, reducedPhysBits=#{@launchsecurity_data.reducedPhysBits}, policy=#{@launchsecurity_data.policy}")
           end
-          
+
           @disks.each do |disk|
             msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
             msg += ' Shared' if disk[:shareable]
