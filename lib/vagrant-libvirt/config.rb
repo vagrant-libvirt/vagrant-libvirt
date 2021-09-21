@@ -494,7 +494,7 @@ module VagrantPlugins
 
 
       def launchsecurity(options = {})
-        if options[:type].nil?)
+        if options[:type].nil?
           raise "Lauch security type only supports SEV. Expliciately set 'sev' as a type"
         end
 
