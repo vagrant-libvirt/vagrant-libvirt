@@ -219,15 +219,8 @@ module VagrantPlugins
                 if ! launchSecurity.nil?
                   @logger.debug "Launch security has been deleted"
                   descr_changed = true
+                end
               end
-
-              if launchSecurity.attributes['type'] != config.launchsecurity_data.type
-                @logger.debug "Launch security type has changed"
-                descr_changed = true
-                clock.attributes['offset'] = config.clock_offset
-              end
-
-
 
               # Graphics
               graphics = REXML::XPath.first(xml_descr, '/domain/devices/graphics')
