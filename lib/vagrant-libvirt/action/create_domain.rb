@@ -311,7 +311,8 @@ module VagrantPlugins
 
           if not @launchsecurity_data.nil?
             env[:ui].info(" -- Launch security: type=#{@launchsecurity_data.type}, cbitpos=#{@launchsecurity_data.cbitpos}, reducedPhysBits=#{@launchsecurity_data.reducedPhysBits}, policy=#{@launchsecurity_data.policy}")
-
+          end
+          
           @disks.each do |disk|
             msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
             msg += ' Shared' if disk[:shareable]
