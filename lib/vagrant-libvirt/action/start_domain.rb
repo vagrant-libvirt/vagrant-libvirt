@@ -216,7 +216,7 @@ module VagrantPlugins
 
                 end
               else
-                if ! launchSecurity.nil?
+                unless launchSecurity.nil?
                   @logger.debug "Launch security has been deleted"
                   descr_changed = true
                 end
