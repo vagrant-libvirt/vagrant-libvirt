@@ -150,7 +150,7 @@
         <device path='/dev/tpm0'/>
       </backend>
     </tpm>
-    <controller type='usb' model='nec-xhci' ports="4">
+    <controller type='usb' model='nec-xhci' ports="4" >
 
     </controller>
   </devices>
