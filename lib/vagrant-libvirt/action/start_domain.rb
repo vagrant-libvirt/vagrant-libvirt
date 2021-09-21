@@ -191,7 +191,7 @@ module VagrantPlugins
               # Launch security
               launchSecurity = REXML::XPath.first(xml_descr, '/domain/launchSecurity')
 
-              if !config.launchsecurity_data.nil?
+              unless config.launchsecurity_data.nil?
 
                 if launchSecurity.nil?
                   @logger.debug "Launch security has been added"
