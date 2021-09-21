@@ -490,7 +490,7 @@ module VagrantPlugins
         
         opts = config[:options] || {}
         opts.unit = options.unit || 'KiB'
-        @memtunes.push( name: config[:type], value: config[:value], config: cfg )
+        @memtunes.push( name: config[:type], value: config[:value], config: opts )
       end
 
       def launchsecurity(options = {})
