@@ -53,8 +53,7 @@
     <<%= memtune[:name] %> <%= memtune[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>></<%= memtune[:name] %>
   <% end %>
   </memtune>
-<% end%>
-
+<% end %>
 <% if @shares %>
   <cputune>
     <shares><%= @shares %></shares>
