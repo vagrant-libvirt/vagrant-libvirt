@@ -490,6 +490,8 @@ module VagrantPlugins
         
         opts = config[:options] || {}
         opts.unit = options.unit || 'KiB'
+
+        @memtunes = [] if @memtunes == UNSET_VALUE
         @memtunes.push( name: config[:type], value: config[:value], config: opts )
       end
 
@@ -854,6 +856,7 @@ module VagrantPlugins
         @memory = 512 if @memory == UNSET_VALUE
         @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
+        @memtunes = [] if @memtunes == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpuset = nil if @cpuset == UNSET_VALUE
         @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
