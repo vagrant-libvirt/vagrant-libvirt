@@ -307,7 +307,7 @@
     <% end %>
   </devices>
 
-  <% unless @launchsecurity_data.empty? %>
+  <% unless @launchsecurity_data.nil? %>
   <launchSecurity type='<%= @launchsecurity_data.type %>'>
     <cbitpos><%= @launchsecurity_data.cbitpos %></cbitpos>
     <reducedPhysBits><%= @launchsecurity_data.reducedPhysBits %></reducedPhysBits>
