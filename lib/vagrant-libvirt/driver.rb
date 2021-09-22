@@ -3,6 +3,7 @@
 require 'fog/libvirt'
 require 'libvirt'
 require 'log4r'
+require 'json'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -58,7 +59,7 @@ module VagrantPlugins
 
         config = @machine.provider_config
 
-        @@system_connection = Libvirt::open_read_only(config.system_uri)
+        @@system_connection = Libvirt::open(config.system_uri)
         @@system_connection
       end
 
@@ -97,6 +98,12 @@ module VagrantPlugins
       def get_domain_ipaddress(machine, domain)
         if @machine.provider_config.qemu_use_session
           return get_ipaddress_from_system domain.mac
+        end
+
+        # attempt to get ip address from qemu agent
+        if @machine.provider_config.qemu_use_agent == true
+          @logger.info('Get IP via qemu agent')
+          return get_ipaddress_from_qemu_agent(domain, machine.id)
         end
 
         # Get IP address from dhcp leases table
@@ -143,6 +150,40 @@ module VagrantPlugins
           break if ip_address
         end
 
+        ip_address
+      end
+
+      def get_ipaddress_from_qemu_agent(domain, machine_id)
+        ip_address = nil
+        addresses = nil
+        dom = system_connection.lookup_domain_by_uuid(machine_id)
+        begin
+          response = dom.qemu_agent_command('{"execute":"guest-network-get-interfaces"}', timeout=10)
+          @logger.debug("Got Response from qemu agent")
+          @logger.debug(response)
+          addresses = JSON.parse(response)
+        rescue => e
+          @logger.debug("Unable to receive IP via qemu agent: [%s]" % e.message)
+        end
+
+        unless addresses.nil?
+          addresses["return"].each{ |interface|
+            if domain.mac == interface["hardware-address"]
+              @logger.debug("Found mathing interface: [%s]" % interface["name"])
+              if interface.has_key?("ip-addresses")
+                interface["ip-addresses"].each{ |ip|
+                  # returning ipv6 addresses might break windows guests because
+                  # winrm cant handle connection, winrm fails with "invalid uri"
+                  if ip["ip-address-type"] == "ipv4"
+                    ip_address = ip["ip-address"]
+                    @logger.debug("Return IP: [%s]" % ip_address)
+                    break
+                  end
+                  }
+              end
+            end
+          }
+        end
         ip_address
       end
 
