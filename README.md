@@ -933,6 +933,23 @@ DHCP server. dnsmasq writes lease information in the `/var/lib/libvirt/dnsmasq`
 directory. Vagrant-libvirt looks for the MAC address in this file and extracts
 the corresponding IP address.
 
+It is also possible to use the Qemu Agent to extract the management interface
+configuration from the booted virtual machine. This is helpful in libvirt
+environments where no local dnsmasq is used for automatic address assigment,
+but external dhcp services via bridged libvirt networks.
+
+Prerequisite is to enable the qemu agent channel via ([Libvirt communication
+channels](#libvirt-communication-channels)) and the virtual machine image must
+have the agent pre-installed before deploy. The agent will start automatically
+if it detects an attached channel during boot.
+
+* `qemu_use_agent` - false by default, if set to true, attempt to extract configured
+  ip address via qemu agent.
+
+To use the management network interface with an external dhcp service you need
+to setup a bridged host network manually and define it via
+`management_network_name` in your Vagrantfile.
+
 ## Additional Disks
 
 You can create and attach additional disks to a VM via `libvirt.storage :file`.

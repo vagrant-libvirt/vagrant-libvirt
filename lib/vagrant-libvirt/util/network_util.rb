@@ -20,6 +20,7 @@ module VagrantPlugins
 
         def configured_networks(env, logger)
           qemu_use_session = env[:machine].provider_config.qemu_use_session
+          qemu_use_agent = env[:machine].provider_config.qemu_use_agent
           management_network_device = env[:machine].provider_config.management_network_device
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address

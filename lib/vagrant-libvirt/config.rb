@@ -193,6 +193,9 @@ module VagrantPlugins
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
+      # Use QEMU Agent to get ip address
+      attr_accessor :qemu_use_agent
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -332,6 +335,9 @@ module VagrantPlugins
         @qemu_env          = UNSET_VALUE
 
         @qemu_use_session  = UNSET_VALUE
+
+        # Use Qemu agent to get ip address
+        @qemu_use_agent  = UNSET_VALUE
       end
 
       def boot(device)
@@ -936,6 +942,8 @@ module VagrantPlugins
 
         # Additional QEMU commandline environment variables
         @qemu_env = {} if @qemu_env == UNSET_VALUE
+
+        @qemu_use_agent = true if @qemu_use_agent != UNSET_VALUE
       end
 
       def validate(machine)
@@ -948,6 +956,17 @@ module VagrantPlugins
             errors << "the URI and qemu_use_session configuration conflict: uri:'#{@uri}' qemu_use_session:'#{@qemu_use_session}'"
           end
         end
+
+
+        if @qemu_use_agent == true
+          # if qemu agent is used to optain domain ip configuration, at least
+          # one qemu channel has to be configured. As there are various options,
+          # error out and leave configuration to the user
+          unless machine.provider_config.channels.any? { |channel| channel[:target_name].start_with?("org.qemu.guest_agent") }
+            errors << "qemu agent option enabled, but no qemu agent channel configured: please add at least one qemu agent channel to vagrant config"
+          end
+        end
+
 
         machine.provider_config.disks.each do |disk|
           if disk[:path] && (disk[:path][0] == '/')
