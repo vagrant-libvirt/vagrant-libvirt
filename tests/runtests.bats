@@ -119,6 +119,17 @@ cleanup() {
   cleanup
 }
 
+@test "bring up and use qemu agent for connectivity" {
+  export VAGRANT_CWD=tests/qemu_agent
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  echo "${output}"
+  cleanup
+}
+
 @test "ip is reachable with private network" {
   export VAGRANT_CWD=tests/private_network
   cleanup
