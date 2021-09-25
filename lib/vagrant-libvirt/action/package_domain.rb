@@ -31,43 +31,71 @@ module VagrantPlugins
             env[:machine].id
           )
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
-          root_disk = domain.volumes.select do |x|
-            !x.nil? && x.name == libvirt_domain.name + '.img'
+
+          volumes = domain.volumes.select { |x| !x.nil? }
+          root_disk = volumes.select do |x|
+            x.name == libvirt_domain.name + '.img'
           end.first
           raise Errors::NoDomainVolume if root_disk.nil?
 
-          package_directory = env["package.directory"]
-          domain_img = package_directory + '/box.img'
-          env[:ui].info("Downloading #{root_disk.name} to #{domain_img}")
-          ret = download_image(domain_img, env[:machine].provider_config.storage_pool_name,
-                               root_disk.name, env) do |progress,image_size|
-            rewriting(env[:ui]) do |ui|
-              ui.clear_line
-              ui.report_progress(progress, image_size, false)
-            end
-          end
-          # Clear the line one last time since the progress meter doesn't
-          # disappear immediately.
-          rewriting(env[:ui]) {|ui| ui.clear_line}
+          package_func = method(:package_v1)
 
-          # Prep domain disk
-          backing = `qemu-img info "#{domain_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
-          if backing
-            env[:ui].info('Image has backing image, copying image and rebasing ...')
-            `qemu-img rebase -p -b "" #{domain_img}`
+          box_format = ENV.fetch('VAGRANT_LIBVIRT_BOX_FORMAT_VERSION', nil)
+
+          case box_format
+          when nil
+            if volumes.length() > 1
+              package_func = method(:package_v2)
+              msg = "Detected more than one volume for machine, switching to package machine using box format v2."
+              msg += "\nIf you want to ignore the additional disks attached when packaging please set the "
+              msg += "env variable VAGRANT_LIBVIRT_BOX_FORMAT_VERSION=v1 to force only packaging the root disk."
+              env[:ui].warn(msg)
+            end
+          when 'v2'
+            package_func = method(:package_v2)
+          when 'v1'
+          else
+            env[:ui].warn("Unrecognized value for 'VAGRANT_LIBVIRT_BOX_FORMAT_VERSION', defaulting to v1")
           end
-          # remove hw association with interface
-          # working for centos with lvs default disks
-          `virt-sysprep --no-logfile --operations #{@operations} -a #{domain_img} #{@options}`
-          `virt-sparsify --in-place #{domain_img}`
+
+          metadata = package_func.call(env, volumes)
 
           # metadata / Vagrantfile
-          info = JSON.parse(`qemu-img info --output=json #{domain_img}`)
-          img_size = (Float(info['virtual-size'])/(1024**3)).ceil
-          File.write(package_directory + '/metadata.json', metadata_content(img_size))
+          package_directory = env["package.directory"]
+          File.write(package_directory + '/metadata.json', metadata)
           File.write(package_directory + '/Vagrantfile', vagrantfile_content(env))
 
           @app.call(env)
+        end
+
+        def package_v1(env, volumes)
+          domain_img = download_volume(env, volumes.first, 'box.img')
+
+          sysprep_domain(domain_img)
+          sparsify_volume(domain_img)
+
+          info = JSON.parse(`qemu-img info --output=json #{domain_img}`)
+          img_size = (Float(info['virtual-size'])/(1024**3)).ceil
+
+          return metadata_content_v1(img_size)
+        end
+
+        def package_v2(env, volumes)
+          disks = []
+          volumes.each_with_index do |vol, idx|
+            disk = {:path => "box_#{idx+1}.img"}
+            volume_img = download_volume(env, vol, disk[:path])
+
+            if idx == 0
+              sysprep_domain(volume_img)
+            end
+
+            sparsify_volume(volume_img)
+
+            disks.push(disk)
+          end
+
+          return metadata_content_v2(disks)
         end
 
         def vagrantfile_content(env)
@@ -93,7 +121,7 @@ module VagrantPlugins
           EOF
         end
 
-        def metadata_content(filesize)
+        def metadata_content_v1(filesize)
           <<-EOF.unindent
             {
               "provider": "libvirt",
@@ -103,7 +131,53 @@ module VagrantPlugins
           EOF
         end
 
+        def metadata_content_v2(disks)
+          data = {
+            "provider": "libvirt",
+            "format": "qcow2",
+            "disks": disks.each do |disk|
+              {'path': disk[:path]}
+            end
+          }
+          JSON.pretty_generate(data)
+        end
+
         protected
+
+        def sparsify_volume(volume_img)
+          `virt-sparsify --in-place #{volume_img}`
+        end
+
+        def sysprep_domain(domain_img)
+          # remove hw association with interface
+          # working for centos with lvs default disks
+          `virt-sysprep --no-logfile --operations #{@operations} -a #{domain_img} #{@options}`
+        end
+
+        def download_volume(env, volume, disk_path)
+          package_directory = env["package.directory"]
+          volume_img = package_directory + '/' + disk_path
+          env[:ui].info("Downloading #{volume.name} to #{volume_img}")
+          ret = download_image(volume_img, env[:machine].provider_config.storage_pool_name,
+                               volume.name, env) do |progress,image_size|
+            rewriting(env[:ui]) do |ui|
+              ui.clear_line
+              ui.report_progress(progress, image_size, false)
+            end
+          end
+          # Clear the line one last time since the progress meter doesn't
+          # disappear immediately.
+          rewriting(env[:ui]) {|ui| ui.clear_line}
+
+          # Prep domain disk
+          backing = `qemu-img info "#{volume_img}" | grep 'backing file:' | cut -d ':' -f2`.chomp
+          if backing
+            env[:ui].info('Image has backing image, copying image and rebasing ...')
+            `qemu-img rebase -p -b "" #{volume_img}`
+          end
+
+          return volume_img
+        end
 
         # Fog libvirt currently doesn't support downloading images from storage
         # pool volumes. Use ruby-libvirt client instead.
