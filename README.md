@@ -143,22 +143,51 @@ docker run -it --rm \
   -w $(realpath "${PWD}") \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
-    vagrant status
+  vagrant status
 ```
 
-It's possible to define an alias in `~/.bashrc`, for example:
+It's possible to define a function in `~/.bashrc`, for example:
 ```bash
-alias vagrant='
+vagrant(){
   docker run -it --rm \
-    -e LIBVIRT_DEFAULT_URI \
-    -v /var/run/libvirt/:/var/run/libvirt/ \
-    -v ~/.vagrant.d:/.vagrant.d \
-    -v $(realpath "${PWD}"):${PWD} \
-    -w $(realpath "${PWD}") \
-    --network host \
-    vagrantlibvirt/vagrant-libvirt:latest \
-    vagrant'
+  -e LIBVIRT_DEFAULT_URI \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w $(realpath "${PWD}") \
+  --network host \
+  vagrantlibvirt/vagrant-libvirt:latest \
+  vagrant $@
+}
+
 ```
+
+---
+To run with Podman you need to add
+
+```bash
+  --entrypoint /bin/bash \
+  --security-opt label=disable \
+```
+
+for example:
+
+```bash
+vagrant(){
+  podman run -it --rm \
+  -e LIBVIRT_DEFAULT_URI \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w $(realpath "${PWD}") \
+  --network host \
+  --entrypoint /bin/bash \
+  --security-opt label=disable \
+  docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+  vagrant $@
+}
+```
+
 
 Note that if you are connecting to a remote system libvirt, you may omit the
 `-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
