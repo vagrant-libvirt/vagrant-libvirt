@@ -163,7 +163,7 @@ vagrant(){
 ```
 
 ---
-To run with Podman you need to add
+To run with Podman you need to use a rootful container and add
 
 ```bash
   --entrypoint /bin/bash \
@@ -174,7 +174,7 @@ for example:
 
 ```bash
 vagrant(){
-  podman run -it --rm \
+  sudo podman run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
@@ -187,7 +187,6 @@ vagrant(){
   vagrant $@
 }
 ```
-
 
 Note that if you are connecting to a remote system libvirt, you may omit the
 `-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
