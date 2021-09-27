@@ -563,7 +563,7 @@ module VagrantPlugins
         end
 
         @usbctl_dev[:model] = options[:model]
-        @usbctl_dev[:ports] = options[:ports]
+        @usbctl_dev[:ports] = options[:ports] if options[:ports]
       end
 
       def usb(options = {})
@@ -915,15 +915,17 @@ module VagrantPlugins
         # Watchdog device
         @watchdog_dev = {} if @watchdog_dev == UNSET_VALUE
 
-        # USB controller
-        @usbctl_dev = {} if @usbctl_dev == UNSET_VALUE
-
         # USB device passthrough
         @usbs = [] if @usbs == UNSET_VALUE
 
         # Redirected devices
         @redirdevs = [] if @redirdevs == UNSET_VALUE
         @redirfilters = [] if @redirfilters == UNSET_VALUE
+
+        # USB controller
+        if @usbctl_dev == UNSET_VALUE
+          @usbctl_dev = if !@usbs.empty? or !@redirdevs.empty? then {:model => 'qemu-xhci'} else {} end
+        end
 
         # smartcard device
         @smartcard_dev = {} if @smartcard_dev == UNSET_VALUE

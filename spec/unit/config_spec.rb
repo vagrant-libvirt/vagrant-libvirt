@@ -435,6 +435,54 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
     end
+
+    context '@usbctl_dev' do
+      it 'should be empty by default' do
+        subject.finalize!
+
+        expect(subject.usbctl_dev).to eq({})
+      end
+
+      context 'when usb devices added' do
+        it 'should inject a default controller' do
+          subject.usb :vendor => '0x1234', :product => '0xabcd'
+
+          subject.finalize!
+
+          expect(subject.usbctl_dev).to eq({:model => 'qemu-xhci'})
+        end
+
+        context 'when user specified a controller' do
+          it 'should retain the user setting' do
+            subject.usb :vendor => '0x1234', :product => '0xabcd'
+            subject.usb_controller :model => 'pii3-uchi'
+
+            subject.finalize!
+            expect(subject.usbctl_dev).to eq({:model => 'pii3-uchi'})
+          end
+        end
+      end
+
+      context 'when redirdevs entries added' do
+        it 'should inject a default controller' do
+          subject.redirdev :type => 'spicevmc'
+
+          subject.finalize!
+
+          expect(subject.usbctl_dev).to eq({:model => 'qemu-xhci'})
+        end
+
+        context 'when user specified a controller' do
+          it 'should retain the user setting' do
+            subject.redirdev :type => 'spicevmc'
+            subject.usb_controller :model => 'pii3-uchi'
+
+            subject.finalize!
+            expect(subject.usbctl_dev).to eq({:model => 'pii3-uchi'})
+          end
+        end
+      end
+    end
   end
 
   def assert_invalid
