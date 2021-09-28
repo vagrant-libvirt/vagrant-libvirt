@@ -117,6 +117,22 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
             end
           end
         end
+
+        context 'with custom disk device setting' do
+          let(:domain_xml_file) { 'custom_disk_settings.xml' }
+          let(:vagrantfile_providerconfig) {
+            <<-EOF
+              libvirt.disk_device = 'sda'
+            EOF
+          }
+
+          it 'should set the domain device' do
+            expect(ui).to receive(:info).with(/ -- Image\(sda\):.*/)
+            expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+
+            expect(subject.call(env)).to be_nil
+          end
+        end
       end
 
       context 'no default pool' do

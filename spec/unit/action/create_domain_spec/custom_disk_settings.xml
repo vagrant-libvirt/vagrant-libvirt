@@ -1,0 +1,54 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>vagrant-test_default</name>
+  <title></title>
+  <description>Source: /rootpath/Vagrantfile</description>
+  <uuid></uuid>
+  <memory>524288</memory>
+  <vcpu>1</vcpu>
+
+
+  <cpu mode='host-model'>
+      <model fallback='allow'></model>
+  </cpu>
+
+
+  <os>
+        <type>hvm</type>
+    <kernel></kernel>
+    <initrd></initrd>
+    <cmdline></cmdline>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'>
+  </clock>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='default'/>
+      <source file='/var/lib/libvirt/images/vagrant-test_default.img'/>
+      <target dev='sda' bus='virtio'/>
+    </disk>
+
+
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target port='0'/>
+    </console>
+
+
+    <input type='mouse' bus='ps2'/>
+
+      <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'  />
+      <video>
+        <model type='cirrus' vram='9216' heads='1'/>
+      </video>
+
+
+  </devices>
+
+</domain>

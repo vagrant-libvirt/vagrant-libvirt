@@ -147,6 +147,10 @@ module VagrantPlugins
             else
                 pool_name = @storage_pool_name
             end
+
+            # special handling for domain volume
+            env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
+
             @logger.debug "Search for volumes in pool: #{pool_name}"
             env[:box_volumes].each_index do |index|
               suffix_index = index > 0 ? "_#{index}" : ''
@@ -154,8 +158,9 @@ module VagrantPlugins
                 name: "#{@name}#{suffix_index}.img"
               ).find { |x| x.pool_name == pool_name }
               raise Errors::DomainVolumeExists if domain_volume.nil?
+
               @domain_volumes.push({
-                :dev => (index+1).vdev.to_s,
+                :dev => env[:box_volumes][0].fetch(:device, (index+1).vdev.to_s),
                 :cache => @domain_volume_cache,
                 :bus => @disk_bus,
                 :path => domain_volume.path,
@@ -284,7 +289,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           @domain_volumes.each do |volume|
-            env[:ui].info(" -- Image(#{volume[:device]}):     #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
+            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
           end
 
           if not @disk_driver_opts.empty?
