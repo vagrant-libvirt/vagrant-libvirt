@@ -9,6 +9,7 @@ shared_context 'unit' do
   let(:vagrantfile) do
     <<-EOF
     Vagrant.configure('2') do |config|
+      config.vm.box = "vagrant-libvirt/test"
       config.vm.define :test
       config.vm.provider :libvirt do |libvirt|
         #{vagrantfile_providerconfig}
