@@ -19,6 +19,7 @@ can help a lot :-)
 * [Features](#features)
 * [Future work](#future-work)
 * [Using Docker based Installation](#using-docker-based-installation)
+  * [Using Podman based Installation](#using-podman-based-installation)
   * [Extending the Docker image with additional vagrant plugins](#extending-the-docker-image-with-additional-vagrant-plugins)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
@@ -162,15 +163,14 @@ vagrant(){
 
 ```
 
----
-To run with Podman you need to use a rootful container and add
+## Using Podman based Installation
+To run with Podman you need to use the `edge` tag, run with root privileges and include
 
 ```bash
-  --entrypoint /bin/bash \
   --security-opt label=disable \
 ```
 
-for example:
+if you have SELinux enabled, for example:
 
 ```bash
 vagrant(){
@@ -181,9 +181,8 @@ vagrant(){
   -v $(realpath "${PWD}"):${PWD} \
   -w $(realpath "${PWD}") \
   --network host \
-  --entrypoint /bin/bash \
   --security-opt label=disable \
-  docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+  docker.io/vagrantlibvirt/vagrant-libvirt:edge \
   vagrant $@
 }
 ```
