@@ -178,7 +178,8 @@ vagrant(){
   podman run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
-  -v ~/.vagrant.d:/.vagrant.d \
+  -v ~/.vagrant.d/boxes:/vagrant/boxes \
+  -v ~/.vagrant.d/data:/vagrant/data \
   -v $(realpath "${PWD}"):${PWD} \
   -w $(realpath "${PWD}") \
   --network host \
