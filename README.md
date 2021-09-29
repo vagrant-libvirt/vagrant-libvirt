@@ -144,7 +144,7 @@ docker run -it --rm \
   -w $(realpath "${PWD}") \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
-  vagrant status
+    vagrant status
 ```
 
 It's possible to define a function in `~/.bashrc`, for example:
@@ -169,6 +169,8 @@ To run with Podman you need to include
 ```bash
   --entrypoint /bin/bash \
   --security-opt label=disable \
+  -v ~/.vagrant.d/boxes:/vagrant/boxes \
+  -v ~/.vagrant.d/data:/vagrant/data \
 ```
 
 for example:
@@ -189,6 +191,8 @@ vagrant(){
   vagrant $@
 }
 ```
+
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
 
 Note that if you are connecting to a remote system libvirt, you may omit the
 `-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
