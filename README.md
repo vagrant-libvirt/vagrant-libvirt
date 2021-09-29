@@ -164,23 +164,25 @@ vagrant(){
 ```
 
 ## Using Podman based Installation
-To run with Podman you need to use the `edge` tag, run with root privileges and include
+To run with Podman you need to include
 
 ```bash
+  --entrypoint /bin/bash \
   --security-opt label=disable \
 ```
 
-if you have SELinux enabled, for example:
+for example:
 
 ```bash
 vagrant(){
-  sudo podman run -it --rm \
+  podman run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
   -v $(realpath "${PWD}"):${PWD} \
   -w $(realpath "${PWD}") \
   --network host \
+  --entrypoint /bin/bash \
   --security-opt label=disable \
   docker.io/vagrantlibvirt/vagrant-libvirt:edge \
   vagrant $@
