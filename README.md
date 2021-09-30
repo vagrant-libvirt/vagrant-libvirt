@@ -18,7 +18,9 @@ can help a lot :-)
 
 * [Features](#features)
 * [Future work](#future-work)
-* [Using Docker based Installation](#using-docker-based-installation)
+* [Using the container image](#using-the-container-image)
+  * [Using Docker](#using-docker)
+  * [Using Podman](#using-podman)
   * [Extending the Docker image with additional vagrant plugins](#extending-the-docker-image-with-additional-vagrant-plugins)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
@@ -100,7 +102,7 @@ can help a lot :-)
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
 
-## Using Docker based Installation
+## Using the container image
 
 Due to the number of issues encountered around compatibility between the ruby runtime environment
 that is part of the upstream vagrant installation and the library dependencies of libvirt that
@@ -113,6 +115,14 @@ you make use of additional plugins.
 Note the default image contains the full toolchain required to build and install vagrant-libvirt
 and it's dependencies. There is also a smaller image published with the `-slim` suffix if you
 just need vagrant-libvirt and don't need to install any additional plugins for your environment.
+
+If you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
+
+### Using Docker
 
 To get the image with the most recent release:
 ```bash
@@ -146,9 +156,9 @@ docker run -it --rm \
     vagrant status
 ```
 
-It's possible to define an alias in `~/.bashrc`, for example:
+It's possible to define a function in `~/.bashrc`, for example:
 ```bash
-alias vagrant='
+vagrant(){
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
@@ -157,14 +167,41 @@ alias vagrant='
     -w $(realpath "${PWD}") \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
-    vagrant'
+      vagrant $@
+}
+
 ```
 
-Note that if you are connecting to a remote system libvirt, you may omit the
-`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
-vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
-may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
-looking to use this in place of your distribution provided installation.
+### Using Podman
+To run with Podman you need to include
+
+```bash
+  --entrypoint /bin/bash \
+  --security-opt label=disable \
+  -v ~/.vagrant.d/boxes:/vagrant/boxes \
+  -v ~/.vagrant.d/data:/vagrant/data \
+```
+
+for example:
+
+```bash
+vagrant(){
+  podman run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v ~/.vagrant.d/boxes:/vagrant/boxes \
+    -v ~/.vagrant.d/data:/vagrant/data \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
+    --network host \
+    --entrypoint /bin/bash \
+    --security-opt label=disable \
+    docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+      vagrant $@
+}
+```
+
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
 
 ### Extending the Docker image with additional vagrant plugins
 
