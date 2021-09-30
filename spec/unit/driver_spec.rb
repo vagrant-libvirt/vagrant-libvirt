@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'support/binding_proc'
 require 'support/sharedcontext'
 
 require 'vagrant-libvirt/driver'
 
 describe VagrantPlugins::ProviderLibvirt::Driver do
   include_context 'unit'
+
+  subject { described_class.new(machine) }
 
   let(:vagrantfile) do
     <<-EOF
@@ -78,6 +81,75 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
+    end
+  end
+
+  describe '#state' do
+    let(:domain) { double('domain') }
+
+    before do
+      allow(subject).to receive(:get_domain).and_return(domain)
+    end
+
+    [
+      [
+        'not found',
+        :not_created,
+        {
+          :setup => ProcWithBinding.new do
+            expect(subject).to receive(:get_domain).and_return(nil)
+          end,
+        }
+      ],
+      [
+        'libvirt error',
+        :not_created,
+        {
+          :setup => ProcWithBinding.new do
+            expect(subject).to receive(:get_domain).and_raise(Libvirt::RetrieveError, 'missing')
+          end,
+        }
+      ],
+      [
+        'terminated',
+        :not_created,
+        {
+          :setup => ProcWithBinding.new do
+            expect(domain).to receive(:state).and_return('terminated')
+          end,
+        }
+      ],
+      [
+        'no IP returned',
+        :inaccessible,
+        {
+          :setup => ProcWithBinding.new do
+            expect(domain).to receive(:state).and_return('running').twice()
+            expect(subject).to receive(:get_domain_ipaddress).and_raise(Fog::Errors::TimeoutError)
+          end,
+        }
+      ],
+      [
+        'running',
+        :running,
+        {
+          :setup => ProcWithBinding.new do
+            expect(domain).to receive(:state).and_return('running').twice()
+            expect(subject).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
+          end,
+        }
+      ],
+    ].each do |name, expected, options|
+      opts = {}
+      opts.merge!(options) if options
+
+      it "should handle '#{name}' by returning '#{expected}'" do
+        if !opts[:setup].nil?
+          opts[:setup].apply_binding(binding)
+        end
+
+        expect(subject.state(machine)).to eq(expected)
+      end
     end
   end
 end
