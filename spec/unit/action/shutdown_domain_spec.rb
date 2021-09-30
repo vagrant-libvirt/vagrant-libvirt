@@ -9,22 +9,29 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
   include_context 'unit'
   include_context 'libvirt'
 
+  let(:driver) { double('driver') }
   let(:libvirt_domain) { double('libvirt_domain') }
   let(:servers) { double('servers') }
   let(:current_state) { :running }
   let(:target_state) { :shutoff }
 
+  before do
+    allow(machine.provider).to receive('driver').and_return(driver)
+    allow(driver).to receive(:created?).and_return(true)
+    allow(driver).to receive(:connection).and_return(connection)
+  end
+
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
       allow(connection).to receive(:servers).and_return(servers)
       allow(servers).to receive(:get).and_return(domain)
       allow(ui).to receive(:info).with('Attempting direct shutdown of domain...')
     end
 
     context "when state is shutoff" do
-      before { allow(domain).to receive(:state).and_return('shutoff') }
+      before do
+        allow(driver).to receive(:state).and_return(:shutoff)
+      end
 
       it "should not shutdown" do
         expect(domain).not_to receive(:shutoff)
@@ -44,29 +51,27 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
 
     context "when state is running" do
       before do
-        allow(domain).to receive(:state).and_return('running')
-        allow(domain).to receive(:wait_for)
-        allow(domain).to receive(:shutdown)
+        allow(driver).to receive(:state).and_return(:running)
       end
 
       it "should shutdown" do
+        expect(domain).to receive(:wait_for)
         expect(domain).to receive(:shutdown)
         subject.call(env)
       end
 
       it "should print shutdown message" do
-        expect(ui).to receive(:info).with('Attempting direct shutdown of domain...')
-        subject.call(env)
-      end
-
-      it "should wait for machine to shutdown" do
         expect(domain).to receive(:wait_for)
+        expect(domain).to receive(:shutdown)
+        expect(ui).to receive(:info).with('Attempting direct shutdown of domain...')
         subject.call(env)
       end
 
       context "when final state is not shutoff" do
         before do
-          expect(domain).to receive(:state).and_return('running').exactly(6).times
+          expect(driver).to receive(:state).and_return(:running).exactly(3).times
+          expect(domain).to receive(:wait_for)
+          expect(domain).to receive(:shutdown)
         end
 
         it "should provide a false result" do
@@ -77,8 +82,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
 
       context "when final state is shutoff" do
         before do
-          expect(domain).to receive(:state).and_return('running').exactly(4).times
-          expect(domain).to receive(:state).and_return('shutoff').exactly(2).times
+          expect(driver).to receive(:state).and_return(:running).exactly(2).times
+          expect(driver).to receive(:state).and_return(:shutoff).exactly(1).times
+          expect(domain).to receive(:wait_for)
+          expect(domain).to receive(:shutdown)
         end
 
         it "should provide a true result" do
@@ -91,7 +98,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
         before do
           expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(1)
           expect(app).to receive(:call) { sleep 1.5 }
-          expect(domain).to receive(:state).and_return('running').exactly(2).times
+          expect(driver).to receive(:state).and_return(:running).exactly(1).times
           expect(domain).to_not receive(:wait_for)
           expect(domain).to_not receive(:shutdown)
         end
@@ -106,11 +113,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
         before do
           expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(2)
           expect(app).to receive(:call) { sleep 1 }
-          expect(domain).to receive(:state).and_return('running').exactly(6).times
+          expect(driver).to receive(:state).and_return(:running).exactly(3).times
           expect(domain).to receive(:wait_for) do |time|
             expect(time).to be < 1
             expect(time).to be > 0
           end
+          expect(domain).to receive(:shutdown)
         end
 
         it "should wait for the reduced time" do

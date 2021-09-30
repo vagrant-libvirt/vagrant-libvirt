@@ -137,7 +137,17 @@ module VagrantPlugins
         # TODO: terminated no longer appears to be a valid fog state, remove?
         return :not_created if domain.nil? || domain.state.to_sym == :terminated
 
-        domain.state.tr('-', '_').to_sym
+        state = domain.state.tr('-', '_').to_sym
+        if state == :running
+          begin
+            get_domain_ipaddress(machine, domain)
+          rescue Fog::Errors::TimeoutError => e
+            @logger.debug("Machine #{machine.id} running but no IP address available: #{e}.")
+            return :inaccessible
+          end
+        end
+
+        return state
       end
 
       private
