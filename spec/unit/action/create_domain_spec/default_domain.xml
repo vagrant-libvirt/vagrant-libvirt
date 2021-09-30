@@ -26,6 +26,11 @@
   <clock offset='utc'>
   </clock>
   <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='default'/>
+      <source file='/var/lib/libvirt/images/vagrant-test_default.img'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
 
 
     <serial type='pty'>

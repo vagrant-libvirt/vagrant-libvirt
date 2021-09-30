@@ -162,7 +162,7 @@ module VagrantPlugins
             if @interface_network[:created]
               # Just check for mismatch error here - if name and ip from
               # config match together.
-              if @options[:network_name] != @interface_network[:name] and @qemu_use_agent = false
+              if @options[:network_name] != @interface_network[:name] and @qemu_use_agent == false
                 raise Errors::NetworkNameAndAddressMismatch,
                       ip_address:   @options[:ip],
                       network_name: @options[:network_name]

@@ -1148,13 +1148,14 @@ The USB controller can be configured using `libvirt.usb_controller`, with the fo
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Set up a USB3 controller
-    libvirt.usb_controller :model => "nec-xhci"
+    libvirt.usb_controller :model => "qemu-xhci"
   end
 end
 ```
 
 See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
 
+If any USB devices are passed through by setting `libvirt.usb` or `libvirt.redirdev`, a default controller will be added using the model `qemu-xhci` in the absence of a user specified one. This should help ensure more devices work out of the box as the default configured by libvirt is pii3-uhci, which appears to only work for USB 1 devices and does not work as expected when connected via a USB 2 controller, while the xhci stack should work for all versions of USB.
 
 ### USB Device Passthrough
 
@@ -1173,6 +1174,17 @@ The example values above match the device from the following output of `lsusb`:
 
 ```
 Bus 001 Device 002: ID 1234:abcd Example device
+```
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # pass through specific device based on identifying it
+    libvirt.usbdev :vendor => '0x1234', :product => '0xabcd'
+    # pass through a host device where multiple of the same vendor/product exist
+    libvirt.usbdev :bus => '1', :device => '1'
+  end
+end
 ```
 
 Additionally, the following options can be used:
@@ -1231,7 +1243,7 @@ In this case, the USB device with `class 0x0b`, `vendor 0x08e6`, `product 0x3437
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.redirdev :type => "spicevmc"
-    libvirt.redirfilter :class => "0x0b" :vendor => "0x08e6" :product => "0x3437" :version => "2.00" :allow => "yes"
+    libvirt.redirfilter :class => "0x0b", :vendor => "0x08e6", :product => "0x3437", :version => "2.00", :allow => "yes"
     libvirt.redirfilter :allow => "no"
   end
 end
