@@ -2,79 +2,7 @@
 
 require 'log4r'
 
-module VagrantPlugins
-  module ProviderLibvirt
-    module Util
-      class DiskDeviceResolver
-        def initialize(disks=[])
-          @disks = disks.dup
-          @default_prefix = 'vd'
-
-          @device_indicies = Hash.new
-          @existing = Hash.new
-
-          # check for duplicate device entries and raise an exception if one found
-          # with enough details that the user should be able to determine what
-          # to do to resolve.
-          @disks.each do |x|
-            if @existing.has_key?(x[:device])
-              raise "Disk with details '#{x}' duplicates :device of disk '#{@existing[x[:device]]}'"
-            end
-
-            @existing[x[:device]] = x
-          end
-        end
-
-        def resolve!(disks)
-          disks.each_with_index do |x|
-            if @existing.has_key?(x[:device])
-              raise "Disk with details '#{x}' duplicates :device of disk '#{@existing[x[:device]]}'"
-            end
-
-            @existing[x[:device]] = x
-          end
-        end
-
-        def resolve
-          @disks.each_index do |index|
-            dev = @disks[index][:device]
-            if dev.nil?
-              dev = next_device
-              if dev.nil?
-                raise "All available devices consumed, cannot find a free one to allocate"
-              end
-
-              @disks[index][:device] = dev
-              @existing[dev] = @disks[index]
-            end
-          end
-
-          @disks
-        end
-
-        private
-
-        def next_device
-          curr = device_index
-          while curr <= 'z'.ord
-            dev = @default_prefix + curr.chr
-            if !@existing[dev].nil?
-              curr += 1
-              next
-            else
-              @device_indicies[@default_prefix] = curr
-              return dev
-            end
-          end
-        end
-
-        def device_index
-          @device_indicies[@default_prefix] ||= 'a'.ord
-        end
-      end
-    end
-  end
-end
+require 'vagrant-libvirt/util/resolvers'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -214,6 +142,8 @@ module VagrantPlugins
 
           @os_type = 'hvm'
 
+          resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=@disk_device[0..1])
+
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
             if @snapshot_pool_name != @storage_pool_name
@@ -225,11 +155,10 @@ module VagrantPlugins
             # special handling for domain volume
             env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
 
-            resolver = VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new()
-            disks = resolver.resolve(env[:box_volumes])
+            resolver.resolve!(env[:box_volumes])
 
             @logger.debug "Search for volumes in pool: #{pool_name}"
-            disks.each_index do |index|
+            env[:box_volumes].each_index do |index|
               suffix_index = index > 0 ? "_#{index}" : ''
               domain_volume = env[:machine].provider.driver.connection.volumes.all(
                 name: "#{@name}#{suffix_index}.img"
@@ -256,19 +185,7 @@ module VagrantPlugins
             storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
 
-          @serials = config.serials
-
-          @serials.each do |serial|
-            next unless serial[:source] && serial[:source][:path]
-
-            dir = File.dirname(serial[:source][:path])
-            begin
-              FileUtils.mkdir_p(dir)
-            rescue ::Errno::EACCES
-              raise Errors::SerialCannotCreatePathError,
-                    path: dir
-            end
-          end
+          resolver.resolve!(@disks)
 
           @disks.each do |disk|
             disk[:path] ||= _disk_name(@name, disk)
@@ -315,6 +232,20 @@ module VagrantPlugins
                 raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
+            end
+          end
+
+          @serials = config.serials
+
+          @serials.each do |serial|
+            next unless serial[:source] && serial[:source][:path]
+
+            dir = File.dirname(serial[:source][:path])
+            begin
+              FileUtils.mkdir_p(dir)
+            rescue ::Errno::EACCES
+              raise Errors::SerialCannotCreatePathError,
+                    path: dir
             end
           end
 

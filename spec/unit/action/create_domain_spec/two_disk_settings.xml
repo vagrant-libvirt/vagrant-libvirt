@@ -30,7 +30,13 @@
       <alias name='ua-box-volume-0'/>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/vagrant-test_default.img'/>
-      <target dev='sda' bus='virtio'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-1'/>
+      <driver name='qemu' type='qcow2' cache='default'/>
+      <source file='/var/lib/libvirt/images/vagrant-test_default_1.img'/>
+      <target dev='vdb' bus='virtio'/>
     </disk>
 
 
