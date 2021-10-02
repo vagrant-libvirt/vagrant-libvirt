@@ -4,6 +4,80 @@ require 'log4r'
 
 module VagrantPlugins
   module ProviderLibvirt
+    module Util
+      class DiskDeviceResolver
+        def initialize(disks=[])
+          @disks = disks.dup
+          @default_prefix = 'vd'
+
+          @device_indicies = Hash.new
+          @existing = Hash.new
+
+          # check for duplicate device entries and raise an exception if one found
+          # with enough details that the user should be able to determine what
+          # to do to resolve.
+          @disks.each do |x|
+            if @existing.has_key?(x[:device])
+              raise "Disk with details '#{x}' duplicates :device of disk '#{@existing[x[:device]]}'"
+            end
+
+            @existing[x[:device]] = x
+          end
+        end
+
+        def resolve!(disks)
+          disks.each_with_index do |x|
+            if @existing.has_key?(x[:device])
+              raise "Disk with details '#{x}' duplicates :device of disk '#{@existing[x[:device]]}'"
+            end
+
+            @existing[x[:device]] = x
+          end
+        end
+
+        def resolve
+          @disks.each_index do |index|
+            dev = @disks[index][:device]
+            if dev.nil?
+              dev = next_device
+              if dev.nil?
+                raise "All available devices consumed, cannot find a free one to allocate"
+              end
+
+              @disks[index][:device] = dev
+              @existing[dev] = @disks[index]
+            end
+          end
+
+          @disks
+        end
+
+        private
+
+        def next_device
+          curr = device_index
+          while curr <= 'z'.ord
+            dev = @default_prefix + curr.chr
+            if !@existing[dev].nil?
+              curr += 1
+              next
+            else
+              @device_indicies[@default_prefix] = curr
+              return dev
+            end
+          end
+        end
+
+        def device_index
+          @device_indicies[@default_prefix] ||= 'a'.ord
+        end
+      end
+    end
+  end
+end
+
+module VagrantPlugins
+  module ProviderLibvirt
     module Action
       class CreateDomain
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
@@ -151,8 +225,11 @@ module VagrantPlugins
             # special handling for domain volume
             env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
 
+            resolver = VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new()
+            disks = resolver.resolve(env[:box_volumes])
+
             @logger.debug "Search for volumes in pool: #{pool_name}"
-            env[:box_volumes].each_index do |index|
+            disks.each_index do |index|
               suffix_index = index > 0 ? "_#{index}" : ''
               domain_volume = env[:machine].provider.driver.connection.volumes.all(
                 name: "#{@name}#{suffix_index}.img"
@@ -160,13 +237,14 @@ module VagrantPlugins
               raise Errors::DomainVolumeExists if domain_volume.nil?
 
               @domain_volumes.push({
-                :dev => env[:box_volumes][0].fetch(:device, (index+1).vdev.to_s),
+                :dev => env[:box_volumes][index][:device],
                 :cache => @domain_volume_cache,
                 :bus => @disk_bus,
                 :path => domain_volume.path,
                 :virtual_size => env[:box_volumes][index][:virtual_size]
               })
-              end
+            end
+
           end
 
           # If we have a box, take the path from the domain volume and set our storage_prefix.

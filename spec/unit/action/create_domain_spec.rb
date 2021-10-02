@@ -33,7 +33,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
       allow(connection).to receive(:volumes).and_return(volumes)
       allow(volumes).to receive(:all).and_return([domain_volume])
       allow(domain_volume).to receive(:pool_name).and_return('default')
-      allow(domain_volume).to receive(:[]).with('name').and_return('vagrant-test_default.img')
       allow(domain_volume).to receive(:path).and_return('/var/lib/libvirt/images/vagrant-test_default.img')
       allow(machine).to receive_message_chain("box.name") { 'vagrant-libvirt/test' }
 
@@ -128,6 +127,32 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
           it 'should set the domain device' do
             expect(ui).to receive(:info).with(/ -- Image\(sda\):.*/)
+            expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+
+            expect(subject.call(env)).to be_nil
+          end
+        end
+
+        context 'with two domain disks' do
+          let(:domain_xml_file) { 'two_disk_settings.xml' }
+          let(:domain_volume_2) { double('domain_volume 2') }
+
+          before do
+            expect(volumes).to receive(:all).and_return([domain_volume])
+            expect(volumes).to receive(:all).and_return([domain_volume_2])
+            expect(domain_volume_2).to receive(:pool_name).and_return('default')
+            expect(domain_volume_2).to receive(:path).and_return('/var/lib/libvirt/images/vagrant-test_default_1.img')
+
+            env[:box_volumes].push({
+              :path=>"/test/box_1.img",
+              :name=>"test_vagrant_box_image_1.1.1_1.img",
+              :virtual_size=> ByteNumber.new(5),
+            })
+          end
+
+          it 'should correctly assign device entries' do
+            expect(ui).to receive(:info).with(/ -- Image\(vda\):.*/)
+            expect(ui).to receive(:info).with(/ -- Image\(vdb\):.*/)
             expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
 
             expect(subject.call(env)).to be_nil
