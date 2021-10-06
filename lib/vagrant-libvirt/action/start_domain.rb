@@ -65,7 +65,7 @@ module VagrantPlugins
                 disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
               end
 	
-	      nvram = REXML::XPath.first(xml_descr, 'os/nvram')
+	            nvram = REXML::XPath.first(xml_descr, '/domain/os/nvram')
               unless nvram.nil?
                 had_nvram = true
               end
@@ -205,7 +205,7 @@ module VagrantPlugins
                    
                    
                   newLaunchSecurity = REXML::XPath.first(xml_descr, '/domain/launchSecurity')
-		  newType = newLaunchSecurity.attributes['type']
+		              newType = newLaunchSecurity.attributes['type']
                   newCbitPos = REXML::XPath.first( newLaunchSecurity, 'cbitpos')
                   newReducedPhysBits = REXML::XPath.first( newLaunchSecurity, 'reducedPhysBits')
                   newPolicy = REXML::XPath.first( newLaunchSecurity, 'policy')
@@ -215,43 +215,27 @@ module VagrantPlugins
                     descr_changed = true
                   end
 
-		  if newCbitPos.text != config.launchsecurity_data[:cbitpos]
+		              if newCbitPos.text != config.launchsecurity_data[:cbitpos]
                     @logger.debug "launchSecurity config changed"
                     descr_changed = true
                   end
 
-		  if newReducedPhysBits.text != config.launchsecurity_data[:reducedPhysBits]
+		              if newReducedPhysBits.text != config.launchsecurity_data[:reducedPhysBits]
                     @logger.debug "launchSecurity config changed"
                     descr_changed = true
-		  end
+		              end
 
-		  if newPolicy.text != config.launchsecurity_data[:policy]
-                     @logger.debug "launchSecurity config changed"
-                     descr_changed = true
-		  end
+		              if newPolicy.text != config.launchsecurity_data[:policy]
+                    @logger.debug "launchSecurity config changed"
+                    descr_changed = true
+		              end
  
 
                   REXML::XPath.each( xml_descr, '/domain/devices/controller') do | controller |
                     driver_node = controller.add_element('driver')
                     driver_node.attributes['iommu'] = 'on'
                   end
-
-#                  newLaunchSecurity.attributes['type'] = config.launchsecurity_data.type
-#                  cbitpos = newLaunchSecurity.add_element('cbitpos')
-#                  cbitpos.text = config.launchsecurity_data.cbitpos
-#                  
-#                  reducedPhysBits = newLaunchSecurity.add_element('reducedPhysBits')
-#                  reducedPhysBits.text = config.launchsecurity_data.reducedPhysBits
-                  
-#                  policy = newLaunchSecurity.add_element('policy')
-#                  policy.text = config.launchsecurity_data.policy
-                  
-#                  unless "'#{newLaunchSecurity}'".eql? "'#{launchSecurity}'"
-#                    descr_changed = true
-#                  end
-
                 end
-
 
               else
                 unless launchSecurity.nil?
@@ -262,10 +246,10 @@ module VagrantPlugins
 
 
 
-                   REXML::XPath.each( xml_descr, '/domain/devices/controller') do | controller |
-                     driver_node = controller.add_element('driver')
-                     driver_node.attributes['iommu'] = 'on'
-                   end
+              REXML::XPath.each( xml_descr, '/domain/devices/controller') do | controller |
+                driver_node = controller.add_element('driver')
+                driver_node.attributes['iommu'] = 'on'
+              end
 
 
               # Graphics
@@ -423,13 +407,13 @@ module VagrantPlugins
               # Apply
               if descr_changed
                 begin
-	          # A domain that has NVRAM must receive a special flag during undefine
+	                # A domain that has NVRAM must receive a special flag during undefine
                   # See this method call: https://libvirt.org/ruby/api/Libvirt/Domain.html#method-i-undefine
                   if had_nvram
-	                libvirt_domain.undefine(4)
+	                  libvirt_domain.undefine(Libvirt::Domain::UNDEFINE_NVRAM)
                   else
-           		libvirt_domain.undefine(4)
-		  end
+                    libvirt_domain.undefine()
+                  end
 
                   new_descr = String.new
                   xml_descr.write new_descr

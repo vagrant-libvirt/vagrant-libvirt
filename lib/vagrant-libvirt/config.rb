@@ -224,7 +224,7 @@ module VagrantPlugins
         @management_network_pci_bus = UNSET_VALUE
         @management_network_domain = UNSET_VALUE
         @management_network_mtu = UNSET_VALUE
-	@management_network_driver_iommu = UNSET_VALUE
+	      @management_network_driver_iommu = UNSET_VALUE
         # System connection information
         @system_uri      = UNSET_VALUE
 
@@ -495,7 +495,8 @@ module VagrantPlugins
         end
         
         opts = config[:options] || {}
-	opts[:unit] = opts[:unit] || "KiB"
+	      opts[:unit] = opts[:unit] || "KiB"
+
         @memtunes = [] if @memtunes == UNSET_VALUE
         @memtunes.push( name: config[:type], value: config[:value], config: opts )
       end
@@ -853,7 +854,7 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
         @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
-	@system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
+	      @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
