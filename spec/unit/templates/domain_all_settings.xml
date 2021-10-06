@@ -12,10 +12,10 @@
         <feature name='AAA' policy='required'/>
         <topology sockets='1' cores='3' threads='2'/>
   </cpu>
-
   <numatune>
     <memory nodeset='1-4,^3,6'/>
   </numatune>
+
   <cputune>
     <shares>1024</shares>
   </cputune>
@@ -112,6 +112,7 @@
       </video>
       <rng model='virtio'>
         <backend model='random'>/dev/random</backend>
+        
       </rng>
       <hostdev mode='subsystem' type='pci' managed='yes'>
         <source>
@@ -150,7 +151,9 @@
         <device path='/dev/tpm0'/>
       </backend>
     </tpm>
-    <controller type='usb' model='nec-xhci' ports="4" />
+    <controller type='usb' model='nec-xhci' ports="4" >
+    
+    </controller>
   </devices>
 
   <qemu:commandline>

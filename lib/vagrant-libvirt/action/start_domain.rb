@@ -38,6 +38,7 @@ module VagrantPlugins
               descr = libvirt_domain.xml_desc(1)
               xml_descr = REXML::Document.new descr
               descr_changed = false
+              had_nvram = false
 
               # For outputting XML for comparison
               formatter = REXML::Formatters::Pretty.new
@@ -63,8 +64,13 @@ module VagrantPlugins
                 disk_target.attributes['bus'] = config.disk_bus
                 disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
               end
+	
+	      nvram = REXML::XPath.first(xml_descr, 'os/nvram')
+              unless nvram.nil?
+                had_nvram = true
+              end
 
-              # Iterface type
+              # Interface type
               unless config.nic_model_type.nil?
                 REXML::XPath.each(xml_descr, '/domain/devices/interface/model') do |iface_model|
                   if iface_model.attributes['type'] != config.nic_model_type
@@ -186,6 +192,81 @@ module VagrantPlugins
                   descr_changed = true
                 end
               end
+
+              
+              # Launch security
+              launchSecurity = REXML::XPath.first(xml_descr, '/domain/launchSecurity')
+              unless config.launchsecurity_data.nil?
+
+                if launchSecurity.nil?
+                  @logger.debug "Launch security has been added"
+                  descr_changed = true
+                else
+                   
+                   
+                  newLaunchSecurity = REXML::XPath.first(xml_descr, '/domain/launchSecurity')
+		  newType = newLaunchSecurity.attributes['type']
+                  newCbitPos = REXML::XPath.first( newLaunchSecurity, 'cbitpos')
+                  newReducedPhysBits = REXML::XPath.first( newLaunchSecurity, 'reducedPhysBits')
+                  newPolicy = REXML::XPath.first( newLaunchSecurity, 'policy')
+			
+                  if newType != config.launchsecurity_data[:type]
+                    @logger.debug "launchSecurity config changed"
+                    descr_changed = true
+                  end
+
+		  if newCbitPos.text != config.launchsecurity_data[:cbitpos]
+                    @logger.debug "launchSecurity config changed"
+                    descr_changed = true
+                  end
+
+		  if newReducedPhysBits.text != config.launchsecurity_data[:reducedPhysBits]
+                    @logger.debug "launchSecurity config changed"
+                    descr_changed = true
+		  end
+
+		  if newPolicy.text != config.launchsecurity_data[:policy]
+                     @logger.debug "launchSecurity config changed"
+                     descr_changed = true
+		  end
+ 
+
+                  REXML::XPath.each( xml_descr, '/domain/devices/controller') do | controller |
+                    driver_node = controller.add_element('driver')
+                    driver_node.attributes['iommu'] = 'on'
+                  end
+
+#                  newLaunchSecurity.attributes['type'] = config.launchsecurity_data.type
+#                  cbitpos = newLaunchSecurity.add_element('cbitpos')
+#                  cbitpos.text = config.launchsecurity_data.cbitpos
+#                  
+#                  reducedPhysBits = newLaunchSecurity.add_element('reducedPhysBits')
+#                  reducedPhysBits.text = config.launchsecurity_data.reducedPhysBits
+                  
+#                  policy = newLaunchSecurity.add_element('policy')
+#                  policy.text = config.launchsecurity_data.policy
+                  
+#                  unless "'#{newLaunchSecurity}'".eql? "'#{launchSecurity}'"
+#                    descr_changed = true
+#                  end
+
+                end
+
+
+              else
+                unless launchSecurity.nil?
+                  @logger.debug "Launch security has been deleted"
+                  descr_changed = true
+                end
+              end
+
+
+
+                   REXML::XPath.each( xml_descr, '/domain/devices/controller') do | controller |
+                     driver_node = controller.add_element('driver')
+                     driver_node.attributes['iommu'] = 'on'
+                   end
+
 
               # Graphics
               graphics = REXML::XPath.first(xml_descr, '/domain/devices/graphics')
@@ -342,7 +423,14 @@ module VagrantPlugins
               # Apply
               if descr_changed
                 begin
-                  libvirt_domain.undefine
+	          # A domain that has NVRAM must receive a special flag during undefine
+                  # See this method call: https://libvirt.org/ruby/api/Libvirt/Domain.html#method-i-undefine
+                  if had_nvram
+	                libvirt_domain.undefine(4)
+                  else
+           		libvirt_domain.undefine(4)
+		  end
+
                   new_descr = String.new
                   xml_descr.write new_descr
                   env[:machine].provider.driver.connection.servers.create(xml: new_descr)

@@ -32,6 +32,8 @@ module VagrantPlugins
           management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
           management_network_domain = env[:machine].provider_config.management_network_domain
           management_network_mtu = env[:machine].provider_config.management_network_mtu
+	  management_network_driver_iommu = env[:machine].provider_config.management_network_driver_iommu
+
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -73,7 +75,7 @@ module VagrantPlugins
             }
           end
 
-
+          management_network_options[:driver_iommu] = management_network_driver_iommu
 
           unless management_network_mac.nil?
             management_network_options[:mac] = management_network_mac
