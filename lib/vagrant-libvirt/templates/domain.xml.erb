@@ -50,7 +50,7 @@
 <% unless @memtunes.empty? %>
   <memtune>
   <% @memtunes.each do |memtune| %>
-    <<%= memtune[:name] %> <%= memtune[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>></<%= memtune[:name] %>
+    <<%= memtune[:name] %> <%= memtune[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>><%= memtune[:value] %></<%= memtune[:name] %>>
   <% end %>
   </memtune>
 <% end %>
@@ -201,7 +201,10 @@
 <% end %>
 
 <% @inputs.each do |input| %>
-    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
+    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'>
+      <% unless @launchsecurity_data.nil? %><driver iommu='on' /><% end %>
+      <driver iommu='on' />
+    </input>
 <% end %>
 
     <% if !@sound_type.nil? %>
@@ -221,7 +224,8 @@
     <% if @rng[:model] == "random"%>
       <rng model='virtio'>
         <backend model='random'>/dev/random</backend>
-        <% if @launchsecurity_data %><driver iommu='on' /><% end %>
+        <% unless @launchsecurity_data.nil? %><driver iommu='on' /><% end %>
+        <driver iommu='on' />
       </rng>
     <% end %>
     <% @pcis.each do |pci| %>
@@ -292,14 +296,15 @@
     <% if not @usbctl_dev.empty? %>
     <%# USB Controller -%>
     <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>>
-    <% if @launchsecurity_data %><driver iommu='on' /><% end %>
+    <% unless @launchsecurity_data.nil? %><driver iommu='on' /><% end %>
+    <driver iommu='on' />
     </controller>
     <% end %>
     <% unless @memballoon_enabled.nil? %>
     <% if @memballoon_enabled %>
     <memballoon model='<%= @memballoon_model %>'>
       <address type='pci' domain='0x0000' bus='<%= @memballoon_pci_bus %>' slot='<%= @memballoon_pci_slot %>' function='0x0'/>
-      <% if @launchsecurity_data %><driver iommu='on' /><% end %>
+      <% unless @launchsecurity_data.nil? %><driver iommu='on' /><% end %>
     </memballoon>
     <% else %>
     <memballoon model='none'/>
@@ -308,10 +313,10 @@
   </devices>
 
   <% unless @launchsecurity_data.nil? %>
-  <launchSecurity type='<%= @launchsecurity_data.type %>'>
-    <cbitpos><%= @launchsecurity_data.cbitpos %></cbitpos>
-    <reducedPhysBits><%= @launchsecurity_data.reducedPhysBits %></reducedPhysBits>
-    <policy><%= @launchsecurity_data.policy %></policy>
+  <launchSecurity type='<%= @launchsecurity_data[:type] %>'>
+    <cbitpos><%= @launchsecurity_data[:cbitpos] %></cbitpos>
+    <reducedPhysBits><%= @launchsecurity_data[:reducedPhysBits] %></reducedPhysBits>
+    <policy><%= @launchsecurity_data[:policy] %></policy>
   </launchSecurity>
   <% end %>
   <% if not @qemu_args.empty? or not @qemu_env.empty? %>

@@ -64,6 +64,14 @@ module VagrantPlugins
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
           @memtunes = config.memtunes
+
+
+	  @memballoon_enabled = config.memballoon_enabled
+	  @memballoon_model = config.memballoon_model
+	  @memballoon_pci_bus = config.memballoon_pci_bus
+	  @memballoon_pci_slot = config.memballoon_pci_slot
+
+
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache || 'default'
           @kernel = config.kernel
@@ -310,7 +318,7 @@ module VagrantPlugins
           end
 
           if not @launchsecurity_data.nil?
-            env[:ui].info(" -- Launch security: type=#{@launchsecurity_data.type}, cbitpos=#{@launchsecurity_data.cbitpos}, reducedPhysBits=#{@launchsecurity_data.reducedPhysBits}, policy=#{@launchsecurity_data.policy}")
+            env[:ui].info(" -- Launch security: type=#{@launchsecurity_data[:type]}, cbitpos=#{@launchsecurity_data[:cbitpos]}, reducedPhysBits=#{@launchsecurity_data[:reducedPhysBits]}, policy=#{@launchsecurity_data[:policy]}")
           end
 
           @disks.each do |disk|

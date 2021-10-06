@@ -16,7 +16,10 @@
     <driver <% if @driver_iommu %> iommu="on" <% end %> queues='<%=@driver_queues%>'/>
   <% elsif @driver_name %>
     <driver <% if @driver_iommu %> iommu="on" <% end %> name='<%=@driver_name%>'/>
+  <% elsif @driver_iommu %>
+    <driver iommu='on' />
   <% end %>
+
   <% if @ovs %>
   <virtualport type='openvswitch'>
     <% if @ovs_interfaceid %>

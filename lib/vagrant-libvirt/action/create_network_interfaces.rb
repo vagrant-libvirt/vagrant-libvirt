@@ -85,6 +85,8 @@ module VagrantPlugins
             template_name = 'interface'
             @type = nil
             @udp_tunnel = nil
+
+            @logger.debug("Interface configuration: #{iface_configuration}")
             # Configuration for public interfaces which use the macvtap driver
             if iface_configuration[:iface_type] == :public_network
               @device = iface_configuration.fetch(:dev, 'eth0')
@@ -135,7 +137,7 @@ module VagrantPlugins
             end
 
             message = "Creating network interface eth#{@iface_number}"
-            message += " connected to network #{@network_name}."
+            message += " connected to network #{@network_name} based on template #{template_name}."
             if @mac
               @mac = @mac.scan(/(\h{2})/).join(':')
               message += " Using MAC address: #{@mac}"
@@ -144,10 +146,18 @@ module VagrantPlugins
 
             begin
               # FIXME: all options for network driver should be hash from Vagrantfile
-              driver_options = {}
-              driver_options[:name] = @driver_name if @driver_name
-              driver_options[:iommu] = "on" if @driver_iommu else "off"
-              driver_options[:queues] = @driver_queues if @driver_queues
+	      driver_options = {}
+              if @driver_name
+              driver_options[:name] = @driver_name
+              end
+              
+              driver_options[:iommu] = @driver_iommu ? "on" : "off"
+
+              if @driver_queues
+                driver_options[:queues] = @driver_queues
+              end
+	
+
               @udp_tunnel ||= {}
               xml = if template_name == 'interface' or
                        template_name == 'tunnel_interface'
@@ -260,12 +270,15 @@ module VagrantPlugins
               xml.source(source_options) do
                 xml.local(udp_tunnel) if type == 'udp'
               end
+
+              @logger.debug "Driver options: #{driver_options}"
+
               xml.mac(address: mac) if mac
               xml.target(dev: target_dev_name(device_name, type, iface_number))
               xml.alias(name: "net#{iface_number}")
               xml.model(type: model_type.to_s)
               xml.mtu(size: Integer(mtu)) if mtu
-              xml.driver(driver_options)
+              xml.driver(**driver_options)
               xml.address(type: 'pci', bus: pci_bus, slot: pci_slot) if pci_bus and pci_slot
             end
           end.to_xml(
