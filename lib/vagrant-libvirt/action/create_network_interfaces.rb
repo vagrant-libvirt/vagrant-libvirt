@@ -251,6 +251,7 @@ module VagrantPlugins
                           udp_tunnel={}, pci_bus, pci_slot)
           Nokogiri::XML::Builder.new do |xml|
             xml.interface(type: type || 'network') do
+              xml.alias(name: "ua-net-#{iface_number}")
               xml.source(source_options) do
                 xml.local(udp_tunnel) if type == 'udp'
               end
