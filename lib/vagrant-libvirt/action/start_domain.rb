@@ -280,6 +280,24 @@ module VagrantPlugins
                     video_model.attributes['vram'] = config.video_vram
                   end
                 end
+                video_accel = REXML::XPath.first(xml_descr, '/domain/devices/video/model/acceleration')
+                if video_accel.nil?
+                  if config.video_accel3d
+                    video_accel = REXML::Element.new('acceleration', REXML::XPath.first(xml_descr, '/domain/devices/video/model'))
+                    video_accel.attributes['accel3d'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.video_accel3d
+                    if video_accel.attributes['accel3d'] != 'yes'
+                      video_accel.attributes['accel3d'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    video_accel.parent.delete_element(video_accel)
+                    descr_changed = true
+                  end
+                end
               end
 
               # Sound device

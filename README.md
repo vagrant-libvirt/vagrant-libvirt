@@ -608,6 +608,8 @@ end
   "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM
   dedicated to video.  Defaults to 9216.
+* `video_accel3d` - Set to `true` to enable 3D acceleration. Defaults to
+`false`.
 * `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#elementsSound)
   Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use

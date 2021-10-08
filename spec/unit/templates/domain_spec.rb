@@ -112,6 +112,8 @@ describe 'templates/domain' do
       domain.shares = '1024'
       domain.cpuset = '1-4,^3,6'
       domain.nodeset = '1-4,^3,6'
+
+      domain.video_accel3d = true
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do

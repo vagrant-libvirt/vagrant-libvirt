@@ -218,7 +218,9 @@
       <%# Video device -%>
       <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
       <video>
-        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
+        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'<% if not @video_accel3d %>/><% else %>>
+          <acceleration accel3d='yes'/>
+        </model><% end %>
       </video>
       <%#End Video -%>
     <% end %>
