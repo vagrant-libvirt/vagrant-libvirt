@@ -222,6 +222,24 @@ module VagrantPlugins
                     graphics.attributes['passwd'] = config.graphics_passwd
                   end
                 end
+                graphics_gl = REXML::XPath.first(xml_descr, '/domain/devices/graphics/gl')
+                if graphics_gl.nil?
+                  if config.graphics_gl
+                    graphics_gl = REXML::Element.new('gl', REXML::XPath.first(xml_descr, '/domain/devices/graphics'))
+                    graphics_gl.attributes['enable'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.graphics_gl
+                    if graphics_gl.attributes['enable'] != 'yes'
+                      graphics_gl.attributes['enable'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    graphics_gl.parent.delete_element(graphics_gl)
+                    descr_changed = true
+                  end
+                end
               else
                 # graphics_type = none, remove entire element
                 graphics.parent.delete_element(graphics) unless graphics.nil?

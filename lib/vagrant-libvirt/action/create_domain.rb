@@ -78,6 +78,7 @@ module VagrantPlugins
                              else
                                "passwd='#{config.graphics_passwd}'"
                               end
+          @graphics_gl = config.graphics_gl
           @video_type = config.video_type
           @sound_type = config.sound_type
           @video_vram = config.video_vram

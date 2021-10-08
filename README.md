@@ -598,6 +598,8 @@ end
 * `graphics_autoport` - Sets autoport for graphics, Libvirt in this case
   ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and
   "no"
+* `graphics_gl` - Set to `true` to enable OpenGL. Defaults to `true` if
+`video_accel3d` is `true`.
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
   guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for

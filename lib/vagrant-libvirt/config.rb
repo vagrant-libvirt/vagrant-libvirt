@@ -119,6 +119,7 @@ module VagrantPlugins
       attr_accessor :graphics_port
       attr_accessor :graphics_passwd
       attr_accessor :graphics_ip
+      attr_accessor :graphics_gl
       attr_accessor :video_type
       attr_accessor :video_vram
       attr_accessor :video_accel3d
@@ -271,6 +272,7 @@ module VagrantPlugins
         @graphics_port     = UNSET_VALUE
         @graphics_ip       = UNSET_VALUE
         @graphics_passwd   = UNSET_VALUE
+        @graphics_gl       = UNSET_VALUE
         @video_type        = UNSET_VALUE
         @video_vram        = UNSET_VALUE
         @video_accel3d     = UNSET_VALUE
@@ -893,6 +895,7 @@ module VagrantPlugins
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 9216 if @video_vram == UNSET_VALUE
         @video_accel3d = false if @video_accel3d == UNSET_VALUE
+        @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE
         @sound_type = nil if @sound_type == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
         @kvm_hidden = false if @kvm_hidden == UNSET_VALUE
