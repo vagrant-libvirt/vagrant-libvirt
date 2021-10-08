@@ -45,10 +45,12 @@ module VagrantPlugins
           case box_format
           when nil
             if volumes.length() > 1
-              package_func = method(:package_v2)
-              msg = "Detected more than one volume for machine, switching to package machine using box format v2."
-              msg += "\nIf you want to ignore the additional disks attached when packaging please set the "
-              msg += "env variable VAGRANT_LIBVIRT_BOX_FORMAT_VERSION=v1 to force only packaging the root disk."
+              msg = "Detected more than one volume for machine, in the future this will switch to using the v2 "
+              msg += "box format v2 automatically."
+              msg += "\nIf you want to include the additional disks attached when packaging please set the "
+              msg += "env variable VAGRANT_LIBVIRT_BOX_FORMAT_VERSION=v2 to use the new format. If you want "
+              msg += "to ensure that your box uses the old format for single disk only, please set the "
+              msg += "environment variable explicitly to 'v1'"
               env[:ui].warn(msg)
             end
           when 'v2'
@@ -158,7 +160,7 @@ module VagrantPlugins
           package_directory = env["package.directory"]
           volume_img = package_directory + '/' + disk_path
           env[:ui].info("Downloading #{volume.name} to #{volume_img}")
-          ret = download_image(volume_img, env[:machine].provider_config.storage_pool_name,
+          download_image(volume_img, env[:machine].provider_config.storage_pool_name,
                                volume.name, env) do |progress,image_size|
             rewriting(env[:ui]) do |ui|
               ui.clear_line

@@ -116,7 +116,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::PackageDomain do
         it 'should emit a warning' do
           expect(ui).to receive(:info).with('Packaging domain...')
           expect(ui).to receive(:warn).with(/Detected more than one volume for machine.*\n.*/)
-          expect(subject).to receive(:package_v2)
+          expect(subject).to receive(:package_v1)
 
           expect(subject.call(env)).to be_nil
         end
