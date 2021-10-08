@@ -27,11 +27,13 @@
   </clock>
   <devices>
     <disk type='file' device='disk'>
+      <alias name='ua-box-volume-0'/>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/vagrant-test_default.img'/>
       <target dev='vda' bus='virtio'/>
     </disk>
     <disk type='file' device='disk'>
+      <alias name='ua-disk-volume-0'/>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2'/>
       <target dev='vdb' bus='virtio'/>

@@ -113,8 +113,9 @@
     <% if @emulator_path %>
     <emulator><%= @emulator_path %></emulator>
     <% end %>
-<% @domain_volumes.each do |volume| -%>
+<% @domain_volumes.each_with_index do |volume, index| -%>
     <disk type='file' device='disk'>
+      <alias name='ua-box-volume-<%= index -%>'/>
       <driver name='qemu' type='qcow2' <%=
         @disk_driver_opts.empty? ? "cache='#{volume[:cache]}'" :
             @disk_driver_opts.reject { |k,v| v.nil? }
@@ -126,8 +127,9 @@
     </disk>
 <% end -%>
 <%# additional disks -%>
-<% @disks.each do |d| -%>
+<% @disks.each_with_index do |d, index| -%>
     <disk type='file' device='disk'>
+      <alias name='ua-disk-volume-<%= index -%>'/>
       <driver name='qemu' type='<%= d[:type] %>' <%=
         d.select { |k,_| [:cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
          .reject { |k,v| v.nil? }
