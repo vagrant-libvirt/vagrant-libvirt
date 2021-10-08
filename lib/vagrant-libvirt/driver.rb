@@ -8,13 +8,15 @@ require 'json'
 module VagrantPlugins
   module ProviderLibvirt
     class Driver
-      # store the connection at the process level
+      # store the connection at the instance level as this will be per
+      # thread and allows for individual machines to use different
+      # connection settings.
       #
       # possibly this should be a connection pool using the connection
-      # settings as a key to allow per machine connection attributes
-      # to be used.
-      @@connection = nil
-      @@system_connection = nil
+      # settings as a key to allow identical connections to be reused
+      # across machines.
+      @connection = nil
+      @system_connection = nil
 
       def initialize(machine)
         @logger = Log4r::Logger.new('vagrant_libvirt::driver')
@@ -24,7 +26,7 @@ module VagrantPlugins
       def connection
         # If already connected to Libvirt, just use it and don't connect
         # again.
-        return @@connection if @@connection
+        return @connection if @connection
 
         # Get config options for Libvirt provider.
         config = @machine.provider_config
@@ -43,24 +45,24 @@ module VagrantPlugins
 
         @logger.info("Connecting to Libvirt (#{uri}) ...")
         begin
-          @@connection = Fog::Compute.new(conn_attr)
+          @connection = Fog::Compute.new(conn_attr)
         rescue Fog::Errors::Error => e
           raise Errors::FogLibvirtConnectionError,
                 error_message: e.message
         end
 
-        @@connection
+        @connection
       end
 
       def system_connection
         # If already connected to Libvirt, just use it and don't connect
         # again.
-        return @@system_connection if @@system_connection
+        return @system_connection if @system_connection
 
         config = @machine.provider_config
 
-        @@system_connection = Libvirt::open(config.system_uri)
-        @@system_connection
+        @system_connection = Libvirt::open(config.system_uri)
+        @system_connection
       end
 
       def get_domain(machine)
@@ -135,7 +137,17 @@ module VagrantPlugins
         # TODO: terminated no longer appears to be a valid fog state, remove?
         return :not_created if domain.nil? || domain.state.to_sym == :terminated
 
-        domain.state.tr('-', '_').to_sym
+        state = domain.state.tr('-', '_').to_sym
+        if state == :running
+          begin
+            get_domain_ipaddress(machine, domain)
+          rescue Fog::Errors::TimeoutError => e
+            @logger.debug("Machine #{machine.id} running but no IP address available: #{e}.")
+            return :inaccessible
+          end
+        end
+
+        return state
       end
 
       private

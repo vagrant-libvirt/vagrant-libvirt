@@ -12,14 +12,18 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
   include_context 'unit'
   include_context 'libvirt'
 
+  let(:driver) { double('driver') }
   let(:libvirt_domain) { double('libvirt_domain') }
   let(:libvirt_client) { double('libvirt_client') }
   let(:servers) { double('servers') }
 
+  before do
+    allow(machine.provider).to receive('driver').and_return(driver)
+    allow(driver).to receive(:connection).and_return(connection)
+  end
+
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
       allow(connection).to receive(:client).and_return(libvirt_client)
       allow(libvirt_client).to receive(:lookup_domain_by_uuid)
         .and_return(libvirt_domain)

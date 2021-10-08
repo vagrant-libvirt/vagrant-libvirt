@@ -18,7 +18,9 @@ can help a lot :-)
 
 * [Features](#features)
 * [Future work](#future-work)
-* [Using Docker based Installation](#using-docker-based-installation)
+* [Using the container image](#using-the-container-image)
+  * [Using Docker](#using-docker)
+  * [Using Podman](#using-podman)
   * [Extending the Docker image with additional vagrant plugins](#extending-the-docker-image-with-additional-vagrant-plugins)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
@@ -100,7 +102,7 @@ can help a lot :-)
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
 
-## Using Docker based Installation
+## Using the container image
 
 Due to the number of issues encountered around compatibility between the ruby runtime environment
 that is part of the upstream vagrant installation and the library dependencies of libvirt that
@@ -113,6 +115,14 @@ you make use of additional plugins.
 Note the default image contains the full toolchain required to build and install vagrant-libvirt
 and it's dependencies. There is also a smaller image published with the `-slim` suffix if you
 just need vagrant-libvirt and don't need to install any additional plugins for your environment.
+
+If you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
+
+### Using Docker
 
 To get the image with the most recent release:
 ```bash
@@ -146,9 +156,9 @@ docker run -it --rm \
     vagrant status
 ```
 
-It's possible to define an alias in `~/.bashrc`, for example:
+It's possible to define a function in `~/.bashrc`, for example:
 ```bash
-alias vagrant='
+vagrant(){
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
@@ -157,14 +167,41 @@ alias vagrant='
     -w $(realpath "${PWD}") \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
-    vagrant'
+      vagrant $@
+}
+
 ```
 
-Note that if you are connecting to a remote system libvirt, you may omit the
-`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
-vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
-may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
-looking to use this in place of your distribution provided installation.
+### Using Podman
+To run with Podman you need to include
+
+```bash
+  --entrypoint /bin/bash \
+  --security-opt label=disable \
+  -v ~/.vagrant.d/boxes:/vagrant/boxes \
+  -v ~/.vagrant.d/data:/vagrant/data \
+```
+
+for example:
+
+```bash
+vagrant(){
+  podman run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v ~/.vagrant.d/boxes:/vagrant/boxes \
+    -v ~/.vagrant.d/data:/vagrant/data \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
+    --network host \
+    --entrypoint /bin/bash \
+    --security-opt label=disable \
+    docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+      vagrant $@
+}
+```
+
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
 
 ### Extending the Docker image with additional vagrant plugins
 
@@ -1111,13 +1148,14 @@ The USB controller can be configured using `libvirt.usb_controller`, with the fo
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Set up a USB3 controller
-    libvirt.usb_controller :model => "nec-xhci"
+    libvirt.usb_controller :model => "qemu-xhci"
   end
 end
 ```
 
 See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
 
+If any USB devices are passed through by setting `libvirt.usb` or `libvirt.redirdev`, a default controller will be added using the model `qemu-xhci` in the absence of a user specified one. This should help ensure more devices work out of the box as the default configured by libvirt is pii3-uhci, which appears to only work for USB 1 devices and does not work as expected when connected via a USB 2 controller, while the xhci stack should work for all versions of USB.
 
 ### USB Device Passthrough
 
@@ -1136,6 +1174,17 @@ The example values above match the device from the following output of `lsusb`:
 
 ```
 Bus 001 Device 002: ID 1234:abcd Example device
+```
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # pass through specific device based on identifying it
+    libvirt.usbdev :vendor => '0x1234', :product => '0xabcd'
+    # pass through a host device where multiple of the same vendor/product exist
+    libvirt.usbdev :bus => '1', :device => '1'
+  end
+end
 ```
 
 Additionally, the following options can be used:
@@ -1194,7 +1243,7 @@ In this case, the USB device with `class 0x0b`, `vendor 0x08e6`, `product 0x3437
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.redirdev :type => "spicevmc"
-    libvirt.redirfilter :class => "0x0b" :vendor => "0x08e6" :product => "0x3437" :version => "2.00" :allow => "yes"
+    libvirt.redirfilter :class => "0x0b", :vendor => "0x08e6", :product => "0x3437", :version => "2.00", :allow => "yes"
     libvirt.redirfilter :allow => "no"
   end
 end
