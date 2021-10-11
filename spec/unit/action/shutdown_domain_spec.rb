@@ -3,6 +3,20 @@ require 'support/sharedcontext'
 require 'support/libvirt_context'
 require 'vagrant-libvirt/action/shutdown_domain'
 
+describe VagrantPlugins::ProviderLibvirt::Action::StartShutdownTimer do
+  subject { described_class.new(app, env) }
+
+  include_context 'unit'
+
+  describe '#call' do
+    it 'should set shutdown_start_time' do
+      expect(env[:shutdown_start_time]).to eq(nil)
+      expect(subject.call(env)).to eq(nil)
+      expect(env[:shutdown_start_time]).to_not eq(nil)
+    end
+  end
+end
+
 describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
   subject { described_class.new(app, env, target_state, current_state) }
 
@@ -26,6 +40,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
       allow(connection).to receive(:servers).and_return(servers)
       allow(servers).to receive(:get).and_return(domain)
       allow(ui).to receive(:info).with('Attempting direct shutdown of domain...')
+      allow(env).to receive(:[]).and_call_original
+      allow(env).to receive(:[]).with(:shutdown_start_time).and_return(Time.now)
     end
 
     context "when state is shutoff" do
@@ -97,7 +113,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
       context "when timeout exceeded" do
         before do
           expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(1)
-          expect(app).to receive(:call) { sleep 1.5 }
+          expect(Time).to receive(:now).and_return(env[:shutdown_start_time] + 2)
           expect(driver).to receive(:state).and_return(:running).exactly(1).times
           expect(domain).to_not receive(:wait_for)
           expect(domain).to_not receive(:shutdown)
@@ -112,7 +128,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
       context "when timeout not exceeded" do
         before do
           expect(machine).to receive_message_chain('config.vm.graceful_halt_timeout').and_return(2)
-          expect(app).to receive(:call) { sleep 1 }
+          expect(Time).to receive(:now).and_return(env[:shutdown_start_time] + 1.5)
           expect(driver).to receive(:state).and_return(:running).exactly(3).times
           expect(domain).to receive(:wait_for) do |time|
             expect(time).to be < 1
@@ -125,6 +141,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
           subject.call(env)
           expect(env[:result]).to be_falsey
         end
+      end
+    end
+
+    context "when required action not run" do
+      before do
+        expect(env).to receive(:[]).with(:shutdown_start_time).and_call_original
+      end
+
+      it "should raise an exception" do
+        expect { subject.call(env) }.to raise_error(
+          VagrantPlugins::ProviderLibvirt::Errors::CallChainError,
+          /Invalid action chain, must ensure that '.*ShutdownTimer' is called prior to calling '.*ShutdownDomain'/
+        )
       end
     end
   end

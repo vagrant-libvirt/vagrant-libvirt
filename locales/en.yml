@@ -62,6 +62,7 @@ en:
         Forwarding UDP ports is not supported. Ignoring.
 
     errors:
+      call_chain_error: Invalid action chain, must ensure that '%{require_action}' is called prior to calling '%{current_action}'
       package_not_supported: No support for package with Libvirt. Create box manually.
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown

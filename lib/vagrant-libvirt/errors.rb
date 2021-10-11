@@ -9,6 +9,10 @@ module VagrantPlugins
         error_namespace('vagrant_libvirt.errors')
       end
 
+      class CallChainError < VagrantLibvirtError
+        error_key(:call_chain_error)
+      end
+
       # package not supported
       class PackageNotSupported < VagrantLibvirtError
         error_key(:package_not_supported)
