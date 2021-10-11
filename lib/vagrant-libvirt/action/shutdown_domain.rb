@@ -3,6 +3,25 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
+      # To wrap GracefulShutdown need to track the time taken
+      class StartShutdownTimer
+        def initialize(app, _env)
+          @app = app
+        end
+
+        def call(env)
+          env[:shutdown_start_time] = Time.now
+
+          @app.call(env)
+        end
+      end
+    end
+  end
+end
+
+module VagrantPlugins
+  module ProviderLibvirt
+    module Action
       # Shutdown the domain.
       class ShutdownDomain
         def initialize(app, _env, target_state, source_state)
@@ -15,21 +34,22 @@ module VagrantPlugins
         def call(env)
           timeout = env[:machine].config.vm.graceful_halt_timeout
 
-          start_time = Time.now
+          start_time = env[:shutdown_start_time]
 
-          # call nested action first under the assumption it should try to
-          # handle shutdown via client capabilities
-          @app.call(env)
+          if start_time.nil?
+            # this really shouldn't happen
+            raise Errors::CallChainError, require_action: StartShutdownTimer.name, current_action: ShutdownDomain.name
+          end
 
           # return if successful, otherwise will ensure result is set to false
           env[:result] = env[:machine].state.id == @target_state
 
-          return if env[:result]
+          return @app.call(env) if env[:result]
 
           current_time = Time.now
 
           # if we've already exceeded the timeout
-          return if current_time - start_time >= timeout
+          return @app.call(env) if current_time - start_time >= timeout
 
           # otherwise construct a new timeout.
           timeout = timeout - (current_time - start_time)
@@ -42,6 +62,8 @@ module VagrantPlugins
           end
 
           env[:result] = env[:machine].state.id == @target_state
+
+          @app.call(env)
         end
       end
     end
