@@ -233,14 +233,12 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             unless env[:result]
-              b2.use MessageNotCreated
-              next
+              raise Vagrant::Errors::VMNotCreatedError
             end
 
             b2.use Call, IsRunning do |env2, b3|
               unless env2[:result]
-                b3.use MessageNotRunning
-                next
+                raise Vagrant::Errors::VMNotRunningError
               end
 
               b3.use SSHExec
@@ -330,14 +328,12 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             unless env[:result]
-              b2.use MessageNotCreated
-              next
+              raise Vagrant::Errors::VMNotCreatedError
             end
 
             b2.use Call, IsRunning do |env2, b3|
               unless env2[:result]
-                b3.use MessageNotRunning
-                next
+                raise Vagrant::Errors::VMNotRunningError
               end
 
               b3.use SSHRun

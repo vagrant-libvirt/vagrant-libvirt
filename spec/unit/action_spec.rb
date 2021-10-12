@@ -93,4 +93,82 @@ describe VagrantPlugins::ProviderLibvirt::Action do
       end
     end
   end
+
+  describe '#action_ssh' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+
+      it 'should cause an error' do
+        expect{ machine.action(:ssh, ssh_opts: {})}.to raise_error(Vagrant::Errors::VMNotCreatedError)
+      end
+    end
+
+    context 'when created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      context 'when not running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, false)
+        end
+
+        it 'should cause an error' do
+          expect{ machine.action(:ssh, ssh_opts: {})}.to raise_error(Vagrant::Errors::VMNotRunningError)
+        end
+      end
+
+      context 'when running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, true)
+        end
+
+        it 'should call SSHExec' do
+          expect_any_instance_of(Vagrant::Action::Builtin::SSHExec).to receive(:call).and_return(0)
+          expect(machine.action(:ssh, ssh_opts: {})).to match(hash_including({:action_name => :machine_action_ssh}))
+        end
+      end
+    end
+  end
+
+  describe '#action_ssh_run' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+
+      it 'should cause an error' do
+        expect{ machine.action(:ssh_run, ssh_opts: {})}.to raise_error(Vagrant::Errors::VMNotCreatedError)
+      end
+    end
+
+    context 'when created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      context 'when not running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, false)
+        end
+
+        it 'should cause an error' do
+          expect{ machine.action(:ssh_run, ssh_opts: {})}.to raise_error(Vagrant::Errors::VMNotRunningError)
+        end
+      end
+
+      context 'when running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, true)
+        end
+
+        it 'should call SSHRun' do
+          expect_any_instance_of(Vagrant::Action::Builtin::SSHRun).to receive(:call).and_return(0)
+          expect(machine.action(:ssh_run, ssh_opts: {})).to match(hash_including({:action_name => :machine_action_ssh_run}))
+        end
+      end
+    end
+  end
 end
