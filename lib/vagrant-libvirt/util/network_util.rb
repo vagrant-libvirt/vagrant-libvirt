@@ -119,7 +119,8 @@ module VagrantPlugins
                             IPAddr.new(options[:network_address]).get_mask :
                             '255.255.255.0',
               dhcp_enabled: true,
-              forward_mode: 'nat'
+              forward_mode: 'nat',
+              always_destroy: true
             }.merge(options)
 
             if options[:type].to_s == 'dhcp' && options[:ip].nil?
