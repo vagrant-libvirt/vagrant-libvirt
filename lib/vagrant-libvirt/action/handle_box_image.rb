@@ -38,7 +38,7 @@ module VagrantPlugins
             env[:box_volume_number] = 1
             env[:box_volumes] = [{
               :path => image_path,
-              :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box', image_path),
+              :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box', image_path, env[:ui]),
               :virtual_size => HandleBoxImage.get_virtual_size(env),
               :format => box_format,
             }]
@@ -60,6 +60,7 @@ module VagrantPlugins
                 env[:machine].box,
                 disks[i].fetch('name', disks[i]['path'].sub(/#{File.extname(disks[i]['path'])}$/, '')),
                 image_path,
+                env[:ui],
               )
 
               # allowing name means needing to check that it doesn't cause a clash
@@ -124,7 +125,7 @@ module VagrantPlugins
 
         protected
 
-        def self.get_volume_name(box, name, path)
+        def self.get_volume_name(box, name, path, ui)
           version = begin
                       box.version.to_s
                     rescue
@@ -132,7 +133,7 @@ module VagrantPlugins
                     end
 
           if version.empty?
-            env[:ui].warn(I18n.t('vagrant_libvirt.box_version_missing'))
+            ui.warn(I18n.t('vagrant_libvirt.box_version_missing', name: box.name.to_s))
 
             version = "0_#{File.mtime(path).to_i}"
           end

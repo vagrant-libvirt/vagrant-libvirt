@@ -107,6 +107,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         end
 
         it 'should use the box file timestamp' do
+          expect(ui).to receive(:warn).with(
+            "No verison detected for test, using timestamp to watch for modifications. Consider\n" +
+            "generating a local metadata for the box with a version to allow better handling.\n" +
+            'See https://www.vagrantup.com/docs/boxes/format#box-metadata for further details.'
+          )
+
           expect(subject.call(env)).to be_nil
           expect(env[:box_volume_number]).to eq(1)
           expect(env[:box_volumes]).to eq(
