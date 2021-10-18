@@ -98,6 +98,36 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         )
       end
 
+      context 'when no box version set' do
+        let(:box_mtime) { Time.now }
+
+        before do
+          expect(env[:machine]).to receive_message_chain("box.version") { nil }
+          expect(File).to receive(:mtime).and_return(box_mtime)
+        end
+
+        it 'should use the box file timestamp' do
+          expect(ui).to receive(:warn).with(
+            "No verison detected for test, using timestamp to watch for modifications. Consider\n" +
+            "generating a local metadata for the box with a version to allow better handling.\n" +
+            'See https://www.vagrantup.com/docs/boxes/format#box-metadata for further details.'
+          )
+
+          expect(subject.call(env)).to be_nil
+          expect(env[:box_volume_number]).to eq(1)
+          expect(env[:box_volumes]).to eq(
+            [
+              {
+                :path=>"/test/box.img",
+                :name=>"test_vagrant_box_image_0_#{box_mtime.to_i}_box.img",
+                :virtual_size=>byte_number_5G,
+                :format=>"qcow2"
+              }
+            ]
+          )
+        end
+      end
+
       context 'When config.machine_virtual_size is set and smaller than box_virtual_size' do
         before do
           allow(env[:machine]).to receive_message_chain("provider_config.machine_virtual_size").and_return(1)

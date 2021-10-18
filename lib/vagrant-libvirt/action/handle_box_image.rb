@@ -34,10 +34,11 @@ module VagrantPlugins
             box_format = env[:machine].box.metadata['format']
             HandleBoxImage.verify_box_format(box_format)
 
+            image_path = HandleBoxImage.get_box_image_path(env[:machine].box, 'box.img')
             env[:box_volume_number] = 1
             env[:box_volumes] = [{
-              :path => HandleBoxImage.get_box_image_path(env[:machine].box, 'box.img'),
-              :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box'),
+              :path => image_path,
+              :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box', image_path, env[:ui]),
               :virtual_size => HandleBoxImage.get_virtual_size(env),
               :format => box_format,
             }]
@@ -58,6 +59,8 @@ module VagrantPlugins
               volume_name = HandleBoxImage.get_volume_name(
                 env[:machine].box,
                 disks[i].fetch('name', disks[i]['path'].sub(/#{File.extname(disks[i]['path'])}$/, '')),
+                image_path,
+                env[:ui],
               )
 
               # allowing name means needing to check that it doesn't cause a clash
@@ -122,15 +125,21 @@ module VagrantPlugins
 
         protected
 
-        def self.get_volume_name(box, name)
+        def self.get_volume_name(box, name, path, ui)
+          version = begin
+                      box.version.to_s
+                    rescue
+                      ''
+                    end
+
+          if version.empty?
+            ui.warn(I18n.t('vagrant_libvirt.box_version_missing', name: box.name.to_s))
+
+            version = "0_#{File.mtime(path).to_i}"
+          end
+
           vol_name = box.name.to_s.dup.gsub('/', '-VAGRANTSLASH-')
-          vol_name << "_vagrant_box_image_#{
-            begin
-              box.version.to_s
-            rescue
-              ''
-            end
-          }_#{name.dup.gsub('/', '-SLASH-')}.img"
+          vol_name << "_vagrant_box_image_#{version}_#{name.dup.gsub('/', '-SLASH-')}.img"
         end
 
         def self.get_virtual_size(env)
