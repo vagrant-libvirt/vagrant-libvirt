@@ -171,6 +171,20 @@ module VagrantPlugins
             storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
 
+          @serials = config.serials
+
+          @serials.each do |serial|
+            next unless serial[:source] && serial[:source][:path]
+
+            dir = File.dirname(serial[:source][:path])
+            begin
+              FileUtils.mkdir_p(dir)
+            rescue ::Errno::EACCES
+              raise Errors::SerialCannotCreatePathError,
+                    path: dir
+            end
+          end
+
           @disks.each do |disk|
             disk[:path] ||= _disk_name(@name, disk)
 
@@ -377,6 +391,13 @@ module VagrantPlugins
 
           if not @smartcard_dev.empty?
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
+          end
+
+          @serials.each_with_index do |serial, port|
+            if serial[:source]
+              env[:ui].info(" -- SERIAL(COM#{port}:       redirect to #{serial[:source][:path]}")
+              env[:ui].warn(I18n.t('vagrant_libvirt.warnings.creating_domain_console_access_disabled'))
+            end
           end
 
           unless @qemu_args.empty?

@@ -89,6 +89,7 @@ describe 'templates/domain' do
                      target_port: '4242',
                      source_path: '/tmp/foo')
       domain.random(model: 'random')
+      domain.serial(:type => 'file', :source => {:path => '/var/log/vm_consoles/machine.log'})
       domain.pci(bus: '0x06', slot: '0x12', function: '0x5')
       domain.pci(domain: '0x0001', bus: '0x03', slot: '0x00', function: '0x0')
       domain.usb_controller(model: 'nec-xhci', ports: '4')

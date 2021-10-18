@@ -196,6 +196,9 @@ module VagrantPlugins
       # Use QEMU Agent to get ip address
       attr_accessor :qemu_use_agent
 
+      # serial consoles
+      attr_accessor :serials
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -338,6 +341,8 @@ module VagrantPlugins
 
         # Use Qemu agent to get ip address
         @qemu_use_agent  = UNSET_VALUE
+
+        @serials           = []
       end
 
       def boot(device)
@@ -705,6 +710,20 @@ module VagrantPlugins
         @qemu_env.merge!(options)
       end
 
+      def serial(options={})
+        options = {
+          :type => "pty",
+          :source => nil,
+        }.merge(options)
+
+        serial = {
+          :type => options[:type],
+          :source => options[:source],
+        }
+
+        @serials << serial
+      end
+
       def _default_uri
         # Determine if any settings except driver provided explicitly, if not
         # and the LIBVIRT_DEFAULT_URI var is set, use that.
@@ -946,6 +965,8 @@ module VagrantPlugins
         @qemu_env = {} if @qemu_env == UNSET_VALUE
 
         @qemu_use_agent = true if @qemu_use_agent != UNSET_VALUE
+
+        @serials = [{:type => 'pty', :source => nil}] if @serials == []
       end
 
       def validate(machine)
@@ -973,6 +994,12 @@ module VagrantPlugins
         machine.provider_config.disks.each do |disk|
           if disk[:path] && (disk[:path][0] == '/')
             errors << "absolute volume paths like '#{disk[:path]}' not yet supported"
+          end
+        end
+
+        machine.provider_config.serials.each do |serial|
+          if serial[:source] and serial[:source][:path].nil?
+            errors << "serial :source requires :path to be defined"
           end
         end
 
@@ -1017,6 +1044,10 @@ module VagrantPlugins
           c = qemu_env != UNSET_VALUE ? qemu_env.dup : {}
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
           result.qemu_env = c
+
+          s = serials.dup
+          s += other.serials
+          result.serials = s
         end
       end
 

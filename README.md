@@ -49,6 +49,7 @@ can help a lot :-)
   * [USB Redirector Devices](#usb-redirector-devices)
     * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
 * [Random number generator passthrough](#random-number-generator-passthrough)
+* [Serial Console Devices](#serial-console-devices)
 * [Watchdog device](#watchdog-device)
 * [Smartcard device](#smartcard-device)
 * [Hypervisor Features](#hypervisor-features)
@@ -657,6 +658,9 @@ end
   it is not possible to communicate with VM through `vagrant ssh` or run
   provisioning. Setting to 'false' is only possible when VM doesn't use box.
   Defaults set to 'true'.
+* `serial` - [libvirt serial devices](https://libvirt.org/formatdomain.html#elementsConsole).
+  Configure a serial/console port to communicate with the guest. Can be used
+  to log to file boot time messages sent to ttyS0 console by the guest.
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -1245,6 +1249,26 @@ Vagrant.configure("2") do |config|
     libvirt.redirdev :type => "spicevmc"
     libvirt.redirfilter :class => "0x0b", :vendor => "0x08e6", :product => "0x3437", :version => "2.00", :allow => "yes"
     libvirt.redirfilter :allow => "no"
+  end
+end
+```
+
+## Serial Console Devices
+You can define settings to redirect output from the serial console of any VM brought up with libvirt to a file or other devices that are listening. [See libvirt documentation](https://libvirt.org/formatdomain.html#elementCharSerial).
+
+Currently only redirecting to a file is supported.
+
+* `type` - only value that has an effect is file, in the future support may be added for virtual console, pty, dev, pipe, tcp, udp, unix socket, spiceport & nmdm.
+* `source` - options pertaining to how the connection attaches to the host, contains sub-settings dependent on `type`.
+  `source` options for type `file`
+  * `path` - file on host to connect to the serial port to record all output. May be created by qemu system user causing some permissions issues.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :test do |test|
+    test.vm.provider :libvirt do |domain|
+      domain.serial :type => "file", :source => {:path => "/var/log/vm_consoles/test.log}
+    end
   end
 end
 ```
