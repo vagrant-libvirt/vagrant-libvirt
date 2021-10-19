@@ -208,6 +208,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -247,6 +250,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -273,6 +279,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -347,7 +356,9 @@ module VagrantPlugins
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message
           end
+        end
 
+        def write_created_network(env)
           created_networks_file = env[:machine].data_dir + 'created_networks'
 
           message = 'Saving information about created network ' \
