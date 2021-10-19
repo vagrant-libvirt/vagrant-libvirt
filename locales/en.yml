@@ -64,6 +64,8 @@ en:
         the minimum box image size of '%{minimum}'.
       forwarding_udp: |-
         Forwarding UDP ports is not supported. Ignoring.
+      creating_domain_console_access_disabled: |-
+        Serial console is being redirected, access via virsh will be disabled.
 
     errors:
       call_chain_error: Invalid action chain, must ensure that '%{require_action}' is called prior to calling '%{current_action}'
@@ -166,6 +168,8 @@ en:
       management_network_required: |-
         Management network can't be disabled when VM use box.
         Please fix your configuration and run vagrant again.
+      serial_cannot_create_path_error: |-
+        Error creating path for serial port output log: %{path}
 
     states:
       paused: |-
