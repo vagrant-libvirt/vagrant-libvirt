@@ -1,7 +1,7 @@
 # Vagrant Libvirt Provider
 
 [![Join the chat at https://gitter.im/vagrant-libvirt/vagrant-libvirt](https://badges.gitter.im/vagrant-libvirt/vagrant-libvirt.svg)](https://gitter.im/vagrant-libvirt/vagrant-libvirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt.svg)](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt)
+[![Build Status](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vagrant-libvirt/vagrant-libvirt/badge.svg?branch=master)](https://coveralls.io/github/vagrant-libvirt/vagrant-libvirt?branch=master)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds a
@@ -233,7 +233,7 @@ installed](http://docs.vagrantup.com/v2/installation/index.html).
 Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
 releases from 1.5 onwards but they are not actively tested.
 
-Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+Check the [unit tests](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.github/workflows/unit-tests.yml)
 for the current list of tested versions.
 
 *We only test with the upstream version!* If you decide to install your distro's
