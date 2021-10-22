@@ -138,12 +138,6 @@ docker pull vagrantlibvirt/vagrant-libvirt:edge
 ```
 ---
 
-Preparing the docker run, only once:
-
-```bash
-mkdir -p ~/.vagrant.d/{boxes,data,tmp}
-```
-
 Running the image:
 ```bash
 docker run -it --rm \
@@ -174,6 +168,14 @@ vagrant(){
 ```
 
 ### Using Podman
+
+Preparing the podman run, only once:
+
+```bash
+mkdir -p ~/.vagrant.d/{boxes,data,tmp}
+```
+_N.B. This is needed until the entrypoint works for podman to only mount the `~/.vagrant.d` directory_
+
 To run with Podman you need to include
 
 ```bash
@@ -181,6 +183,7 @@ To run with Podman you need to include
   --security-opt label=disable \
   -v ~/.vagrant.d/boxes:/vagrant/boxes \
   -v ~/.vagrant.d/data:/vagrant/data \
+  -v ~/.vagrant.d/data:/vagrant/tmp \
 ```
 
 for example:
@@ -192,6 +195,7 @@ vagrant(){
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d/boxes:/vagrant/boxes \
     -v ~/.vagrant.d/data:/vagrant/data \
+    -v ~/.vagrant.d/data:/vagrant/tmp \
     -v $(realpath "${PWD}"):${PWD} \
     -w $(realpath "${PWD}") \
     --network host \
