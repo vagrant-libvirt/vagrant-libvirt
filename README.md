@@ -598,6 +598,8 @@ end
 * `graphics_autoport` - Sets autoport for graphics, Libvirt in this case
   ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and
   "no"
+* `graphics_gl` - Set to `true` to enable OpenGL. Defaults to `true` if
+`video_accel3d` is `true`.
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
   guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for
@@ -608,6 +610,8 @@ end
   "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM
   dedicated to video.  Defaults to 9216.
+* `video_accel3d` - Set to `true` to enable 3D acceleration. Defaults to
+`false`.
 * `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#elementsSound)
   Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use

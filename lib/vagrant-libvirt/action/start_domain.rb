@@ -222,6 +222,24 @@ module VagrantPlugins
                     graphics.attributes['passwd'] = config.graphics_passwd
                   end
                 end
+                graphics_gl = REXML::XPath.first(xml_descr, '/domain/devices/graphics/gl')
+                if graphics_gl.nil?
+                  if config.graphics_gl
+                    graphics_gl = REXML::Element.new('gl', REXML::XPath.first(xml_descr, '/domain/devices/graphics'))
+                    graphics_gl.attributes['enable'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.graphics_gl
+                    if graphics_gl.attributes['enable'] != 'yes'
+                      graphics_gl.attributes['enable'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    graphics_gl.parent.delete_element(graphics_gl)
+                    descr_changed = true
+                  end
+                end
               else
                 # graphics_type = none, remove entire element
                 graphics.parent.delete_element(graphics) unless graphics.nil?
@@ -278,6 +296,24 @@ module VagrantPlugins
                     descr_changed = true
                     video_model.attributes['type'] = config.video_type
                     video_model.attributes['vram'] = config.video_vram
+                  end
+                end
+                video_accel = REXML::XPath.first(xml_descr, '/domain/devices/video/model/acceleration')
+                if video_accel.nil?
+                  if config.video_accel3d
+                    video_accel = REXML::Element.new('acceleration', REXML::XPath.first(xml_descr, '/domain/devices/video/model'))
+                    video_accel.attributes['accel3d'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.video_accel3d
+                    if video_accel.attributes['accel3d'] != 'yes'
+                      video_accel.attributes['accel3d'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    video_accel.parent.delete_element(video_accel)
+                    descr_changed = true
                   end
                 end
               end

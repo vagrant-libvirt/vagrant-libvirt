@@ -78,9 +78,11 @@ module VagrantPlugins
                              else
                                "passwd='#{config.graphics_passwd}'"
                               end
+          @graphics_gl = config.graphics_gl
           @video_type = config.video_type
           @sound_type = config.sound_type
           @video_vram = config.video_vram
+          @video_accel3d = config.video_accel3d
           @keymap = config.keymap
           @kvm_hidden = config.kvm_hidden
 
@@ -299,6 +301,7 @@ module VagrantPlugins
           env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined' : 'Defined'}")
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
+          env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
           env[:ui].info(" -- Sound Type:	#{@sound_type}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
           env[:ui].info(" -- TPM Backend:       #{@tpm_type}")
