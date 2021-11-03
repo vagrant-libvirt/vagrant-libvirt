@@ -62,7 +62,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
           expect(app).to_not receive(:call)
           expect(ui).to receive(:info).with('Waiting for domain to get an IP address...')
           expect(ui).to_not receive(:info).with('Waiting for SSH to become available...')
-          expect(env[:machine].communicate).to_not receive(:ready?)
           expect {subject.call(env) }.to raise_error(::Fog::Errors::TimeoutError)
         end
       end
