@@ -59,7 +59,7 @@ module VagrantPlugins
           command = "ip=$(which ip); ${ip:-/sbin/ip} addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
           result  = ''
           machine.communicate.execute(command) do |type, data|
-            result << data if type == :stdout
+            result += data if type == :stdout
           end
 
           ips = result.chomp.split("\n").uniq
