@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/vagrant-libvirt/vagrant-libvirt](https://badges.gitter.im/vagrant-libvirt/vagrant-libvirt.svg)](https://gitter.im/vagrant-libvirt/vagrant-libvirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vagrant-libvirt/vagrant-libvirt/badge.svg?branch=master)](https://coveralls.io/github/vagrant-libvirt/vagrant-libvirt?branch=master)
+[![Gem Version](https://badge.fury.io/rb/vagrant-libvirt.svg)](https://badge.fury.io/rb/vagrant-libvirt)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds a
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
@@ -48,8 +49,8 @@ can help a lot :-)
   * [USB Device Passthrough](#usb-device-passthrough)
   * [USB Redirector Devices](#usb-redirector-devices)
     * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
-* [Random number generator passthrough](#random-number-generator-passthrough)
 * [Serial Console Devices](#serial-console-devices)
+* [Random number generator passthrough](#random-number-generator-passthrough)
 * [Watchdog device](#watchdog-device)
 * [Smartcard device](#smartcard-device)
 * [Hypervisor Features](#hypervisor-features)
