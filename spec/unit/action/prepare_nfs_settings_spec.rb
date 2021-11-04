@@ -12,6 +12,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::PrepareNFSSettings do
   include_context 'unit'
 
   describe '#call' do
+    before do
+      # avoid requiring nfsd installed to run tests
+      allow(machine.env.host).to receive(:capability?).with(:nfs_installed).and_return(true)
+      allow(machine.env.host).to receive(:capability).with(:nfs_installed).and_return(true)
+    end
+
     context 'when enabled' do
       let(:vagrantfile) do
         <<-EOF
