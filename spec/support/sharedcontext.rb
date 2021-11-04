@@ -36,6 +36,6 @@ shared_context 'unit' do
 
   before (:each) do
     allow(machine).to receive(:guest).and_return(guest)
-    allow(machine).to receive(:communicator).and_return(communicator)
+    allow(machine).to receive(:communicate).and_return(communicator)
   end
 end
