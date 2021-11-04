@@ -9,6 +9,9 @@ Gem::Specification.new do |s|
   s.description   = %q{libvirt provider for Vagrant.}
   s.summary       = %q{libvirt provider for Vagrant.}
   s.homepage      = VagrantPlugins::ProviderLibvirt::HOMEPAGE
+  s.metadata      = {
+    "source_code_uri" => VagrantPlugins::ProviderLibvirt::HOMEPAGE,
+  }
 
   s.files         = Dir.glob("{lib,locales}/**/*") + %w(LICENSE README.md)
   s.executables   = Dir.glob("bin/*.*").map{ |f| File.basename(f) }
