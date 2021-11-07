@@ -22,6 +22,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         .and_return(driver)
       allow(driver).to receive(:get_domain).and_return(domain)
       allow(driver).to receive(:state).and_return(:running)
+      # return some information for domain when needed
+      allow(domain).to receive(:mac).and_return('9C:D5:53:F1:5A:E7')
     end
 
     context 'when machine does not exist' do

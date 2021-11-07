@@ -98,14 +98,14 @@ module VagrantPlugins
       end
 
       def get_domain_ipaddress(machine, domain)
-        if @machine.provider_config.qemu_use_session
-          return get_ipaddress_from_system domain.mac
-        end
-
         # attempt to get ip address from qemu agent
         if @machine.provider_config.qemu_use_agent == true
           @logger.info('Get IP via qemu agent')
           return get_ipaddress_from_qemu_agent(domain, machine.id)
+        end
+
+        if @machine.provider_config.qemu_use_session
+          return get_ipaddress_from_system domain.mac
         end
 
         # Get IP address from dhcp leases table
@@ -168,9 +168,9 @@ module VagrantPlugins
       def get_ipaddress_from_qemu_agent(domain, machine_id)
         ip_address = nil
         addresses = nil
-        dom = system_connection.lookup_domain_by_uuid(machine_id)
+        libvirt_domain = connection.client.lookup_domain_by_uuid(machine_id)
         begin
-          response = dom.qemu_agent_command('{"execute":"guest-network-get-interfaces"}', timeout=10)
+          response = libvirt_domain.qemu_agent_command('{"execute":"guest-network-get-interfaces"}', timeout=10)
           @logger.debug("Got Response from qemu agent")
           @logger.debug(response)
           addresses = JSON.parse(response)
@@ -180,7 +180,7 @@ module VagrantPlugins
 
         unless addresses.nil?
           addresses["return"].each{ |interface|
-            if domain.mac == interface["hardware-address"]
+            if domain.mac.downcase == interface["hardware-address"].downcase
               @logger.debug("Found mathing interface: [%s]" % interface["name"])
               if interface.has_key?("ip-addresses")
                 interface["ip-addresses"].each{ |ip|

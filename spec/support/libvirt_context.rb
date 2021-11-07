@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'fog/libvirt'
+require 'fog/libvirt/models/compute/server'
+require 'libvirt'
 
 shared_context 'libvirt' do
   include_context 'unit'
@@ -8,7 +10,9 @@ shared_context 'libvirt' do
   let(:libvirt_context) { true                      }
   let(:id)              { 'dummy-vagrant_dummy'     }
   let(:connection)      { double('connection') }
-  let(:domain)          { double('domain') }
+  let(:domain)          { instance_double('::Fog::Libvirt::Compute::Server') }
+  let(:libvirt_client)  { instance_double('::Libvirt::Connect') }
+  let(:libvirt_domain)  { instance_double('::Libvirt::Domain') }
   let(:logger)          { double('logger') }
 
   def connection_result(options = {})
@@ -22,11 +26,10 @@ shared_context 'libvirt' do
     stub_const('::Fog::Compute', connection)
 
     # drivers also call vm_exists? during init;
-    allow(connection).to receive(:servers).with(kind_of(String))
+    allow(connection).to receive(:servers)
       .and_return(connection_result(result: nil))
 
-    # return some information for domain when needed
-    allow(domain).to receive(:mac).and_return('9C:D5:53:F1:5A:E7')
+    allow(connection).to receive(:client).and_return(libvirt_client)
 
     allow(machine).to receive(:id).and_return(id)
     allow(Log4r::Logger).to receive(:new).and_return(logger)

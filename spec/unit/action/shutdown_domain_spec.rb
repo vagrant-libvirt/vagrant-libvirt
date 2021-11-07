@@ -50,7 +50,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::ShutdownDomain do
       end
 
       it "should not shutdown" do
-        expect(domain).not_to receive(:shutoff)
+        expect(domain).not_to receive(:poweroff)
         subject.call(env)
       end
 

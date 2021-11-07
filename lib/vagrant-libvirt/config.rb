@@ -970,7 +970,7 @@ module VagrantPlugins
         # Additional QEMU commandline environment variables
         @qemu_env = {} if @qemu_env == UNSET_VALUE
 
-        @qemu_use_agent = true if @qemu_use_agent != UNSET_VALUE
+        @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
         @serials = [{:type => 'pty', :source => nil}] if @serials == []
       end
@@ -986,6 +986,9 @@ module VagrantPlugins
           end
         end
 
+        unless @qemu_use_agent == true || @qemu_use_agent == false
+          errors << "libvirt.qemu_use_agent must be a boolean."
+        end
 
         if @qemu_use_agent == true
           # if qemu agent is used to optain domain ip configuration, at least
