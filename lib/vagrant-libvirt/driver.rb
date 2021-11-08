@@ -61,7 +61,7 @@ module VagrantPlugins
 
         config = @machine.provider_config
 
-        @system_connection = Libvirt::open(config.system_uri)
+        @system_connection = Libvirt::open_read_only(config.system_uri)
         @system_connection
       end
 
