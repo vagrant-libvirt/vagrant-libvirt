@@ -338,6 +338,54 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
+    context '@system_uri' do
+      [
+        # system uri
+        [ # transport and hostname
+          {:uri => "qemu+ssh://localhost/session"},
+          {:uri => "qemu+ssh://localhost/session", :system_uri => "qemu+ssh://localhost/system"},
+        ],
+        [ # explicitly set
+          {:qemu_use_session => true, :system_uri => "custom://remote/system"},
+          {:uri => "qemu:///session", :system_uri => "custom://remote/system"},
+        ],
+      ].each do |inputs, outputs, options|
+        opts = {}
+        opts.merge!(options) if options
+
+        it "should handle inputs #{inputs} with env (#{opts[:env]})" do
+          # allow some of these to fail for now if marked as such
+          if !opts[:allow_failure].nil?
+            pending(opts[:allow_failure])
+          end
+
+          if !opts[:setup].nil?
+            opts[:setup].apply_binding(binding)
+          end
+
+          inputs.each do |k, v|
+            subject.instance_variable_set("@#{k}", v)
+          end
+
+          if !opts[:env].nil?
+            opts[:env].each do |k, v|
+              fake_env[k] = v
+            end
+          end
+
+          subject.finalize!
+
+          # ensure failed output indicates which settings are incorrect in the failed test
+          got = subject.instance_variables.each_with_object({}) do |name, hash|
+            if outputs.key?(name.to_s[1..-1].to_sym)
+              hash["#{name.to_s[1..-1]}".to_sym] =subject.instance_variable_get(name)
+            end
+          end
+          expect(got).to eq(outputs)
+        end
+      end
+    end
+
     context '@proxy_command' do
       before(:example) do
         stub_const("ENV", fake_env)
