@@ -840,7 +840,6 @@ module VagrantPlugins
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
-        @system_uri      = 'qemu:///system' if @system_uri == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
@@ -1065,6 +1064,10 @@ module VagrantPlugins
       def finalize_from_uri
         # Parse uri to extract individual components
         uri = _parse_uri(@uri)
+
+        system_uri = uri.dup
+        system_uri.path = '/system'
+        @system_uri = system_uri.to_s if @system_uri == UNSET_VALUE
 
         # only set @connect_via_ssh if not explicitly to avoid overriding
         # and allow an error to occur if the @uri and @connect_via_ssh disagree
