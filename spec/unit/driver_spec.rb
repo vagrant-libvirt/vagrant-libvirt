@@ -80,15 +80,15 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     # system_uri should be 'qemu+ssh://user@remote1/system'
     # and not 'qemu:///system'.
     it 'should configure a separate connection per machine' do
-      expect(Libvirt).to receive(:open_read_only).with('qemu:///system').and_return(system_connection1)
-      expect(Libvirt).to receive(:open_read_only).with('qemu:///system').and_return(system_connection2)
+      expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection1)
+      expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://vms@remote2/system').and_return(system_connection2)
 
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
       expect(machine2.provider.driver.system_connection).to eq(system_connection2)
     end
 
     it 'should configure the connection once' do
-      expect(Libvirt).to receive(:open_read_only).with('qemu:///system').and_return(system_connection1)
+      expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection1)
 
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
       expect(machine.provider.driver.system_connection).to eq(system_connection1)
