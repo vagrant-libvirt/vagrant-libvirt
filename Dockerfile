@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.0-experimental
-ARG VAGRANT_VERSION=2.2.18
+ARG VAGRANT_VERSION=2.2.19
 
 
 FROM ubuntu:bionic as base
