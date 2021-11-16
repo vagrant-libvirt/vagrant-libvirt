@@ -40,6 +40,10 @@ group :development do
     gem 'rexml'
   end
 
+  if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.3.0')
+    gem 'mime-types', '< 3.4.0'
+  end
+
   gem 'pry'
 end
 
