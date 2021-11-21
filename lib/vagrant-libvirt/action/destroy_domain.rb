@@ -128,12 +128,7 @@ module VagrantPlugins
               else
                 # otherwise fallback to find the disk by device if specified by user
                 # and finally index counting with offset and hope the match is correct
-                if offset > 1
-                  # Currently disk devices are resolved incorrectly if the box has more than one device
-                  # this should be solved subsequently by delaying the resolution, however for now
-                  # default to using offset when more than one box volume.
-                  domain_disk = disks_xml[offset + index]
-                elsif !disk[:device].nil?
+                if !disk[:device].nil?
                   domain_disk = REXML::XPath.match(disks_xml, './target[@dev="' + disk[:device] + '"]').first
                   domain_disk = domain_disk.parent if !domain_disk.nil?
                 else

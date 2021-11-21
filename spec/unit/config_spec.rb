@@ -606,11 +606,11 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
 
         context 'without devices given' do
-          it 'should merge disks with different devices assigned automatically' do
+          it 'should merge disks without assigning devices automatically' do
             one.storage(:file)
             two.storage(:file)
             subject.finalize!
-            expect(subject.disks).to include(include(device: 'vdb'),
+            expect(subject.disks).to_not include(include(device: 'vdb'),
                                              include(device: 'vdc'))
           end
         end
