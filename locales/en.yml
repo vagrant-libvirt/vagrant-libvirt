@@ -58,6 +58,17 @@ en:
     remove_stale_volume: |-
       Remove stale volume...
 
+    destroy:
+      obsolete_method: |
+        Destroying machine that was originally created without device aliases (pre 0.6.0), using fallback approach.
+      unexpected_volumes: |
+        Unexpected number of volumes detected, possibly additional volumes attached outside of vagrant-libvirt.
+        Attempting to handle this correctly, however may experience unexpected behaviour in the domain destroy.
+      expected_removal_mismatch: |
+        mismatch of volumes associated with box to number removed, may be stray box volumes left
+      box_metadata_unavailable: |
+        box metadata not available to get volume list during destroy, assuming inferred list
+
     warnings:
       ignoring_virtual_size_too_small: |-
         Ignoring requested virtual disk size of '%{requested}' as it is below
