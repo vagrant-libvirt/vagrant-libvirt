@@ -18,6 +18,14 @@ module VagrantPlugins
         error_key(:package_not_supported)
       end
 
+      class DuplicateDiskDevice < VagrantLibvirtError
+        error_key(:duplicate_disk_device)
+      end
+
+      class NoDiskDeviceAvailable < VagrantLibvirtError
+        error_key(:no_disk_device_available)
+      end
+
       # Storage pools and volumes exceptions
       class NoStoragePool < VagrantLibvirtError
         error_key(:no_storage_pool)

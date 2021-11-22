@@ -2,6 +2,8 @@
 
 require 'log4r'
 
+require 'vagrant-libvirt/util/resolvers'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -140,6 +142,8 @@ module VagrantPlugins
 
           @os_type = 'hvm'
 
+          resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=@disk_device[0..1])
+
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
             if @snapshot_pool_name != @storage_pool_name
@@ -147,6 +151,12 @@ module VagrantPlugins
             else
                 pool_name = @storage_pool_name
             end
+
+            # special handling for domain volume
+            env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
+
+            resolver.resolve!(env[:box_volumes])
+
             @logger.debug "Search for volumes in pool: #{pool_name}"
             env[:box_volumes].each_index do |index|
               suffix_index = index > 0 ? "_#{index}" : ''
@@ -154,14 +164,16 @@ module VagrantPlugins
                 name: "#{@name}#{suffix_index}.img"
               ).find { |x| x.pool_name == pool_name }
               raise Errors::DomainVolumeExists if domain_volume.nil?
+
               @domain_volumes.push({
-                :dev => (index+1).vdev.to_s,
+                :dev => env[:box_volumes][index][:device],
                 :cache => @domain_volume_cache,
                 :bus => @disk_bus,
                 :path => domain_volume.path,
                 :virtual_size => env[:box_volumes][index][:virtual_size]
               })
-              end
+            end
+
           end
 
           # If we have a box, take the path from the domain volume and set our storage_prefix.
@@ -173,19 +185,7 @@ module VagrantPlugins
             storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
 
-          @serials = config.serials
-
-          @serials.each do |serial|
-            next unless serial[:source] && serial[:source][:path]
-
-            dir = File.dirname(serial[:source][:path])
-            begin
-              FileUtils.mkdir_p(dir)
-            rescue ::Errno::EACCES
-              raise Errors::SerialCannotCreatePathError,
-                    path: dir
-            end
-          end
+          resolver.resolve!(@disks)
 
           @disks.each do |disk|
             disk[:path] ||= _disk_name(@name, disk)
@@ -232,6 +232,20 @@ module VagrantPlugins
                 raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
+            end
+          end
+
+          @serials = config.serials
+
+          @serials.each do |serial|
+            next unless serial[:source] && serial[:source][:path]
+
+            dir = File.dirname(serial[:source][:path])
+            begin
+              FileUtils.mkdir_p(dir)
+            rescue ::Errno::EACCES
+              raise Errors::SerialCannotCreatePathError,
+                    path: dir
             end
           end
 
@@ -284,7 +298,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           @domain_volumes.each do |volume|
-            env[:ui].info(" -- Image(#{volume[:device]}):     #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
+            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
           end
 
           if not @disk_driver_opts.empty?

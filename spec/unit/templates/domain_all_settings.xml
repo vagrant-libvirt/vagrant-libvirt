@@ -59,13 +59,13 @@
       <alias name='ua-disk-volume-0'/>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/test-disk1.qcow2'/>
-      <target dev='vdb' bus='virtio'/>
+      <target dev='vdc' bus='virtio'/>
     </disk>
     <disk type='file' device='disk'>
       <alias name='ua-disk-volume-1'/>
       <driver name='qemu' type='qcow2' cache='default' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
       <source file='/var/lib/libvirt/images/test-disk2.qcow2'/>
-      <target dev='vdc' bus='virtio'/>
+      <target dev='vdd' bus='virtio'/>
     </disk>
 
     <disk type='file' device='cdrom'>

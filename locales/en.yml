@@ -81,6 +81,8 @@ en:
     errors:
       call_chain_error: Invalid action chain, must ensure that '%{require_action}' is called prior to calling '%{current_action}'
       package_not_supported: No support for package with Libvirt. Create box manually.
+      duplicate_disk_device: Disk with details '%{new_disk}' duplicates :device attribute of disk '%{existing_disk}'
+      no_disk_device_available: All available devices allocated under '%{prefix}x', try a different type
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:

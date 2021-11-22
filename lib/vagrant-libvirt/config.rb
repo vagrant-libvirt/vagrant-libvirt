@@ -4,15 +4,8 @@ require 'cgi'
 
 require 'vagrant'
 
-class Numeric
-  Alphabet = ('a'..'z').to_a
-  def vdev
-    s = String.new
-    q = self
-    (q, r = (q - 1).divmod(26)) && s.prepend(Alphabet[r]) until q.zero?
-    "vd#{s}"
-  end
-end
+require 'vagrant-libvirt/errors'
+require 'vagrant-libvirt/util/resolvers'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -351,17 +344,6 @@ module VagrantPlugins
 
       def boot(device)
         @boot_order << device # append
-      end
-
-      def _get_device(disks)
-        # skip existing devices and also the first one (vda)
-        exist = disks.collect { |x| x[:device] } + [1.vdev.to_s]
-        skip = 1 # we're 1 based, not 0 based...
-        loop do
-          dev = skip.vdev # get lettered device
-          return dev unless exist.include?(dev)
-          skip += 1
-        end
       end
 
       def _get_cdrom_dev(cdroms)
@@ -914,10 +896,6 @@ module VagrantPlugins
 
         # Storage
         @disks = [] if @disks == UNSET_VALUE
-        @disks.map! do |disk|
-          disk[:device] = _get_device(@disks) if disk[:device].nil?
-          disk
-        end
         @cdroms = [] if @cdroms == UNSET_VALUE
         @cdroms.map! do |cdrom|
           cdrom[:dev] = _get_cdrom_dev(@cdroms) if cdrom[:dev].nil?
@@ -998,7 +976,6 @@ module VagrantPlugins
           end
         end
 
-
         machine.provider_config.disks.each do |disk|
           if disk[:path] && (disk[:path][0] == '/')
             errors << "absolute volume paths like '#{disk[:path]}' not yet supported"
@@ -1009,6 +986,16 @@ module VagrantPlugins
           if serial[:source] and serial[:source][:path].nil?
             errors << "serial :source requires :path to be defined"
           end
+        end
+
+        # this won't be able to fully resolve the disks until the box has
+        # been downloaded and any devices that need to be assigned to the
+        # disks contained have been allocated
+        disk_resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new
+        begin
+          disk_resolver.resolve(machine.provider_config.disks)
+        rescue Errors::VagrantLibvirtError => e
+          errors << "#{e}"
         end
 
         machine.config.vm.networks.each do |_type, opts|
