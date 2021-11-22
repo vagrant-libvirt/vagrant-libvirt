@@ -75,11 +75,7 @@ module VagrantPlugins
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
           @graphics_ip = config.graphics_ip
-          @graphics_passwd = if config.graphics_passwd.to_s.empty?
-                               ''
-                             else
-                               "passwd='#{config.graphics_passwd}'"
-                              end
+          @graphics_passwd = config.graphics_passwd
           @graphics_gl = config.graphics_gl
           @video_type = config.video_type
           @sound_type = config.sound_type
@@ -312,7 +308,7 @@ module VagrantPlugins
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
           env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
           env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
-          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined' : 'Defined'}")
+          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")

@@ -5,25 +5,21 @@
   <uuid></uuid>
   <memory></memory>
   <vcpu cpuset='1-4,^3,6'>1</vcpu>
-
-
   <cpu mode='custom'>
-      <model fallback='allow'>qemu64</model>
-        <feature name='AAA' policy='required'/>
-        <topology sockets='1' cores='3' threads='2'/>
+    <model fallback='allow'>qemu64</model>
+    <feature name='AAA' policy='required'/>
+    <topology sockets='1' cores='3' threads='2'/>
   </cpu>
-
   <numatune>
     <memory nodeset='1-4,^3,6'/>
   </numatune>
   <cputune>
     <shares>1024</shares>
   </cputune>
-
   <os>
-        <type arch='x86_64' machine='pc-compatible'>hvm</type>
-        <loader readonly='yes' type='rom'>/efi/loader</loader>
-      <bootmenu enable='yes'/>
+    <type arch='x86_64' machine='pc-compatible'>hvm</type>
+    <loader readonly='yes' type='rom'>/efi/loader</loader>
+    <bootmenu enable='yes'/>
     <kernel></kernel>
     <initrd></initrd>
     <cmdline></cmdline>
@@ -67,7 +63,6 @@
       <source file='/var/lib/libvirt/images/test-disk2.qcow2'/>
       <target dev='vdd' bus='virtio'/>
     </disk>
-
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw' />
       <source file=''/>
@@ -80,7 +75,6 @@
       <target dev='hdb' bus='ide'/>
       <readonly/>
     </disk>
-
     <serial type='file'>
       <source path='/var/log/vm_consoles/machine.log'/>
       <target port='0'/>
@@ -89,72 +83,52 @@
       <source path='/var/log/vm_consoles/machine.log'/>
       <target port='0'/>
     </console>
-
-  <channel type='unix' >
-      <target type='virtio'
-               name="org.qemu.guest_agent.0"
-      />
-  </channel>
-  <channel type='spicevmc' >
-      <target type='virtio'
-               name="com.redhat.spice.0"
-      />
-  </channel>
-  <channel type='unix' >
-      <source
-               path="/tmp/foo"
-      />
-      <target type='guestfwd'
-               address="192.0.2.42"
-               port="4242"
-      />
-  </channel>
-
+    <channel type='unix' >
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
+    <channel type='spicevmc' >
+      <target type='virtio' name='com.redhat.spice.0'/>
+    </channel>
+    <channel type='unix' >
+      <source path='/tmp/foo'/>
+      <target type='guestfwd' address='192.0.2.42' port='4242'/>
+    </channel>
     <input type='mouse' bus='ps2'/>
-
-      <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'  >
-        <gl enable='yes' />
-      </graphics>
-      <video>
-        <model type='cirrus' vram='9216' heads='1'>
-          <acceleration accel3d='yes'/>
-        </model>
-      </video>
-      <rng model='virtio'>
-        <backend model='random'>/dev/random</backend>
-      </rng>
-      <hostdev mode='subsystem' type='pci' managed='yes'>
-        <source>
-          <address domain='0x0000'
-            bus='0x06'
-            slot='0x12'
-            function='0x5'/>
-        </source>
-      </hostdev>
-      <hostdev mode='subsystem' type='pci' managed='yes'>
-        <source>
-          <address domain='0x0001'
-            bus='0x03'
-            slot='0x00'
-            function='0x0'/>
-        </source>
-      </hostdev>
-      <hostdev mode='subsystem' type='usb'>
-        <source startupPolicy='mandatory'>
-          <vendor id='0x1234'/>
-          <product id='0xabcd'/>
-          <address bus='1' device='2'/>
-        </source>
-      </hostdev>
-        <redirdev bus='usb' type='tcp'>
-        </redirdev>
-        <redirfilter>
-          <usbdev class='0x0b' vendor='0x08e6' product='0x3437' version='2.00' allow='yes'/>
-        </redirfilter>
+    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
+      <gl enable='yes'/>
+    </graphics>
+    <video>
+      <model type='cirrus' vram='9216' heads='1'>
+	<acceleration accel3d='yes'/>
+      </model>
+    </video>
+    <rng model='virtio'>
+      <backend model='random'>/dev/random</backend>
+    </rng>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+	<address domain='0x0000' bus='0x06' slot='0x12' function='0x5'/>
+      </source>
+    </hostdev>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+	<address domain='0x0001' bus='0x03' slot='0x00' function='0x0'/>
+      </source>
+    </hostdev>
+    <hostdev mode='subsystem' type='usb'>
+      <source startupPolicy='mandatory'>
+	<vendor id='0x1234'/>
+	<product id='0xabcd'/>
+	<address bus='1' device='2'/>
+      </source>
+    </hostdev>
+    <redirdev bus='usb' type='tcp'>
+    </redirdev>
+    <redirfilter>
+      <usbdev class='0x0b' vendor='0x08e6' product='0x3437' version='2.00' allow='yes'/>
+    </redirfilter>
     <watchdog model='i6300esb' action='reset'/>
-
-        <smartcard mode='passthrough' type='spicevmc'/>
-
+    <smartcard mode='passthrough' type='spicevmc'/>
     <tpm model='tpm-tis'>
       <backend type='passthrough'>
         <device path='/dev/tpm0'/>
@@ -162,7 +136,6 @@
     </tpm>
     <controller type='usb' model='nec-xhci' ports="4" />
   </devices>
-
   <qemu:commandline>
     <qemu:arg value='-device'/>
     <qemu:arg value='dummy-device'/>
