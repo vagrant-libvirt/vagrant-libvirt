@@ -30,6 +30,15 @@ module VagrantPlugins
 
         def call(env)
           if env[:machine].provider_config.qemu_use_session
+            # Get a list of all (active and inactive) Libvirt networks. This
+            # triggers a side effect to ensure networking is fully available
+            # for VMs using sessions. It is likely that this should be done
+            # to determine the correct virtual device for the management
+            # network for sessions instead of assuming the default of virbr0.
+            @available_networks = libvirt_networks(
+              env[:machine].provider.driver.system_connection
+            )
+
             @app.call(env)
             return
           end
