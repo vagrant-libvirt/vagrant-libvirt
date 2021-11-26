@@ -531,6 +531,47 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
     end
+
+    context '@channels' do
+      it 'should be empty by default' do
+        subject.finalize!
+
+        expect(subject.channels).to be_empty
+      end
+
+      context 'when qemu_use_agent is set' do
+        before do
+          subject.qemu_use_agent = true
+        end
+
+        it 'should inject a qemu agent channel' do
+          subject.finalize!
+
+          expect(subject.channels).to_not be_empty
+          expect(subject.channels).to match([a_hash_including({:target_name => 'org.qemu.guest_agent.0'})])
+        end
+
+        context 'when agent channel already added' do
+          it 'should not modify the channels' do
+            subject.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+
+            subject.finalize!
+
+            expect(subject.channels.length).to eq(1)
+          end
+
+          context 'when agent channel explicitly disbaled' do
+            it 'should not include an agent channel' do
+              subject.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :disabled => true
+
+              subject.finalize!
+
+              expect(subject.channels).to be_empty
+            end
+          end
+        end
+      end
+    end
   end
 
   def assert_invalid

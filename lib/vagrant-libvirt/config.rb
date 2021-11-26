@@ -498,7 +498,9 @@ module VagrantPlugins
                        target_address: options[:target_address],
                        target_name: options[:target_name],
                        target_port: options[:target_port],
-                       target_type: options[:target_type])
+                       target_type: options[:target_type],
+                       disabled: options[:disabled],
+                      )
       end
 
       def random(options = {})
@@ -906,7 +908,18 @@ module VagrantPlugins
         @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
 
         # Channels
-        @channels = [] if @channels == UNSET_VALUE
+        if @channels == UNSET_VALUE
+          @channels = []
+          if @qemu_use_agent == true
+            if @channels.all? { |channel| !channel.fetch(:target_name, '').start_with?('org.qemu.guest_agent.') }
+              channel(:type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio')
+            end
+          end
+        end
+
+        # filter channels of anything explicitly disabled so it's possible to inject an entry to
+        # avoid the automatic addition of the guest_agent above, and disable it from subsequent use.
+        @channels = @channels.reject { |channel| channel[:disabled] }.tap {|channel| channel.delete(:disabled) }
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE

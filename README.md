@@ -999,6 +999,19 @@ if it detects an attached channel during boot.
 * `qemu_use_agent` - false by default, if set to true, attempt to extract configured
   ip address via qemu agent.
 
+By default if `qemu_use_agent` is set to `true` the code will automatically
+inject a suitable channel unless there already exists an entry with a
+`:target_name` matching `'org.qemu.guest_agent.'`.
+Alternatively if setting `qemu_use_agent` but, needing to disable the addition
+of the channel, simply use a disabled flag as follows:
+```ruby
+Vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :disabled => true
+  end
+end
+```
+
 To use the management network interface with an external dhcp service you need
 to setup a bridged host network manually and define it via
 `management_network_name` in your Vagrantfile.
