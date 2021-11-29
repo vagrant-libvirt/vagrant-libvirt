@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'nokogiri'
 
@@ -86,9 +88,13 @@ module VagrantPlugins
 
         def search_network(nets, xml)
           str = '/domain/devices/interface'
-          str += "[(@type='network' or @type='udp' or @type='bridge')"
+          str += "[(@type='network' or @type='udp' or @type='bridge' or @type='direct')"
           unless nets.empty?
-            str += " and source[@network='#{nets.first['network']}']"
+            net = nets.first
+            network = net['network']
+            dev = net['dev']
+            str += " and source[@network='#{network}']" if network
+            str += " and source[@dev='#{dev}']" if dev
           end
           str += ']'
           @logger.debug(str)

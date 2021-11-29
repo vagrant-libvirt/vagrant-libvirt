@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Ripped from http://libvirt.org/html/libvirt-virterror.html#virErrorNumber.
 module VagrantPlugins
   module ProviderLibvirt

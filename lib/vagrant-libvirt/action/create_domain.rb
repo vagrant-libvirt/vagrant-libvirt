@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 require 'log4r'
+
+require 'vagrant-libvirt/util/resolvers'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -33,7 +37,8 @@ module VagrantPlugins
           # Gather some info about domain
           @name = env[:domain_name]
           @title = config.title
-          @description = config.description
+          vagrantfile = File.join(env[:root_path], (env[:vagrantfile_name] || "Vagrantfile"))
+          @description = !config.description.empty? ? config.description : "Source: #{vagrantfile}"
           @uuid = config.uuid
           @cpus = config.cpus.to_i
           @cpuset = config.cpuset
@@ -70,14 +75,12 @@ module VagrantPlugins
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
           @graphics_ip = config.graphics_ip
-          @graphics_passwd = if config.graphics_passwd.to_s.empty?
-                               ''
-                             else
-                               "passwd='#{config.graphics_passwd}'"
-                              end
+          @graphics_passwd = config.graphics_passwd
+          @graphics_gl = config.graphics_gl
           @video_type = config.video_type
           @sound_type = config.sound_type
           @video_vram = config.video_vram
+          @video_accel3d = config.video_accel3d
           @keymap = config.keymap
           @kvm_hidden = config.kvm_hidden
 
@@ -92,6 +95,7 @@ module VagrantPlugins
           # Storage
           @storage_pool_name = config.storage_pool_name
           @snapshot_pool_name = config.snapshot_pool_name
+          @domain_volumes = []
           @disks = config.disks
           @cdroms = config.cdroms
 
@@ -134,6 +138,8 @@ module VagrantPlugins
 
           @os_type = 'hvm'
 
+          resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=@disk_device[0..1])
+
           # Get path to domain image from the storage pool selected if we have a box.
           if env[:machine].config.vm.box
             if @snapshot_pool_name != @storage_pool_name
@@ -141,22 +147,41 @@ module VagrantPlugins
             else
                 pool_name = @storage_pool_name
             end
-            @logger.debug "Search for volume in pool: #{pool_name}"
-            domain_volume = env[:machine].provider.driver.connection.volumes.all(
-              name: "#{@name}.img"
-            ).find { |x| x.pool_name == pool_name }
-            raise Errors::DomainVolumeExists if domain_volume.nil?
-            @domain_volume_path = domain_volume.path
+
+            # special handling for domain volume
+            env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
+
+            resolver.resolve!(env[:box_volumes])
+
+            @logger.debug "Search for volumes in pool: #{pool_name}"
+            env[:box_volumes].each_index do |index|
+              suffix_index = index > 0 ? "_#{index}" : ''
+              domain_volume = env[:machine].provider.driver.connection.volumes.all(
+                name: "#{@name}#{suffix_index}.img"
+              ).find { |x| x.pool_name == pool_name }
+              raise Errors::DomainVolumeExists if domain_volume.nil?
+
+              @domain_volumes.push({
+                :dev => env[:box_volumes][index][:device],
+                :cache => @domain_volume_cache,
+                :bus => @disk_bus,
+                :path => domain_volume.path,
+                :virtual_size => env[:box_volumes][index][:virtual_size]
+              })
+            end
+
           end
 
           # If we have a box, take the path from the domain volume and set our storage_prefix.
           # If not, we dump the storage pool xml to get its defined path.
           # the default storage prefix is typically: /var/lib/libvirt/images/
           if env[:machine].config.vm.box
-            storage_prefix = File.dirname(@domain_volume_path) + '/' # steal
+            storage_prefix = File.dirname(@domain_volumes[0][:path]) + '/' # steal
           else
             storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
           end
+
+          resolver.resolve!(@disks)
 
           @disks.each do |disk|
             disk[:path] ||= _disk_name(@name, disk)
@@ -188,7 +213,7 @@ module VagrantPlugins
                 path: disk[:absolute_path],
                 capacity: disk[:size],
                 owner: storage_uid(env),
-                group: storage_uid(env),
+                group: storage_gid(env),
                 #:allocation => ?,
                 pool_name: disk_pool_name
               )
@@ -203,6 +228,20 @@ module VagrantPlugins
                 raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
+            end
+          end
+
+          @serials = config.serials
+
+          @serials.each do |serial|
+            next unless serial[:source] && serial[:source][:path]
+
+            dir = File.dirname(serial[:source][:path])
+            begin
+              FileUtils.mkdir_p(dir)
+            rescue ::Errno::EACCES
+              raise Errors::SerialCannotCreatePathError,
+                    path: dir
             end
           end
 
@@ -227,7 +266,11 @@ module VagrantPlugins
             env[:ui].info(" -- Feature:           #{feature}")
           end
           @features_hyperv.each do |feature|
-            env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
+            if feature[:name] == 'spinlocks'
+              env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}, retries=#{feature[:retries]}")
+            else
+              env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
+            end
           end
           env[:ui].info(" -- Clock offset:      #{@clock_offset}")
           @clock_timers.each do |timer|
@@ -250,7 +293,9 @@ module VagrantPlugins
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
-          env[:ui].info(" -- Image:             #{@domain_volume_path} (#{env[:box_virtual_size]}G)")
+          @domain_volumes.each do |volume|
+            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
+          end
 
           if not @disk_driver_opts.empty?
             env[:ui].info(" -- Disk driver opts:  #{@disk_driver_opts.reject { |k,v| v.nil? }.map { |k,v| "#{k}='#{v}'"}.join(' ')}")
@@ -263,9 +308,10 @@ module VagrantPlugins
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
           env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
           env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
-          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.empty? ? 'Not defined' : 'Defined'}")
+          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
+          env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
           env[:ui].info(" -- Sound Type:	#{@sound_type}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
           env[:ui].info(" -- TPM Backend:       #{@tpm_type}")
@@ -360,6 +406,13 @@ module VagrantPlugins
             env[:ui].info(" -- smartcard device:  mode=#{@smartcard_dev[:mode]}, type=#{@smartcard_dev[:type]}")
           end
 
+          @serials.each_with_index do |serial, port|
+            if serial[:source]
+              env[:ui].info(" -- SERIAL(COM#{port}:       redirect to #{serial[:source][:path]}")
+              env[:ui].warn(I18n.t('vagrant_libvirt.warnings.creating_domain_console_access_disabled'))
+            end
+          end
+
           unless @qemu_args.empty?
             env[:ui].info(' -- Command line args: ')
             @qemu_args.each do |arg|
@@ -381,9 +434,14 @@ module VagrantPlugins
           # Create Libvirt domain.
           # Is there a way to tell fog to create new domain with already
           # existing volume? Use domain creation from template..
+          xml = to_xml('domain')
+          @logger.debug {
+            "Creating Domain with XML:\n#{xml}"
+          }
+
           begin
             server = env[:machine].provider.driver.connection.servers.create(
-              xml: to_xml('domain')
+              xml: xml
             )
           rescue Fog::Errors::Error => e
             raise Errors::FogCreateServerError, error_message: e.message

@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 require 'vagrant/action/builder'
 require 'log4r'
 
 module VagrantPlugins
   module ProviderLibvirt
     module Action
-      # Include the built-in modules so we can use them as top-level things.
+      # Include the built-in & general modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
+      include Vagrant::Action::General
       @logger = Log4r::Logger.new('vagrant_libvirt::action')
 
       # remove image from Libvirt storage pool
@@ -49,6 +52,7 @@ module VagrantPlugins
 
                 b2.use StartDomain
                 b2.use WaitTillUp
+                b2.use WaitForCommunicator, [:running]
 
                 b2.use ForwardPorts
                 b2.use SetHostname
@@ -107,6 +111,7 @@ module VagrantPlugins
                 # Machine should gain IP address when comming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
+                b3.use WaitForCommunicator, [:running]
 
                 b3.use ForwardPorts
                 b3.use PrepareNFSSettings
@@ -134,11 +139,21 @@ module VagrantPlugins
               b3.use ResumeDomain if env2[:result]
             end
 
+            # only perform shutdown if VM is running
             b2.use Call, IsRunning do |env2, b3|
               next unless env2[:result]
 
-              # VM is running, halt it.
-              b3.use HaltDomain
+              b3.use StartShutdownTimer
+              b3.use Call, GracefulHalt, :shutoff, :running do |env3, b4|
+                if !env3[:result]
+                  b4.use Call, ShutdownDomain, :shutoff, :running do |env4, b5|
+                    if !env4[:result]
+                       b5.use HaltDomain
+                    end
+                  end
+                end
+              end
+
             end
           end
         end
@@ -165,7 +180,18 @@ module VagrantPlugins
       def self.action_package
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
-          b.use PackageDomain
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              b2.use MessageNotCreated
+              next
+            end
+
+            b2.use PackageSetupFolders
+            b2.use PackageSetupFiles
+            b2.use action_halt
+            b2.use Package
+            b2.use PackageDomain
+          end
         end
       end
 
@@ -179,6 +205,7 @@ module VagrantPlugins
               # Try to remove stale volumes anyway
               b2.use SetNameOfDomain
               b2.use RemoveStaleVolume if env[:machine].config.vm.box
+              b2.use CleanMachineFolder, quiet: true
               b2.use MessageNotCreated unless env[:result]
 
               next
@@ -186,11 +213,12 @@ module VagrantPlugins
 
             b2.use Call, DestroyConfirm do |env2, b3|
               if env2[:result]
+                b3.use ProvisionerCleanup, :before
                 b3.use ClearForwardedPorts
                 b3.use PruneNFSExports
                 b3.use DestroyDomain
                 b3.use DestroyNetworks
-                b3.use ProvisionerCleanup
+                b3.use CleanMachineFolder
               else
                 b3.use MessageWillNotDestroy
               end
@@ -205,14 +233,12 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             unless env[:result]
-              b2.use MessageNotCreated
-              next
+              raise Vagrant::Errors::VMNotCreatedError
             end
 
             b2.use Call, IsRunning do |env2, b3|
               unless env2[:result]
-                b3.use MessageNotRunning
-                next
+                raise Vagrant::Errors::VMNotRunningError
               end
 
               b3.use SSHExec
@@ -302,14 +328,12 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             unless env[:result]
-              b2.use MessageNotCreated
-              next
+              raise Vagrant::Errors::VMNotCreatedError
             end
 
             b2.use Call, IsRunning do |env2, b3|
               unless env2[:result]
-                b3.use MessageNotRunning
-                next
+                raise Vagrant::Errors::VMNotRunningError
               end
 
               b3.use SSHRun
@@ -324,11 +348,14 @@ module VagrantPlugins
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
       autoload :CreateNetworks, action_root.join('create_networks')
+      autoload :CleanMachineFolder, action_root.join('clean_machine_folder')
       autoload :DestroyDomain, action_root.join('destroy_domain')
       autoload :DestroyNetworks, action_root.join('destroy_networks')
       autoload :ForwardPorts, action_root.join('forward_ports')
       autoload :ClearForwardedPorts, action_root.join('forward_ports')
       autoload :HaltDomain, action_root.join('halt_domain')
+      autoload :StartShutdownTimer, action_root.join('shutdown_domain')
+      autoload :ShutdownDomain, action_root.join('shutdown_domain')
       autoload :HandleBoxImage, action_root.join('handle_box_image')
       autoload :HandleStoragePool, action_root.join('handle_storage_pool')
       autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
@@ -361,11 +388,15 @@ module VagrantPlugins
       autoload :WaitTillUp, action_root.join('wait_till_up')
       autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
 
+      autoload :Package, 'vagrant/action/general/package'
+      autoload :PackageSetupFiles, 'vagrant/action/general/package_setup_files'
+      autoload :PackageSetupFolders, 'vagrant/action/general/package_setup_folders'
       autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
       autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
       autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
+      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
     end
   end
 end

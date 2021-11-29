@@ -15,6 +15,10 @@ en:
     manual_resize_required: |-
       Created volume larger than box defaults, will require manual resizing of
       filesystems to utilize.
+    box_version_missing: |-
+      No verison detected for %{name}, using timestamp to watch for modifications. Consider
+      generating a local metadata for the box with a version to allow better handling.
+      See https://www.vagrantup.com/docs/boxes/format#box-metadata for further details.
     uploading_volume: |-
       Uploading base box image as volume into Libvirt storage...
     creating_domain_volume: |-
@@ -29,6 +33,8 @@ en:
       Poweroff domain.
     destroy_domain: |-
       Removing domain...
+    shutdown_domain: |-
+      Attempting direct shutdown of domain...
     halt_domain: |-
       Halting domain...
     resuming_domain: |-
@@ -52,15 +58,31 @@ en:
     remove_stale_volume: |-
       Remove stale volume...
 
+    destroy:
+      obsolete_method: |
+        Destroying machine that was originally created without device aliases (pre 0.6.0), using fallback approach.
+      unexpected_volumes: |
+        Unexpected number of volumes detected, possibly additional volumes attached outside of vagrant-libvirt.
+        Attempting to handle this correctly, however may experience unexpected behaviour in the domain destroy.
+      expected_removal_mismatch: |
+        mismatch of volumes associated with box to number removed, may be stray box volumes left
+      box_metadata_unavailable: |
+        box metadata not available to get volume list during destroy, assuming inferred list
+
     warnings:
       ignoring_virtual_size_too_small: |-
         Ignoring requested virtual disk size of '%{requested}' as it is below
         the minimum box image size of '%{minimum}'.
       forwarding_udp: |-
         Forwarding UDP ports is not supported. Ignoring.
+      creating_domain_console_access_disabled: |-
+        Serial console is being redirected, access via virsh will be disabled.
 
     errors:
+      call_chain_error: Invalid action chain, must ensure that '%{require_action}' is called prior to calling '%{current_action}'
       package_not_supported: No support for package with Libvirt. Create box manually.
+      duplicate_disk_device: Disk with details '%{new_disk}' duplicates :device attribute of disk '%{existing_disk}'
+      no_disk_device_available: All available devices allocated under '%{prefix}x', try a different type
       fog_error: |-
         There was an error talking to Libvirt. The error message is shown
         below:
@@ -72,6 +94,14 @@ en:
       no_storage_pool: |-
         No usable storage pool found! Please check if storage pool is
         created and available.
+      box_format_duplicate_volume: |-
+        Encountered a duplicate volume name '%{volume}' generated for disk '%{new_disk}', due to already allocated for disk '%{orig_disk}'.
+      box_format_missing_attribute: |-
+        Invalid box metadata, missing expected attribute: '%{attribute}'
+      bad_box_image: |-
+        Received error when query the box image details from '%{image}'.
+        Stdout: %{out}
+        Stderr: %{err}
       no_box_volume: |-
         Volume for box image is missing in storage pools. Try to run vagrant
         again, or check if storage volume is accessible.
@@ -92,10 +122,14 @@ en:
         Error: %{stderr}
       no_box_virtual_size: |-
         No image virtual size specified for box.
+      no_disk_virtual_size: |-
+        No image virtual size specified for disk with index %{disk_index}.
       no_box_format: |-
         No image format specified for box.
       wrong_box_format: |-
         Wrong image format specified for box.
+      wrong_disk_format: |-
+        Wrong image format specified for disk with index %{disk_index}.
       fog_libvirt_connection_error: |-
         Error while connecting to Libvirt: %{error_message}
       fog_create_volume_error: |-
@@ -147,6 +181,8 @@ en:
       management_network_required: |-
         Management network can't be disabled when VM use box.
         Please fix your configuration and run vagrant again.
+      serial_cannot_create_path_error: |-
+        Error creating path for serial port output log: %{path}
 
     states:
       paused: |-

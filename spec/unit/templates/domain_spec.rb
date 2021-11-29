@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'support/sharedcontext'
 
 require 'vagrant-libvirt/config'
@@ -8,6 +10,13 @@ describe 'templates/domain' do
 
   class DomainTemplateHelper < VagrantPlugins::ProviderLibvirt::Config
     include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+
+    attr_accessor :domain_volumes
+
+    def initialize
+      super
+      @domain_volumes = []
+    end
 
     def finalize!
       super
@@ -36,6 +45,7 @@ describe 'templates/domain' do
       domain.clock_offset = 'variable'
       domain.clock_timer(name: 't1')
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
+      domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
@@ -44,11 +54,22 @@ describe 'templates/domain' do
       domain.boot('cdrom')
       domain.boot('hd')
       domain.emulator_path = '/usr/bin/kvm-spice'
-      domain.instance_variable_set('@domain_volume_path', '/var/lib/libvirt/images/test.qcow2')
       domain.instance_variable_set('@domain_volume_cache', 'deprecated')
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
       domain.disk_driver(:cache => 'unsafe', :io => 'threads', :copy_on_read => 'on', :discard => 'unmap', :detect_zeroes => 'on')
+      domain.domain_volumes.push({
+        :dev => 'vda',
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :path => '/var/lib/libvirt/images/test.qcow2'
+      })
+      domain.domain_volumes.push({
+        :dev => 'vdb',
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :path => '/var/lib/libvirt/images/test2.qcow2'
+      })
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
       domain.disks.each do |disk|
@@ -68,6 +89,7 @@ describe 'templates/domain' do
                      target_port: '4242',
                      source_path: '/tmp/foo')
       domain.random(model: 'random')
+      domain.serial(:type => 'file', :source => {:path => '/var/log/vm_consoles/machine.log'})
       domain.pci(bus: '0x06', slot: '0x12', function: '0x5')
       domain.pci(domain: '0x0001', bus: '0x03', slot: '0x00', function: '0x0')
       domain.usb_controller(model: 'nec-xhci', ports: '4')
@@ -90,10 +112,19 @@ describe 'templates/domain' do
       domain.shares = '1024'
       domain.cpuset = '1-4,^3,6'
       domain.nodeset = '1-4,^3,6'
+
+      domain.video_accel3d = true
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do
       domain.finalize!
+      # resolving is now done during create domain, so need to recreate
+      # the same behaviour before calling the template until that
+      # is separated out from create domain.
+      resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=domain.disk_device[0..1])
+      resolver.resolve!(domain.domain_volumes.dup.each { |volume| volume[:device] = volume[:dev] })
+      resolver.resolve!(domain.disks)
+
       expect(domain.to_xml('domain')).to eq xml_expected
     end
   end

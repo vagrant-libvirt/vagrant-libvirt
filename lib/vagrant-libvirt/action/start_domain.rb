@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'rexml/document'
 
@@ -56,7 +58,7 @@ module VagrantPlugins
               # disk_bus
               REXML::XPath.each(xml_descr, '/domain/devices/disk[@device="disk"]/target[@dev="vda"]') do |disk_target|
                 next unless disk_target.attributes['bus'] != config.disk_bus
-                @logger.debug "domain disk bus updated from '#{disk_target.attributes['bus']}' to '#{bus}'"
+                @logger.debug "domain disk bus updated from '#{disk_target.attributes['bus']}' to '#{config.disk_bus}'"
                 descr_changed = true
                 disk_target.attributes['bus'] = config.disk_bus
                 disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
@@ -99,11 +101,13 @@ module VagrantPlugins
               if config.cpu_mode != 'host-passthrough'
                 cpu_model = REXML::XPath.first(xml_descr, '/domain/cpu/model')
                 if cpu_model.nil?
-                  @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
-                  descr_changed = true
-                  cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
-                  cpu_model.attributes['fallback'] = 'allow'
-                  cpu_model.text = config.cpu_model
+                  if config.cpu_model.strip != ''
+                    @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
+                    descr_changed = true
+                    cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
+                    cpu_model.attributes['fallback'] = 'allow'
+                    cpu_model.text = config.cpu_model
+                  end
                 else
                   if (cpu_model.text or '').strip != config.cpu_model.strip
                     @logger.debug "cpu_model text updated from #{cpu_model.text} to '#{config.cpu_model}'"
@@ -165,7 +169,7 @@ module VagrantPlugins
 
               # clock timers - because timers can be added/removed, just rebuild and then compare
               if !config.clock_timers.empty? || clock.has_elements?
-                oldclock = ''
+                oldclock = String.new
                 formatter.write(REXML::XPath.first(xml_descr, '/domain/clock'), oldclock)
                 clock.delete_element('//timer')
                 config.clock_timers.each do |clock_timer|
@@ -175,7 +179,7 @@ module VagrantPlugins
                   end
                 end
 
-                newclock = ''
+                newclock = String.new
                 formatter.write(clock, newclock)
                 unless newclock.eql? oldclock
                   @logger.debug "clock timers config changed"
@@ -216,6 +220,24 @@ module VagrantPlugins
                     graphics.attributes.delete 'passwd'
                   else
                     graphics.attributes['passwd'] = config.graphics_passwd
+                  end
+                end
+                graphics_gl = REXML::XPath.first(xml_descr, '/domain/devices/graphics/gl')
+                if graphics_gl.nil?
+                  if config.graphics_gl
+                    graphics_gl = REXML::Element.new('gl', REXML::XPath.first(xml_descr, '/domain/devices/graphics'))
+                    graphics_gl.attributes['enable'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.graphics_gl
+                    if graphics_gl.attributes['enable'] != 'yes'
+                      graphics_gl.attributes['enable'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    graphics_gl.parent.delete_element(graphics_gl)
+                    descr_changed = true
                   end
                 end
               else
@@ -276,6 +298,24 @@ module VagrantPlugins
                     video_model.attributes['vram'] = config.video_vram
                   end
                 end
+                video_accel = REXML::XPath.first(xml_descr, '/domain/devices/video/model/acceleration')
+                if video_accel.nil?
+                  if config.video_accel3d
+                    video_accel = REXML::Element.new('acceleration', REXML::XPath.first(xml_descr, '/domain/devices/video/model'))
+                    video_accel.attributes['accel3d'] = 'yes'
+                    descr_changed = true
+                  end
+                else
+                  if config.video_accel3d
+                    if video_accel.attributes['accel3d'] != 'yes'
+                      video_accel.attributes['accel3d'] = 'yes'
+                      descr_changed = true
+                    end
+                  else
+                    video_accel.parent.delete_element(video_accel)
+                    descr_changed = true
+                  end
+                end
               end
 
               # Sound device
@@ -320,10 +360,12 @@ module VagrantPlugins
               if config.initrd
                 initrd = REXML::XPath.first(xml_descr, '/domain/os/initrd')
                 if initrd.nil?
-                  @logger.debug "initrd updated from not set to '#{config.initrd}'"
-                  descr_changed = true
-                  initrd = REXML::Element.new('initrd', REXML::XPath.first(xml_descr, '/domain/os'))
-                  initrd.text = config.initrd
+                  if config.initrd.strip != ''
+                    @logger.debug "initrd updated from not set to '#{config.initrd}'"
+                    descr_changed = true
+                    initrd = REXML::Element.new('initrd', REXML::XPath.first(xml_descr, '/domain/os'))
+                    initrd.text = config.initrd
+                  end
                 else
                   if (initrd.text or '').strip != config.initrd
                     @logger.debug "initrd updated from '#{initrd.text}' to '#{config.initrd}'"
@@ -337,22 +379,25 @@ module VagrantPlugins
               if descr_changed
                 begin
                   libvirt_domain.undefine
-                  new_descr = ''
+                  new_descr = String.new
                   xml_descr.write new_descr
-                  server = env[:machine].provider.driver.connection.servers.create(xml: new_descr)
+                  env[:machine].provider.driver.connection.servers.create(xml: new_descr)
                 rescue Fog::Errors::Error => e
-                  server = env[:machine].provider.driver.connection.servers.create(xml: descr)
+                  env[:machine].provider.driver.connection.servers.create(xml: descr)
                   raise Errors::FogCreateServerError, error_message: e.message
                 end
               end
-            rescue => e
+            rescue Errors::VagrantLibvirtError => e
               env[:ui].error("Error when updating domain settings: #{e.message}")
             end
             # Autostart with host if enabled in Vagrantfile
             libvirt_domain.autostart = config.autostart
+            @logger.debug {
+              "Starting Domain with XML:\n#{libvirt_domain.xml_desc}"
+            }
             # Actually start the domain
             domain.start
-          rescue => e
+          rescue Fog::Errors::Error, Errors::VagrantLibvirtError => e
             raise Errors::FogError, message: e.message
           end
 

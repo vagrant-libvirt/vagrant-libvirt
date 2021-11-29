@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
@@ -128,10 +130,10 @@ module VagrantPlugins
             end
 
             message = "Creating network interface eth#{@iface_number}"
-            message << " connected to network #{@network_name}."
+            message += " connected to network #{@network_name}."
             if @mac
               @mac = @mac.scan(/(\h{2})/).join(':')
-              message << " Using MAC address: #{@mac}"
+              message += " Using MAC address: #{@mac}"
             end
             @logger.info(message)
 
@@ -157,6 +159,9 @@ module VagrantPlugins
                     else
                       to_xml(template_name)
                     end
+              @logger.debug {
+                "Attaching Network Device with XML:\n#{xml}"
+              }
               domain.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,
@@ -208,14 +213,12 @@ module VagrantPlugins
                   type: :static,
                   ip: options[:ip],
                   netmask: options[:netmask],
-                  gateway: options[:gateway]
+                  gateway: options[:gateway],
+                  route: options[:route]
                 }.merge(network)
               else
                 network[:type] = :dhcp
               end
-
-              # do not run configure_networks for tcp tunnel interfaces
-              next if options.fetch(:tunnel_type, nil)
 
               networks_to_configure << network
             end
@@ -249,6 +252,7 @@ module VagrantPlugins
                           udp_tunnel={}, pci_bus, pci_slot)
           Nokogiri::XML::Builder.new do |xml|
             xml.interface(type: type || 'network') do
+              xml.alias(name: "ua-net-#{iface_number}")
               xml.source(source_options) do
                 xml.local(udp_tunnel) if type == 'udp'
               end

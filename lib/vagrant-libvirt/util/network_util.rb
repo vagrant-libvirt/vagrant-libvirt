@@ -1,5 +1,16 @@
+# frozen_string_literal: true
+
+require 'ipaddr'
 require 'nokogiri'
 require 'vagrant/util/network_ip'
+
+class IPAddr
+  def get_mask
+    if @addr
+      _to_string(@mask_addr)
+    end
+  end
+end
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -9,6 +20,7 @@ module VagrantPlugins
 
         def configured_networks(env, logger)
           qemu_use_session = env[:machine].provider_config.qemu_use_session
+          qemu_use_agent = env[:machine].provider_config.qemu_use_agent
           management_network_device = env[:machine].provider_config.management_network_device
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
@@ -19,6 +31,7 @@ module VagrantPlugins
           management_network_pci_bus = env[:machine].provider_config.management_network_pci_bus
           management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
           management_network_domain = env[:machine].provider_config.management_network_domain
+          management_network_mtu = env[:machine].provider_config.management_network_mtu
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -70,6 +83,10 @@ module VagrantPlugins
             management_network_options[:domain_name] = management_network_domain
           end
 
+          unless management_network_mtu.nil?
+            management_network_options[:mtu] = management_network_mtu
+          end
+
           unless management_network_pci_bus.nil? and management_network_pci_slot.nil?
             management_network_options[:bus] = management_network_pci_bus
             management_network_options[:slot] = management_network_pci_slot
@@ -97,14 +114,19 @@ module VagrantPlugins
             # store type in options
             # use default values if not already set
             options = {
-              iface_type:  type,
-              netmask:      '255.255.255.0',
+              iface_type:   type,
+              netmask:      options[:network_address] ?
+                            IPAddr.new(options[:network_address]).get_mask :
+                            '255.255.255.0',
               dhcp_enabled: true,
-              forward_mode: 'nat'
+              forward_mode: 'nat',
+              always_destroy: true
             }.merge(options)
 
             if options[:type].to_s == 'dhcp' && options[:ip].nil?
-              options[:network_name] = 'vagrant-private-dhcp'
+              options[:network_name] = options[:network_name] ?
+                                       options[:network_name] :
+                                       'vagrant-private-dhcp'
             end
 
             # add to list of networks to check

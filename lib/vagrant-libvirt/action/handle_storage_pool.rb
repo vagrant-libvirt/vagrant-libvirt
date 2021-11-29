@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 
 module VagrantPlugins
@@ -42,8 +44,12 @@ module VagrantPlugins
               @storage_pool_path = storage_pool_path(env)
               @storage_pool_uid = storage_uid(env)
               @storage_pool_gid = storage_gid(env)
+              xml = to_xml('default_storage_pool')
+              @logger.debug {
+                "Creating Storage Pool with XML:\n#{xml}"
+              }
               libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
-                to_xml('default_storage_pool')
+                xml
               )
               libvirt_pool.build
               libvirt_pool.create
