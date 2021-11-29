@@ -1,8 +1,9 @@
 # Vagrant Libvirt Provider
 
 [![Join the chat at https://gitter.im/vagrant-libvirt/vagrant-libvirt](https://badges.gitter.im/vagrant-libvirt/vagrant-libvirt.svg)](https://gitter.im/vagrant-libvirt/vagrant-libvirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt.svg)](https://travis-ci.org/vagrant-libvirt/vagrant-libvirt)
+[![Build Status](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vagrant-libvirt/vagrant-libvirt/badge.svg?branch=master)](https://coveralls.io/github/vagrant-libvirt/vagrant-libvirt?branch=master)
+[![Gem Version](https://badge.fury.io/rb/vagrant-libvirt.svg)](https://badge.fury.io/rb/vagrant-libvirt)
 
 This is a [Vagrant](http://www.vagrantup.com) plugin that adds a
 [Libvirt](http://libvirt.org) provider to Vagrant, allowing Vagrant to
@@ -18,7 +19,10 @@ can help a lot :-)
 
 * [Features](#features)
 * [Future work](#future-work)
-* [Using Docker based Installation](#using-docker-based-installation)
+* [Using the container image](#using-the-container-image)
+  * [Using Docker](#using-docker)
+  * [Using Podman](#using-podman)
+  * [Extending the Docker image with additional vagrant plugins](#extending-the-docker-image-with-additional-vagrant-plugins)
 * [Installation](#installation)
   * [Possible problems with plugin installation on Linux](#possible-problems-with-plugin-installation-on-linux)
   * [Additional Notes for Fedora and Similar Linux Distributions](#additional-notes-for-fedora-and-similar-linux-distributions)
@@ -46,6 +50,7 @@ can help a lot :-)
   * [USB Redirector Devices](#usb-redirector-devices)
     * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
 * [Random number generator passthrough](#random-number-generator-passthrough)
+* [Serial Console Devices](#serial-console-devices)
 * [Watchdog device](#watchdog-device)
 * [Smartcard device](#smartcard-device)
 * [Hypervisor Features](#hypervisor-features)
@@ -55,6 +60,7 @@ can help a lot :-)
 * [No box and PXE boot](#no-box-and-pxe-boot)
 * [SSH Access To VM](#ssh-access-to-vm)
 * [Forwarded Ports](#forwarded-ports)
+  * [Forwarding the ssh-port](#forwarding-the-ssh-port)
 * [Synced Folders](#synced-folders)
 * [QEMU Session Support](#qemu-session-support)
 * [Customized Graphics](#customized-graphics)
@@ -62,7 +68,9 @@ can help a lot :-)
 * [Memory balloon](#memory-balloon)
 * [Libvirt communication channels](#libvirt-communication-channels)
 * [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
-* [Box Format](#box-format)
+* [Box Formats](#box-formats)
+  * [Version 1](#version-1)
+  * [Version 2 (Experimental)](#version-2-experimental)
 * [Create Box](#create-box)
 * [Package Box from VM](#package-box-from-vm)
 * [Troubleshooting VMs](#troubleshooting-vms)
@@ -83,7 +91,7 @@ can help a lot :-)
 * SSH into domains.
 * Setup hostname and network interfaces.
 * Provision domains with any built-in Vagrant provisioner.
-* Synced folder support via `rsync`, `nfs` or `9p`.
+* Synced folder support via `rsync`, `nfs`, `9p` or `virtiofs`.
 * Snapshots via [sahara](https://github.com/jedi4ever/sahara).
 * Package caching via
   [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/).
@@ -96,7 +104,7 @@ can help a lot :-)
 * Take a look at [open
   issues](https://github.com/vagrant-libvirt/vagrant-libvirt/issues?state=open).
 
-## Using Docker based Installation
+## Using the container image
 
 Due to the number of issues encountered around compatibility between the ruby runtime environment
 that is part of the upstream vagrant installation and the library dependencies of libvirt that
@@ -106,16 +114,30 @@ This should allow users to execute vagrant with vagrant-libvirt without needing 
 the compatibility issues, though you may need to extend the image for your own needs should
 you make use of additional plugins.
 
-To get the image:
+Note the default image contains the full toolchain required to build and install vagrant-libvirt
+and it's dependencies. There is also a smaller image published with the `-slim` suffix if you
+just need vagrant-libvirt and don't need to install any additional plugins for your environment.
+
+If you are connecting to a remote system libvirt, you may omit the
+`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
+vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
+looking to use this in place of your distribution provided installation.
+
+### Using Docker
+
+To get the image with the most recent release:
 ```bash
 docker pull vagrantlibvirt/vagrant-libvirt:latest
 ```
 
-Preparing the docker run, only once:
+---
+**Note** If you want the very latest code you can use the `edge` tag instead.
 
 ```bash
-mkdir -p ~/.vagrant.d/{boxes,data,tmp}
+docker pull vagrantlibvirt/vagrant-libvirt:edge
 ```
+---
 
 Running the image:
 ```bash
@@ -123,33 +145,83 @@ docker run -it --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
-  -v $(pwd):$(pwd) \
-  -w $(pwd) \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w $(realpath "${PWD}") \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
 ```
 
-It's possible to define an alias in `~/.bashrc`, for example:
+It's possible to define a function in `~/.bashrc`, for example:
 ```bash
-alias vagrant='
-  mkdir -p ~/.vagrant.d/{boxes,data,tmp}; \
+vagrant(){
   docker run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
-    -v $(pwd):$(pwd) \
-    -w $(pwd) \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
-    vagrant'
+      vagrant $@
+}
+
 ```
 
-Note that if you are connecting to a remote system libvirt, you may omit the
-`-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
-vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
-may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
-looking to use this in place of your distribution provided installation.
+### Using Podman
+
+Preparing the podman run, only once:
+
+```bash
+mkdir -p ~/.vagrant.d/{boxes,data,tmp}
+```
+_N.B. This is needed until the entrypoint works for podman to only mount the `~/.vagrant.d` directory_
+
+To run with Podman you need to include
+
+```bash
+  --entrypoint /bin/bash \
+  --security-opt label=disable \
+  -v ~/.vagrant.d/boxes:/vagrant/boxes \
+  -v ~/.vagrant.d/data:/vagrant/data \
+  -v ~/.vagrant.d/data:/vagrant/tmp \
+```
+
+for example:
+
+```bash
+vagrant(){
+  podman run -it --rm \
+    -e LIBVIRT_DEFAULT_URI \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v ~/.vagrant.d/boxes:/vagrant/boxes \
+    -v ~/.vagrant.d/data:/vagrant/data \
+    -v ~/.vagrant.d/data:/vagrant/tmp \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w $(realpath "${PWD}") \
+    --network host \
+    --entrypoint /bin/bash \
+    --security-opt label=disable \
+    docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+      vagrant $@
+}
+```
+
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
+
+### Extending the Docker image with additional vagrant plugins
+
+By default the image published and used contains the entire tool chain required
+to reinstall the vagrant-libvirt plugin and it's dependencies, as this is the
+default behaviour of vagrant anytime a new plugin is installed. This means it
+should be possible to use a simple `FROM` statement and ask vagrant to install
+additional plugins.
+
+```
+FROM vagrantlibvirt/vagrant-libvirt:latest
+
+RUN vagrant plugin install <plugin>
+```
 
 ## Installation
 
@@ -166,7 +238,7 @@ installed](http://docs.vagrantup.com/v2/installation/index.html).
 Vagrant-libvirt supports Vagrant 2.0, 2.1 & 2.2. It should also work with earlier
 releases from 1.5 onwards but they are not actively tested.
 
-Check the [.travis.yml](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.travis.yml)
+Check the [unit tests](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/.github/workflows/unit-tests.yml)
 for the current list of tested versions.
 
 *We only test with the upstream version!* If you decide to install your distro's
@@ -180,6 +252,7 @@ vagrant-libvirt. This depends on your distro. An overview:
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-daemon-system libvirt-clients ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+apt-get install libguestfs-tools
 ```
 
 * Ubuntu 18.04, Debian 8 and older:
@@ -187,23 +260,24 @@ apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
 apt-get build-dep vagrant ruby-libvirt
 apt-get install qemu libvirt-bin ebtables dnsmasq-base
 apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev ruby-dev
+apt-get install libguestfs-tools
 ```
 
 (It is possible some users will already have libraries from the third line installed, but this is the way to make it work OOTB.)
 
 * CentOS 6, 7, Fedora 21:
 ```shell
-yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm libguestfs-tools
 ```
 
 * Fedora 22 and up:
 ```shell
-dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel
+dnf install -y gcc libvirt libvirt-devel libxml2-devel make ruby-devel libguestfs-tools
 ```
 
 * OpenSUSE leap 15.1:
 ```shell
-zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+zypper install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm libguestfs
 ```
 
 * Arch Linux: please read the related [ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt) page.
@@ -238,8 +312,7 @@ On Ubuntu, Debian, make sure you are running all three of the `apt` commands abo
 On RedHat, Centos, Fedora, ...
 
 ```shell
-$ sudo dnf install libxslt-devel libxml2-devel libvirt-devel \
-  libguestfs-tools-c ruby-devel gcc
+$ sudo dnf install libxslt-devel libxml2-devel libvirt-devel ruby-devel gcc
 ```
 
 On Arch Linux it is recommended to follow [steps from ArchWiki](https://wiki.archlinux.org/index.php/Vagrant#vagrant-libvirt).
@@ -266,7 +339,20 @@ If you encounter the following load error when using the vagrant-libvirt plugin 
 then the following steps have been found to resolve the problem. Thanks to James Reynolds (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472). The specific version of libssh will change over time so references to the rpm in the commands below will need to be adjusted accordingly.
 
 ```shell
+# Fedora
 dnf download --source libssh
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/libssh
+cd libssh
+git checkout imports/c8s/libssh-0.9.4-1.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
 rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
 tar xf libssh-0.9.0.tar.xz
 mkdir build
@@ -285,7 +371,20 @@ If you encounter the following load error when using the vagrant-libvirt plugin 
 then the following steps have been found to resolve the problem. After the steps below are complete, then reinstall the vagrant-libvirt plugin without setting the `CONFIGURE_ARGS`. Thanks to Marco Bevc (see https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983):
 
 ```shell
+# Fedora
 dnf download --source krb5-libs
+
+# centos 8 stream, doesn't provide source RPMs, so you need to download like so
+git clone https://git.centos.org/centos-git-common
+# centos-git-common needs its tools in PATH
+export PATH=$(readlink -f ./centos-git-common):$PATH
+git clone https://git.centos.org/rpms/krb5
+cd krb5
+git checkout imports/c8s/krb5-1.18.2-8.el8
+into_srpm.sh -d c8s
+cd SRPMS
+
+# common commands (make sure to adjust verison accordingly)
 rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
 tar xf krb5-1.18.tar.gz
 cd krb5-1.18/src
@@ -374,9 +473,24 @@ URI](http://libvirt.org/uri.html):
   Default is `$HOME/.ssh/id_rsa`. Prepends `$HOME/.ssh/` if no directory
 * `socket` - Path to the Libvirt unix socket (e.g.
   `/var/run/libvirt/libvirt-sock`)
+* `proxy_command` - For advanced usage. When connecting to remote libvirt
+  instances, if the default constructed proxy\_command which uses `-W %h:%p`
+  does not work, set this as needed. It performs interpolation using `{key}`
+  and supports only `{host}`, `{username}`, and `{id_ssh_key_file}`. This is
+  to try and avoid issues with escaping `%` and `$` which might be necessary
+  to the ssh command itself. e.g.:
+  `libvirt.proxy_command = "ssh {host} -l {username} -i {id_ssh_key_file} nc %h %p"`
 * `uri` - For advanced usage. Directly specifies what Libvirt connection URI
   vagrant-libvirt should use. Overrides all other connection configuration
   options
+
+In the event that none of these are set (excluding the `driver` option) the
+provider will attempt to retrieve the uri from the environment variable
+`LIBVIRT_DEFAULT_URI` similar to how virsh works. If any of them are set, it
+will ignore the environment variable. The reason the driver option is ignored
+is that it is not uncommon for this to be explicitly set on the box itself
+and there is no easily to determine whether it is being set by the user or
+the box packager.
 
 Connection-independent options:
 
@@ -485,6 +599,8 @@ end
 * `graphics_autoport` - Sets autoport for graphics, Libvirt in this case
   ignores graphics_port value, Defaults to 'yes'. Possible value are "yes" and
   "no"
+* `graphics_gl` - Set to `true` to enable OpenGL. Defaults to `true` if
+`video_accel3d` is `true`.
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
   guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for
@@ -495,6 +611,8 @@ end
   "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM
   dedicated to video.  Defaults to 9216.
+* `video_accel3d` - Set to `true` to enable 3D acceleration. Defaults to
+`false`.
 * `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#elementsSound)
   Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use
@@ -549,6 +667,9 @@ end
   it is not possible to communicate with VM through `vagrant ssh` or run
   provisioning. Setting to 'false' is only possible when VM doesn't use box.
   Defaults set to 'true'.
+* `serial` - [libvirt serial devices](https://libvirt.org/formatdomain.html#elementsConsole).
+  Configure a serial/console port to communicate with the guest. Can be used
+  to log to file boot time messages sent to ttyS0 console by the guest.
 
 Specific domain settings can be set for each domain separately in multi-VM
 environment. Example below shows a part of Vagrantfile, where specific options
@@ -798,6 +919,9 @@ starts with `libvirt__` string. Here is a list of those options:
   If not specified the default is 'false'.
 * `:bus` - The bus of the PCI device. Both :bus and :slot have to be defined.
 * `:slot` - The slot of the PCI device. Both :bus and :slot have to be defined.
+* `:libvirt__always_destroy` - Allow domains that use but did not create a
+  network to destroy it when the domain is destroyed (default: `true`). Set to
+  `false` to only allow the domain that created the network to destroy it.
 
 When the option `:libvirt__dhcp_enabled` is to to 'false' it shouldn't matter
 whether the virtual network contains a DHCP server or not and vagrant-libvirt
@@ -851,6 +975,8 @@ used by this network are configurable at the provider level.
 * `management_network_pci_slot` -  The slot of the PCI device.
 * `management_network_mac` - MAC address of management network interface.
 * `management_network_domain` - Domain name assigned to the management network.
+* `management_network_mtu` - MTU size of management network. If not specified,
+  the Libvirt default (1500) will be used.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.
@@ -859,6 +985,36 @@ management network. Libvirt is closely connected with dnsmasq, which acts as a
 DHCP server. dnsmasq writes lease information in the `/var/lib/libvirt/dnsmasq`
 directory. Vagrant-libvirt looks for the MAC address in this file and extracts
 the corresponding IP address.
+
+It is also possible to use the Qemu Agent to extract the management interface
+configuration from the booted virtual machine. This is helpful in libvirt
+environments where no local dnsmasq is used for automatic address assigment,
+but external dhcp services via bridged libvirt networks.
+
+Prerequisite is to enable the qemu agent channel via ([Libvirt communication
+channels](#libvirt-communication-channels)) and the virtual machine image must
+have the agent pre-installed before deploy. The agent will start automatically
+if it detects an attached channel during boot.
+
+* `qemu_use_agent` - false by default, if set to true, attempt to extract configured
+  ip address via qemu agent.
+
+By default if `qemu_use_agent` is set to `true` the code will automatically
+inject a suitable channel unless there already exists an entry with a
+`:target_name` matching `'org.qemu.guest_agent.'`.
+Alternatively if setting `qemu_use_agent` but, needing to disable the addition
+of the channel, simply use a disabled flag as follows:
+```ruby
+Vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :disabled => true
+  end
+end
+```
+
+To use the management network interface with an external dhcp service you need
+to setup a bridged host network manually and define it via
+`management_network_name` in your Vagrantfile.
 
 ## Additional Disks
 
@@ -1021,13 +1177,14 @@ The USB controller can be configured using `libvirt.usb_controller`, with the fo
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # Set up a USB3 controller
-    libvirt.usb_controller :model => "nec-xhci"
+    libvirt.usb_controller :model => "qemu-xhci"
   end
 end
 ```
 
 See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
 
+If any USB devices are passed through by setting `libvirt.usb` or `libvirt.redirdev`, a default controller will be added using the model `qemu-xhci` in the absence of a user specified one. This should help ensure more devices work out of the box as the default configured by libvirt is pii3-uhci, which appears to only work for USB 1 devices and does not work as expected when connected via a USB 2 controller, while the xhci stack should work for all versions of USB.
 
 ### USB Device Passthrough
 
@@ -1046,6 +1203,17 @@ The example values above match the device from the following output of `lsusb`:
 
 ```
 Bus 001 Device 002: ID 1234:abcd Example device
+```
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # pass through specific device based on identifying it
+    libvirt.usbdev :vendor => '0x1234', :product => '0xabcd'
+    # pass through a host device where multiple of the same vendor/product exist
+    libvirt.usbdev :bus => '1', :device => '1'
+  end
+end
 ```
 
 Additionally, the following options can be used:
@@ -1104,8 +1272,28 @@ In this case, the USB device with `class 0x0b`, `vendor 0x08e6`, `product 0x3437
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.redirdev :type => "spicevmc"
-    libvirt.redirfilter :class => "0x0b" :vendor => "0x08e6" :product => "0x3437" :version => "2.00" :allow => "yes"
+    libvirt.redirfilter :class => "0x0b", :vendor => "0x08e6", :product => "0x3437", :version => "2.00", :allow => "yes"
     libvirt.redirfilter :allow => "no"
+  end
+end
+```
+
+## Serial Console Devices
+You can define settings to redirect output from the serial console of any VM brought up with libvirt to a file or other devices that are listening. [See libvirt documentation](https://libvirt.org/formatdomain.html#elementCharSerial).
+
+Currently only redirecting to a file is supported.
+
+* `type` - only value that has an effect is file, in the future support may be added for virtual console, pty, dev, pipe, tcp, udp, unix socket, spiceport & nmdm.
+* `source` - options pertaining to how the connection attaches to the host, contains sub-settings dependent on `type`.
+  `source` options for type `file`
+  * `path` - file on host to connect to the serial port to record all output. May be created by qemu system user causing some permissions issues.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :test do |test|
+    test.vm.provider :libvirt do |domain|
+      domain.serial :type => "file", :source => {:path => "/var/log/vm_consoles/test.log}
+    end
   end
 end
 ```
@@ -1215,6 +1403,8 @@ Vagrant.configure("2") do |config|
     libvirt.hyperv_feature :name => 'relaxed', :state => 'on'
     # Enable virtual APIC
     libvirt.hyperv_feature :name => 'vapic', :state => 'on'
+    # Enable spinlocks (requires retries to be specified)
+    libvirt.hyperv_feature :name => 'spinlocks', :state => 'on', :retries => '8191'
   end
 end
 ```
@@ -1341,6 +1531,24 @@ Name of network "foreman_managed" is key for define boot order
       end
 ```
 
+An example VM that is PXE booted from the `br1` device (which must already be configured in the host machine), and if that fails, is booted from the disk:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.define :pxeclient do |pxeclient|
+    pxeclient.vm.network :public_network,
+      dev: 'br1',
+      auto_config: false
+    pxeclient.vm.provider :libvirt do |domain|
+      boot_network = {'dev' => 'br1'}
+      domain.storage :file, :size => '100G'
+      domain.boot boot_network
+      domain.boot 'hd'
+    end
+  end
+end
+```
+
 ## SSH Access To VM
 
 vagrant-libvirt supports vagrant's [standard ssh
@@ -1371,40 +1579,157 @@ Default is `eth0`.
 
 `config.vm.network :forwarded_port, guest: 80, host: 2000, host_ip: "0.0.0.0"`
 
+### Forwarding the ssh-port
+
+Vagrant-libvirt now supports forwarding the standard ssh-port on port 2222 from
+the localhost to allow for consistent provisioning steps/ports to be used when
+defining across multiple providers.
+
+To enable, set the following:
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Enable forwarding of forwarded_port with id 'ssh'.
+    libvirt.forward_ssh_port = true
+  end
+end
+```
+
+Previously by default libvirt skipped the forwarding of the ssh-port because
+you can access the machine directly. In the future it is expected that this
+will be enabled by default once autocorrect support is added to handle port
+collisions for multi machine environments gracefully.
+
 ## Synced Folders
 
-Vagrant automatically syncs the project folder on the host to `/vagrant` in the guest. You can also configure
-additional synced folders.
+Vagrant automatically syncs the project folder on the host to `/vagrant` in
+the guest. You can also configure additional synced folders.
 
-`vagrant-libvirt` supports bidirectional synced folders via [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [VirtFS](http://www.linux-kvm.org/page/VirtFS) ([9p or Plan 9](https://en.wikipedia.org/wiki/9P_(protocol))) and
-unidirectional via rsync. The default is NFS. Difference between NFS and 9p is explained [here](https://unix.stackexchange.com/questions/240281/virtfs-plan-9-vs-nfs-as-tool-for-share-folder-for-virtual-machine).
+**SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
+public network interface and you must connect to Libvirt via ssh.
 
-You can change the synced folder type for `/vagrant` by explicity configuring
-it an setting the type, e.g.
+**NFS**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: 'rsync'
+`vagrant-libvirt` supports
+[NFS](https://www.vagrantup.com/docs/synced-folders/nfs) as default with
+bidirectional synced folders.
+
+Example with NFS:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant"
+end
 ```
 
-or
+**RSync**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "squash", owner: "1000"
+`vagrant-libvirt` supports
+[rsync](https://www.vagrantup.com/docs/synced-folders/rsync) with
+unidirectional synced folders.
+
+Example with rsync:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "rsync"
+end
 ```
 
-or
+**9P**
 
-```shell
-config.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped", mount: false
-```
+`vagrant-libvirt` supports [VirtFS](http://www.linux-kvm.org/page/VirtFS) ([9p
+or Plan 9](https://en.wikipedia.org/wiki/9P_\(protocol\))) with bidirectional
+synced folders.
+
+Difference between NFS and 9p is explained
+[here](https://unix.stackexchange.com/questions/240281/virtfs-plan-9-vs-nfs-as-tool-for-share-folder-for-virtual-machine).
 
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
 
-Further documentation on using 9p can be found in [kernel docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in [QEMU wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly). Please do note that 9p depends on support in the guest and not all distros come with the 9p module by default.
+Example for `accessmode: "squash"` with 9p:
 
-**SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
-public network interface and you must connect to Libvirt via ssh.
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "9p", disabled: false, accessmode: "squash", owner: "1000"
+end
+```
+
+Example for `accessmode: "mapped"` with 9p:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "9p", disabled: false, accessmode: "mapped", mount: false
+end
+```
+
+Further documentation on using 9p can be found in [kernel
+docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in
+[QEMU
+wiki](https://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_directly).
+
+Please do note that 9p depends on support in the guest and not all distros
+come with the 9p module by default.
+
+**Virtio-fs**
+
+`vagrant-libvirt` supports [Virtio-fs](https://virtio-fs.gitlab.io/) with
+bidirectional synced folders.
+
+For virtiofs shares, a `mount: false` option allows to define synced folders
+without mounting them at boot.
+
+So far, passthrough is the only supported access mode and it requires running
+the virtiofsd daemon as root.
+
+QEMU needs to allocate the backing memory for all the guest RAM as shared
+memory, e.g. [Use file-backed
+memory](https://libvirt.org/kbase/virtiofs.html#host-setup) by enable
+`memory_backing_dir` option in `/etc/libvirt/qemu.conf`:
+
+``` shell
+memory_backing_dir = "/dev/shm"
+```
+
+Example for Libvirt \>= 6.2.0 (e.g. Ubuntu 20.10 with Linux 5.8.0 + QEMU 5.0 +
+Libvirt 6.6.0, i.e. NUMA nodes required) with virtiofs:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.numa_nodes = [{ :cpus => "0-1", :memory => 8192, :memAccess => "shared" }]
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+  config.vm.synced_folder "./", "/vagrant", type: "virtiofs"
+end
+```
+
+Example for Libvirt \>= 6.9.0 (e.g. Ubuntu 21.04 with Linux 5.11.0 + QEMU 5.2 +
+Libvirt 7.0.0, or Ubuntu 20.04 + [PPA
+enabled](https://launchpad.net/~savoury1/+archive/ubuntu/virtualisation)) with
+virtiofs:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.memory = 8192
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+  config.vm.synced_folder "./", "/vagrant", type: "virtiofs"
+end
+```
+
+Further documentation on using virtiofs can be found in [official
+HowTo](https://virtio-fs.gitlab.io/index.html#howto) and in [Libvirt
+KB](https://libvirt.org/kbase/virtiofs.html).
+
+Please do note that virtiofs depends on:
+
+  - Host: Linux \>= 5.4, QEMU \>= 4.2 and Libvirt \>= 6.2 (e.g. Ubuntu 20.10)
+  - Guest: Linux \>= 5.4 (e.g. Ubuntu 20.04)
 
 ## QEMU Session Support
 
@@ -1611,7 +1936,11 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-## Box Format
+## Box Formats
+
+### Version 1
+
+This is the original format that most boxes currently use.
 
 You can view an example box in the
 [`example_box/directory`](https://github.com/vagrant-libvirt/vagrant-libvirt/tree/master/example_box).
@@ -1624,6 +1953,45 @@ The box is a tarball containing:
   `format`)
 * `Vagrantfile` that does default settings for the provider-specific
   configuration for this provider
+
+
+### Version 2 (Experimental)
+
+Due to the limitation of only being able to handle a single disk with the version 1 format, a new
+format was added to support boxes that need to specify multiple disks. This is still currently
+experimental and as such support for packaging has yet to be added. There is a script in the tools
+folder (tools/create_box_with_two_disks.sh) that should provide a guideline on how to create such
+a box for those that wish to experiment and provide early feedback.
+
+At it's most basic, it expects an array of disks to allow a specific order to be presented. Disks
+will be attached in this order and as such assume device names base on this within the VM. The
+'path' attribute is required, and is expected to be relative to the base of the box. This should
+allow placing the disk images within a nested directory within the box if it useful for those
+with a larger number of disks. The name allows overriding the target volume name that will be
+used in the libvirt storage pool. Note that vagrant-libvirt will still prefix the volume name
+with `#{box_name}_vagrant_box_image_#{box_version}_` to avoid accidental clashes with other boxes.
+
+Format and virtual size need no longer be specified as they are now retrieved directly from the
+provided image using `qemu-img info ...`.
+
+Example format:
+```json
+{
+  'disks': [
+      {
+          'path': 'disk1.img'
+      },
+      {
+          'path': 'disk2.img',
+          'name': 'secondary_disk'
+      },
+      {
+          'path': 'disk3.img'
+      }
+  ],
+  'provider': 'libvirt'
+}
+```
 
 ## Create Box
 
@@ -1741,17 +2109,49 @@ $ bundle install
 Once you have the dependencies, verify the unit tests pass with `rspec`:
 
 ```shell
-$ bundle exec rspec spec/
+$ export VAGRANT_HOME=$(mktemp -d)
+$ bundle exec rspec --fail-fast --color --format documentation
 ```
 
-If those pass, you're ready to start developing the plugin. You can test the
-plugin without installing it into your Vagrant environment by just creating a
-`Vagrantfile` in the top level of this directory (it is gitignored) that uses
-it. Don't forget to add following line at the beginning of your `Vagrantfile`
-while in development mode:
+If those pass, you're ready to start developing the plugin.
+
+Setting `VAGRANT_HOME` is to avoid issues with conflicting with other
+plugins/gems or data already present under `~/.vagrant.d`.
+
+Additionally if you wish to test against a specific version of vagrant you
+can control the version using the following before running the tests:
+
+```shell
+$ export VAGRANT_VERSION=v2.2.14
+```
+
+**Note** rvm is used by the maintainers to help provide an environment to test
+against multiple ruby versions that align with the ones used by vagrant for
+their embedded ruby depending on the release. You can see what version is used
+by looking at the current [unit tests](.github/workflows/unit-tests.yml)
+workflow.
+
+You can test the plugin without installing it into your Vagrant environment by
+just creating a `Vagrantfile` in the top level of this directory (it is
+gitignored) that uses it. You can add the following line to your Vagrantfile
+while in development to ensure vagrant checks that the plugin is installed:
 
 ```ruby
-Vagrant.require_plugin "vagrant-libvirt"
+Vagrant.configure("2") do |config|
+  config.vagrant.plugins = "vagrant-libvirt"
+end
+```
+Or add the following to the top of the file to ensure that any required plugins
+are installed globally:
+```ruby
+REQUIRED_PLUGINS = %w(vagrant-libvirt)
+exit unless REQUIRED_PLUGINS.all? do |plugin|
+  Vagrant.has_plugin?(plugin) || (
+    puts "The #{plugin} plugin is required. Please install it with:"
+    puts "$ vagrant plugin install #{plugin}"
+    false
+  )
+end
 ```
 
 Now you can use bundler to execute Vagrant:

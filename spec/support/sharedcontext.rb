@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 shared_context 'unit' do
@@ -7,6 +9,7 @@ shared_context 'unit' do
   let(:vagrantfile) do
     <<-EOF
     Vagrant.configure('2') do |config|
+      config.vm.box = "vagrant-libvirt/test"
       config.vm.define :test
       config.vm.provider :libvirt do |libvirt|
         #{vagrantfile_providerconfig}
@@ -33,6 +36,6 @@ shared_context 'unit' do
 
   before (:each) do
     allow(machine).to receive(:guest).and_return(guest)
-    allow(machine).to receive(:communicator).and_return(communicator)
+    allow(machine).to receive(:communicate).and_return(communicator)
   end
 end

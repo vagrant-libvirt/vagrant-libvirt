@@ -1,6 +1,6 @@
 <network ipv6='<%= @guest_ipv6 %>'>
   <name><%= @network_name %></name>
-  <bridge name="<%= @network_bridge_name %>" />
+  <bridge name="<%= @network_bridge_name %>" stp="<%= @network_bridge_stp %>" delay="<%= @network_bridge_delay %>" />
 
   <% if @network_domain_name %>
     <domain name="<%= @network_domain_name %>" localOnly="yes" />

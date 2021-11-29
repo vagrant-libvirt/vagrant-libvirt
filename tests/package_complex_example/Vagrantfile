@@ -1,0 +1,20 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# frozen_string_literal: true
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/debian10"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.driver = "qemu"
+    libvirt.cpus = 2
+    libvirt.memory = 2048
+  end
+
+  # note by default packaging the resulting machine will bundle the generated
+  # ssh key with the resulting box, to disable this behaviour need to
+  # uncomment the following line.
+  #config.ssh.insert_key = false
+end

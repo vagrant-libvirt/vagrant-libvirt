@@ -1,4 +1,5 @@
 <interface type='<%= @type %>'<% if @trust_guest_rx_filters %> trustGuestRxFilters='yes'<% end %>>
+  <alias name='ua-net-<%= @iface_number %>'/>
   <% if @mac %>
   <mac address='<%= @mac %>'/>
   <% end %>
