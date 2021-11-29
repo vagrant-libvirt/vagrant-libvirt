@@ -1,4 +1,5 @@
 <interface type='<%= @type %>'<% if @trust_guest_rx_filters %> trustGuestRxFilters='yes'<% end %>>
+  <alias name='ua-net-<%= @iface_number %>'/>
   <% if @mac %>
   <mac address='<%= @mac %>'/>
   <% end %>
@@ -18,7 +19,11 @@
     <driver name='<%=@driver_name%>'/>
   <% end %>
   <% if @ovs %>
-  <virtualport type='openvswitch'/>
+  <virtualport type='openvswitch'>
+    <% if @ovs_interfaceid %>
+      <parameters interfaceid='<%=@ovs_interfaceid%>'/>
+    <% end %>
+  </virtualport>
   <% end %>
   <% if @pci_bus and @pci_slot %>
   <address type='pci' bus='<%=@pci_bus%>' slot='<%=@pci_slot%>' />

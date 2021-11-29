@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'
@@ -6,10 +8,9 @@ require 'digest/md5'
 require 'vagrant/util/subprocess'
 require 'vagrant/errors'
 require 'vagrant-libvirt/errors'
-# require_relative "helper"
 
 module VagrantPlugins
-  module SyncedFolder9p
+  module SyncedFolder9P
     class SyncedFolder < Vagrant.plugin('2', :synced_folder)
       include Vagrant::Util
       include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
@@ -46,7 +47,6 @@ module VagrantPlugins
 
             machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
 
-            #xml = to_xml('filesystem', folder_opts)
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: folder_opts[:accessmode]) do
                 xml.driver(type: 'path', wrpolicy: 'immediate')
@@ -59,7 +59,9 @@ module VagrantPlugins
                          Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                          Nokogiri::XML::Node::SaveOptions::FORMAT
             )
-            # puts "<<<<< XML:\n #{xml}\n >>>>>"
+            @logger.debug {
+              "Attaching Synced Folder device with XML:\n#{xml}"
+            }
             @conn.lookup_domain_by_uuid(machine.id).attach_device(xml, 0)
           end
         rescue => e
@@ -69,10 +71,10 @@ module VagrantPlugins
         end
       end
 
-      # TODO: once up, mount folders
+      # once up, mount folders
       def enable(machine, folders, _opts)
         # Go through each folder and mount
-        machine.ui.info('mounting p9 share in guest')
+        machine.ui.info('mounting 9p share in guest')
         # Only mount folders that have a guest path specified.
         mount_folders = {}
         folders.each do |id, opts|
@@ -83,7 +85,7 @@ module VagrantPlugins
         end
         # Mount the actual folder
         machine.guest.capability(
-          :mount_p9_shared_folder, mount_folders
+          :mount_9p_shared_folder, mount_folders
         )
       end
 

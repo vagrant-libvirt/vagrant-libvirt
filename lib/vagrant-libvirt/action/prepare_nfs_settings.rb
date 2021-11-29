@@ -1,12 +1,15 @@
+# frozen_string_literal: true
+
 require 'nokogiri'
 require 'socket'
 require 'timeout'
+require 'vagrant-libvirt/util/nfs'
 
 module VagrantPlugins
   module ProviderLibvirt
     module Action
       class PrepareNFSSettings
-        include Vagrant::Action::Builtin::MixinSyncedFolders
+        include VagrantPlugins::ProviderLibvirt::Util::Nfs
 
         def initialize(app, _env)
           @app = app
@@ -26,13 +29,6 @@ module VagrantPlugins
 
             raise Vagrant::Errors::NFSNoHostonlyNetwork if !env[:nfs_machine_ip] || !env[:nfs_host_ip]
           end
-        end
-
-        # We're using NFS if we have any synced folder with NFS configured. If
-        # we are not using NFS we don't need to do the extra work to
-        # populate these fields in the environment.
-        def using_nfs?
-          !!synced_folders(@machine)[:nfs]
         end
 
         # Returns the IP address of the host
@@ -63,7 +59,7 @@ module VagrantPlugins
           command = "ip=$(which ip); ${ip:-/sbin/ip} addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
           result  = ''
           machine.communicate.execute(command) do |type, data|
-            result << data if type == :stdout
+            result += data if type == :stdout
           end
 
           ips = result.chomp.split("\n").uniq

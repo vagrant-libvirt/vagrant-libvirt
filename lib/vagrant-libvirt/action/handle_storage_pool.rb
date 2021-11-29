@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 
 module VagrantPlugins
@@ -24,9 +26,9 @@ module VagrantPlugins
           # locking all subsequent actions as well.
           @@lock.synchronize do
             # Check for storage pool, where box image should be created
-            break if ProviderLibvirt::Util::Collection.find_matching(
-              env[:machine].provider.driver.connection.pools.all, config.storage_pool_name
-            )
+            break unless env[:machine].provider.driver.connection.pools.all(
+              name: config.storage_pool_name
+            ).empty?
 
             @logger.info("No storage pool '#{config.storage_pool_name}' is available.")
 
@@ -42,8 +44,12 @@ module VagrantPlugins
               @storage_pool_path = storage_pool_path(env)
               @storage_pool_uid = storage_uid(env)
               @storage_pool_gid = storage_gid(env)
+              xml = to_xml('default_storage_pool')
+              @logger.debug {
+                "Creating Storage Pool with XML:\n#{xml}"
+              }
               libvirt_pool = env[:machine].provider.driver.connection.client.define_storage_pool_xml(
-                to_xml('default_storage_pool')
+                xml
               )
               libvirt_pool.build
               libvirt_pool.create

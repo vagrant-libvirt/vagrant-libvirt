@@ -6,6 +6,7 @@
 Gemfile.lock
 InstalledFiles
 _yardoc
+bin/
 coverage
 doc/
 lib/bundler/man
@@ -16,6 +17,11 @@ test/tmp
 test/version_tmp
 tmp
 Vagrantfile
+!tests/*/Vagrantfile
 !example_box/Vagrantfile
 .vagrant
 *.swp
+.deps
+
+# don't commit the generated version
+lib/vagrant-libvirt/version
