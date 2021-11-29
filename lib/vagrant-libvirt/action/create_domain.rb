@@ -22,7 +22,7 @@ module VagrantPlugins
 
         def _disks_print(disks)
           disks.collect do |x|
-            "#{x[:device]}(#{x[:type]},#{x[:size]})"
+            "#{x[:device]}(#{x[:type]}, #{x[:bus]}, #{x[:size]})"
           end.join(', ')
         end
 
@@ -294,7 +294,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           @domain_volumes.each do |volume|
-            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:virtual_size].to_GB}G")
+            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:bus]}, #{volume[:virtual_size].to_GB}G")
           end
 
           if not @disk_driver_opts.empty?
