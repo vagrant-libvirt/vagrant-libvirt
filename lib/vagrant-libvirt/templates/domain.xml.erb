@@ -27,7 +27,7 @@
   <%- if @numa_nodes -%>
     <numa>
     <%- @numa_nodes.each_with_index do |node, index| -%>
-      <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'/>
+      <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'<% if node.key?(:memAccess) %> memAccess='<%= node[:memAccess] %>'<% end %>/>
     <%- end -%>
     </numa>
   <%- end -%>

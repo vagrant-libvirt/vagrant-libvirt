@@ -31,35 +31,24 @@ module VagrantPlugins
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
-                b2.use SetBootOrder
-                b2.use StartDomain
+
+                b2.use action_start
               else
                 b2.use HandleStoragePool
                 b2.use HandleBox
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
                 b2.use CreateDomain
-
-                b2.use Provision
-                b2.use PrepareNFSValidIds
-                b2.use SyncedFolderCleanup
-                b2.use SyncedFolders
-                b2.use PrepareNFSSettings
-                b2.use ShareFolders
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
-                b2.use SetBootOrder
 
-                b2.use StartDomain
-                b2.use WaitTillUp
-                b2.use WaitForCommunicator, [:running]
+                b2.use action_start
 
-                b2.use ForwardPorts
                 b2.use SetHostname
-                # b2.use SyncFolders
               end
             else
               env[:halt_on_error] = true
+              b2.use CreateNetworks
               b2.use action_start
             end
           end
@@ -82,28 +71,25 @@ module VagrantPlugins
             b2.use Call, IsSuspended do |env2, b3|
               # if vm is suspended resume it then exit
               if env2[:result]
-                b3.use CreateNetworks
                 b3.use ResumeDomain
                 next
               end
 
               if !env[:machine].config.vm.box
                 # With no box, we just care about network creation and starting it
-                b3.use CreateNetworks
                 b3.use SetBootOrder
                 b3.use StartDomain
               else
                 # VM is not running or suspended.
-
                 b3.use Provision
-
-                # Ensure networks are created and active
-                b3.use CreateNetworks
-                b3.use SetBootOrder
 
                 b3.use PrepareNFSValidIds
                 b3.use SyncedFolderCleanup
                 b3.use SyncedFolders
+                b3.use PrepareNFSSettings
+                b3.use ShareFolders
+
+                b3.use SetBootOrder
 
                 # Start it..
                 b3.use StartDomain
@@ -114,8 +100,6 @@ module VagrantPlugins
                 b3.use WaitForCommunicator, [:running]
 
                 b3.use ForwardPorts
-                b3.use PrepareNFSSettings
-                b3.use ShareFolders
               end
             end
           end
@@ -264,7 +248,6 @@ module VagrantPlugins
               end
 
               b3.use Provision
-              # b3.use SyncFolders
             end
           end
         end
