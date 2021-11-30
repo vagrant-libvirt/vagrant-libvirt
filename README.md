@@ -859,6 +859,7 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:libvirt__dhcp_bootp_server` - The server that runs the DHCP server.  Used
   only when dhcp is enabled.By default is the same host that runs the DHCP
   server.
+* `:libvirt__tftp_root` - Path to the root directory served via TFTP.
 * `:libvirt__adapter` - Number specifiyng sequence number of interface.
 * `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `open`, `nat`
   or `route` options.  This option is used only when creating new network. Mode

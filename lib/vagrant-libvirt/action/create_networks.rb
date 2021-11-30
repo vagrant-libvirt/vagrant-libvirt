@@ -352,6 +352,10 @@ module VagrantPlugins
             @network_dhcp_enabled = false
           end
 
+          if @options[:tftp_root]
+            @tftp_root = @options[:tftp_root]
+          end
+
           @network_domain_name = @options[:domain_name]
 
           begin
