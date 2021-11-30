@@ -20,6 +20,9 @@
 
   <% if @network_forward_mode != 'veryisolated' %>
     <ip address="<%= @network_address %>" netmask="<%= @network_netmask %>">
+    <% if @tftp_root %>
+      <tftp root="<%= @tftp_root %>" />
+    <% end %>
     <% if @network_dhcp_enabled  %>
       <dhcp>
         <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>" />
