@@ -47,7 +47,7 @@ module VagrantPlugins
               )
             rescue Libvirt::RetrieveError => e
               # this network is already destroyed, so move on
-              if e.message =~ /Network not found/
+              if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_NETWORK
                 @logger.info 'It is already undefined'
                 next
               # some other error occured, so raise it again
