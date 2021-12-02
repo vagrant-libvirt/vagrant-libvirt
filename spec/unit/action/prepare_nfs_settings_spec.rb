@@ -32,10 +32,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::PrepareNFSSettings do
         EOF
       end
       let(:socket) { double('socket') }
+      let(:udp_socket) { double('udp_socket') }
 
       before do
         allow(::TCPSocket).to receive(:new).and_return(socket)
         allow(socket).to receive(:close)
+
+        allow(::UDPSocket).to receive(:open).and_return(udp_socket)
+        allow(udp_socket).to receive(:connect)
       end
 
       it 'should retrieve the guest IP address' do
