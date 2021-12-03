@@ -27,6 +27,8 @@ describe VagrantPlugins::ProviderLibvirt::Action do
     allow(logger).to receive(:info)
     allow(logger).to receive(:debug)
     allow(logger).to receive(:error)
+
+    allow(connection.client).to receive(:libversion).and_return(6_002_000)
   end
 
   def allow_action_env_result(action, *responses)
