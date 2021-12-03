@@ -177,7 +177,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
       end
 
       context 'when qemu_use_session is enabled' do
-        let(:networks) { [instance_double('::Fog::Libvirt::Compute::Real')] }
+        let(:networks) { [instance_double(::Fog::Libvirt::Compute::Real)] }
         let(:dhcp_leases) {
           {
             "iface"      =>"virbr0",

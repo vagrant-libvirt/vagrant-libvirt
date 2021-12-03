@@ -607,7 +607,9 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
     context 'with mac defined' do
       let (:vm) { double('vm') }
-      before { expect(machine.config).to receive(:vm).and_return(vm) }
+      before do
+        machine.config.instance_variable_get("@keys")[:vm] = vm
+      end
 
       it 'is valid with valid mac' do
         expect(vm).to receive(:networks).and_return([[:public, { mac: 'aa:bb:cc:dd:ee:ff' }]])
