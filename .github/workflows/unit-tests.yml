@@ -17,6 +17,8 @@ jobs:
   test:
 
     runs-on: ubuntu-latest
+    env:
+      VAGRANT_LIBVIRT_REQUIRE_SIMPLECOV: "true"
     continue-on-error: ${{ matrix.allow_fail }}
     strategy:
       fail-fast: false
