@@ -10,9 +10,9 @@ shared_context 'libvirt' do
   let(:libvirt_context) { true                      }
   let(:id)              { 'dummy-vagrant_dummy'     }
   let(:connection)      { double('connection') }
-  let(:domain)          { instance_double('::Fog::Libvirt::Compute::Server') }
-  let(:libvirt_client)  { instance_double('::Libvirt::Connect') }
-  let(:libvirt_domain)  { instance_double('::Libvirt::Domain') }
+  let(:domain)          { instance_double(::Fog::Libvirt::Compute::Server) }
+  let(:libvirt_client)  { instance_double(::Libvirt::Connect) }
+  let(:libvirt_domain)  { instance_double(::Libvirt::Domain) }
   let(:logger)          { double('logger') }
 
   def connection_result(options = {})

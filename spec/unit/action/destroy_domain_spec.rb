@@ -155,7 +155,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
               end
 
               context 'with box metadata' do
-                let(:box) { instance_double('::Vagrant::Box') }
+                let(:box) { instance_double(::Vagrant::Box) }
                 before do
                   allow(env[:machine]).to receive(:box).and_return(box)
                   allow(box).to receive(:metadata).and_return(Hash[
