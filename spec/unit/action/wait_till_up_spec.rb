@@ -86,46 +86,4 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
       end
     end
   end
-
-  describe '#recover' do
-    before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:get_domain).and_return(machine)
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state)
-        .and_return(:not_created)
-      allow(env).to receive(:[]).and_call_original
-    end
-
-    it 'should do nothing by default' do
-      expect(env).to_not receive(:[]).with(:action_runner) # cleanup
-      expect(subject.recover(env)).to be_nil
-    end
-
-    context 'with machine coming up' do
-      before do
-        allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver).to receive(:state)
-          .and_return(:running)
-        env[:destroy_on_error] = true
-      end
-
-      context 'and user has disabled destroy on failure' do
-        before do
-          env[:destroy_on_error] = false
-        end
-
-        it 'skips terminate on failure' do
-          expect(env).to_not receive(:[]).with(:action_runner) # cleanup
-          expect(subject.recover(env)).to be_nil
-        end
-      end
-
-      context 'and using default settings' do
-        let(:runner) { double('runner') }
-        it 'deletes VM on failure' do
-          expect(env).to receive(:[]).with(:action_runner).and_return(runner) # cleanup
-          expect(runner).to receive(:run)
-          expect(subject.recover(env)).to be_nil
-        end
-      end
-    end
-  end
 end

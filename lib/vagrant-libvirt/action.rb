@@ -24,6 +24,8 @@ module VagrantPlugins
           b.use ConfigValidate
           b.use BoxCheckOutdated
           b.use Call, IsCreated do |env, b2|
+            b2.use CleanupOnFailure
+
             # Create VM if not yet created.
             if !env[:result]
               b2.use SetNameOfDomain
@@ -33,6 +35,8 @@ module VagrantPlugins
                 b2.use CreateNetworkInterfaces
 
                 b2.use action_start
+
+                b2.use SetupComplete
               else
                 b2.use HandleStoragePool
                 b2.use HandleBox
@@ -51,6 +55,9 @@ module VagrantPlugins
               b2.use CreateNetworks
               b2.use action_start
             end
+
+            # corresponding action to CleanupOnFailure
+            b2.use SetupComplete
           end
         end
       end
@@ -327,6 +334,8 @@ module VagrantPlugins
 
       action_root = Pathname.new(File.expand_path('../action', __FILE__))
       autoload :PackageDomain, action_root.join('package_domain')
+      autoload :CleanupOnFailure, action_root.join('cleanup_on_failure')
+      autoload :SetupComplete, action_root.join('cleanup_on_failure')
       autoload :CreateDomain, action_root.join('create_domain')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
