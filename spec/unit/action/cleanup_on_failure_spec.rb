@@ -40,6 +40,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanupOnFailure do
     allow(machine).to receive(:state).and_return(state)
 
     allow(logger).to receive(:info)
+    allow(logger).to receive(:debug)
     allow(logger).to receive(:error)
 
     allow(runner).to receive(:run).and_call_original
@@ -120,7 +121,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanupOnFailure do
         it 'should not perform halt or destroy' do
           expect(VagrantPlugins::ProviderLibvirt::Action).to_not receive(:action_halt)
           expect(VagrantPlugins::ProviderLibvirt::Action).to_not receive(:action_destroy)
-          expect(logger).to receive(:info).with('VM completed provider setup, no need to teardown')
+          expect(logger).to receive(:debug).with('VM provider setup was completed, no need to halt/destroy')
 
           expect { runner.run(action_chain) }.to raise_error(Exception, "some action failed")
         end
