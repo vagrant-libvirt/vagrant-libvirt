@@ -8,10 +8,16 @@ module VagrantPlugins
         def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::cleanup_on_failure')
           @app = app
+          @cleanup = true
         end
 
         def call(env)
-          env['vagrant-libvirt.provider'] = :starting
+          # passing a value doesn't work as the env that is updated may be dupped from
+          # the original meaning the latter action's update is discarded. Instead pass
+          # a reference to the method on this class that will toggle the instance
+          # variable indicating whether cleanup is needed or not.
+          env['vagrant-libvirt.complete'] = method(:completed)
+
           @app.call(env)
         end
 
@@ -19,8 +25,8 @@ module VagrantPlugins
           return unless env[:machine] && env[:machine].state.id != :not_created
 
           # only destroy if failed to complete bring up
-          if env['vagrant-libvirt.provider'] == :finished
-            @logger.info("VM completed provider setup, no need to teardown")
+          unless @cleanup
+            @logger.debug('VM provider setup was completed, no need to halt/destroy')
             return
           end
 
@@ -40,22 +46,27 @@ module VagrantPlugins
             env[:action_runner].run(Action.action_destroy, destroy_env)
           end
         end
+
+        def completed
+          @cleanup = false
+        end
       end
 
       class SetupComplete
         def initialize(app, _env)
-          @logger = Log4r::Logger.new('vagrant_libvirt::action::cleanup_on_failure')
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::setup_complete')
           @app = app
         end
 
         def call(env)
-          if env['vagrant-libvirt.provider'].nil?
+          if env['vagrant-libvirt.complete'].nil? or !env['vagrant-libvirt.complete'].respond_to? :call
             raise Errors::CallChainError, require_action: CleanupOnFailure.name, current_action: SetupComplete.name
           end
 
+          @logger.debug('Marking provider setup as completed')
           # mark provider as finished setup so that any failure after this
           # point doesn't result in destroying or shutting down the VM
-          env['vagrant-libvirt.provider'] = :finished
+          env['vagrant-libvirt.complete'].call
 
           @app.call(env)
         end
