@@ -129,15 +129,31 @@ describe 'templates/domain' do
     end
   end
 
-  context 'when custom cpu model enabled' do
-    before do
-      domain.cpu_mode = 'custom'
-      domain.cpu_model = 'SandyBridge'
+  context 'when cpu mode is set' do
+    context 'to host-passthrough' do
+      before do
+        domain.cpu_mode = 'host-passthrough'
+        domain.cpu_model = 'SandyBridge'
+        domain.cputopology :sockets => '1', :cores => '2', :threads => '1'
+        domain.nested = true
+      end
+      let(:test_file) { 'domain_cpu_mode_passthrough.xml' }
+      it 'should allow features and topology and ignore model' do
+        domain.finalize!
+        expect(domain.to_xml('domain')).to eq xml_expected
+      end
     end
-    let(:test_file) { 'domain_custom_cpu_model.xml' }
-    it 'renders template' do
-      domain.finalize!
-      expect(domain.to_xml('domain')).to eq xml_expected
+
+    context 'to custom and model is set' do
+      before do
+        domain.cpu_mode = 'custom'
+        domain.cpu_model = 'SandyBridge'
+      end
+      let(:test_file) { 'domain_custom_cpu_model.xml' }
+      it 'renders template' do
+        domain.finalize!
+        expect(domain.to_xml('domain')).to eq xml_expected
+      end
     end
   end
 

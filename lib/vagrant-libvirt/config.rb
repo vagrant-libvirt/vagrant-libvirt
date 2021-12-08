@@ -968,6 +968,11 @@ module VagrantPlugins
       def validate(machine)
         errors = _detected_errors
 
+        # technically this shouldn't occur, but ensure that if somehow it does, it gets rejected.
+        if @cpu_mode == 'host-passthrough' && @cpu_model != ''
+          errors << "cannot set cpu_model with cpu_mode of 'host-passthrough'. leave model unset or switch mode."
+        end
+
         # The @uri and @qemu_use_session should not conflict
         uri = _parse_uri(@uri)
         if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")
