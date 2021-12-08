@@ -8,29 +8,29 @@
   <cpu mode='<%= @cpu_mode %>'>
 <%- if @cpu_mode != 'host-passthrough' -%>
     <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
-  <%- if @nested -%>
-    <%- if @cpu_features.select{|x| x[:name] == 'vmx'}.empty? -%>
+<%- end -%>
+<%- if @nested -%>
+  <%- if @cpu_features.select{|x| x[:name] == 'vmx'}.empty? -%>
     <feature policy='optional' name='vmx'/>
-    <%- end -%>
-    <%- if @cpu_features.select{|x| x[:name] == 'svm'}.empty? -%>
+  <%- end -%>
+  <%- if @cpu_features.select{|x| x[:name] == 'svm'}.empty? -%>
     <feature policy='optional' name='svm'/>
-    <%- end -%>
   <%- end -%>
-  <%- @cpu_features.each do |cpu_feature| -%>
+<%- end -%>
+<%- @cpu_features.each do |cpu_feature| -%>
     <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
-  <%- end -%>
-  <%- unless @cpu_topology.empty? -%>
+<%- end -%>
+<%- unless @cpu_topology.empty? -%>
     <%# CPU topology -%>
     <topology sockets='<%= @cpu_topology[:sockets] %>' cores='<%= @cpu_topology[:cores] %>' threads='<%= @cpu_topology[:threads] %>'/>
-    <%- end -%>
-  <%- end -%>
-  <%- if @numa_nodes -%>
+<%- end -%>
+<%- if @numa_nodes -%>
     <numa>
-    <%- @numa_nodes.each_with_index do |node, index| -%>
+  <%- @numa_nodes.each_with_index do |node, index| -%>
       <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'<% if node.key?(:memAccess) %> memAccess='<%= node[:memAccess] %>'<% end %>/>
-    <%- end -%>
-    </numa>
   <%- end -%>
+    </numa>
+<%- end -%>
   </cpu>
 <%- if @nodeset -%>
   <numatune>
