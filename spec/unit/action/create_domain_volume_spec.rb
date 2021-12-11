@@ -4,6 +4,8 @@ require 'spec_helper'
 require 'support/sharedcontext'
 require 'support/libvirt_context'
 
+require 'fog/libvirt/models/compute/volume'
+
 require 'vagrant-libvirt/action/destroy_domain'
 require 'vagrant-libvirt/util/byte_number'
 
@@ -14,11 +16,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
   include_context 'unit'
   include_context 'libvirt'
 
-  let(:libvirt_domain) { double('libvirt_domain') }
-  let(:libvirt_client) { double('libvirt_client') }
   let(:volumes) { double('volumes') }
   let(:all) { double('all') }
-  let(:box_volume) { double('box_volume') }
+  let(:box_volume) { instance_double(::Fog::Libvirt::Compute::Volume) }
 
   def read_test_file(name)
     File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), name))
@@ -34,6 +34,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume do
       allow(all).to receive(:first).and_return(box_volume)
       allow(box_volume).to receive(:id).and_return(nil)
       env[:domain_name] = 'test'
+
+      allow(machine.provider_config).to receive(:qemu_use_session).and_return(false)
 
       allow(logger).to receive(:debug)
     end

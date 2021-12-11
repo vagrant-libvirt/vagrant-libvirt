@@ -4,6 +4,8 @@ require 'spec_helper'
 require 'support/sharedcontext'
 require 'support/libvirt_context'
 
+require 'fog/libvirt/models/compute/volume'
+
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/byte_number'
 require 'vagrant-libvirt/action/create_domain'
@@ -14,10 +16,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
   include_context 'unit'
   include_context 'libvirt'
 
-  let(:libvirt_client) { double('libvirt_client') }
   let(:servers) { double('servers') }
   let(:volumes) { double('volumes') }
-  let(:domain_volume) { double('domain_volume') }
+  let(:domain_volume) { instance_double(::Fog::Libvirt::Compute::Volume) }
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), domain_xml_file)) }
   let(:storage_pool_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), storage_pool_xml_file)) }
@@ -55,6 +56,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
     context 'connection => qemu:///system' do
       let(:domain_xml_file) { 'default_domain.xml' }
+
+      before do
+        allow(machine.provider_config).to receive(:qemu_use_session).and_return(false)
+      end
 
       context 'default pool' do
         it 'should execute correctly' do
@@ -178,10 +183,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
     end
 
     context 'connection => qemu:///session' do
-      let(:vagrantfile_providerconfig) do
-        <<-EOF
-        libvirt.qemu_use_session = true
-        EOF
+      before do
+        allow(machine.provider_config).to receive(:qemu_use_session).and_return(true)
       end
 
       context 'default pool' do

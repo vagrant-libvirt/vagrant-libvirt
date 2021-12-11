@@ -171,55 +171,55 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # ignore LIBVIRT_DEFAULT_URI due to explicit settings
         [ # when uri explicitly set
           {:uri => 'qemu:///system'},
-          {:uri => 'qemu:///system'},
+          {:uri => %r{qemu:///(system|session)}},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
         [ # when host explicitly set
           {:host => 'remote'},
-          {:uri => 'qemu://remote/system'},
+          {:uri => %r{qemu://remote/(system|session)}},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
         [ # when connect_via_ssh explicitly set
           {:connect_via_ssh => true},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1'},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1}},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
         [ # when username explicitly set without ssh
           {:username => 'my_user' },
-          {:uri => 'qemu:///system', :username => 'my_user'},
+          {:uri => %r{qemu:///(system|session)}, :username => 'my_user'},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
         [ # when username explicitly set with host but without ssh
           {:username => 'my_user', :host => 'remote'},
-          {:uri => 'qemu://remote/system', :username => 'my_user'},
+          {:uri => %r{qemu://remote/(system|session)}, :username => 'my_user'},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
         [ # when password explicitly set
           {:password => 'some_password'},
-          {:uri => 'qemu:///system', :password => 'some_password'},
+          {:uri => %r{qemu:///(system|session)}, :password => 'some_password'},
           {
-            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu://session'},
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
 
         # driver settings
         [ # set to kvm only
           {:driver => 'kvm'},
-          {:uri => "qemu:///system"},
+          {:uri => %r{qemu:///(system|session)}},
         ],
         [ # set to qemu only
           {:driver => 'qemu'},
-          {:uri => "qemu:///system"},
+          {:uri => %r{qemu:///(system|session)}},
         ],
         [ # set to qemu with session enabled
           {:driver => 'qemu', :qemu_use_session => true},
@@ -241,29 +241,29 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # connect_via_ssh settings
         [ # enabled
           {:connect_via_ssh => true},
-          {:uri => "qemu+ssh://localhost/system?no_verify=1"},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1}},
         ],
         [ # enabled with user
           {:connect_via_ssh => true, :username => 'my_user'},
-          {:uri => "qemu+ssh://my_user@localhost/system?no_verify=1"},
+          {:uri => %r{qemu\+ssh://my_user@localhost/(system|session)\?no_verify=1}},
         ],
         [ # enabled with host
           {:connect_via_ssh => true, :host => 'remote_server'},
-          {:uri => "qemu+ssh://remote_server/system?no_verify=1"},
+          {:uri => %r{qemu\+ssh://remote_server/(system|session)\?no_verify=1}},
         ],
 
         # id_ssh_key_file behaviour
         [ # set should take given value
           {:connect_via_ssh => true, :id_ssh_key_file => '/path/to/keyfile'},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile', :connect_via_ssh => true},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1&keyfile=/path/to/keyfile}, :connect_via_ssh => true},
         ],
         [ # set should infer use of ssh
           {:id_ssh_key_file => '/path/to/keyfile'},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/path/to/keyfile', :connect_via_ssh => true},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1&keyfile=/path/to/keyfile}, :connect_via_ssh => true},
         ],
         [ # connect_via_ssh should enable default but ignore due to not existing
           {:connect_via_ssh => true},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1', :id_ssh_key_file => nil},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1}, :id_ssh_key_file => nil},
           {
             :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(false)
@@ -272,7 +272,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
         [ # connect_via_ssh should enable default and include due to existing
           {:connect_via_ssh => true},
-          {:uri => 'qemu+ssh://localhost/system?no_verify=1&keyfile=/home/tests/.ssh/id_rsa', :id_ssh_key_file => '/home/tests/.ssh/id_rsa'},
+          {:uri => %r{qemu\+ssh://localhost/(system|session)\?no_verify=1&keyfile=/home/tests/\.ssh/id_rsa}, :id_ssh_key_file => '/home/tests/.ssh/id_rsa'},
           {
             :setup => ProcWithBinding.new {
               expect(File).to receive(:file?).with("/home/tests/.ssh/id_rsa").and_return(true)
@@ -283,7 +283,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         # socket behaviour
         [ # set
           {:socket => '/var/run/libvirt/libvirt-sock'},
-          {:uri => "qemu:///system?socket=/var/run/libvirt/libvirt-sock"},
+          {:uri => %r{qemu:///(system|session)\?socket=/var/run/libvirt/libvirt-sock}},
         ],
       ].each do |inputs, outputs, options|
         opts = {}
@@ -317,7 +317,8 @@ describe VagrantPlugins::ProviderLibvirt::Config do
               hash["#{name.to_s[1..-1]}".to_sym] =subject.instance_variable_get(name)
             end
           end
-          expect(got).to eq(outputs)
+
+          expect(got).to match(outputs.inject({}) { |h, (k, v)| h[k] = v.is_a?(Regexp) ? a_string_matching(v) : v; h })
         end
       end
 

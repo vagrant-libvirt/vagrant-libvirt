@@ -24,6 +24,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
       allow(driver).to receive(:state).and_return(:running)
       # return some information for domain when needed
       allow(domain).to receive(:mac).and_return('9C:D5:53:F1:5A:E7')
+
+      allow(machine.provider_config).to receive(:qemu_use_session).and_return(false)
     end
 
     context 'when machine does not exist' do
