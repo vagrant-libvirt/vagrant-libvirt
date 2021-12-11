@@ -318,8 +318,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             end
           end
 
-          outputs.transform_values! { |v| v.is_a?(Regexp) ? a_string_matching(v) : v }
-          expect(got).to match(outputs)
+          expect(got).to match(outputs.inject({}) { |h, (k, v)| h[k] = v.is_a?(Regexp) ? a_string_matching(v) : v; h })
         end
       end
 
