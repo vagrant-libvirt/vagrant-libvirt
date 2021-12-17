@@ -62,6 +62,7 @@ module VagrantPlugins
       attr_accessor :management_network_pci_slot
       attr_accessor :management_network_domain
       attr_accessor :management_network_mtu
+      attr_accessor :management_network_keep
 
       # System connection information
       attr_accessor :system_uri
@@ -220,6 +221,7 @@ module VagrantPlugins
         @management_network_pci_bus = UNSET_VALUE
         @management_network_domain = UNSET_VALUE
         @management_network_mtu = UNSET_VALUE
+        @management_network_keep = UNSET_VALUE
 
         # System connection information
         @system_uri      = UNSET_VALUE
@@ -824,6 +826,7 @@ module VagrantPlugins
         @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
+        @management_network_keep = false if @management_network_keep == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
