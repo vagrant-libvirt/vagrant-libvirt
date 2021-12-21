@@ -32,6 +32,7 @@ module VagrantPlugins
           management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
           management_network_domain = env[:machine].provider_config.management_network_domain
           management_network_mtu = env[:machine].provider_config.management_network_mtu
+          management_network_keep = env[:machine].provider_config.management_network_keep
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -90,6 +91,10 @@ module VagrantPlugins
           unless management_network_pci_bus.nil? and management_network_pci_slot.nil?
             management_network_options[:bus] = management_network_pci_bus
             management_network_options[:slot] = management_network_pci_slot
+          end
+
+          if management_network_keep
+            management_network_options[:always_destroy] = false
           end
 
           # if there is a box and management network is disabled
