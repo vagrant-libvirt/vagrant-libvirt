@@ -184,7 +184,7 @@ To run with Podman you need to include
   --security-opt label=disable \
   -v ~/.vagrant.d/boxes:/vagrant/boxes \
   -v ~/.vagrant.d/data:/vagrant/data \
-  -v ~/.vagrant.d/data:/vagrant/tmp \
+  -v ~/.vagrant.d/tmp:/vagrant/tmp \
 ```
 
 for example:
@@ -196,7 +196,7 @@ vagrant(){
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d/boxes:/vagrant/boxes \
     -v ~/.vagrant.d/data:/vagrant/data \
-    -v ~/.vagrant.d/data:/vagrant/tmp \
+    -v ~/.vagrant.d/tmp:/vagrant/tmp \
     -v $(realpath "${PWD}"):${PWD} \
     -w $(realpath "${PWD}") \
     --network host \
