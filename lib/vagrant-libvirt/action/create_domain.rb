@@ -133,6 +133,12 @@ module VagrantPlugins
           # RNG device passthrough
           @rng = config.rng
 
+          # Memballoon
+          @memballoon_enabled = config.memballoon_enabled
+          @memballoon_model = config.memballoon_model
+          @memballoon_pci_bus = config.memballoon_pci_bus
+          @memballoon_pci_slot = config.memballoon_pci_slot
+
           config = env[:machine].provider_config
           @domain_type = config.driver
 
@@ -320,6 +326,12 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Version:       #{@tpm_version}")
           else
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+          end
+
+          if @memballoon_enabled
+            env[:ui].info(" -- Memballoon model:  #{@memballoon_model}")
+            env[:ui].info(" -- Memballoon bus:    #{@memballoon_pci_bus}")
+            env[:ui].info(" -- Memballoon slot:   #{@memballoon_pci_slot}")
           end
 
           @boot_order.each do |device|
