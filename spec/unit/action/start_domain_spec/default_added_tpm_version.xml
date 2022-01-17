@@ -30,7 +30,7 @@
     <input bus='ps2' type='mouse'/>
     <graphics autoport='yes' keymap='en-us' listen='127.0.0.1' port='-1' type='vnc'/>
     <video>
-      <model heads='1' type='cirrus' vram='9216'/>
+      <model heads='1' type='cirrus' vram='16384'/>
     </video>
   <tpm model='tpm-crb'><backend type='emulator' version='2.0'/></tpm></devices>
 </domain>
