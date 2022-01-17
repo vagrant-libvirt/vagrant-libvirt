@@ -37,7 +37,7 @@
     <input type='mouse' bus='ps2'/>
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'/>
     <video>
-      <model type='cirrus' vram='9216' heads='1'/>
+      <model type='cirrus' vram='16384' heads='1'/>
     </video>
   </devices>
 </domain>
