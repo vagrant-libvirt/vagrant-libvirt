@@ -190,12 +190,12 @@ describe 'templates/domain' do
       end
     end
 
-    context 'memballon enabled' do
+    context 'memballoon enabled' do
       before do
         domain.memballoon_enabled = true
       end
 
-      it 'renders with memballon element' do
+      it 'renders with memballoon element' do
         domain.finalize!
 
         expect(domain.to_xml('domain')).to match(/<memballoon model='virtio'>/)
@@ -218,7 +218,7 @@ describe 'templates/domain' do
       end
     end
 
-    context 'memballon disabled' do
+    context 'memballoon disabled' do
       before do
         domain.memballoon_enabled = false
       end
