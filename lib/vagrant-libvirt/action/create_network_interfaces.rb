@@ -216,6 +216,9 @@ module VagrantPlugins
                   gateway: options[:gateway],
                   route: options[:route]
                 }.merge(network)
+                if IPAddr.new(options[:ip]).ipv6?
+                  network[:type] = :static6
+                end
               else
                 network[:type] = :dhcp
               end
