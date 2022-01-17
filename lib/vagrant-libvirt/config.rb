@@ -879,7 +879,7 @@ module VagrantPlugins
         @graphics_port = -1 if @graphics_port == UNSET_VALUE
         @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_type = 'cirrus' if @video_type == UNSET_VALUE
-        @video_vram = 9216 if @video_vram == UNSET_VALUE
+        @video_vram = 16384 if @video_vram == UNSET_VALUE
         @video_accel3d = false if @video_accel3d == UNSET_VALUE
         @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE
         @sound_type = nil if @sound_type == UNSET_VALUE
