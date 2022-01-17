@@ -52,7 +52,7 @@
     </graphics>
     <audio id='1' type='none'/>
     <video>
-      <model type='cirrus' vram='9216' heads='1' primary='yes'/>
+      <model type='cirrus' vram='16384' heads='1' primary='yes'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
     </video>
     <memballoon model='virtio'>
