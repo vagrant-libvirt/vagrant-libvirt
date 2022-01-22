@@ -1212,9 +1212,9 @@ Bus 001 Device 002: ID 1234:abcd Example device
 Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     # pass through specific device based on identifying it
-    libvirt.usbdev :vendor => '0x1234', :product => '0xabcd'
+    libvirt.usb :vendor => '0x1234', :product => '0xabcd'
     # pass through a host device where multiple of the same vendor/product exist
-    libvirt.usbdev :bus => '1', :device => '1'
+    libvirt.usb :bus => '1', :device => '1'
   end
 end
 ```
