@@ -18,7 +18,7 @@
     <% end %>
   <% end %>
 
-  <% if @network_forward_mode != 'veryisolated' %>
+  <% if @network_forward_mode != 'veryisolated' && !@network_address.nil? %>
     <ip address="<%= @network_address %>" netmask="<%= @network_netmask %>">
     <% if @tftp_root %>
       <tftp root="<%= @tftp_root %>" />
