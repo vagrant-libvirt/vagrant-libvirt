@@ -6,6 +6,58 @@ require 'log4r'
 module VagrantPlugins
   module ProviderLibvirt
     module Action
+      action_root = Pathname.new(File.expand_path('../action', __FILE__))
+      autoload :CleanupOnFailure, action_root.join('cleanup_on_failure')
+      autoload :ClearForwardedPorts, action_root.join('forward_ports')
+      autoload :CreateDomain, action_root.join('create_domain')
+      autoload :CreateDomainVolume, action_root.join('create_domain_volume')
+      autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
+      autoload :CreateNetworks, action_root.join('create_networks')
+      autoload :CleanMachineFolder, action_root.join('clean_machine_folder')
+      autoload :DestroyDomain, action_root.join('destroy_domain')
+      autoload :DestroyNetworks, action_root.join('destroy_networks')
+      autoload :ForwardPorts, action_root.join('forward_ports')
+      autoload :HaltDomain, action_root.join('halt_domain')
+      autoload :HandleBoxImage, action_root.join('handle_box_image')
+      autoload :HandleStoragePool, action_root.join('handle_storage_pool')
+      autoload :IsCreated, action_root.join('is_created')
+      autoload :IsRunning, action_root.join('is_running')
+      autoload :IsSuspended, action_root.join('is_suspended')
+      autoload :MessageAlreadyCreated, action_root.join('message_already_created')
+      autoload :MessageNotCreated, action_root.join('message_not_created')
+      autoload :MessageNotRunning, action_root.join('message_not_running')
+      autoload :MessageNotSuspended, action_root.join('message_not_suspended')
+      autoload :MessageWillNotDestroy, action_root.join('message_will_not_destroy')
+      autoload :PackageDomain, action_root.join('package_domain')
+      autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
+      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
+      autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
+      autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
+      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
+      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
+      autoload :ResumeDomain, action_root.join('resume_domain')
+      autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
+      autoload :SetBootOrder, action_root.join('set_boot_order')
+      autoload :SetupComplete, action_root.join('cleanup_on_failure')
+      # I don't think we need it anymore
+      autoload :ShareFolders, action_root.join('share_folders')
+      autoload :ShutdownDomain, action_root.join('shutdown_domain')
+      autoload :StartDomain, action_root.join('start_domain')
+      autoload :StartShutdownTimer, action_root.join('shutdown_domain')
+      autoload :SuspendDomain, action_root.join('suspend_domain')
+      autoload :TimedProvision, action_root.join('timed_provision')
+      autoload :WaitTillUp, action_root.join('wait_till_up')
+
+      autoload :HandleBox, 'vagrant/action/builtin/handle_box'
+      autoload :Package, 'vagrant/action/general/package'
+      autoload :PackageSetupFiles, 'vagrant/action/general/package_setup_files'
+      autoload :PackageSetupFolders, 'vagrant/action/general/package_setup_folders'
+      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
+      autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
+      autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
+      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
+      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
+
       # Include the built-in & general modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
       include Vagrant::Action::General
@@ -332,63 +384,6 @@ module VagrantPlugins
         end
       end
 
-      action_root = Pathname.new(File.expand_path('../action', __FILE__))
-      autoload :PackageDomain, action_root.join('package_domain')
-      autoload :CleanupOnFailure, action_root.join('cleanup_on_failure')
-      autoload :SetupComplete, action_root.join('cleanup_on_failure')
-      autoload :CreateDomain, action_root.join('create_domain')
-      autoload :CreateDomainVolume, action_root.join('create_domain_volume')
-      autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
-      autoload :CreateNetworks, action_root.join('create_networks')
-      autoload :CleanMachineFolder, action_root.join('clean_machine_folder')
-      autoload :DestroyDomain, action_root.join('destroy_domain')
-      autoload :DestroyNetworks, action_root.join('destroy_networks')
-      autoload :ForwardPorts, action_root.join('forward_ports')
-      autoload :ClearForwardedPorts, action_root.join('forward_ports')
-      autoload :HaltDomain, action_root.join('halt_domain')
-      autoload :StartShutdownTimer, action_root.join('shutdown_domain')
-      autoload :ShutdownDomain, action_root.join('shutdown_domain')
-      autoload :HandleBoxImage, action_root.join('handle_box_image')
-      autoload :HandleStoragePool, action_root.join('handle_storage_pool')
-      autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
-      autoload :IsCreated, action_root.join('is_created')
-      autoload :IsRunning, action_root.join('is_running')
-      autoload :IsSuspended, action_root.join('is_suspended')
-      autoload :MessageAlreadyCreated, action_root.join('message_already_created')
-      autoload :MessageNotCreated, action_root.join('message_not_created')
-      autoload :MessageNotRunning, action_root.join('message_not_running')
-      autoload :MessageNotSuspended, action_root.join('message_not_suspended')
-      autoload :MessageWillNotDestroy, action_root.join('message_will_not_destroy')
-
-      autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
-
-      autoload :PrepareNFSSettings, action_root.join('prepare_nfs_settings')
-      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
-      autoload :PruneNFSExports, action_root.join('prune_nfs_exports')
-
-      autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
-      autoload :ResumeDomain, action_root.join('resume_domain')
-      autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
-      autoload :SetBootOrder, action_root.join('set_boot_order')
-
-      # I don't think we need it anymore
-      autoload :ShareFolders, action_root.join('share_folders')
-      autoload :StartDomain, action_root.join('start_domain')
-      autoload :SuspendDomain, action_root.join('suspend_domain')
-      autoload :TimedProvision, action_root.join('timed_provision')
-
-      autoload :WaitTillUp, action_root.join('wait_till_up')
-      autoload :PrepareNFSValidIds, action_root.join('prepare_nfs_valid_ids')
-
-      autoload :Package, 'vagrant/action/general/package'
-      autoload :PackageSetupFiles, 'vagrant/action/general/package_setup_files'
-      autoload :PackageSetupFolders, 'vagrant/action/general/package_setup_folders'
-      autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
-      autoload :HandleBox, 'vagrant/action/builtin/handle_box'
-      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
-      autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
-      autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
-      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
     end
   end
 end
