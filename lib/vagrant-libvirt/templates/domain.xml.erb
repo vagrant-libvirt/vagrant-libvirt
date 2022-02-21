@@ -163,14 +163,16 @@
       <%- end -%>
       <target port='<%= port %>'/>
     </serial>
-    <%- end -%>
+<%- end -%>
+<%- unless @serials.empty? -%>
     <%- console_log = @serials.first -%>
     <console type='<%= console_log[:type] %>'>
       <%- unless console_log[:source].nil? -%>
       <source path='<%= console_log[:source][:path] %>'/>
-<%- end -%>
+      <%- end -%>
       <target port='0'/>
     </console>
+<%- end -%>
 <%- @channels.each do |channel| -%>
     <channel type='<%= channel[:type] %>' >
   <%-if channel[:source_mode] or channel[:source_path] -%>
