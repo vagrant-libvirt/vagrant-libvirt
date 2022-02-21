@@ -1063,9 +1063,11 @@ module VagrantPlugins
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
           result.qemu_env = c
 
-          s = serials != UNSET_VALUE ? serials.dup : []
-          s += other.serials if other.serials != UNSET_VALUE
-          result.serials = s
+          if serials != UNSET_VALUE
+            s = serials.dup
+            s += other.serials
+            result.serials = s
+          end
         end
       end
 
