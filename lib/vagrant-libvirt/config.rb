@@ -345,9 +345,9 @@ module VagrantPlugins
         # Use Qemu agent to get ip address
         @qemu_use_agent  = UNSET_VALUE
 
-        @serials           = []
-
-        @fog_timeout = UNSET_VALUE
+        @serials           = UNSET_VALUE        
+        
+        @fog_timeout       = UNSET_VALUE
       end
 
       def boot(device)
@@ -707,6 +707,8 @@ module VagrantPlugins
       end
 
       def serial(options={})
+        @serials = [] if @serials == UNSET_VALUE
+
         options = {
           :type => "pty",
           :source => nil,
@@ -971,8 +973,8 @@ module VagrantPlugins
 
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
-        @serials = [{:type => 'pty', :source => nil}] if @serials == []
-
+        @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
+      
         @fog_timeout = DEFAULT_FOG_TIMEOUT if @fog_timeout == UNSET_VALUE
       end
 
@@ -1073,9 +1075,11 @@ module VagrantPlugins
           c.merge!(other.qemu_env) if other.qemu_env != UNSET_VALUE
           result.qemu_env = c
 
-          s = serials.dup
-          s += other.serials
-          result.serials = s
+          if serials != UNSET_VALUE
+            s = serials.dup
+            s += other.serials
+            result.serials = s
+          end
         end
       end
 
