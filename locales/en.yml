@@ -181,6 +181,16 @@ en:
       management_network_required: |-
         Management network can't be disabled when VM use box.
         Please fix your configuration and run vagrant again.
+      snapshot_deletion_error: |-
+        Error while deleting snapshot: %{error_message}.
+      snapshot_missing: |-
+        Snapshot not found: %{error_message}.
+      snapshot_list_error: |-
+        Cannot list snapshots: %{error_message}.
+      snapshot_creation_error: |-
+        Cannot create snapshot(s): %{error_message}.
+      snapshot_reversion_error: |-
+        Cannot revert snapshot(s): %{error_message}.      
       serial_cannot_create_path_error: |-
         Error creating path for serial port output log: %{path}
 
