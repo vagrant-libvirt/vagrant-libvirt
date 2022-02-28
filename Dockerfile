@@ -34,12 +34,17 @@ ENV VAGRANT_HOME /vagrant
 ARG VAGRANT_VERSION
 ENV VAGRANT_VERSION ${VAGRANT_VERSION}
 
+ARG DEFAULT_UID=1000
+ARG DEFAULT_USER=vagrant
+ARG DEFAULT_GROUP=users
+
 RUN set -e \
     && apt-get -y -qq update \
     && curl -sSL -o /tmp/vagrant.deb "https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb" \
     && apt-get install -y /tmp/vagrant.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && useradd -M --uid ${DEFAULT_UID} --gid ${DEFAULT_GROUP} ${DEFAULT_USER} \
     ;
 
 ENV VAGRANT_DEFAULT_PROVIDER=libvirt
@@ -89,12 +94,6 @@ COPY entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["entrypoint.sh"]
 
 FROM build as final
-
-ARG DEFAULT_UID=1000
-ARG DEFAULT_USER=vagrant
-ARG DEFAULT_GROUP=users
-
-RUN useradd -M --uid ${DEFAULT_UID} --gid ${DEFAULT_GROUP} ${DEFAULT_USER}
 
 COPY entrypoint.sh /usr/local/bin/
 
