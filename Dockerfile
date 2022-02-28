@@ -1,22 +1,31 @@
 # syntax = docker/dockerfile:1.0-experimental
 ARG VAGRANT_VERSION=2.2.19
 
+FROM debian:stable-slim as base
 
-FROM ubuntu:bionic as base
-
-RUN apt update \
-    && apt install -y --no-install-recommends \
-        bash \
-        ca-certificates \
-        curl \
-        git \
-        gosu \
-        kmod \
-        libvirt-bin \
-        openssh-client \
-        qemu-utils \
-        rsync \
-    && rm -rf /var/lib/apt/lists \
+RUN apt-get -y -qq update \
+    && apt-get -y --no-install-recommends install \
+      bash \
+      ca-certificates \
+      curl \
+      git \
+      gosu \
+      kmod \
+      libguestfs-tools \
+      libvirt0 \
+      libvirt-clients \
+      libvirt-dev \
+      libxml2-dev \
+      libxslt-dev \
+      openssh-client \
+      openssh-sftp-server \
+      qemu-system \
+      qemu-utils \
+      rsync \
+      ruby-dev \
+      zlib1g-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     ;
 
 RUN mkdir /vagrant
@@ -24,24 +33,21 @@ ENV VAGRANT_HOME /vagrant
 
 ARG VAGRANT_VERSION
 ENV VAGRANT_VERSION ${VAGRANT_VERSION}
-RUN set -e \
-    && curl https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb -o vagrant.deb \
-    && apt update \
-    && apt install -y ./vagrant.deb \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f vagrant.deb \
-    ;
 
+RUN set -e \
+    && apt-get -y -qq update \
+    && curl -sSL -o /tmp/vagrant.deb "https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb" \
+    && apt-get install -y /tmp/vagrant.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    ;
 
 ENV VAGRANT_DEFAULT_PROVIDER=libvirt
 
 FROM base as build
 
-# allow caching of packages for build
-RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-    apt update \
+RUN grep ^deb /etc/apt/sources.list | sed "s/^deb/deb-src/g" > /etc/apt/sources.list.d/sources.list \
+    && apt-get -y -qq update \
     && apt build-dep -y \
         vagrant \
         ruby-libvirt \
@@ -52,19 +58,27 @@ RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/
         ruby-bundler \
         ruby-dev \
         zlib1g-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     ;
 
 WORKDIR /build
 
-COPY . .
-RUN rake build
-RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
+# comma-separated list of other supporting plugins to install
+ARG DEFAULT_OTHER_PLUGINS=vagrant-mutate
 
-RUN for dir in boxes data tmp; \
-    do \
-        touch /vagrant/${dir}/.remove; \
-    done \
-    ;
+COPY . .
+RUN rake build \
+    && vagrant plugin install ./pkg/vagrant-libvirt*.gem \
+    && for plugin in $(echo "$DEFAULT_OTHER_PLUGINS" | sed "s/,/ /g"); \
+         do \
+           vagrant plugin install ${plugin} ; \
+         done \
+    && for dir in boxes data tmp; \
+         do \
+           touch /vagrant/${dir}/.remove; \
+         done \
+         ;
 
 FROM base as slim
 
@@ -75,6 +89,12 @@ COPY entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["entrypoint.sh"]
 
 FROM build as final
+
+ARG DEFAULT_UID=1000
+ARG DEFAULT_USER=vagrant
+ARG DEFAULT_GROUP=users
+
+RUN useradd -M --uid ${DEFAULT_UID} --gid ${DEFAULT_GROUP} ${DEFAULT_USER}
 
 COPY entrypoint.sh /usr/local/bin/
 

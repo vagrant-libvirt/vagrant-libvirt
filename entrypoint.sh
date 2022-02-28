@@ -73,7 +73,6 @@ fi
 
 export USER=vagrant
 export GROUP=users
-export HOME=/home/${USER}
 
 echo "Starting with UID: ${USER_UID}, GID: ${USER_GID}"
 if [[ "${USER_GID}" != "0" ]]
@@ -92,10 +91,12 @@ then
     if getent passwd ${USER} > /dev/null
     then
         USERCMD=usermod
+        HOMEFLAG=
     else
         USERCMD=useradd
+        HOMEFLAG=-M
     fi
-    ${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" -m ${USER} >/dev/null 2>&1 || exit 3
+    ${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" ${HOMEFLAG} ${USER} >/dev/null 2>&1 || exit 3
 fi
 
 # Perform switching in of boxes, data directory containing machine index
@@ -103,17 +104,17 @@ fi
 for dir in boxes data tmp
 do
     # if the directory hasn't been explicitly mounted over, remove it.
-    if [[ -e "/vagrant/${dir}/.remove" ]]
+    if [[ -e "${VAGRANT_HOME}/${dir}/.remove" ]]
     then
-        rm -rf /vagrant/${dir}
+        rm -rf "${VAGRANT_HOME}"/${dir}
         [[ ! -e ${vdir}/${dir} ]] && gosu ${USER} mkdir ${vdir}/${dir}
-        ln -s ${vdir}/${dir} /vagrant/${dir}
+        ln -s ${vdir}/${dir} "${VAGRANT_HOME}"/${dir}
     fi
 done
 
 # make sure the directories can be written to by vagrant otherwise will
 # get a start up error
-find ${VAGRANT_HOME} -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
+find "${VAGRANT_HOME}" -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
 
 LIBVIRT_SOCK=/var/run/libvirt/libvirt-sock
 if [[ ! -S ${LIBVIRT_SOCK} ]]
