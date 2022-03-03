@@ -1295,7 +1295,7 @@ Currently only redirecting to a file is supported.
 Vagrant.configure("2") do |config|
   config.vm.define :test do |test|
     test.vm.provider :libvirt do |domain|
-      domain.serial :type => "file", :source => {:path => "/var/log/vm_consoles/test.log}
+      domain.serial :type => "file", :source => {:path => "/var/log/vm_consoles/test.log"}
     end
   end
 end
