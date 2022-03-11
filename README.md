@@ -49,8 +49,8 @@ can help a lot :-)
   * [USB Device Passthrough](#usb-device-passthrough)
   * [USB Redirector Devices](#usb-redirector-devices)
     * [Filter for USB Redirector Devices](#filter-for-usb-redirector-devices)
-* [Random number generator passthrough](#random-number-generator-passthrough)
 * [Serial Console Devices](#serial-console-devices)
+* [Random number generator passthrough](#random-number-generator-passthrough)
 * [Watchdog device](#watchdog-device)
 * [Smartcard device](#smartcard-device)
 * [Hypervisor Features](#hypervisor-features)
@@ -141,7 +141,7 @@ docker pull vagrantlibvirt/vagrant-libvirt:edge
 
 Running the image:
 ```bash
-docker run -it --rm \
+docker run -i --rm \
   -e LIBVIRT_DEFAULT_URI \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
@@ -155,7 +155,7 @@ docker run -it --rm \
 It's possible to define a function in `~/.bashrc`, for example:
 ```bash
 vagrant(){
-  docker run -it --rm \
+  docker run -i --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
