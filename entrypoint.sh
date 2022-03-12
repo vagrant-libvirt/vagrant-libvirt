@@ -2,6 +2,12 @@
 
 set -u -o pipefail
 
+# duplicate stdout as fd 3
+exec 3>&1
+# redirect stdout to stderr by default
+exec 1>&2
+
+
 vdir="/.vagrant.d"
 
 if [[ ! -d ${vdir} ]]
@@ -145,7 +151,7 @@ fi
 if [[ $# -eq 0 ]]
 then
     # if no command provided
-    exec gosu ${USER} vagrant help
+    exec gosu ${USER} vagrant help >&3
 fi
 
-exec gosu ${USER} "$@"
+exec gosu ${USER} "$@" >&3
