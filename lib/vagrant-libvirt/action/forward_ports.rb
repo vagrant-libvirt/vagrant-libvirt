@@ -121,7 +121,7 @@ module VagrantPlugins
               env[:ui].info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
-                ssh_cmd.prepend('sudo') # add sudo prefix
+                ssh_cmd.unshift('sudo') # add sudo prefix
               end
             end
           end
