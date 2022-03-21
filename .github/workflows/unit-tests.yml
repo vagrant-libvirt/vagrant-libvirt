@@ -81,6 +81,9 @@ jobs:
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
         gem update bundler --conservative
+    - name: Ensure bundle uses https instead of insecure git
+      run: |
+        git config --global url."https://github.com/".insteadOf git://github.com/
     - name: Handle additional ruby 3.0 setup
       if: ${{ matrix.ruby == '3.0.0' }}
       run: |
