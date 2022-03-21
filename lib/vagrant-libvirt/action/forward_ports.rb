@@ -87,6 +87,7 @@ module VagrantPlugins
                           gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
+            -n
             -L
             #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
             -N
@@ -111,7 +112,7 @@ module VagrantPlugins
 
           options += ['-o', "ProxyCommand=\"#{ssh_info[:proxy_command]}\""] if machine.provider_config.proxy_command
 
-          ssh_cmd = ['ssh', '-n'] + options + params
+          ssh_cmd = ['ssh'] + options + params
 
           # TODO: instead of this, try and lock and get the stdin from spawn...
           if host_port <= 1024
@@ -125,12 +126,12 @@ module VagrantPlugins
             end
           end
 
-          @logger.debug "Forwarding port with `#{ssh_cmd}`"
+          @logger.debug "Forwarding port with `#{ssh_cmd.join(' ')}`"
           log_file = ssh_forward_log_file(
             env[:machine], host_ip, host_port, guest_ip, guest_port,
           )
           @logger.info "Logging to #{log_file}"
-          spawn(ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
+          spawn(*ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
         end
 
         def ssh_forward_log_file(machine, host_ip, host_port, guest_ip, guest_port)

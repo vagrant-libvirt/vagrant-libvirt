@@ -132,9 +132,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
       it 'should spawn ssh to setup forwarding' do
         expect(env).to receive(:[]).with(:forwarded_ports).and_return([port_options])
         expect(ui).to receive(:info).with("#{port_options[:guest]} (guest) => #{port_options[:host]} (host) (adapter eth0)")
-        expect(subject).to receive(:spawn) do |*args|
-          expect(args[0]).to start_with('ssh', '-n', '-o', 'User=vagrant', '-o', 'Port=22')
-          expect(args[0]).to end_with('-L', '*:8080:192.168.1.121:80', '-N', 'localhost')
+        expect(subject).to receive(:spawn) do |*args, **kwargs|
+          expect(args).to start_with('ssh', '-o', 'User=vagrant', '-o', 'Port=22')
+          expect(args).to end_with('-n', '-L', '*:8080:192.168.1.121:80', '-N', 'localhost')
         end.and_return(9999)
 
         expect(subject.forward_ports(env)).to eq([port_options])
@@ -151,9 +151,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::ForwardPorts do
         expect(ui).to receive(:info).with("#{port_options[:guest]} (guest) => #{port_options[:host]} (host) (adapter eth0)")
         expect(ui).to receive(:info).with('Requesting sudo for host port(s) <= 1024')
         expect(subject).to receive(:system).with('sudo -v').and_return(true)
-        expect(subject).to receive(:spawn) do |*args|
-          expect(args[0]).to start_with('sudo', 'ssh', '-n', '-o', 'User=vagrant', '-o', 'Port=22')
-          expect(args[0]).to end_with('-L', '*:80:192.168.1.121:80', '-N', 'localhost')
+        expect(subject).to receive(:spawn) do |*args, **kwargs|
+          expect(args).to start_with('sudo', 'ssh', '-o', 'User=vagrant', '-o', 'Port=22')
+          expect(args).to end_with('-n', '-L', '*:80:192.168.1.121:80', '-N', 'localhost')
         end.and_return(10000)
 
         expect(subject.forward_ports(env)).to eq([port_options])
