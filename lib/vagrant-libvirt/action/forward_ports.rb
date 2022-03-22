@@ -87,12 +87,13 @@ module VagrantPlugins
                           gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
+            -n
             -L
             #{host_ip}:#{host_port}:#{guest_ip}:#{guest_port}
             -N
             #{ssh_info[:host]}
-          ).join(' ')
-          params += ' -g' if gateway_ports
+          )
+          params += '-g' if gateway_ports
 
           options = (%W(
             User=#{ssh_info[:username]}
@@ -105,32 +106,32 @@ module VagrantPlugins
             ForwardX11=#{ssh_info[:forward_x11] ? 'yes' : 'no'}
             IdentitiesOnly=#{ssh_info[:keys_only] ? 'yes' : 'no'}
           ) + ssh_info[:private_key_path].map do |pk|
-                "IdentityFile='\"#{pk}\"'"
-              end).map { |s| "-o #{s}" }.join(' ')
+                "IdentityFile=\"#{pk}\""
+              end
+          ).map { |s| ['-o', s] }.flatten
 
-          options += " -o ProxyCommand=\"#{ssh_info[:proxy_command]}\"" if machine.provider_config.proxy_command
+          options += ['-o', "ProxyCommand=\"#{ssh_info[:proxy_command]}\""] if machine.provider_config.proxy_command
+
+          ssh_cmd = ['ssh'] + options + params
 
           # TODO: instead of this, try and lock and get the stdin from spawn...
-          ssh_cmd = ''
           if host_port <= 1024
             @@lock.synchronize do
               # TODO: add i18n
               env[:ui].info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
-                ssh_cmd += 'sudo ' # add sudo prefix
+                ssh_cmd.unshift('sudo') # add sudo prefix
               end
             end
           end
 
-          ssh_cmd += "ssh -n #{options} #{params}"
-
-          @logger.debug "Forwarding port with `#{ssh_cmd}`"
+          @logger.debug "Forwarding port with `#{ssh_cmd.join(' ')}`"
           log_file = ssh_forward_log_file(
             env[:machine], host_ip, host_port, guest_ip, guest_port,
           )
           @logger.info "Logging to #{log_file}"
-          spawn(ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
+          spawn(*ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
         end
 
         def ssh_forward_log_file(machine, host_ip, host_port, guest_ip, guest_port)
