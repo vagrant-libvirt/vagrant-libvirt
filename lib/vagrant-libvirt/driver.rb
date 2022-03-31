@@ -135,7 +135,9 @@ module VagrantPlugins
         end
 
         # TODO: terminated no longer appears to be a valid fog state, remove?
-        return :not_created if domain.nil? || domain.state.to_sym == :terminated
+        return :not_created if domain.nil?
+        return nil if domain.state.nil?
+        return :not_created if domain.state.to_sym == :terminated
 
         state = domain.state.tr('-', '_').to_sym
         if state == :running
