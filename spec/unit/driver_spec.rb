@@ -35,10 +35,10 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
   # name for the test machines above.
   let(:machine)    { iso_env.machine(:test1, :libvirt) }
   let(:machine2)   { iso_env.machine(:test2, :libvirt) }
-  let(:connection1) { double("connection 1") } 
-  let(:connection2) { double("connection 2") } 
-  let(:system_connection1) { double("system connection 1") } 
-  let(:system_connection2) { double("system connection 2") } 
+  let(:connection1) { double("connection 1") }
+  let(:connection2) { double("connection 2") }
+  let(:system_connection1) { double("system connection 1") }
+  let(:system_connection2) { double("system connection 2") }
 
   # make it easier for distros that want to switch the default value for
   # qemu_use_session to true by ensuring it is explicitly false for tests.
@@ -246,11 +246,20 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         }
       ],
       [
+        nil,
+        :unknown,
+        {
+          :setup => ProcWithBinding.new do
+            expect(domain).to receive(:state).and_return('unknown').at_least(:once)
+          end,
+        }
+      ],
+      [
         'terminated',
         :not_created,
         {
           :setup => ProcWithBinding.new do
-            expect(domain).to receive(:state).and_return('terminated')
+            expect(domain).to receive(:state).and_return('terminated').at_least(:once)
           end,
         }
       ],
@@ -259,7 +268,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         :inaccessible,
         {
           :setup => ProcWithBinding.new do
-            expect(domain).to receive(:state).and_return('running').twice()
+            expect(domain).to receive(:state).and_return('running').at_least(:once)
             expect(subject).to receive(:get_domain_ipaddress).and_raise(Fog::Errors::TimeoutError)
           end,
         }
@@ -269,7 +278,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         :running,
         {
           :setup => ProcWithBinding.new do
-            expect(domain).to receive(:state).and_return('running').twice()
+            expect(domain).to receive(:state).and_return('running').at_least(:once)
             expect(subject).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
           end,
         }
