@@ -77,10 +77,12 @@ module VagrantPlugins
           b.use BoxCheckOutdated
           b.use Call, IsCreated do |env, b2|
             b2.use CleanupOnFailure
+            b2.use Provision
 
             # Create VM if not yet created.
             if !env[:result]
               b2.use SetNameOfDomain
+
               if !env[:machine].config.vm.box
                 b2.use CreateDomain
                 b2.use CreateNetworks
@@ -117,7 +119,7 @@ module VagrantPlugins
       # Assuming VM is created, just start it. This action is not called
       # directly by any subcommand. VM can be suspended, already running or in
       # poweroff state.
-      def self.action_start
+      private_class_method def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
           b.use ConfigValidate
           b.use Call, IsRunning do |env, b2|
@@ -140,8 +142,6 @@ module VagrantPlugins
                 b3.use StartDomain
               else
                 # VM is not running or suspended.
-                b3.use Provision
-
                 b3.use PrepareNFSValidIds
                 b3.use SyncedFolderCleanup
                 b3.use SyncedFolders
@@ -352,6 +352,8 @@ module VagrantPlugins
               end
               b3.use CreateNetworks
               b3.use ResumeDomain
+              b3.use Provision
+              b3.use WaitForCommunicator, [:running]
             end
           end
         end
