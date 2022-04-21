@@ -92,6 +92,7 @@ describe 'templates/domain' do
       domain.serial(:type => 'file', :source => {:path => '/var/log/vm_consoles/machine.log'})
       domain.pci(bus: '0x06', slot: '0x12', function: '0x5')
       domain.pci(domain: '0x0001', bus: '0x03', slot: '0x00', function: '0x0')
+      domain.pci(domain: '0x0002', bus: '0x04', slot: '0x00', function: '0x0', guest_domain: '0x0000', guest_bus: '0x01', guest_slot: '0x01', guest_function: '0x0')
       domain.usb_controller(model: 'nec-xhci', ports: '4')
       domain.usb(bus: '1', device: '2', vendor: '0x1234', product: '0xabcd')
       domain.redirdev(type: 'tcp', host: 'localhost', port: '4000')
