@@ -4,7 +4,7 @@ module VagrantPlugins
       class Snapshots
         def self.snapshot_list(machine)
           return if machine.state.id == :not_created
-          machine.provider.driver.list_snapshots(machine.id)
+          machine.provider.driver.list_snapshots(machine)
         end
       end
     end

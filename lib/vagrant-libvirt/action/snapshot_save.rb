@@ -11,7 +11,7 @@ module VagrantPlugins
             "vagrant.actions.vm.snapshot.saving",
             name: env[:snapshot_name]))
           env[:machine].provider.driver.create_snapshot(
-            env[:machine].id, env[:snapshot_name])
+            env[:machine], env[:snapshot_name])
 
           env[:ui].success(I18n.t(
             "vagrant.actions.vm.snapshot.saved",

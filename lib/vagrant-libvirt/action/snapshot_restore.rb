@@ -11,7 +11,7 @@ module VagrantPlugins
             "vagrant.actions.vm.snapshot.restoring",
             name: env[:snapshot_name]))
           env[:machine].provider.driver.restore_snapshot(
-            env[:machine].id, env[:snapshot_name]) do |progress|
+            env[:machine], env[:snapshot_name]) do |progress|
             env[:ui].clear_line
             env[:ui].report_progress(progress, 100, false)
           end
