@@ -213,6 +213,7 @@ module VagrantPlugins
             end
 
             b2.use ConfigValidate
+            b2.use Provision
             b2.use action_halt
             b2.use action_start
           end
