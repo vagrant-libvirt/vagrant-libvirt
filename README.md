@@ -353,11 +353,11 @@ into_srpm.sh -d c8s
 cd SRPMS
 
 # common commands (make sure to adjust verison accordingly)
-rpm2cpio libssh-0.9.0-5.fc30.src.rpm | cpio -imdV
-tar xf libssh-0.9.0.tar.xz
+rpm2cpio libssh-0.9.4-1c8s.src.rpm | cpio -imdV
+tar xf libssh-0.9.4.tar.xz
 mkdir build
 cd build
-cmake ../libssh-0.9.0 -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
+cmake ../libssh-0.9.4 -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
 make
 sudo cp lib/libssh* /opt/vagrant/embedded/lib64
 ```
@@ -376,18 +376,21 @@ dnf download --source krb5-libs
 
 # centos 8 stream, doesn't provide source RPMs, so you need to download like so
 git clone https://git.centos.org/centos-git-common
+# make get_sources.sh executable as it is needed in krb5
+chmod +x centos-git-common/get_sources.sh 
 # centos-git-common needs its tools in PATH
 export PATH=$(readlink -f ./centos-git-common):$PATH
 git clone https://git.centos.org/rpms/krb5
 cd krb5
 git checkout imports/c8s/krb5-1.18.2-8.el8
+get_sources.sh
 into_srpm.sh -d c8s
 cd SRPMS
 
 # common commands (make sure to adjust verison accordingly)
-rpm2cpio krb5-1.18-1.fc32.src.rpm | cpio -imdV
-tar xf krb5-1.18.tar.gz
-cd krb5-1.18/src
+rpm2cpio krb5-1.18.2-8c8s.src.rpm | cpio -imdV
+tar xf krb5-1.18.2.tar.gz
+cd krb5-1.18.2/src
 ./configure
 make
 sudo cp -P lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
