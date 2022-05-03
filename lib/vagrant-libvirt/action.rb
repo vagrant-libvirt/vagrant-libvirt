@@ -48,15 +48,12 @@ module VagrantPlugins
       autoload :TimedProvision, action_root.join('timed_provision')
       autoload :WaitTillUp, action_root.join('wait_till_up')
 
-      autoload :HandleBox, 'vagrant/action/builtin/handle_box'
       autoload :Package, 'vagrant/action/general/package'
       autoload :PackageSetupFiles, 'vagrant/action/general/package_setup_files'
       autoload :PackageSetupFolders, 'vagrant/action/general/package_setup_folders'
       autoload :ProvisionerCleanup, 'vagrant/action/builtin/provisioner_cleanup'
       autoload :SSHRun, 'vagrant/action/builtin/ssh_run'
       autoload :SyncedFolderCleanup, 'vagrant/action/builtin/synced_folder_cleanup'
-      autoload :SyncedFolders, 'vagrant/action/builtin/synced_folders'
-      autoload :WaitForCommunicator, 'vagrant/action/builtin/wait_for_communicator'
 
       # Include the built-in & general modules so we can use them as top-level things.
       include Vagrant::Action::Builtin
@@ -93,6 +90,7 @@ module VagrantPlugins
                 b2.use SetupComplete
               else
                 b2.use HandleStoragePool
+                require 'vagrant/action/builtin/handle_box'
                 b2.use HandleBox
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
@@ -144,6 +142,7 @@ module VagrantPlugins
                 # VM is not running or suspended.
                 b3.use PrepareNFSValidIds
                 b3.use SyncedFolderCleanup
+                require 'vagrant/action/builtin/synced_folders'
                 b3.use SyncedFolders
                 b3.use PrepareNFSSettings
                 b3.use ShareFolders
@@ -156,6 +155,7 @@ module VagrantPlugins
                 # Machine should gain IP address when comming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
+                require 'vagrant/action/builtin/wait_for_communicator'
                 b3.use WaitForCommunicator, [:running]
 
                 b3.use ForwardPorts
@@ -354,6 +354,7 @@ module VagrantPlugins
               b3.use CreateNetworks
               b3.use ResumeDomain
               b3.use Provision
+              require 'vagrant/action/builtin/wait_for_communicator'
               b3.use WaitForCommunicator, [:running]
             end
           end
