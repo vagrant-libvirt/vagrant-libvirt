@@ -528,10 +528,14 @@ module VagrantPlugins
           pci_domain = options[:domain]
         end
 
-        @pcis.push(domain:    pci_domain,
-                   bus:       options[:bus],
-                   slot:      options[:slot],
-                   function:  options[:function])
+        @pcis.push(domain:          pci_domain,
+                   bus:             options[:bus],
+                   slot:            options[:slot],
+                   function:        options[:function],
+                   guest_domain:    options[:guest_domain],
+                   guest_bus:       options[:guest_bus],
+                   guest_slot:      options[:guest_slot],
+                   guest_function:  options[:guest_function])
       end
 
       def watchdog(options = {})

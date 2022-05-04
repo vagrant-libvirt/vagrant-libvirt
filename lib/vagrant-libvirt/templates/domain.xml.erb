@@ -230,15 +230,20 @@
       <backend model='random'>/dev/random</backend>
     </rng>
 <%- end -%>
-<%- @pcis.each do |pci| -%>
+<%-
+  @pcis.each do |pci|
+    pci = pci.reject { |k,v| v.nil? }
+    guest_prefix = "guest_"
+    pci_host = pci.select { |k,_| !k.to_s.start_with?(guest_prefix) }
+    pci_guest = pci.select { |k,_| k.to_s.start_with?(guest_prefix) }
+-%>
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
-	<address <%= pci.select { |k,_| [:domain, :bus, :slot, :function].include? k }
-	  .reject { |k,v| v.nil? }
-	  .map { |k,v| "#{k.to_s}='#{v}'" }
-	  .join(' ')
-	-%>/>
+        <address <%= pci_host.map { |k,v| "#{k.to_s}='#{v}'" } .join(' ') -%>/>
       </source>
+    <%- if !pci_guest.empty? -%>
+      <address type='pci' <%= pci_guest.map { |k,v| "#{k.to_s[guest_prefix.length..-1]}='#{v}'" } .join(' ') -%>/>
+    <%- end -%>
     </hostdev>
 <%- end -%>
 <%- @usbs.each do |usb| -%>
