@@ -239,7 +239,7 @@
 -%>
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
-	<address <%= pci_host.map { |k,v| "#{k.to_s}='#{v}'" } .join(' ') -%>/>
+        <address <%= pci_host.map { |k,v| "#{k.to_s}='#{v}'" } .join(' ') -%>/>
       </source>
     <%- if !pci_guest.empty? -%>
       <address type='pci' <%= pci_guest.map { |k,v| "#{k.to_s[guest_prefix.length..-1]}='#{v}'" } .join(' ') -%>/>

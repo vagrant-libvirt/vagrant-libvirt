@@ -107,7 +107,7 @@
     </rng>
     <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
-	<address domain='0x0000' bus='0x06' slot='0x12' function='0x5'/>
+        <address domain='0x0000' bus='0x06' slot='0x12' function='0x5'/>
       </source>
     </hostdev>
     <hostdev mode='subsystem' type='pci' managed='yes'>
