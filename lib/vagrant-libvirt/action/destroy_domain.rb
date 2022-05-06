@@ -43,11 +43,14 @@ module VagrantPlugins
 
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
 
+          undefine_flags = 0
+          undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM if env[:machine].provider_config.nvram
+
           if env[:machine].provider_config.disks.empty? &&
              env[:machine].provider_config.cdroms.empty?
             # if using default configuration of disks and cdroms
             # cdroms are consider volumes, but cannot be destroyed
-            domain.destroy(destroy_volumes: true)
+            destroy_domain(domain, destroy_volumes: true, flags: undefine_flags)
           else
             domain_xml = libvirt_domain.xml_desc(1)
             xml_descr = REXML::Document.new(domain_xml)
@@ -57,7 +60,7 @@ module VagrantPlugins
               env[:ui].warn(I18n.t('vagrant_libvirt.destroy.obsolete_method'))
             end
 
-            domain.destroy(destroy_volumes: false)
+            destroy_domain(domain, destroy_volumes: false, flags: undefine_flags)
 
             volumes = domain.volumes
 
@@ -162,6 +165,14 @@ module VagrantPlugins
               x.path =~ /\/#{disk[:path]}$/ && x.pool_name == poolname
             end.first
             libvirt_disk.destroy if libvirt_disk
+          end
+        end
+
+        def destroy_domain(domain, destroy_volumes:, flags:)
+          if domain.method(:destroy).parameters.first.include?(:flags)
+            domain.destroy(destroy_volumes: destroy_volumes, flags: flags)
+          else
+            domain.destroy(destroy_volumes: destroy_volumes)
           end
         end
       end

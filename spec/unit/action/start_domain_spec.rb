@@ -62,6 +62,62 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
     end
 
+    context 'nvram' do
+      context 'when being added to existing' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.nvram = "/path/to/nvram/file"
+          EOF
+        end
+        let(:test_file) { 'existing.xml' }
+        let(:updated_test_file) { 'existing_added_nvram.xml' }
+
+        it 'should undefine without passing flags' do
+          expect(libvirt_domain).to receive(:undefine).with(0)
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'when it was already in use' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.nvram = "/path/to/nvram/file"
+          # change another setting to trigger the undefine/create
+          libvirt.cpus = 4
+          EOF
+        end
+        let(:test_file) { 'nvram_domain.xml' }
+        let(:updated_test_file) { 'nvram_domain_other_setting.xml' }
+
+        it 'should set the flag to keep nvram' do
+          expect(libvirt_domain).to receive(:undefine).with(VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM)
+          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+
+        context 'when it is being disabled' do
+          let(:vagrantfile_providerconfig) { }
+          let(:updated_test_file) { 'nvram_domain_removed.xml' }
+
+          it 'should set the flag to remove nvram' do
+            expect(libvirt_domain).to receive(:undefine).with(VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_NVRAM)
+            expect(servers).to receive(:create).with(xml: updated_domain_xml)
+            expect(libvirt_domain).to receive(:autostart=)
+            expect(domain).to receive(:start)
+
+            expect(subject.call(env)).to be_nil
+          end
+        end
+      end
+    end
+
     context 'tpm' do
       context 'passthrough tpm added' do
         let(:updated_test_file) { 'default_added_tpm_path.xml' }

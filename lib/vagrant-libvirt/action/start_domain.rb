@@ -375,10 +375,30 @@ module VagrantPlugins
                 end
               end
 
+              undefine_flags = 0
+              nvram = REXML::XPath.first(xml_descr, '/domain/os/nvram')
+              if config.nvram
+                if nvram.nil?
+                  descr_changed = true
+                  nvram = REXML::Element.new('nvram', REXML::XPath.first(xml_descr, '/domain/os'))
+                  nvram.text = config.nvram
+                else
+                  if (nvram.text or '').strip != config.nvram
+                    descr_changed = true
+                    nvram.text = config.nvram
+                  end
+                  undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM
+                end
+              elsif !nvram.nil?
+                descr_changed = true
+                undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_NVRAM
+                nvram.parent.delete_element(nvram)
+              end
+
               # Apply
               if descr_changed
                 begin
-                  libvirt_domain.undefine
+                  libvirt_domain.undefine(undefine_flags)
                   new_descr = String.new
                   xml_descr.write new_descr
                   env[:machine].provider.driver.connection.servers.create(xml: new_descr)

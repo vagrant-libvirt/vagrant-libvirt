@@ -19,10 +19,14 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), domain_xml_file)) }
 
+  let(:destroy_method) { double('destroy_method') }
+
   before do
     allow(machine.provider).to receive('driver').and_return(driver)
     allow(driver).to receive(:connection).and_return(connection)
     allow(logger).to receive(:info)
+    allow(domain).to receive(:method).with(:destroy).and_return(destroy_method)
+    allow(destroy_method).to receive(:parameters).and_return([[:opt, :options, :flags]])
   end
 
   describe '#call' do
@@ -49,7 +53,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
 
       context 'when box only has one root disk' do
         it 'calls fog to destroy volumes' do
-          expect(domain).to receive(:destroy).with(destroy_volumes: true)
+          expect(domain).to receive(:destroy).with(destroy_volumes: true, flags: 0)
           expect(subject.call(env)).to be_nil
         end
 
@@ -69,7 +73,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
           end
 
           it 'destroys disks individually' do
-            expect(domain).to receive(:destroy).with(destroy_volumes: false)
+            expect(domain).to receive(:destroy).with(destroy_volumes: false, flags: 0)
             expect(extra_disk).to receive(:destroy) # extra disk remove
             expect(root_disk).to receive(:destroy)  # root disk remove
             expect(subject.call(env)).to be_nil
@@ -81,7 +85,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
         let(:domain_xml_file) { 'box_multiple_disks.xml' }
 
         it 'calls fog to destroy volumes' do
-          expect(domain).to receive(:destroy).with(destroy_volumes: true)
+          expect(domain).to receive(:destroy).with(destroy_volumes: true, flags: 0)
           expect(subject.call(env)).to be_nil
         end
 
@@ -111,7 +115,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
               expect(disk).to receive(:name).and_return(name).at_least(:once)
               expect(disk).to receive(:destroy)
             end
-            expect(domain).to receive(:destroy).with(destroy_volumes: false)
+            expect(domain).to receive(:destroy).with(destroy_volumes: false, flags: 0)
             expect(subject.call(env)).to be_nil
           end
 
@@ -133,7 +137,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
                 next if disk == domain_disks.last.first
                 expect(disk).to receive(:destroy)
               end
-              expect(domain).to receive(:destroy).with(destroy_volumes: false)
+              expect(domain).to receive(:destroy).with(destroy_volumes: false, flags: 0)
               expect(subject.call(env)).to be_nil
             end
 
@@ -150,7 +154,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
                   next if domain_disks.last.first == disk
                   expect(disk).to receive(:destroy)
                 end
-                expect(domain).to receive(:destroy).with(destroy_volumes: false)
+                expect(domain).to receive(:destroy).with(destroy_volumes: false, flags: 0)
                 expect(subject.call(env)).to be_nil
               end
 
@@ -176,11 +180,40 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
                     next if domain_disks.last.first == disk
                     expect(disk).to receive(:destroy)
                   end
-                  expect(domain).to receive(:destroy).with(destroy_volumes: false)
+                  expect(domain).to receive(:destroy).with(destroy_volumes: false, flags: 0)
                   expect(subject.call(env)).to be_nil
                 end
               end
             end
+          end
+        end
+      end
+
+      context 'when has nvram' do
+        let(:vagrantfile) do
+          <<-EOF
+          Vagrant.configure('2') do |config|
+            config.vm.define :test
+            config.vm.provider :libvirt do |libvirt|
+              libvirt.nvram = "test"
+            end
+          end
+          EOF
+        end
+
+        it 'sets destroy flags to keep nvram' do
+          expect(domain).to receive(:destroy).with(destroy_volumes: true, flags: VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM)
+          expect(subject.call(env)).to be_nil
+        end
+
+        context 'when fog does not support destroy with flags' do
+          before do
+            expect(destroy_method).to receive(:parameters).and_return([[:opt, :options]])
+          end
+
+          it 'skips setting additional destroy flags' do
+            expect(domain).to receive(:destroy).with(destroy_volumes: true)
+            expect(subject.call(env)).to be_nil
           end
         end
       end
@@ -197,7 +230,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
           expect(domain).to receive(:volumes).and_return([root_disk, nil])
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
 
-          expect(domain).to_not receive(:destroy).with(destroy_volumes: true)
+          expect(domain).to_not receive(:destroy).with(destroy_volumes: true, flags: 0)
           expect(root_disk).to receive(:destroy)  # root disk remove
           expect(subject.call(env)).to be_nil
         end
