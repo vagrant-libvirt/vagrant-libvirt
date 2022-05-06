@@ -46,6 +46,8 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     allow(machine.provider_config).to receive(:qemu_use_session).and_return(false)
     allow(logger).to receive(:info)
     allow(logger).to receive(:debug)
+    allow(machine.provider).to receive('driver').and_call_original
+    allow(machine2.provider).to receive('driver').and_call_original
   end
 
   describe '#connection' do

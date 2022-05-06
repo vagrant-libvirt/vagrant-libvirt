@@ -26,10 +26,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
-      allow(connection).to receive(:client).and_return(libvirt_client)
-
       allow(connection).to receive(:servers).and_return(servers)
       allow(connection).to receive(:volumes).and_return(volumes)
       allow(volumes).to receive(:all).and_return([domain_volume])

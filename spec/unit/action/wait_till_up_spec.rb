@@ -18,8 +18,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
 
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Provider).to receive(:driver)
-        .and_return(driver)
       allow(driver).to receive(:get_domain).and_return(domain)
       allow(driver).to receive(:state).and_return(:running)
       # return some information for domain when needed

@@ -10,6 +10,7 @@ shared_context 'libvirt' do
   let(:libvirt_context) { true                      }
   let(:id)              { 'dummy-vagrant_dummy'     }
   let(:connection)      { double('connection') }
+  let(:driver)          { instance_double(VagrantPlugins::ProviderLibvirt::Driver) }
   let(:domain)          { instance_double(::Fog::Libvirt::Compute::Server) }
   let(:libvirt_client)  { instance_double(::Libvirt::Connect) }
   let(:libvirt_domain)  { instance_double(::Libvirt::Domain) }
@@ -33,5 +34,8 @@ shared_context 'libvirt' do
 
     allow(machine).to receive(:id).and_return(id)
     allow(Log4r::Logger).to receive(:new).and_return(logger)
+
+    allow(machine.provider).to receive('driver').and_return(driver)
+    allow(driver).to receive(:connection).and_return(connection)
   end
 end

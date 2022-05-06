@@ -12,8 +12,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::PackageDomain do
   include_context 'libvirt'
   include_context 'temporary_dir'
 
-  let(:libvirt_client) { double('libvirt_client') }
-  let(:libvirt_domain) { double('libvirt_domain') }
   let(:servers) { double('servers') }
   let(:volumes) { double('volumes') }
   let(:metadata_file) { double('file') }
@@ -21,9 +19,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::PackageDomain do
 
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
-      allow(connection).to receive(:client).and_return(libvirt_client)
       allow(libvirt_client).to receive(:lookup_domain_by_uuid).and_return(libvirt_domain)
 
       allow(connection).to receive(:servers).and_return(servers)

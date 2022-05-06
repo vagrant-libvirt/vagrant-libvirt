@@ -34,8 +34,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanupOnFailure do
   let(:state) { double('state') }
 
   before do
-    allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-      .to receive(:connection).and_return(connection)
     allow(machine).to receive(:id).and_return('test-machine-id')
     allow(machine).to receive(:state).and_return(state)
 
