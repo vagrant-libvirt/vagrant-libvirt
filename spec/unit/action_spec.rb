@@ -14,13 +14,10 @@ describe VagrantPlugins::ProviderLibvirt::Action do
   include_context 'libvirt'
   include_context 'unit'
 
-  let(:libvirt_domain) { double('libvirt_domain') }
   let(:runner) { Vagrant::Action::Runner.new(env) }
   let(:state) { double('state') }
 
   before do
-    allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-      .to receive(:connection).and_return(connection)
     allow(machine).to receive(:id).and_return('test-machine-id')
     allow(machine).to receive(:state).and_return(state)
 

@@ -15,7 +15,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
   include_context 'unit'
   include_context 'libvirt'
 
-  let(:libvirt_client) { double('libvirt_client') }
   let(:volumes) { double('volumes') }
   let(:all) { double('all') }
   let(:box_volume) { double('box_volume') }
@@ -54,13 +53,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
   byte_number_20G = ByteNumber.new(21474836480)
 
 
-
-
   describe '#call' do
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
-      allow(connection).to receive(:client).and_return(libvirt_client)
       allow(connection).to receive(:volumes).and_return(volumes)
       allow(volumes).to receive(:all).and_return(all)
       allow(env[:ui]).to receive(:clear_line)

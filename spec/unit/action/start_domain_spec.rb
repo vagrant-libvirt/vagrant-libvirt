@@ -13,19 +13,19 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
   include_context 'unit'
   include_context 'libvirt'
 
-  let(:libvirt_domain) { double('libvirt_domain') }
-  let(:libvirt_client) { double('libvirt_client') }
   let(:servers) { double('servers') }
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), test_file)) }
   let(:updated_domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), updated_test_file)) }
 
+  before do
+    allow(driver).to receive(:created?).and_return(true)
+  end
+
   describe '#call' do
     let(:test_file) { 'default.xml' }
 
     before do
-      allow_any_instance_of(VagrantPlugins::ProviderLibvirt::Driver)
-        .to receive(:connection).and_return(connection)
       allow(connection).to receive(:client).and_return(libvirt_client)
       allow(libvirt_client).to receive(:lookup_domain_by_uuid).and_return(libvirt_domain)
 
@@ -43,7 +43,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
     end
 
     it 'should execute without changing' do
-      allow(libvirt_domain).to receive(:undefine)
+      expect(libvirt_domain).to_not receive(:undefine)
       expect(libvirt_domain).to receive(:autostart=)
       expect(domain).to receive(:start)
 
@@ -54,7 +54,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       let(:test_file) { 'existing.xml' }
 
       it 'should execute without changing' do
-        allow(libvirt_domain).to receive(:undefine)
+        expect(libvirt_domain).to_not receive(:undefine)
         expect(libvirt_domain).to receive(:autostart=)
         expect(domain).to receive(:start)
 
