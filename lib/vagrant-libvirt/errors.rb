@@ -109,7 +109,7 @@ module VagrantPlugins
       end
 
       class FogCreateServerError < VagrantLibvirtError
-        error_key(:fog_create_server_error)
+        error_key(:create_server_error)
       end
 
       # Network exceptions
@@ -154,6 +154,10 @@ module VagrantPlugins
       end
 
       # Other exceptions
+      class UpdateServerError < VagrantLibvirtError
+        error_key(:create_server_error)
+      end
+
       class InterfaceSlotNotAvailable < VagrantLibvirtError
         error_key(:interface_slot_not_available)
       end
