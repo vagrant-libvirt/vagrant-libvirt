@@ -994,6 +994,10 @@ module VagrantPlugins
           errors << "libvirt.qemu_use_agent must be a boolean."
         end
 
+        if !@nvram.nil? && @loader.nil?
+          errors << "use of 'nvram' requires a 'loader' to be specified, please add one to the configuration"
+        end
+
         if @qemu_use_agent == true
           # if qemu agent is used to optain domain ip configuration, at least
           # one qemu channel has to be configured. As there are various options,

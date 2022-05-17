@@ -6,9 +6,9 @@
   <currentMemory unit='KiB'>2097152</currentMemory>
   <vcpu placement='static'>2</vcpu>
   <os>
-    <type arch='x86_64' machine='pc-i440fx-6.0'>hvm</type>
+    <type arch='x86_64' machine='pc-i440fx-6.0'>hvm</type><loader type='pflash'>/path/to/loader/file</loader><nvram>/path/to/nvram/file</nvram>
     <boot dev='hd'/>
-  <nvram>/path/to/nvram/file</nvram></os>
+  </os>
   <features>
     <acpi/>
     <apic/>

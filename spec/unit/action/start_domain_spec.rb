@@ -66,6 +66,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       context 'when being added to existing' do
         let(:vagrantfile_providerconfig) do
           <<-EOF
+          libvirt.loader = "/path/to/loader/file"
           libvirt.nvram = "/path/to/nvram/file"
           EOF
         end
@@ -85,6 +86,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       context 'when it was already in use' do
         let(:vagrantfile_providerconfig) do
           <<-EOF
+          libvirt.loader = "/path/to/loader/file"
           libvirt.nvram = "/path/to/nvram/file"
           # change another setting to trigger the undefine/create
           libvirt.cpus = 4

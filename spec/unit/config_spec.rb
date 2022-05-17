@@ -630,6 +630,24 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
+    context 'with nvram defined' do
+      before do
+        subject.nvram = '/path/to/some/nvram'
+      end
+
+      it 'should be invalid as loader not set' do
+        assert_invalid
+      end
+
+      context 'with loader defined' do
+        it 'should be valid' do
+          subject.loader = '/path/to/some/loader'
+
+          assert_valid
+        end
+      end
+    end
+
     context 'with cpu_mode and cpu_model defined' do
       it 'should discard model if mode is passthrough' do
         subject.cpu_mode = 'host-passthrough'

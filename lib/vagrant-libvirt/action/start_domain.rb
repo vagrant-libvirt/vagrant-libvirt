@@ -375,12 +375,32 @@ module VagrantPlugins
                 end
               end
 
+              loader = REXML::XPath.first(xml_descr, '/domain/os/loader')
+              if config.loader
+                if loader.nil?
+                  descr_changed = true
+                  loader = REXML::Element.new('loader')
+                  REXML::XPath.first(xml_descr, '/domain/os').insert_after('//type', loader)
+                  loader.text = config.loader
+                else
+                  if (loader.text or '').strip != config.loader
+                    descr_changed = true
+                    loader.text = config.loader
+                  end
+                end
+                loader.attributes['type'] = config.nvram ? 'pflash' : 'rom'
+              elsif !loader.nil?
+                descr_changed = true
+                loader.parent.delete_element(loader)
+              end
+
               undefine_flags = 0
               nvram = REXML::XPath.first(xml_descr, '/domain/os/nvram')
               if config.nvram
                 if nvram.nil?
                   descr_changed = true
-                  nvram = REXML::Element.new('nvram', REXML::XPath.first(xml_descr, '/domain/os'))
+                  nvram = REXML::Element.new('nvram')
+                  REXML::XPath.first(xml_descr, '/domain/os').insert_after(loader, nvram)
                   nvram.text = config.nvram
                 else
                   if (nvram.text or '').strip != config.nvram
