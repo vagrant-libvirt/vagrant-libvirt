@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 require 'log4r'
-require 'rexml'
+
+begin
+  require 'rexml'
+rescue LoadError
+  require 'rexml/rexml'
+end
 
 module VagrantPlugins
   module ProviderLibvirt
