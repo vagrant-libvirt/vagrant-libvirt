@@ -82,7 +82,17 @@
 <%- if @dtb -%>
     <dtb><%= @dtb %></dtb>
 <% end -%>
+<%- if @dmi_system_serial -%>
+    <smbios mode='sysinfo'/>
+<% end -%>
   </os>
+<%- if @dmi_system_serial -%>
+  <sysinfo type='smbios'>
+    <system>
+      <entry name='serial'><%= @dmi_system_serial %></entry>
+    </system>
+  </sysinfo>
+<% end -%>
   <features>
 <%- @features.each do |feature| -%>
     <<%= feature %>/>

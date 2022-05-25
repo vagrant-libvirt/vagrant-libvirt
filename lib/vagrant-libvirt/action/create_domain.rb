@@ -73,6 +73,8 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
+          @dmi_system_serial = config.dmi_system_serial
+
           # Boot order
           @boot_order = config.boot_order
 
@@ -253,6 +255,10 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Version:       #{@tpm_version}")
           else
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+          end
+
+          unless @dmi_system_serial.nil?
+            env[:ui].info(" -- DMI System Serial: #{@dmi_system_serial}")
           end
 
           if @memballoon_enabled

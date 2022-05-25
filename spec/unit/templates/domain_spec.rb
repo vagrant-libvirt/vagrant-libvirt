@@ -100,6 +100,8 @@ describe 'templates/domain' do
       domain.smartcard(mode: 'passthrough')
       domain.tpm_path = '/dev/tpm0'
 
+      domain.dmi_system_serial = 'AAAAAAAA'
+
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')
 
