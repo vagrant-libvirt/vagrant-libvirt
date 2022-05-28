@@ -110,7 +110,7 @@ module VagrantPlugins
 
         # Get IP address from dhcp leases table
         begin
-          ip_address = get_ipaddress_from_domain(domain)
+          ip_address = get_ipaddress_from_domain(domain, machine.provider_config.fog_timeout)
         rescue Fog::Errors::TimeoutError
           @logger.info('Timeout at waiting for an ip address for machine %s' % machine.name)
 
@@ -201,9 +201,9 @@ module VagrantPlugins
         ip_address
       end
 
-      def get_ipaddress_from_domain(domain)
+      def get_ipaddress_from_domain(domain, timeout)
         ip_address = nil
-        domain.wait_for(2) do
+        domain.wait_for(timeout) do
           addresses.each_pair do |type, ip|
             # Multiple leases are separated with a newline, return only
             # the most recent address

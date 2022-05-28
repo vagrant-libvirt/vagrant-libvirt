@@ -10,6 +10,8 @@ require 'vagrant-libvirt/util/resolvers'
 module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
+      DEFAULT_FOG_TIMEOUT = 2
+
       # manually specify URI
       # will supercede most other options if provided
       attr_accessor :uri
@@ -195,6 +197,8 @@ module VagrantPlugins
       # serial consoles
       attr_accessor :serials
 
+      attr_accessor :fog_timeout
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -341,7 +345,9 @@ module VagrantPlugins
         # Use Qemu agent to get ip address
         @qemu_use_agent  = UNSET_VALUE
 
-        @serials           = UNSET_VALUE
+        @serials           = UNSET_VALUE        
+        
+        @fog_timeout       = UNSET_VALUE
       end
 
       def boot(device)
@@ -972,6 +978,8 @@ module VagrantPlugins
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
         @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
+      
+        @fog_timeout = DEFAULT_FOG_TIMEOUT if @fog_timeout == UNSET_VALUE
       end
 
       def validate(machine)
@@ -1046,6 +1054,10 @@ module VagrantPlugins
           if !machine.provider_config.disk_driver_opts.empty?
             machine.ui.warn("Libvirt Provider: volume_cache has no effect when disk_driver is defined.")
           end
+        end
+
+        if @fog_timeout != DEFAULT_FOG_TIMEOUT
+          machine.ui.warn("libvirt configuration option fog_timeout is an advanced option, use of it outside of testing typically means there is another issue")
         end
 
         { 'Libvirt Provider' => errors }
