@@ -117,9 +117,9 @@
             @disk_driver_opts.reject { |k,v| v.nil? }
                              .map { |k,v| "#{k}='#{v}'"}
                              .join(' ') -%>/>
-      <source file='<%= volume[:path] %>'/>
+      <source file='<%= volume[:absolute_path] %>'/>
       <%# we need to ensure a unique target dev -%>
-      <target dev='<%= volume[:dev] %>' bus='<%= volume[:bus] %>'/>
+      <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
     </disk>
 <%- end -%>
 <%# additional disks -%>

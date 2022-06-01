@@ -78,6 +78,14 @@ cleanup() {
   [ "$status" -eq 0 ]
   echo "${output}"
   [ $(expr "$output" : ".*second_disk_default-vdb.*") -ne 0  ]
+  run ${VAGRANT_CMD} halt
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
   cleanup
 }
 
