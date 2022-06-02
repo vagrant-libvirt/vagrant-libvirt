@@ -145,7 +145,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
               let(:domain_xml_file) { 'box_multiple_disks_and_additional_and_custom_disks_no_aliases.xml' }
 
               it 'only destroys expected disks' do
-                expect(ui).to receive(:warn).with(/Destroying machine that was originally created without device aliases.*/)
+                expect(ui).to receive(:warn).with(/Machine that was originally created without device aliases.*/)
                 expect(ui).to receive(:warn).with(/Unexpected number of volumes detected/)
                 expect(ui).to receive(:warn).with(/box metadata not available to get volume list during destroy, assuming inferred list/)
                 domain_disks.each do |disk, name|
@@ -172,7 +172,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
                 end
 
                 it 'only destroys expected disks' do
-                  expect(ui).to receive(:warn).with(/Destroying machine that was originally created without device aliases.*/)
+                  expect(ui).to receive(:warn).with(/Machine that was originally created without device aliases.*/)
                   expect(ui).to receive(:warn).with(/Unexpected number of volumes detected/)
                   domain_disks.each do |disk, name|
                     expect(disk).to receive(:name).and_return(name).at_least(:once)

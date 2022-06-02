@@ -62,13 +62,13 @@ describe 'templates/domain' do
         :dev => 'vda',
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :path => '/var/lib/libvirt/images/test.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test.qcow2'
       })
       domain.domain_volumes.push({
         :dev => 'vdb',
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :path => '/var/lib/libvirt/images/test2.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test2.qcow2'
       })
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')

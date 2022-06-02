@@ -35,6 +35,7 @@ module VagrantPlugins
       autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
       autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
       autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
+      autoload :ResolveDiskSettings, action_root.join('resolve_disk_settings')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
       autoload :SetBootOrder, action_root.join('set_boot_order')
@@ -81,6 +82,7 @@ module VagrantPlugins
               b2.use SetNameOfDomain
 
               if !env[:machine].config.vm.box
+                b2.use ResolveDiskSettings
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
@@ -94,6 +96,7 @@ module VagrantPlugins
                 b2.use HandleBox
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
+                b2.use ResolveDiskSettings
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
@@ -104,6 +107,7 @@ module VagrantPlugins
               end
             else
               env[:halt_on_error] = true
+              b2.use ResolveDiskSettings
               b2.use CreateNetworks
               b2.use action_start
             end
