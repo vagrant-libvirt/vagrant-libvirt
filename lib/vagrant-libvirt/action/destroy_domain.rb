@@ -62,7 +62,7 @@ module VagrantPlugins
             disks_xml = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]')
             have_aliases = !(REXML::XPath.match(disks_xml, './alias[@name="ua-box-volume-0"]').first).nil?
             if !have_aliases
-              env[:ui].warn(I18n.t('vagrant_libvirt.destroy.obsolete_method'))
+              env[:ui].warn(I18n.t('vagrant_libvirt.domain_xml.obsolete_method'))
             end
 
             destroy_domain(domain, destroy_volumes: false, flags: undefine_flags)
