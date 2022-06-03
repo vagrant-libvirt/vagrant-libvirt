@@ -21,8 +21,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
   let(:domain_volume) { instance_double(::Fog::Libvirt::Compute::Volume) }
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), domain_xml_file)) }
-  let(:storage_pool_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), storage_pool_xml_file)) }
-  let(:libvirt_storage_pool) { double('storage_pool') }
 
   describe '#call' do
     before do
@@ -39,15 +37,17 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
 
       env[:domain_name] = "vagrant-test_default"
 
-      env[:box_volumes] = []
-      env[:box_volumes].push({
+      env[:domain_volumes] = []
+      env[:domain_volumes].push({
+        :device=>'vda',
+        :bus=>'virtio',
+        :cache=>'default',
+        :absolute_path=>'/var/lib/libvirt/images/vagrant-test_default.img',
         :path=>"/test/box.img",
-        :name=>"test_vagrant_box_image_1.1.1_0.img", 
+        :name=>'test_vagrant_box_image_1.1.1_0.img',
         :virtual_size=> ByteNumber.new(5),
+        :pool=>'default',
       })
-      # should be ignored for system session and used for user session
-      allow(Process).to receive(:uid).and_return(9999)
-      allow(Process).to receive(:gid).and_return(9999)
     end
 
     context 'connection => qemu:///system' do
@@ -57,103 +57,50 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         allow(machine.provider_config).to receive(:qemu_use_session).and_return(false)
       end
 
-      context 'default pool' do
-        it 'should execute correctly' do
-          expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
-          expect(volumes).to_not receive(:create) # additional disks only
+      it 'should execute correctly' do
+        expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+        expect(volumes).to_not receive(:create) # additional disks only
 
-          expect(subject.call(env)).to be_nil
+        expect(subject.call(env)).to be_nil
+      end
+
+      context 'additional disks' do
+        let(:disks) do
+          [
+            :device        => 'vdb',
+            :cache         => 'default',
+            :bus           => 'virtio',
+            :type          => 'qcow2',
+            :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
+            :virtual_size  => ByteNumber.new(20*1024*1024*1024),
+            :pool          => 'default',
+          ]
         end
 
-        context 'with no box' do
-          let(:storage_pool_xml_file) { 'default_system_storage_pool.xml' }
-          let(:vagrantfile) do
-            <<-EOF
-            Vagrant.configure('2') do |config|
-              config.vm.define :test
-            end
-            EOF
-          end
+        before do
+          env[:disks] = disks
+        end
 
-          it 'should query for the storage pool path' do
-            expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)
-            expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
-            expect(servers).to receive(:create).and_return(machine)
+        context 'volume create failed' do
+          it 'should raise an exception' do
+            expect(volumes).to receive(:create).and_raise(Libvirt::Error)
 
-            expect(subject.call(env)).to be_nil
+            expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::FogCreateDomainVolumeError)
           end
         end
 
-        context 'additional disks' do
-          let(:vagrantfile_providerconfig) do
-            <<-EOF
-            libvirt.storage :file, :size => '20G'
-            EOF
-          end
+        context 'volume create succeeded' do
+          let(:domain_xml_file) { 'additional_disks_domain.xml' }
 
-          context 'volume create failed' do
-            it 'should raise an exception' do
-              expect(volumes).to receive(:create).and_raise(Libvirt::Error)
-
-              expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::FogCreateDomainVolumeError)
-            end
-          end
-
-          context 'volume create succeeded' do
-            let(:domain_xml_file) { 'additional_disks_domain.xml' }
-
-            it 'should complete' do
-              expect(volumes).to receive(:create).with(
-                hash_including(
-                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-                  :owner       => 0,
-                  :group       => 0,
-                  :pool_name   => "default",
-                )
+          it 'should complete' do
+            expect(volumes).to receive(:create).with(
+              hash_including(
+                :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
+                :owner       => 0,
+                :group       => 0,
+                :pool_name   => "default",
               )
-              expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
-
-              expect(subject.call(env)).to be_nil
-            end
-          end
-        end
-
-        context 'with custom disk device setting' do
-          let(:domain_xml_file) { 'custom_disk_settings.xml' }
-          let(:vagrantfile_providerconfig) {
-            <<-EOF
-              libvirt.disk_device = 'sda'
-            EOF
-          }
-
-          it 'should set the domain device' do
-            expect(ui).to receive(:info).with(/ -- Image\(sda\):.*/)
-            expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
-
-            expect(subject.call(env)).to be_nil
-          end
-        end
-
-        context 'with two domain disks' do
-          let(:domain_xml_file) { 'two_disk_settings.xml' }
-          let(:domain_volume_2) { double('domain_volume 2') }
-
-          before do
-            expect(volumes).to receive(:all).and_return([domain_volume])
-            expect(volumes).to receive(:all).and_return([domain_volume_2])
-            expect(domain_volume_2).to receive(:pool_name).and_return('default')
-            expect(domain_volume_2).to receive(:path).and_return('/var/lib/libvirt/images/vagrant-test_default_1.img')
-
-            env[:box_volumes].push({
-              :path=>"/test/box_1.img",
-              :name=>"test_vagrant_box_image_1.1.1_1.img",
-              :virtual_size=> ByteNumber.new(5),
-            })
-          end
-
-          it 'should correctly assign device entries' do
-            expect(ui).to receive(:info).with(/ -- Image\(vda\):.*/)
-            expect(ui).to receive(:info).with(/ -- Image\(vdb\):.*/)
+            )
             expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
 
             expect(subject.call(env)).to be_nil
@@ -161,19 +108,48 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         end
       end
 
-      context 'no default pool' do
-        let(:vagrantfile) do
-          <<-EOF
-          Vagrant.configure('2') do |config|
-            config.vm.define :test
-          end
-          EOF
+      context 'with custom disk device setting' do
+        let(:domain_xml_file) { 'custom_disk_settings.xml' }
+
+        before do
+          env[:domain_volumes][0][:device] = 'sda'
         end
 
-        it 'should raise an exception' do
-          expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(nil)
+        it 'should set the domain device' do
+          expect(ui).to receive(:info).with(/ -- Image\(sda\):.*/)
+          expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
 
-          expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::NoStoragePool)
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'with two domain disks' do
+        let(:domain_xml_file) { 'two_disk_settings.xml' }
+        let(:domain_volume_2) { double('domain_volume 2') }
+
+        before do
+          expect(volumes).to receive(:all).with(name: 'vagrant-test_default.img').and_return([domain_volume])
+          expect(volumes).to receive(:all).with(name: 'vagrant-test_default_1.img').and_return([domain_volume_2])
+          expect(domain_volume_2).to receive(:pool_name).and_return('default')
+
+          env[:domain_volumes].push({
+            :device=>'vdb',
+            :bus=>'virtio',
+            :cache=>'default',
+            :absolute_path=>'/var/lib/libvirt/images/vagrant-test_default_1.img',
+            :path=>"/test/box_1.img",
+            :name=>"test_vagrant_box_image_1.1.1_1.img",
+            :virtual_size=> ByteNumber.new(5),
+            :pool=>'default',
+          })
+        end
+
+        it 'should list multiple device entries' do
+          expect(ui).to receive(:info).with(/ -- Image\(vda\):.*/)
+          expect(ui).to receive(:info).with(/ -- Image\(vdb\):.*/)
+          expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+
+          expect(subject.call(env)).to be_nil
         end
       end
     end
@@ -183,57 +159,51 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         allow(machine.provider_config).to receive(:qemu_use_session).and_return(true)
       end
 
-      context 'default pool' do
-        it 'should execute correctly' do
-          expect(servers).to receive(:create).and_return(machine)
+      it 'should execute correctly' do
+        expect(servers).to receive(:create).and_return(machine)
 
-          expect(subject.call(env)).to be_nil
+        expect(subject.call(env)).to be_nil
+      end
+
+      context 'additional disks' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.qemu_use_session = true
+          EOF
         end
 
-        context 'with no box' do
-          let(:storage_pool_xml_file) { 'default_user_storage_pool.xml' }
-          let(:vagrantfile) do
-            <<-EOF
-            Vagrant.configure('2') do |config|
-              config.vm.define :test
-              config.vm.provider :libvirt do |libvirt|
-                #{vagrantfile_providerconfig}
-              end
-            end
-            EOF
-          end
+        let(:disks) do
+          [
+            :device        => 'vdb',
+            :cache         => 'default',
+            :bus           => 'virtio',
+            :type          => 'qcow2',
+            :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
+            :virtual_size  => ByteNumber.new(20*1024*1024*1024),
+            :pool          => 'default',
+          ]
+        end
 
-          it 'should query for the storage pool path' do
-            expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)
-            expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
+        before do
+          expect(Process).to receive(:uid).and_return(9999).at_least(:once)
+          expect(Process).to receive(:gid).and_return(9999).at_least(:once)
+
+          env[:disks] = disks
+        end
+
+        context 'volume create succeeded' do
+          it 'should complete' do
+            expect(volumes).to receive(:create).with(
+              hash_including(
+                :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
+                :owner       => 9999,
+                :group       => 9999,
+                :pool_name   => "default",
+              )
+            )
             expect(servers).to receive(:create).and_return(machine)
 
             expect(subject.call(env)).to be_nil
-          end
-        end
-
-        context 'additional disks' do
-          let(:vagrantfile_providerconfig) do
-            <<-EOF
-            libvirt.qemu_use_session = true
-            libvirt.storage :file, :size => '20G'
-            EOF
-          end
-
-          context 'volume create succeeded' do
-            it 'should complete' do
-              expect(volumes).to receive(:create).with(
-                hash_including(
-                  :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-                  :owner       => 9999,
-                  :group       => 9999,
-                  :pool_name   => "default",
-                )
-              )
-              expect(servers).to receive(:create).and_return(machine)
-
-              expect(subject.call(env)).to be_nil
-            end
           end
         end
       end

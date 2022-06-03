@@ -60,9 +60,11 @@ en:
     remove_stale_volume: |-
       Remove stale volume...
 
-    destroy:
+    domain_xml:
       obsolete_method: |
-        Destroying machine that was originally created without device aliases (pre 0.6.0), using fallback approach.
+        Machine that was originally created without device aliases (pre 0.6.0), using fall-back approach for device identification.
+
+    destroy:
       unexpected_volumes: |
         Unexpected number of volumes detected, possibly additional volumes attached outside of vagrant-libvirt.
         Attempting to handle this correctly, however may experience unexpected behaviour in the domain destroy.
@@ -183,6 +185,16 @@ en:
       management_network_required: |-
         Management network can't be disabled when VM use box.
         Please fix your configuration and run vagrant again.
+      snapshot_deletion_error: |-
+        Error while deleting snapshot: %{error_message}.
+      snapshot_missing: |-
+        Snapshot not found: %{error_message}.
+      snapshot_list_error: |-
+        Cannot list snapshots: %{error_message}.
+      snapshot_creation_error: |-
+        Cannot create snapshot(s): %{error_message}.
+      snapshot_reversion_error: |-
+        Cannot revert snapshot(s): %{error_message}.      
       serial_cannot_create_path_error: |-
         Error creating path for serial port output log: %{path}
 

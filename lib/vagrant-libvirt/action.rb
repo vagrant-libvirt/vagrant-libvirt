@@ -35,10 +35,17 @@ module VagrantPlugins
       autoload :ReadMacAddresses, action_root.join('read_mac_addresses')
       autoload :RemoveLibvirtImage, action_root.join('remove_libvirt_image')
       autoload :RemoveStaleVolume, action_root.join('remove_stale_volume')
+      autoload :ResolveDiskSettings, action_root.join('resolve_disk_settings')
       autoload :ResumeDomain, action_root.join('resume_domain')
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
       autoload :SetBootOrder, action_root.join('set_boot_order')
       autoload :SetupComplete, action_root.join('cleanup_on_failure')
+      # Snapshot autoload
+      autoload :SnapshotDelete, action_root.join('snapshot_delete')
+      autoload :SnapshotSave, action_root.join('snapshot_save')
+      autoload :SnapshotRestore, action_root.join('snapshot_restore')
+
+
       # I don't think we need it anymore
       autoload :ShareFolders, action_root.join('share_folders')
       autoload :ShutdownDomain, action_root.join('shutdown_domain')
@@ -81,6 +88,7 @@ module VagrantPlugins
               b2.use SetNameOfDomain
 
               if !env[:machine].config.vm.box
+                b2.use ResolveDiskSettings
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
@@ -94,6 +102,7 @@ module VagrantPlugins
                 b2.use HandleBox
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
+                b2.use ResolveDiskSettings
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces
@@ -104,6 +113,7 @@ module VagrantPlugins
               end
             else
               env[:halt_on_error] = true
+              b2.use ResolveDiskSettings
               b2.use CreateNetworks
               b2.use action_start
             end
@@ -384,6 +394,48 @@ module VagrantPlugins
 
               b3.use SSHRun
             end
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for deleting a snapshot
+      def self.action_snapshot_delete
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+
+            b2.use SnapshotDelete
+          end
+        end
+      end
+      
+      # This is the action that is primarily responsible for restoring a snapshot
+      def self.action_snapshot_restore
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+            
+            b2.use SnapshotRestore
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for saving a snapshot
+      def self.action_snapshot_save
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+            
+            b2.use SnapshotSave
           end
         end
       end

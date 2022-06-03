@@ -59,6 +59,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
       allow(volumes).to receive(:all).and_return(all)
       allow(env[:ui]).to receive(:clear_line)
 
+      env[:machine].provider_config.disk_device = 'vda'
     end
 
     context 'when one disk in metadata.json' do
@@ -86,7 +87,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_box.img",
               :virtual_size=>byte_number_5G,
-              :format=>"qcow2"
+              :format=>"qcow2",
+              :device=>'vda',
             }
           ]
         )
@@ -115,7 +117,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :path=>"/test/box.img",
                 :name=>"test_vagrant_box_image_0_#{box_mtime.to_i}_box.img",
                 :virtual_size=>byte_number_5G,
-                :format=>"qcow2"
+                :format=>"qcow2",
+                :device=>'vda',
               }
             ]
           )
@@ -124,7 +127,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
       context 'When config.machine_virtual_size is set and smaller than box_virtual_size' do
         before do
-          allow(env[:machine]).to receive_message_chain("provider_config.machine_virtual_size").and_return(1)
+          env[:machine].provider_config.machine_virtual_size = 1
         end
         it 'should warning must be raise' do
           expect(ui).to receive(:warn).with("Ignoring requested virtual disk size of '1' as it is below\nthe minimum box image size of '5'.")
@@ -135,7 +138,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :path=>"/test/box.img",
                 :name=>"test_vagrant_box_image_1.1.1_box.img",
                 :virtual_size=>byte_number_5G,
-                :format=>"qcow2"
+                :format=>"qcow2",
+                :device=>'vda',
               }
             ]
           )
@@ -144,7 +148,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
       context 'When config.machine_virtual_size is set and higher than box_virtual_size' do
         before do
-          allow(env[:machine]).to receive_message_chain("provider_config.machine_virtual_size").and_return(20)
+          env[:machine].provider_config.machine_virtual_size = 20
         end
         it 'should be use' do
           expect(ui).to receive(:info).with("Created volume larger than box defaults, will require manual resizing of\nfilesystems to utilize.")
@@ -155,7 +159,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :path=>"/test/box.img",
                 :name=>"test_vagrant_box_image_1.1.1_box.img",
                 :virtual_size=>byte_number_20G,
-                :format=>"qcow2"
+                :format=>"qcow2",
+                :device=>'vda',
               }
             ]
           )
@@ -246,7 +251,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :path=>"/test/box.img",
               :name=>"test_vagrant_box_image_1.1.1_send_box_name.img",
               :virtual_size=>byte_number_5G,
-              :format=>"qcow2"
+              :format=>"qcow2",
+              :device=>'vda',
             },
             {
               :path=>"/test/disk.qcow2",

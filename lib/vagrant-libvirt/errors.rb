@@ -190,8 +190,24 @@ module VagrantPlugins
         error_key(:no_ip_address_error)
       end
 
-      class DeleteSnapshotError < VagrantLibvirtError
-        error_key(:delete_snapshot_error)
+      class SnapshotMissing < VagrantLibvirtError
+        error_key(:snapshot_missing)
+      end
+
+      class SnapshotDeletionError < VagrantLibvirtError
+        error_key(:snapshot_deletion_error)
+      end
+
+      class SnapshotListError < VagrantLibvirtError
+        error_key(:snapshot_list_error)
+      end
+      
+      class SnapshotCreationError < VagrantLibvirtError
+        error_key(:snapshot_creation_error)
+      end
+
+      class SnapshotReversionError < VagrantLibvirtError
+        error_key(:snapshot_reversion_error)
       end
 
       class SerialCannotCreatePathError < VagrantLibvirtError

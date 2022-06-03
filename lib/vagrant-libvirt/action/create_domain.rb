@@ -16,20 +16,6 @@ module VagrantPlugins
           @app = app
         end
 
-        def _disk_name(name, disk)
-          "#{name}-#{disk[:device]}.#{disk[:type]}" # disk name
-        end
-
-        def _disks_print(disks)
-          disks.collect do |x|
-            "#{x[:device]}(#{x[:type]}, #{x[:bus]}, #{x[:size]})"
-          end.join(', ')
-        end
-
-        def _cdroms_print(cdroms)
-          cdroms.collect { |x| x[:dev] }.join(', ')
-        end
-
         def call(env)
           # Get config.
           config = env[:machine].provider_config
@@ -58,8 +44,6 @@ module VagrantPlugins
           @nvram = config.nvram
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
-          @disk_bus = config.disk_bus
-          @disk_device = config.disk_device
           @disk_driver_opts = config.disk_driver_opts
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
@@ -94,9 +78,8 @@ module VagrantPlugins
 
           # Storage
           @storage_pool_name = config.storage_pool_name
-          @snapshot_pool_name = config.snapshot_pool_name
-          @domain_volumes = []
-          @disks = config.disks
+          @domain_volumes = env[:domain_volumes] || []
+          @disks = env[:disks] || []
           @cdroms = config.cdroms
 
           # Input
@@ -139,77 +122,19 @@ module VagrantPlugins
           @memballoon_pci_bus = config.memballoon_pci_bus
           @memballoon_pci_slot = config.memballoon_pci_slot
 
-          config = env[:machine].provider_config
           @domain_type = config.driver
 
           @os_type = 'hvm'
 
-          resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=@disk_device[0..1])
-
-          # Get path to domain image from the storage pool selected if we have a box.
-          if env[:machine].config.vm.box
-            if @snapshot_pool_name != @storage_pool_name
-                pool_name = @snapshot_pool_name
-            else
-                pool_name = @storage_pool_name
-            end
-
-            # special handling for domain volume
-            env[:box_volumes][0][:device] = env[:box_volumes][0].fetch(:device, @disk_device)
-
-            resolver.resolve!(env[:box_volumes])
-
-            @logger.debug "Search for volumes in pool: #{pool_name}"
-            env[:box_volumes].each_index do |index|
-              suffix_index = index > 0 ? "_#{index}" : ''
-              domain_volume = env[:machine].provider.driver.connection.volumes.all(
-                name: "#{@name}#{suffix_index}.img"
-              ).find { |x| x.pool_name == pool_name }
-              raise Errors::DomainVolumeExists if domain_volume.nil?
-
-              @domain_volumes.push({
-                :dev => env[:box_volumes][index][:device],
-                :cache => @domain_volume_cache,
-                :bus => @disk_bus,
-                :path => domain_volume.path,
-                :virtual_size => env[:box_volumes][index][:virtual_size]
-              })
-            end
-
+          env[:domain_volumes].each_with_index do |vol, index|
+            suffix_index = index > 0 ? "_#{index}" : ''
+            domain_volume = env[:machine].provider.driver.connection.volumes.all(
+              name: "#{@name}#{suffix_index}.img"
+            ).find { |x| x.pool_name == vol[:pool] }
+            raise Errors::NoDomainVolume if domain_volume.nil?
           end
-
-          # If we have a box, take the path from the domain volume and set our storage_prefix.
-          # If not, we dump the storage pool xml to get its defined path.
-          # the default storage prefix is typically: /var/lib/libvirt/images/
-          if env[:machine].config.vm.box
-            storage_prefix = File.dirname(@domain_volumes[0][:path]) + '/' # steal
-          else
-            storage_prefix = get_disk_storage_prefix(env, @storage_pool_name)
-          end
-
-          resolver.resolve!(@disks)
 
           @disks.each do |disk|
-            disk[:path] ||= _disk_name(@name, disk)
-
-            # On volume creation, the <path> element inside <target>
-            # is oddly ignored; instead the path is taken from the
-            # <name> element:
-            # http://www.redhat.com/archives/libvir-list/2008-August/msg00329.html
-            disk[:name] = disk[:path]
-
-            disk[:absolute_path] = storage_prefix + disk[:path]
-
-            if not disk[:pool].nil?
-              disk_pool_name = disk[:pool]
-              @logger.debug "Overriding pool name with: #{disk_pool_name}"
-              disk_storage_prefix = get_disk_storage_prefix(env, disk_pool_name)
-              disk[:absolute_path] = disk_storage_prefix + disk[:path]
-              @logger.debug "Overriding disk path with: #{disk[:absolute_path]}"
-            else
-              disk_pool_name = @storage_pool_name
-            end
-
             # make the disk. equivalent to:
             # qemu-img create -f qcow2 <path> 5g
             begin
@@ -221,13 +146,13 @@ module VagrantPlugins
                 owner: storage_uid(env),
                 group: storage_gid(env),
                 #:allocation => ?,
-                pool_name: disk_pool_name
+                pool_name: disk[:pool],
               )
             rescue Libvirt::Error => e
               # It is hard to believe that e contains just a string
               # and no useful error code!
               msg = "Call to virStorageVolCreateXML failed: " +
-                    "storage volume '#{disk[:path]}' exists already"
+                    "storage volume '#{disk[:absolute_path]}' exists already"
               if e.message == msg and disk[:allow_existing]
                 disk[:preexisting] = true
               else
@@ -300,7 +225,7 @@ module VagrantPlugins
           end
           env[:ui].info(" -- Storage pool:      #{@storage_pool_name}")
           @domain_volumes.each do |volume|
-            env[:ui].info(" -- Image(#{volume[:dev]}):        #{volume[:path]}, #{volume[:bus]}, #{volume[:virtual_size].to_GB}G")
+            env[:ui].info(" -- Image(#{volume[:device]}):        #{volume[:absolute_path]}, #{volume[:bus]}, #{volume[:virtual_size].to_GB}G")
           end
 
           if not @disk_driver_opts.empty?
@@ -466,11 +391,14 @@ module VagrantPlugins
         end
 
         private
-        def get_disk_storage_prefix(env, disk_pool_name)
-          disk_storage_pool = env[:machine].provider.driver.connection.client.lookup_storage_pool_by_name(disk_pool_name)
-          raise Errors::NoStoragePool if disk_storage_pool.nil?
-          xml = Nokogiri::XML(disk_storage_pool.xml_desc)
-          disk_storage_prefix = xml.xpath('/pool/target/path').inner_text.to_s + '/'
+        def _disks_print(disks)
+          disks.collect do |x|
+            "#{x[:device]}(#{x[:type]}, #{x[:bus]}, #{x[:size]})"
+          end.join(', ')
+        end
+
+        def _cdroms_print(cdroms)
+          cdroms.collect { |x| x[:dev] }.join(', ')
         end
       end
     end

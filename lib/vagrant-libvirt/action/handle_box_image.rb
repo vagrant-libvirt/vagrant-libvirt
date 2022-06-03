@@ -104,6 +104,8 @@ module VagrantPlugins
           end
           # save for use by later actions
           env[:box_volumes][0][:virtual_size] = box_virtual_size
+          # special handling for domain volume
+          env[:box_volumes][0][:device] ||= config.disk_device
 
           # while inside the synchronize block take care not to call the next
           # action in the chain, as must exit this block first to prevent

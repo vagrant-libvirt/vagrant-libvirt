@@ -125,6 +125,58 @@ module VagrantPlugins
         ip_address
       end
 
+      def restore_snapshot(machine, snapshot_name)
+        domain = get_libvirt_domain(machine)
+        snapshot = get_snapshot_if_exists(machine, snapshot_name)
+        begin
+          # 4 is VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
+          # needed due to https://bugzilla.redhat.com/show_bug.cgi?id=1006886
+          domain.revert_to_snapshot(snapshot, 4)
+        rescue Fog::Errors::Error => e
+          raise Errors::SnapshotReversionError, error_message: e.message
+        end
+      end
+
+      def list_snapshots(machine)
+        get_libvirt_domain(machine).list_snapshots
+      rescue Fog::Errors::Error => e
+        raise Errors::SnapshotListError, error_message: e.message
+      end
+
+      def delete_snapshot(machine, snapshot_name)
+        get_snapshot_if_exists(machine, snapshot_name).delete
+      rescue Errors::SnapshotMissing => e
+        raise Errors::SnapshotDeletionError, error_message: e.message
+      end
+
+      def create_new_snapshot(machine, snapshot_name)
+        snapshot_desc = <<-EOF
+        <domainsnapshot>
+          <name>#{snapshot_name}</name>
+          <description>Snapshot for vagrant sandbox</description>
+        </domainsnapshot>
+        EOF
+        get_libvirt_domain(machine).snapshot_create_xml(snapshot_desc)
+      rescue Fog::Errors::Error => e
+        raise Errors::SnapshotCreationError, error_message: e.message
+      end
+
+      def create_snapshot(machine, snapshot_name)
+        begin
+          delete_snapshot(machine, snapshot_name)
+        rescue Errors::SnapshotDeletionError
+        end
+        create_new_snapshot(machine, snapshot_name)
+      end
+
+      # if we can get snapshot description without exception it exists
+      def get_snapshot_if_exists(machine, snapshot_name)
+        snapshot = get_libvirt_domain(machine).lookup_snapshot_by_name(snapshot_name)
+        return snapshot if snapshot.xml_desc
+      rescue Libvirt::RetrieveError => e
+        raise Errors::SnapshotMissing, error_message: e.message
+      end
+
       def state(machine)
         # may be other error states with initial retreival we can't handle
         begin
@@ -214,6 +266,21 @@ module VagrantPlugins
         end
 
         ip_address
+      end
+
+      def get_libvirt_domain(machine)
+        begin
+          libvirt_domain = connection.client.lookup_domain_by_uuid(machine.id)
+        rescue Libvirt::RetrieveError => e
+          if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
+            @logger.debug("machine #{machine.name} not found #{e}.")
+            return nil
+          else
+            raise e
+          end
+        end
+
+        libvirt_domain
       end
 
     end

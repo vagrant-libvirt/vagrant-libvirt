@@ -78,6 +78,14 @@ cleanup() {
   [ "$status" -eq 0 ]
   echo "${output}"
   [ $(expr "$output" : ".*second_disk_default-vdb.*") -ne 0  ]
+  run ${VAGRANT_CMD} halt
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
   cleanup
 }
 
@@ -212,6 +220,56 @@ cleanup() {
   echo "status = ${status}"
   [ "$status" -eq 0 ]
   rm -f package.box
+
+  cleanup
+}
+
+@test "bring up and save a snapshot and restore it" {
+  export VAGRANT_CWD=tests/snapshot
+
+  cleanup
+  run ${VAGRANT_CMD} up ${VAGRANT_OPT}
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} ssh -- -t 'touch a.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} snapshot save default test
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} ssh -- -t 'rm a.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} ssh -- -t 'ls a.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  # This means that the file does not exist on the box.
+  [ "$status" -eq 1 ]
+  run ${VAGRANT_CMD} ssh -- -t 'touch b.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} snapshot restore default test
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} ssh -- -t 'ls b.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  # This means that the file does not exist on the box.
+  [ "$status" -eq 1 ]
+  run ${VAGRANT_CMD} ssh -- -t 'ls a.txt'
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
+  run ${VAGRANT_CMD} snapshot delete default test
+  echo "${output}"
+  echo "status = ${status}"
+  [ "$status" -eq 0 ]
 
   cleanup
 }
