@@ -170,4 +170,92 @@ describe VagrantPlugins::ProviderLibvirt::Action do
       end
     end
   end
+  
+  describe '#action_snapshot_delete' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+
+      it 'should cause an error' do
+        expect{ machine.action(:snapshot_delete, snapshot_opts: {})}.to raise_error(Vagrant::Errors::VMNotCreatedError)
+      end
+    end
+
+    context 'when created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      context 'when running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, true)
+        end
+
+        it 'should call SnapshotDelete' do
+          expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::SnapshotDelete).to receive(:call).and_return(0)
+          expect(machine.action(:snapshot_delete, snapshot_opts: {})).to match(hash_including({:action_name => :machine_action_snapshot_delete}))
+        end
+      end
+    end
+  end
+
+
+  describe '#action_snapshot_restore' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+
+      it 'should cause an error' do
+        expect{ machine.action(:snapshot_restore, snapshot_opts: {})}.to raise_error(Vagrant::Errors::VMNotCreatedError)
+      end
+    end
+
+    context 'when created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      context 'when running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, true)
+        end
+
+        it 'should call SnapshotRestore' do
+          expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::SnapshotRestore).to receive(:call).and_return(0)
+          expect(machine.action(:snapshot_restore, snapshot_opts: {})).to match(hash_including({:action_name => :machine_action_snapshot_restore}))
+        end
+      end
+    end
+  end
+  
+  describe '#action_snapshot_save' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+
+      it 'should cause an error' do
+        expect{ machine.action(:snapshot_save, snapshot_opts: {})}.to raise_error(Vagrant::Errors::VMNotCreatedError)
+      end
+    end
+
+    context 'when created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      context 'when running' do
+        before do
+          allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsRunning, true)
+        end
+
+        it 'should call SnapshotSave' do
+          expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::SnapshotSave).to receive(:call).and_return(0)
+          expect(machine.action(:snapshot_save, snapshot_opts: {})).to match(hash_including({:action_name => :machine_action_snapshot_save}))
+        end
+      end
+    end
+  end
 end

@@ -40,6 +40,12 @@ module VagrantPlugins
       autoload :SetNameOfDomain, action_root.join('set_name_of_domain')
       autoload :SetBootOrder, action_root.join('set_boot_order')
       autoload :SetupComplete, action_root.join('cleanup_on_failure')
+      # Snapshot autoload
+      autoload :SnapshotDelete, action_root.join('snapshot_delete')
+      autoload :SnapshotSave, action_root.join('snapshot_save')
+      autoload :SnapshotRestore, action_root.join('snapshot_restore')
+
+
       # I don't think we need it anymore
       autoload :ShareFolders, action_root.join('share_folders')
       autoload :ShutdownDomain, action_root.join('shutdown_domain')
@@ -388,6 +394,48 @@ module VagrantPlugins
 
               b3.use SSHRun
             end
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for deleting a snapshot
+      def self.action_snapshot_delete
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+
+            b2.use SnapshotDelete
+          end
+        end
+      end
+      
+      # This is the action that is primarily responsible for restoring a snapshot
+      def self.action_snapshot_restore
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+            
+            b2.use SnapshotRestore
+          end
+        end
+      end
+
+      # This is the action that is primarily responsible for saving a snapshot
+      def self.action_snapshot_save
+        Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
+          b.use Call, IsCreated do |env, b2|
+            unless env[:result]
+              raise Vagrant::Errors::VMNotCreatedError
+            end
+            
+            b2.use SnapshotSave
           end
         end
       end
