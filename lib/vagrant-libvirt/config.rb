@@ -195,6 +195,9 @@ module VagrantPlugins
       # serial consoles
       attr_accessor :serials
 
+      # internal helper attributes
+      attr_accessor :host_device_exclude_prefixes
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -342,6 +345,9 @@ module VagrantPlugins
         @qemu_use_agent  = UNSET_VALUE
 
         @serials           = UNSET_VALUE
+
+        # internal options to help override behaviour
+        @host_device_exclude_prefixes = UNSET_VALUE
       end
 
       def boot(device)
@@ -972,6 +978,8 @@ module VagrantPlugins
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
         @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
+
+        @host_device_exclude_prefixes = ['docker', 'macvtap', 'virbr', 'vnet'] if @host_device_exclude_prefixes == UNSET_VALUE
       end
 
       def validate(machine)
@@ -1029,13 +1037,22 @@ module VagrantPlugins
           errors << "#{e}"
         end
 
-        machine.config.vm.networks.each do |_type, opts|
+        machine.config.vm.networks.each_with_index do |network, index|
+          type, opts = network
+
           if opts[:mac]
             if opts[:mac] =~ /\A([0-9a-fA-F]{12})\z/
               opts[:mac] = opts[:mac].scan(/../).join(':')
             end
             unless opts[:mac] =~ /\A([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})\z/
               errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
+            end
+          end
+
+          # only interested in public networks where portgroup is nil, as then source will be a host device
+          if type == :public_network && opts[:portgroup] == nil
+            if !host_devices.include?(opts[:dev])
+              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{opts[:dev]}' which does not exist, consider adding ':dev => ....' referencing one of #{host_devices.join(", ")}"
             end
           end
         end
@@ -1168,6 +1185,16 @@ module VagrantPlugins
           @proxy_command = proxy_command
         else
           @proxy_command = nil
+        end
+      end
+
+      def host_devices
+        @host_devices ||= begin
+          require 'socket'
+
+          Socket.getifaddrs.map { |iface| iface.name }.uniq.select do |dev|
+            dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
+          end
         end
       end
     end

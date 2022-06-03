@@ -630,6 +630,53 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
+    context 'with public_network defined' do
+      let(:host_devices) { [
+        instance_double(Socket::Ifaddr),
+        instance_double(Socket::Ifaddr),
+      ] }
+      before do
+        machine.config.vm.network :public_network, dev: 'eth0', ip: "192.168.2.157"
+        expect(Socket).to receive(:getifaddrs).and_return(host_devices)
+        expect(host_devices[0]).to receive(:name).and_return('eth0')
+        expect(host_devices[1]).to receive(:name).and_return('virbr0')
+      end
+
+      it 'should validate use of existing device' do
+        assert_valid
+      end
+
+      context 'when default device not on host' do
+        before do
+          machine.config.vm.network :public_network, dev: 'eno1', ip: "192.168.2.157"
+        end
+
+        it 'should be invalid' do
+          assert_invalid
+        end
+      end
+
+      context 'when using excluded host device' do
+        before do
+          machine.config.vm.network :public_network, dev: 'virbr0', ip: "192.168.2.157"
+        end
+
+        it 'should be invalid' do
+          assert_invalid
+        end
+
+        context 'when user overrides to allow device' do
+          before do
+            subject.host_device_exclude_prefixes = []
+          end
+
+          it 'should validate' do
+            assert_valid
+          end
+        end
+      end
+    end
+
     context 'with nvram defined' do
       before do
         subject.nvram = '/path/to/some/nvram'
