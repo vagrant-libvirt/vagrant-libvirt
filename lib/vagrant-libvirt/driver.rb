@@ -137,13 +137,6 @@ module VagrantPlugins
         end
       end
 
-      def is_snapshot_mode_on?(machine)
-        get_snapshot_if_exists(machine)
-        return true
-      rescue Errors::SnapshotMissing
-        return false
-      end
-
       def list_snapshots(machine)
         get_libvirt_domain(machine).list_snapshots
       rescue Fog::Errors::Error => e
