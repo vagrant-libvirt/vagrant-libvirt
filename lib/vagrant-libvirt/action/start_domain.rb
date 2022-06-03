@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'diffy'
 require 'log4r'
 require 'rexml/document'
 
@@ -14,8 +15,6 @@ module VagrantPlugins
         end
 
         def call(env)
-          env[:ui].info(I18n.t('vagrant_libvirt.starting_domain'))
-
           domain = env[:machine].provider.driver.connection.servers.get(env[:machine].id.to_s)
           raise Errors::NoDomainError if domain.nil?
           config = env[:machine].provider_config
@@ -33,6 +32,7 @@ module VagrantPlugins
                 libvirt_domain.memory = libvirt_domain.max_memory
               end
             end
+
             begin
               # XML definition manipulation
               descr = libvirt_domain.xml_desc(1)
@@ -248,7 +248,7 @@ module VagrantPlugins
               # TPM
               if [config.tpm_path, config.tpm_version].any?
                 if config.tpm_path
-                  raise Errors::FogCreateServerError, 'The TPM Path must be fully qualified' unless config.tpm_path[0].chr == '/'
+                  raise Errors::UpdateServerError, 'The TPM Path must be fully qualified' unless config.tpm_path[0].chr == '/'
                 end
 
                 # just build the tpm element every time
@@ -394,7 +394,6 @@ module VagrantPlugins
                 loader.parent.delete_element(loader)
               end
 
-              undefine_flags = 0
               nvram = REXML::XPath.first(xml_descr, '/domain/os/nvram')
               if config.nvram
                 if nvram.nil?
@@ -407,28 +406,57 @@ module VagrantPlugins
                     descr_changed = true
                     nvram.text = config.nvram
                   end
-                  undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM
                 end
               elsif !nvram.nil?
                 descr_changed = true
-                undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_NVRAM
                 nvram.parent.delete_element(nvram)
               end
 
               # Apply
               if descr_changed
+                env[:ui].info(I18n.t('vagrant_libvirt.updating_domain'))
+                new_xml = String.new
+                xml_descr.write(new_xml)
                 begin
-                  libvirt_domain.undefine(undefine_flags)
-                  new_descr = String.new
-                  xml_descr.write new_descr
-                  env[:machine].provider.driver.connection.servers.create(xml: new_descr)
-                rescue Fog::Errors::Error => e
-                  env[:machine].provider.driver.connection.servers.create(xml: descr)
-                  raise Errors::FogCreateServerError, error_message: e.message
+                  # providing XML for the same name and UUID will update the existing domain
+                  libvirt_domain = env[:machine].provider.driver.connection.define_domain(new_xml)
+                rescue ::Libvirt::Error => e
+                  raise Errors::UpdateServerError, error_message: e.message
+                end
+
+                begin
+                  proposed = Nokogiri::XML(new_xml, &:noblanks)
+
+                  # This normalizes the attribute order to be consistent across both XML docs to eliminate differences
+                  # for subsequent comparison by diffy
+                  updated_xml_descr = REXML::Document.new(libvirt_domain.xml_desc(1))
+                  updated_xml = String.new
+                  updated_xml_descr.write(updated_xml)
+
+                  updated = Nokogiri::XML(updated_xml, &:noblanks)
+
+                  pretty_proposed = StringIO.new
+                  pretty_updated = StringIO.new
+                  proposed.write_xml_to(pretty_proposed, indent: 2)
+                  updated.write_xml_to(pretty_updated, indent: 2)
+
+                  diff = Diffy::Diff.new(pretty_proposed.string, pretty_updated.string, :context => 3).to_s(:text)
+
+                  unless diff.empty?
+                    error_msg = "Libvirt failed to fully update the domain with the specified XML. Result differs from requested:\n" +
+                      "--- requested\n+++ result\n#{diff}\n" +
+                      "Typically this means there is a bug in the XML being sent, please log an issue"
+
+                    raise Errors::UpdateServerError, error_message: error_msg
+                  end
+                rescue Exception => e
+                  env[:machine].provider.driver.connection.define_domain(descr)
+                  raise
                 end
               end
             rescue Errors::VagrantLibvirtError => e
               env[:ui].error("Error when updating domain settings: #{e.message}")
+              raise
             end
             # Autostart with host if enabled in Vagrantfile
             libvirt_domain.autostart = config.autostart
@@ -436,6 +464,7 @@ module VagrantPlugins
               "Starting Domain with XML:\n#{libvirt_domain.xml_desc}"
             }
             # Actually start the domain
+            env[:ui].info(I18n.t('vagrant_libvirt.starting_domain'))
             domain.start
           rescue Fog::Errors::Error, Errors::VagrantLibvirtError => e
             raise Errors::FogError, message: e.message

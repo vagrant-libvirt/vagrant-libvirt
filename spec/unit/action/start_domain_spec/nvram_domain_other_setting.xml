@@ -4,11 +4,11 @@
   <description>Source: /home/test/vagrant-libvirt/Vagrantfile</description>
   <memory unit='KiB'>2097152</memory>
   <currentMemory unit='KiB'>2097152</currentMemory>
-  <vcpu placement='static'>4</vcpu>
+  <vcpu placement='static'>2</vcpu>
   <os>
     <type arch='x86_64' machine='pc-i440fx-6.0'>hvm</type>
     <loader type='pflash'>/path/to/loader/file</loader>
-    <nvram>/path/to/nvram/file</nvram>
+    <nvram>/path/to/nvram/file1</nvram>
     <boot dev='hd'/>
   </os>
   <features>

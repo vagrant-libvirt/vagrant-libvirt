@@ -33,8 +33,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       allow(servers).to receive(:get).and_return(domain)
 
       allow(logger).to receive(:debug)
-      expect(logger).to receive(:info)
-      expect(ui).to_not receive(:error)
+      allow(logger).to receive(:info)
 
       allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
 
@@ -43,22 +42,52 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
     end
 
     it 'should execute without changing' do
-      expect(libvirt_domain).to_not receive(:undefine)
+      expect(ui).to_not receive(:error)
+      expect(libvirt_client).to_not receive(:define_domain_xml)
       expect(libvirt_domain).to receive(:autostart=)
       expect(domain).to receive(:start)
 
       expect(subject.call(env)).to be_nil
     end
 
-    context 'when previously running default config' do
-      let(:test_file) { 'existing.xml' }
+    context 'when any setting changed' do
+      let(:vagrantfile_providerconfig) do
+        <<-EOF
+        libvirt.cpus = 2
+        EOF
+      end
 
-      it 'should execute without changing' do
-        expect(libvirt_domain).to_not receive(:undefine)
+      let(:updated_domain_xml) {
+        new_xml = domain_xml.dup
+        new_xml['<vcpu>1</vcpu>'] = '<vcpu>2</vcpu>'
+        new_xml
+      }
+
+      it 'should update the domain' do
+        expect(ui).to_not receive(:error)
         expect(libvirt_domain).to receive(:autostart=)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
         expect(domain).to receive(:start)
 
         expect(subject.call(env)).to be_nil
+      end
+
+      context 'when there is an error during update' do
+        it 'should skip attempting to start' do
+          expect(ui).to receive(:error)
+          expect(connection).to receive(:define_domain).and_raise(::Libvirt::Error)
+
+          expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::VagrantLibvirtError)
+        end
+      end
+
+      context 'when there is an interrupt' do
+        it 'should skip attempting to start' do
+          expect(connection).to receive(:define_domain).and_raise(Interrupt)
+
+          expect { subject.call(env) }.to raise_error(Interrupt)
+        end
       end
     end
 
@@ -73,9 +102,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         let(:test_file) { 'existing.xml' }
         let(:updated_test_file) { 'existing_added_nvram.xml' }
 
-        it 'should undefine without passing flags' do
-          expect(libvirt_domain).to receive(:undefine).with(0)
-          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+        it 'should add the nvram element' do
+          expect(ui).to_not receive(:error)
+          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -87,17 +117,16 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         let(:vagrantfile_providerconfig) do
           <<-EOF
           libvirt.loader = "/path/to/loader/file"
-          libvirt.nvram = "/path/to/nvram/file"
-          # change another setting to trigger the undefine/create
-          libvirt.cpus = 4
+          libvirt.nvram = "/path/to/nvram/file1"
           EOF
         end
         let(:test_file) { 'nvram_domain.xml' }
         let(:updated_test_file) { 'nvram_domain_other_setting.xml' }
 
-        it 'should set the flag to keep nvram' do
-          expect(libvirt_domain).to receive(:undefine).with(VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM)
-          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+        it 'should keep the XML element' do
+          expect(ui).to_not receive(:error)
+          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -108,9 +137,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           let(:vagrantfile_providerconfig) { }
           let(:updated_test_file) { 'nvram_domain_removed.xml' }
 
-          it 'should set the flag to remove nvram' do
-            expect(libvirt_domain).to receive(:undefine).with(VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_NVRAM)
-            expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          it 'should delete the XML element' do
+            expect(ui).to_not receive(:error)
+            expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+            expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
             expect(libvirt_domain).to receive(:autostart=)
             expect(domain).to receive(:start)
 
@@ -132,9 +162,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should modify the domain tpm_path' do
-          expect(libvirt_domain).to receive(:undefine)
+          expect(ui).to_not receive(:error)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -153,9 +184,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should modify the domain tpm_path' do
-          expect(libvirt_domain).to receive(:undefine)
+          expect(ui).to_not receive(:error)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -175,6 +207,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should execute without changing' do
+          expect(ui).to_not receive(:error)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -194,6 +227,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should execute without changing' do
+          expect(ui).to_not receive(:error)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -213,9 +247,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should modify the domain' do
-          expect(libvirt_domain).to receive(:undefine)
+          expect(ui).to_not receive(:error)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(servers).to receive(:create).with(xml: updated_domain_xml)
+          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -235,8 +270,9 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         end
 
         it 'should not modify the domain' do
+          expect(ui).to_not receive(:error)
           expect(logger).to_not receive(:debug).with('clock timers config changed')
-          expect(servers).to_not receive(:create)
+          expect(connection).to_not receive(:define_domain)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -252,10 +288,13 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           EOF
         end
 
+        let(:updated_test_file) { 'clock_timer_rtc_tsc.xml' }
+
         it 'should modify the domain' do
-          expect(libvirt_domain).to receive(:undefine)
+          expect(ui).to_not receive(:error)
           expect(logger).to receive(:debug).with('clock timers config changed')
-          expect(servers).to receive(:create).with(xml: match(/<clock offset='utc'>\s*<timer name='rtc'\/>\s*<timer name='tsc'\/>\s*<\/clock>/))
+          expect(connection).to receive(:define_domain).with(match(/<clock offset='utc'>\s*<timer name='rtc'\/>\s*<timer name='tsc'\/>\s*<\/clock>/)).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
@@ -264,10 +303,13 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
 
       context 'timers removed' do
+        let(:updated_test_file) { 'clock_timer_removed.xml' }
+
         it 'should modify the domain' do
-          expect(libvirt_domain).to receive(:undefine)
+          expect(ui).to_not receive(:error)
           expect(logger).to receive(:debug).with('clock timers config changed')
-          expect(servers).to receive(:create).with(xml: match(/<clock offset='utc'>\s*<\/clock>/))
+          expect(connection).to receive(:define_domain).with(match(/<clock offset='utc'>\s*<\/clock>/)).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
 
