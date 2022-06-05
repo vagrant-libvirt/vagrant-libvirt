@@ -6,8 +6,7 @@ rescue LoadError
   raise 'The Vagrant Libvirt plugin must be run within Vagrant.'
 end
 
-# compatibility fix to define constant not available Vagrant <1.6
-::Vagrant::MachineState::NOT_CREATED_ID ||= :not_created
+require 'vagrant-libvirt/util/compat'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -27,7 +26,7 @@ module VagrantPlugins
         Provider
       end
 
-      action_hook(:remove_libvirt_image) do |hook|
+      action_hook(*(Util::Compat.action_hook_args(:remove_libvirt_image, :box_remove))) do |hook|
         require_relative 'action'
         hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
       end
