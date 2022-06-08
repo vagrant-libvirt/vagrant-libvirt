@@ -151,9 +151,11 @@ module VagrantPlugins
             rescue Libvirt::Error => e
               # It is hard to believe that e contains just a string
               # and no useful error code!
-              msg = "Call to virStorageVolCreateXML failed: " +
-                    "storage volume '#{disk[:absolute_path]}' exists already"
-              if e.message == msg and disk[:allow_existing]
+              msgs = [disk[:name], disk[:absolute_path]].map do |name|
+                "Call to virStorageVolCreateXML failed: " +
+                "storage volume '#{name}' exists already"
+              end
+              if msgs.include?(e.message) and disk[:allow_existing]
                 disk[:preexisting] = true
               else
                 raise Errors::FogCreateDomainVolumeError,
