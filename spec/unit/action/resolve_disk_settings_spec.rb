@@ -356,6 +356,30 @@ describe VagrantPlugins::ProviderLibvirt::Action::ResolveDiskSettings do
           ]
         )
       end
+
+      context 'when creating using pxe' do
+        before do
+          env[:domain_name] = 'vagrant-test_default'
+        end
+
+        it 'should not query for domain xml' do
+          expect(libvirt_client).to_not receive(:lookup_domain_by_uuid)
+          expect(libvirt_client).to receive(:lookup_storage_pool_by_name).and_return(libvirt_storage_pool)
+          expect(libvirt_storage_pool).to receive(:xml_desc).and_return(storage_pool_xml)
+
+          expect(subject.call(env)).to be_nil
+          expect(env[:disks]).to match(
+            [
+              hash_including(
+                device: 'vda',
+                path: 'vagrant-test_default-vda.qcow2',
+                absolute_path: '/var/lib/libvirt/images/vagrant-test_default-vda.qcow2',
+                pool: 'default'
+              ),
+            ]
+          )
+        end
+      end
     end
   end
 end

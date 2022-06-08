@@ -97,13 +97,15 @@ module VagrantPlugins
             # the default storage prefix is typically: /var/lib/libvirt/images/
             storage_prefix = "#{File.dirname(domain_volumes[0][:absolute_path])}/" # steal
           else
-            # Ensure domain name is set for subsequent steps if restarting a machine without a box
-            libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
-              env[:machine].id
-            )
-            domain_xml = libvirt_domain.xml_desc(1)
-            xml_descr = REXML::Document.new(domain_xml)
-            domain_name = xml_descr.elements['domain'].elements['name'].text
+            if domain_name.nil?
+              # Ensure domain name is set for subsequent steps if restarting a machine without a box
+              libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(
+                env[:machine].id
+              )
+              domain_xml = libvirt_domain.xml_desc(1)
+              xml_descr = REXML::Document.new(domain_xml)
+              domain_name = xml_descr.elements['domain'].elements['name'].text
+            end
 
             storage_prefix = get_disk_storage_prefix(env[:machine], storage_pool_name)
           end
