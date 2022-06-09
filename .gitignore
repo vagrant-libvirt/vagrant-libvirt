@@ -16,9 +16,7 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
-Vagrantfile
-!tests/*/Vagrantfile
-!example_box/Vagrantfile
+/Vagrantfile
 .vagrant
 *.swp
 .deps
