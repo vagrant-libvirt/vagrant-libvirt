@@ -65,6 +65,7 @@ can help a lot :-)
 * [QEMU Session Support](#qemu-session-support)
 * [Customized Graphics](#customized-graphics)
 * [TPM Devices](#tpm-devices)
+* [SMBIOS System Information](#smbios-system-information)
 * [Memory balloon](#memory-balloon)
 * [Libvirt communication channels](#libvirt-communication-channels)
 * [Custom command line arguments and environment variables](#custom-command-line-arguments-and-environment-variables)
@@ -655,6 +656,7 @@ end
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
 * `tpm_version` - The TPM version to use.
+* `sysinfo` - The [SMBIOS System Information](https://libvirt.org/formatdomain.html#smbios-system-information) to use.
 * `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case
   the device tree isn't added in-line to the kernel, it can be manually
   specified here.
@@ -1828,6 +1830,20 @@ Vagrant.configure("2") do |config|
     libvirt.tpm_model = "tpm-crb"
     libvirt.tpm_type = "emulator"
     libvirt.tpm_version = "2.0"
+  end
+end
+```
+
+## SMBIOS System Information
+
+Libvirt allows to specify
+[SMBIOS System Information](https://libvirt.org/formatdomain.html#smbios-system-information)
+like a base board or chassis manufacturer or a system serial number.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.sysinfo = { "system" => { "serial" => "AAAAAAAA" } }
   end
 end
 ```
