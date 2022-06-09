@@ -73,17 +73,32 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
-          @sysinfo = config.sysinfo
-          @sysinfo_available = false
-          @sysinfo.each_key do |key|
-            if [ 'bios', 'system', 'base_board', 'chassis', 'oem_strings' ].include?(key)
-              @sysinfo_available = true
+          @sysinfo = {}
+          @sysinfo_blocks = {
+            'bios' => [ 'vendor', 'version', 'date', 'release' ],
+            'system' => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
+            'base_board'=> [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
+            'chassis'=> [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ]
+          }
+          @sysinfo_blocks.each do |block_name, valid_entries|
+            if config.sysinfo.has_key?(block_name) and not config.sysinfo[block_name].empty?
+              has_valid_entries = false
+              valid_entries.each do |entry_name|
+                if config.sysinfo[block_name].has_key?(entry_name)
+                  has_valid_entries = true
+                end
+              end
+              if has_valid_entries
+                @sysinfo[block_name] = {}
+              end
+              valid_entries.each do |entry_name|
+                @sysinfo[block_name][entry_name] = config.sysinfo[block_name][entry_name]
+              end
             end
           end
-          @sysinfo_bios = [ 'vendor', 'version', 'date', 'release' ]
-          @sysinfo_system = [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ]
-          @sysinfo_base_board = [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ]
-          @sysinfo_chassis = [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ]
+          if config.sysinfo.has_key?('oem_strings') and not config.sysinfo[:oem_strings].empty?
+              @sysinfo['oem_strings'] = config.sysinfo['oem_strings']
+          end
 
           # Boot order
           @boot_order = config.boot_order
@@ -267,46 +282,38 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
           end
 
-          if @sysinfo_available
+          unless @sysinfo.empty?
             env[:ui].info(" -- Sysinfo:")
 
-            if @sysinfo.has_key?("bios") and not @sysinfo[:bios].empty?
+            if @sysinfo.has_key?("bios")
               env[:ui].info("   -- BIOS:")
-              @sysinfo_bios.each do |key|
-                if @sysinfo[:bios].has_key?(key)
-                  env[:ui].info("    -> #{key}: #{@sysinfo[:bios][key]}")
-                end
+              @sysinfo[:bios].each do |key, value|
+                env[:ui].info("    -> #{key}: #{value}")
               end
             end
 
-            if @sysinfo.has_key?("system") and not @sysinfo[:system].empty?
+            if @sysinfo.has_key?("system")
               env[:ui].info("   -- System:")
-              @sysinfo_system.each do |key|
-                if @sysinfo[:system].has_key?(key)
-                  env[:ui].info("    -> #{key}: #{@sysinfo[:system][key]}")
-                end
+              @sysinfo[:system].each do |key, value|
+                env[:ui].info("    -> #{key}: #{value}")
               end
             end
 
-            if @sysinfo.has_key?("base_board") and not @sysinfo[:base_board].empty?
+            if @sysinfo.has_key?("base_board")
               env[:ui].info("   -- Base Board:")
-              @sysinfo_base_board.each do |key|
-                if @sysinfo[:base_board].has_key?(key)
-                  env[:ui].info("    -> #{key}: #{@sysinfo[:base_board][key]}")
-                end
+              @sysinfo[:base_board].each do |key, value|
+                env[:ui].info("    -> #{key}: #{value}")
               end
             end
 
-            if @sysinfo.has_key?("chassis") and not @sysinfo[:chassis].empty?
+            if @sysinfo.has_key?("chassis")
               env[:ui].info("   -- Chassis:")
-              @sysinfo_chassis.each do |key|
-                if @sysinfo[:chassis].has_key?(key)
-                  env[:ui].info("    -> #{key}: #{@sysinfo[:chassis][key]}")
-                end
+              @sysinfo[:chassis].each do |key, value|
+                env[:ui].info("    -> #{key}: #{value}")
               end
             end
 
-            if @sysinfo.has_key?("oem_strings") and not @sysinfo[:oem_strings].empty?
+            if @sysinfo.has_key?("oem_strings")
               env[:ui].info("   -- OEM Strings:")
               @sysinfo[:oem_strings].each do |value|
                 env[:ui].info("    -> #{value}")
@@ -394,7 +401,7 @@ module VagrantPlugins
               msg = "    -> class=#{redirfilter[:class]}, "
               msg += "vendor=#{redirfilter[:vendor]}, "
               msg += "product=#{redirfilter[:product]}, "
-              msg += "version=#{redirfilter[:version]}, "
+              msg += "version=#{redirfilter[:version]}, "/sysin
               msg += "allow=#{redirfilter[:allow]}"
               env[:ui].info(msg)
             end

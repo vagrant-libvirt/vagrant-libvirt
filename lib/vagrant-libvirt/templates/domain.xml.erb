@@ -82,54 +82,44 @@
 <%- if @dtb -%>
     <dtb><%= @dtb %></dtb>
 <% end -%>
-<%- if @sysinfo_available -%>
+<%- unless @sysinfo.empty? -%>
     <smbios mode='sysinfo'/>
 <% end -%>
   </os>
-<%- if @sysinfo_available -%>
+<%- unless @sysinfo.empty? -%>
   <sysinfo type='smbios'>
-  <%- if @sysinfo.has_key?("bios") and not @sysinfo[:bios].empty? -%>
+  <%- if @sysinfo.has_key?('bios') -%>
     <bios>
-    <%- @sysinfo_bios.each do |key| -%>
-      <%- if @sysinfo[:bios].has_key?(key) -%>
-      <entry name='<%= key %>'><%= @sysinfo[:bios][key] %></entry>
-      <% end -%>
+    <%- @sysinfo[:bios].each do |key, value| -%>
+      <entry name='<%= key %>'><%= value %></entry>
     <% end -%>
     </bios>
   <% end -%>
-  <%- if @sysinfo.has_key?("system") and not @sysinfo[:system].empty? -%>
+  <%- if @sysinfo.has_key?('system') -%>
     <system>
-    <%- @sysinfo_system.each do |key| -%>
-      <%- if @sysinfo[:system].has_key?(key) -%>
-      <entry name='<%= key %>'><%= @sysinfo[:system][key] %></entry>
-      <% end -%>
+    <%- @sysinfo[:system].each do |key, value| -%>
+      <entry name='<%= key %>'><%= value %></entry>
     <% end -%>
     </system>
   <% end -%>
-  <%- if @sysinfo.has_key?("base_board") and not @sysinfo[:base_board].empty? -%>
+  <%- if @sysinfo.has_key?('base_board') -%>
     <baseBoard>
-    <%- @sysinfo_base_board.each do |key| -%>
-      <%- if @sysinfo[:base_board].has_key?(key) -%>
-      <entry name='<%= key %>'><%= @sysinfo[:base_board][key] %></entry>
-      <% end -%>
+    <%- @sysinfo[:base_board].each do |key, value| -%>
+      <entry name='<%= key %>'><%= value %></entry>
     <% end -%>
     </baseBoard>
   <% end -%>
-  <%- if @sysinfo.has_key?("chassis") and not @sysinfo[:chassis].empty? -%>
+  <%- if @sysinfo.has_key?('chassis') -%>
     <chassis>
-    <%- @sysinfo_chassis.each do |key| -%>
-      <%- if @sysinfo[:chassis].has_key?(key) -%>
-      <entry name='<%= key %>'><%= @sysinfo[:chassis][key] %></entry>
-      <% end -%>
+    <%- @sysinfo[:chassis].each do |key, value| -%>
+      <entry name='<%= key %>'><%= value %></entry>
     <% end -%>
     </chassis>
   <% end -%>
-  <%- if @sysinfo.has_key?("oem_strings") and not @sysinfo[:oem_strings].empty? -%>
+  <%- if @sysinfo.has_key?('oem_strings') -%>
     <oemStrings>
-    <%- @sysinfo_oem_strings.each do |key| -%>
-      <%- if @sysinfo[:oem_strings].has_key?(key) -%>
-      <entry name='<%= key %>'><%= @sysinfo[:oem_strings][key] %></entry>
-      <% end -%>
+    <%- @sysinfo[:oem_strings].each do |value| -%>
+      <entry><%= value %></entry>
     <% end -%>
     </oemStrings>
   <% end -%>
