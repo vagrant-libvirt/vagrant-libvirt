@@ -73,7 +73,17 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
-          @dmi_system_serial = config.dmi_system_serial
+          @sysinfo = config.sysinfo
+          @sysinfo_available = false
+          @sysinfo.each_key do |key|
+            if [ 'bios', 'system', 'base_board', 'chassis', 'oem_strings' ].include?(key)
+              @sysinfo_available = true
+            end
+          end
+          @sysinfo_bios = [ 'vendor', 'version', 'date', 'release' ]
+          @sysinfo_system = [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ]
+          @sysinfo_base_board = [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ]
+          @sysinfo_chassis = [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ]
 
           # Boot order
           @boot_order = config.boot_order
@@ -257,8 +267,51 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
           end
 
-          unless @dmi_system_serial.nil?
-            env[:ui].info(" -- DMI System Serial: #{@dmi_system_serial}")
+          if @sysinfo_available
+            env[:ui].info(" -- Sysinfo:")
+
+            if @sysinfo.has_key?("bios") and not @sysinfo[:bios].empty?
+              env[:ui].info("   -- BIOS:")
+              @sysinfo_bios.each do |key|
+                if @sysinfo[:bios].has_key?(key)
+                  env[:ui].info("    -> #{key}: #{@sysinfo[:bios][key]}")
+                end
+              end
+            end
+
+            if @sysinfo.has_key?("system") and not @sysinfo[:system].empty?
+              env[:ui].info("   -- System:")
+              @sysinfo_system.each do |key|
+                if @sysinfo[:system].has_key?(key)
+                  env[:ui].info("    -> #{key}: #{@sysinfo[:system][key]}")
+                end
+              end
+            end
+
+            if @sysinfo.has_key?("base_board") and not @sysinfo[:base_board].empty?
+              env[:ui].info("   -- Base Board:")
+              @sysinfo_base_board.each do |key|
+                if @sysinfo[:base_board].has_key?(key)
+                  env[:ui].info("    -> #{key}: #{@sysinfo[:base_board][key]}")
+                end
+              end
+            end
+
+            if @sysinfo.has_key?("chassis") and not @sysinfo[:chassis].empty?
+              env[:ui].info("   -- Chassis:")
+              @sysinfo_chassis.each do |key|
+                if @sysinfo[:chassis].has_key?(key)
+                  env[:ui].info("    -> #{key}: #{@sysinfo[:chassis][key]}")
+                end
+              end
+            end
+
+            if @sysinfo.has_key?("oem_strings") and not @sysinfo[:oem_strings].empty?
+              env[:ui].info("   -- OEM Strings:")
+              @sysinfo[:oem_strings].each do |value|
+                env[:ui].info("    -> #{value}")
+              end
+            end
           end
 
           if @memballoon_enabled

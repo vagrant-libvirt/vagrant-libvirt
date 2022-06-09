@@ -23,13 +23,7 @@
     <kernel></kernel>
     <initrd></initrd>
     <cmdline></cmdline>
-    <smbios mode='sysinfo'/>
   </os>
-  <sysinfo type='smbios'>
-    <system>
-      <entry name='serial'>AAAAAAAA</entry>
-    </system>
-  </sysinfo>
   <features>
     <acpi/>
     <apic/>

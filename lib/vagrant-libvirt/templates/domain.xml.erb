@@ -82,15 +82,57 @@
 <%- if @dtb -%>
     <dtb><%= @dtb %></dtb>
 <% end -%>
-<%- if @dmi_system_serial -%>
+<%- if @sysinfo_available -%>
     <smbios mode='sysinfo'/>
 <% end -%>
   </os>
-<%- if @dmi_system_serial -%>
+<%- if @sysinfo_available -%>
   <sysinfo type='smbios'>
+  <%- if @sysinfo.has_key?("bios") and not @sysinfo[:bios].empty? -%>
+    <bios>
+    <%- @sysinfo_bios.each do |key| -%>
+      <%- if @sysinfo[:bios].has_key?(key) -%>
+      <entry name='<%= key %>'><%= @sysinfo[:bios][key] %></entry>
+      <% end -%>
+    <% end -%>
+    </bios>
+  <% end -%>
+  <%- if @sysinfo.has_key?("system") and not @sysinfo[:system].empty? -%>
     <system>
-      <entry name='serial'><%= @dmi_system_serial %></entry>
+    <%- @sysinfo_system.each do |key| -%>
+      <%- if @sysinfo[:system].has_key?(key) -%>
+      <entry name='<%= key %>'><%= @sysinfo[:system][key] %></entry>
+      <% end -%>
+    <% end -%>
     </system>
+  <% end -%>
+  <%- if @sysinfo.has_key?("base_board") and not @sysinfo[:base_board].empty? -%>
+    <baseBoard>
+    <%- @sysinfo_base_board.each do |key| -%>
+      <%- if @sysinfo[:base_board].has_key?(key) -%>
+      <entry name='<%= key %>'><%= @sysinfo[:base_board][key] %></entry>
+      <% end -%>
+    <% end -%>
+    </baseBoard>
+  <% end -%>
+  <%- if @sysinfo.has_key?("chassis") and not @sysinfo[:chassis].empty? -%>
+    <chassis>
+    <%- @sysinfo_chassis.each do |key| -%>
+      <%- if @sysinfo[:chassis].has_key?(key) -%>
+      <entry name='<%= key %>'><%= @sysinfo[:chassis][key] %></entry>
+      <% end -%>
+    <% end -%>
+    </chassis>
+  <% end -%>
+  <%- if @sysinfo.has_key?("oem_strings") and not @sysinfo[:oem_strings].empty? -%>
+    <oemStrings>
+    <%- @sysinfo_oem_strings.each do |key| -%>
+      <%- if @sysinfo[:oem_strings].has_key?(key) -%>
+      <entry name='<%= key %>'><%= @sysinfo[:oem_strings][key] %></entry>
+      <% end -%>
+    <% end -%>
+    </oemStrings>
+  <% end -%>
   </sysinfo>
 <% end -%>
   <features>
