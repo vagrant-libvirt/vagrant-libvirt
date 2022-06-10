@@ -102,7 +102,8 @@ describe 'templates/domain' do
 
       domain.sysinfo = {
         'system' => {
-          'serial' => 'AAAAAAAA'
+          'serial' => 'AAAAAAAA',
+          'ignored' => 'ignored'
         }
       }
 
