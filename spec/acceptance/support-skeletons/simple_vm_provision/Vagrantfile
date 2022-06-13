@@ -1,9 +1,12 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+#
+# frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "test-package-simple-domain"
+  config.vm.box = "infernix/tinycore"
   config.ssh.shell = "/bin/sh"
   config.ssh.insert_key = false
   config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.provision "shell", inline: "echo Hello, World", privileged: false
 end

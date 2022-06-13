@@ -1,13 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-#
-# frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "infernix/tinycore"
-  config.ssh.shell = "/bin/sh"
+  config.vm.box = "test-package-complex-domain"
+  config.vm.define 'package-complex'
   config.vm.synced_folder ".", "/vagrant", disabled: true
+
   config.vm.provider :libvirt do |libvirt|
+    libvirt.driver = "qemu"
     libvirt.cpus = 2
+    libvirt.memory = 2048
   end
 end

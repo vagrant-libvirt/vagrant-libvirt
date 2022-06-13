@@ -13,10 +13,35 @@ jobs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Set up libvirt for test generation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libvirt-dev \
+          libz-dev \
+        ;
+    - uses: actions/cache@v2
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.6
+    - name: Run bundler using cached path
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
     - name: Generate matrix
       id: generate-matrix
       run: |
-        tests="$(awk -f tests/parse_tests.awk < tests/runtests.bats)"
+        bundle exec rspec --color --format json --fail-fast --dry-run --tag acceptance --out report.json
+        tests="$(jq -c '[.examples[].full_description]' report.json)"
+
         echo "::set-output name=matrix::${tests}"
 
   run-tests:
@@ -51,13 +76,9 @@ jobs:
           qemu-kvm \
           qemu-utils \
         ;
-        sudo apt-get install \
+        sudo apt-get install -y \
           libvirt-dev \
           libz-dev \
-        ;
-        sudo apt-get install \
-          bats \
-          fping \
         ;
 
         # start daemon
@@ -81,22 +102,14 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6.6
-    - name: Set up rubygems
-      run: |
-        gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
-        gem update bundler --conservative
     - name: Run bundler using cached path
       run: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
-    - name: Install binstubs
-      run: |
-        bundle binstubs --all --path=./bin 1>/dev/null
-        ./bin/vagrant --version
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
-        # use export with full path to avoid needing to resolve ~
+        # tell integration tests to use boxes from the cached location
         export VAGRANT_HOME=$HOME/.vagrant.d
         # use software emulation due to lack of nested emulation
         cat <<EOF > $HOME/.vagrant.d/Vagrantfile
@@ -105,6 +118,5 @@ jobs:
             libvirt.driver = "qemu"
           end
         end
-        EOF
         # run under libvirt group
-        sg libvirt -c "bats -f '${{ matrix.test_name }}' ./tests/runtests.bats"
+        sg libvirt -c "bundle exec rspec --color --fail-fast --tag acceptance -e '${{ matrix.test_name }}'"
