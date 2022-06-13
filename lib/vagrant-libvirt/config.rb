@@ -131,13 +131,6 @@ module VagrantPlugins
 
       # Configure sysinfo values
       attr_accessor :sysinfo
-      @@SYSINFO_BLOCKS = {
-        :bios => [ 'vendor', 'version', 'date', 'release' ],
-        :system => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
-        :base_board => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
-        :chassis => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
-        :oem_strings => nil,
-      }
 
       # Configure the memballoon
       attr_accessor :memballoon_enabled
@@ -296,6 +289,13 @@ module VagrantPlugins
         @tpm_version       = UNSET_VALUE
 
         @sysinfo           = {}
+        @sysinfo_blocks    = {
+          :bios => [ 'vendor', 'version', 'date', 'release' ],
+          :system => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
+          :base_board => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
+          :chassis => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
+          :oem_strings => nil,
+        }
 
         @memballoon_enabled = UNSET_VALUE
         @memballoon_model   = UNSET_VALUE
@@ -932,7 +932,7 @@ module VagrantPlugins
         # only take valid values and ignore the rest
         sysinfo = @sysinfo.dup
         @sysinfo = {}
-        @@SYSINFO_BLOCKS.each_pair do |block, valid_keys|
+        @sysinfo_blocks.each_pair do |block, valid_keys|
           if sysinfo.has_key?(block)
             unless valid_keys.nil?
               # every block except :oem_strings
@@ -1112,10 +1112,10 @@ module VagrantPlugins
         end
 
         machine.provider_config.sysinfo.each_pair do |block_name, values|
-          if @@SYSINFO_BLOCKS.has_key?(block_name)
-            unless @@SYSINFO_BLOCKS[block_name].nil?
+          if @sysinfo_blocks.has_key?(block_name)
+            unless @sysinfo_blocks[block_name].nil?
               values.each_pair do |value_name, value|
-                if @@SYSINFO_BLOCKS[block_name].include?(value_name)
+                if @sysinfo_blocks[block_name].include?(value_name)
                   if value.nil? or value.empty?
                     machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{value_name} is nil or empty and therefore has no effect.")
                   end
