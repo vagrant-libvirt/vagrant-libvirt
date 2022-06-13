@@ -1115,7 +1115,7 @@ module VagrantPlugins
           if @@SYSINFO_BLOCKS.has_key?(block_name)
             unless @@SYSINFO_BLOCKS[block_name].nil?
               values.each_pair do |value_name, value|
-                if @@SYSINFO_BLOCKS[block_name].has_key?(value_name)
+                if @@SYSINFO_BLOCKS[block_name].include?(value_name)
                   if value.nil? or value.empty?
                     machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{value_name} is nil or empty and therefore has no effect.")
                   end
