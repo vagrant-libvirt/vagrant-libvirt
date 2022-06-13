@@ -929,22 +929,28 @@ module VagrantPlugins
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 
-        # remove ignored blocks and values
-        @sysinfo.each_pair do |block_name, values|
-          if @@SYSINFO_BLOCKS.has_key?(block_name)
-            unless @@SYSINFO_BLOCKS[block_name].nil?
-              values.each_pair do |value_name, value|
-                if @@SYSINFO_BLOCKS[block_name].has_key?(value_name)
-                  if value.nil? or value.empty?
-                    @sysinfo[block_name].delete(value_name)
+        # only take valid values and ignore the rest
+        sysinfo = @sysinfo.dup
+        @sysinfo = {}
+        @@SYSINFO_BLOCKS.each_pair do |block, valid_keys|
+          if sysinfo.has_key?(block)
+            unless valid_keys.nil?
+              # every block except :oem_strings
+              valid_keys.each do |valid_key|
+                if sysinfo[block].has_key?(valid_key)
+                  value = sysinfo[block][valid_key]
+                  unless value.nil? or value.empty?
+                    if @sysinfo[block].nil?
+                      @sysinfo[block] = {}
+                    end
+                    @sysinfo[block][valid_key] = String(sysinfo[block][valid_key])
                   end
-                else
-                  @sysinfo[block_name].delete(value_name)
                 end
               end
+            else
+              # :oem_strings
+              @sysinfo[block_name] = String(sysinfo[block_name])
             end
-          else
-            @sysinfo.delete(block_name)
           end
         end
 
