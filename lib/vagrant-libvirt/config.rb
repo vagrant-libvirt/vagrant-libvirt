@@ -1143,7 +1143,9 @@ module VagrantPlugins
           result.cdroms = c
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
-          
+
+          result.sysinfo = sysinfo.merge(other.sysinfo) { |k, x, y| k == :oem_strings ? x + y : x.merge(y) }
+
           c = clock_timers.dup
           c += other.clock_timers
           result.clock_timers = c
