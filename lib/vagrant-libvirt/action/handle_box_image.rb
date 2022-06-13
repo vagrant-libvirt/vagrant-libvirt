@@ -134,7 +134,7 @@ module VagrantPlugins
                       ''
                     end
 
-          if version.empty?
+          if version.empty? || version == '0'
             ui.warn(I18n.t('vagrant_libvirt.box_version_missing', name: box.name.to_s))
 
             version = "0_#{File.mtime(path).to_i}"
