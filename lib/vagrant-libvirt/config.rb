@@ -131,6 +131,13 @@ module VagrantPlugins
 
       # Configure sysinfo values
       attr_accessor :sysinfo
+      @@SYSINFO_BLOCKS = {
+        :bios => [ 'vendor', 'version', 'date', 'release' ],
+        :system => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
+        :base_board => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
+        :chassis => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
+        :oem_strings => nil,
+      }
 
       # Configure the memballoon
       attr_accessor :memballoon_enabled
@@ -288,7 +295,7 @@ module VagrantPlugins
         @tpm_path          = UNSET_VALUE
         @tpm_version       = UNSET_VALUE
 
-        @sysinfo           = UNSET_VALUE
+        @sysinfo           = {}
 
         @memballoon_enabled = UNSET_VALUE
         @memballoon_model   = UNSET_VALUE
@@ -915,13 +922,31 @@ module VagrantPlugins
         @tpm_type = 'passthrough' if @tpm_type == UNSET_VALUE
         @tpm_path = nil if @tpm_path == UNSET_VALUE
         @tpm_version = nil if @tpm_version == UNSET_VALUE
-        @sysinfo = {} if @sysinfo == UNSET_VALUE
         @memballoon_enabled = nil if @memballoon_enabled == UNSET_VALUE
         @memballoon_model = 'virtio' if @memballoon_model == UNSET_VALUE
         @memballoon_pci_bus = '0x00' if @memballoon_pci_bus == UNSET_VALUE
         @memballoon_pci_slot = '0x0f' if @memballoon_pci_slot == UNSET_VALUE
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
+
+        # remove ignored blocks and values
+        @sysinfo.each_pair do |block_name, values|
+          if @@SYSINFO_BLOCKS.has_key?(block_name)
+            unless @@SYSINFO_BLOCKS[block_name].nil?
+              values.each_pair do |value_name, value|
+                if @@SYSINFO_BLOCKS[block_name].has_key?(value_name)
+                  if value.nil? or value.empty?
+                    @sysinfo[block_name].delete(value_name)
+                  end
+                else
+                  @sysinfo[block_name].delete(value_name)
+                end
+              end
+            end
+          else
+            @sysinfo.delete(block_name)
+          end
+        end
 
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
@@ -1077,6 +1102,24 @@ module VagrantPlugins
 
           if !machine.provider_config.disk_driver_opts.empty?
             machine.ui.warn("Libvirt Provider: volume_cache has no effect when disk_driver is defined.")
+          end
+        end
+
+        machine.provider_config.sysinfo.each_pair do |block_name, values|
+          if @@SYSINFO_BLOCKS.has_key?(block_name)
+            unless @@SYSINFO_BLOCKS[block_name].nil?
+              values.each_pair do |value_name, value|
+                if @@SYSINFO_BLOCKS[block_name].has_key?(value_name)
+                  if value.nil? or value.empty?
+                    machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{value_name} is nil or empty and therefore has no effect.")
+                  end
+                else
+                  machine.ui.warn("Libvirt Provider: sysinfo.#{block_name} has key '#{value_name}' with no effect.")
+                end
+              end
+            end
+          else
+            machine.ui.warn("Libvirt Provider: sysinfo has key '#{block_name}' with no effect.")
           end
         end
 
