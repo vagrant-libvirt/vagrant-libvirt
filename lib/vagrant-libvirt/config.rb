@@ -290,11 +290,11 @@ module VagrantPlugins
 
         @sysinfo           = {}
         @sysinfo_blocks    = {
-          :bios => [ 'vendor', 'version', 'date', 'release' ],
-          :system => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
-          :base_board => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
-          :chassis => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
-          :oem_strings => nil,
+          'bios' => [ 'vendor', 'version', 'date', 'release' ],
+          'system' => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
+          'base_board' => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
+          'chassis' => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
+          'oem_strings' => nil,
         }
 
         @memballoon_enabled = UNSET_VALUE
@@ -935,7 +935,7 @@ module VagrantPlugins
         @sysinfo_blocks.each_pair do |block, valid_keys|
           if sysinfo.has_key?(block)
             unless valid_keys.nil?
-              # every block except :oem_strings
+              # every block except 'oem_strings'
               valid_keys.each do |valid_key|
                 if sysinfo[block].has_key?(valid_key)
                   value = sysinfo[block][valid_key]
@@ -948,7 +948,7 @@ module VagrantPlugins
                 end
               end
             else
-              # :oem_strings
+              # 'oem_strings'
               @sysinfo[block_name] = String(sysinfo[block_name])
             end
           end
@@ -1144,7 +1144,7 @@ module VagrantPlugins
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 
-          result.sysinfo = sysinfo.merge(other.sysinfo) { |k, x, y| k == :oem_strings ? x + y : x.merge(y) }
+          result.sysinfo = sysinfo.merge(other.sysinfo) { |k, x, y| k == 'oem_strings' ? x + y : x.merge(y) }
 
           c = clock_timers.dup
           c += other.clock_timers

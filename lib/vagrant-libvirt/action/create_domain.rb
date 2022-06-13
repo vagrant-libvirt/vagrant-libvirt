@@ -75,11 +75,11 @@ module VagrantPlugins
 
           @sysinfo = config.sysinfo
           @sysinfo_blocks = {
-            :bios => {:section => "BIOS", :xml => "bios"},
-            :system => {:section => "System", :xml => "system"},
-            :base_board => {:section => "Base Board", :xml => "baseBoard"},
-            :chassis => {:section => "Chassis", :xml => "chassis"},
-            :oem_strings => {:section => "OEM Strings", :xml => "oemStrings"},
+            'bios' => {:section => "BIOS", :xml => "bios"},
+            'system' => {:section => "System", :xml => "system"},
+            'base_board' => {:section => "Base Board", :xml => "baseBoard"},
+            'chassis' => {:section => "Chassis", :xml => "chassis"},
+            'oem_strings' => {:section => "OEM Strings", :xml => "oemStrings"},
           }
 
           # Boot order
@@ -268,7 +268,7 @@ module VagrantPlugins
             env[:ui].info(" -- Sysinfo:")
             @sysinfo.each_pair do |block, values|
               env[:ui].info("   -- #{@sysinfo_blocks[block][:section]}:")
-              unless block == :oem_strings
+              unless block == 'oem_strings'
                 values.each_pair do |name, value|
                   env[:ui].info("    -> #{name}: #{value}")
                 end

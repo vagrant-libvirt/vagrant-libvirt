@@ -90,7 +90,7 @@
   <sysinfo type='smbios'>
   <%- @sysinfo.each_pair do |block, values| -%>
     <<%= @sysinfo_blocks[block][:xml] %>>
-    <%- unless block == :oem_strings -%>
+    <%- unless block == 'oem_strings' -%>
     <%- @sysinfo[block].each do |name, value| -%>
       <entry name='<%= name %>'><%= value %></entry>
     <% end -%>
