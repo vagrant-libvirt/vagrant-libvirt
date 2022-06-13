@@ -101,16 +101,16 @@ describe 'templates/domain' do
       domain.tpm_path = '/dev/tpm0'
 
       domain.sysinfo = {
-        :system => {
+        'system' => {
           'serial' => 'AAAAAAAA',
           'ignored' => 'ignored',
           'manufacturer' => '',
         },
-        :chassis => {
+        'chassis' => {
           'serial' => '',
         },
-        :ignored => nil,
-        :oem_strings => [
+        'ignored' => nil,
+        'oem_strings' => [
           'AAAAAAAA',
         ],
       }
