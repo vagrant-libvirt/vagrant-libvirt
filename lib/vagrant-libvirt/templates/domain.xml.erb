@@ -82,24 +82,46 @@
 <%- if @dtb -%>
     <dtb><%= @dtb %></dtb>
 <% end -%>
-<%- unless @sysinfo.empty? -%>
+<%- unless @sysinfo_empty -%>
     <smbios mode='sysinfo'/>
 <% end -%>
   </os>
-<%- unless @sysinfo.empty? -%>
+<%- unless @sysinfo_empty -%>
   <sysinfo type='smbios'>
-  <%- @sysinfo.each_pair do |block, values| -%>
-    <<%= @sysinfo_blocks[block][:xml] %>>
-    <%- unless block == 'oem_strings' -%>
-    <%- @sysinfo[block].each do |name, value| -%>
+  <%- unless @sysinfo_bios.empty? -%>
+    <bios>
+    <%- @sysinfo_bios.each_pair do |name, value| -%>
       <entry name='<%= name %>'><%= value %></entry>
     <% end -%>
-    <%- else -%>
-    <%- @sysinfo[block].each do |value| -%>
+    </bios>
+  <% end -%>
+  <%- unless @sysinfo_system.empty? -%>
+    <system>
+    <%- @sysinfo_system.each_pair do |name, value| -%>
+      <entry name='<%= name %>'><%= value %></entry>
+    <% end -%>
+    </system>
+  <% end -%>
+  <%- unless @sysinfo_base_board.empty? -%>
+    <baseBoard>
+    <%- @sysinfo_base_board.each_pair do |name, value| -%>
+      <entry name='<%= name %>'><%= value %></entry>
+    <% end -%>
+    </baseBoard>
+  <% end -%>
+  <%- unless @sysinfo_chassis.empty? -%>
+    <chassis>
+    <%- @sysinfo_chassis.each_pair do |name, value| -%>
+      <entry name='<%= name %>'><%= value %></entry>
+    <% end -%>
+    </chassis>
+  <% end -%>
+  <%- unless @sysinfo_oem_strings.empty? -%>
+    <oemStrings>
+    <%- @sysinfo_oem_strings.each do |value| -%>
       <entry><%= value %></entry>
     <% end -%>
-    <% end -%>
-    </<%= @sysinfo_blocks[block][:xml] %>>
+    </oemStrings>
   <% end -%>
   </sysinfo>
 <% end -%>
