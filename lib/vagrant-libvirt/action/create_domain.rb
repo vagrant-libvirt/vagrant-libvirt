@@ -401,7 +401,7 @@ module VagrantPlugins
               msg = "    -> class=#{redirfilter[:class]}, "
               msg += "vendor=#{redirfilter[:vendor]}, "
               msg += "product=#{redirfilter[:product]}, "
-              msg += "version=#{redirfilter[:version]}, "/sysin
+              msg += "version=#{redirfilter[:version]}, "
               msg += "allow=#{redirfilter[:allow]}"
               env[:ui].info(msg)
             end
