@@ -103,8 +103,16 @@ describe 'templates/domain' do
       domain.sysinfo = {
         'system' => {
           'serial' => 'AAAAAAAA',
-          'ignored' => 'ignored'
-        }
+          'ignored' => 'ignored',
+          'manufacturer' => '',
+        },
+        'chassis' => {
+          'serial' => '',
+        },
+        'ignored' => nil,
+        'oem_strings' => [
+          'AAAAAAAA',
+        ],
       }
 
       domain.qemuargs(value: '-device')
