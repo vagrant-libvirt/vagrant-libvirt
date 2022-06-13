@@ -125,6 +125,23 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         end
       end
 
+      context 'when box version set to 0' do
+        let(:box_mtime) { Time.now }
+
+        before do
+          expect(env[:machine]).to receive_message_chain("box.version") { '0' }
+          expect(File).to receive(:mtime).and_return(box_mtime)
+        end
+
+        it 'should use the box file timestamp' do
+          expect(ui).to receive(:warn).with(/No verison detected for test/)
+
+          expect(subject.call(env)).to be_nil
+          expect(env[:box_volume_number]).to eq(1)
+          expect(env[:box_volumes]).to match([hash_including({:name=>"test_vagrant_box_image_0_#{box_mtime.to_i}_box.img"})])
+        end
+      end
+
       context 'When config.machine_virtual_size is set and smaller than box_virtual_size' do
         before do
           env[:machine].provider_config.machine_virtual_size = 1
