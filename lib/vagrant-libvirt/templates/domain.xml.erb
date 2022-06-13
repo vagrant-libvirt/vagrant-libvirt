@@ -88,40 +88,18 @@
   </os>
 <%- unless @sysinfo.empty? -%>
   <sysinfo type='smbios'>
-  <%- if @sysinfo.has_key?('bios') -%>
-    <bios>
-    <%- @sysinfo[:bios].each do |key, value| -%>
-      <entry name='<%= key %>'><%= value %></entry>
+  <%- @sysinfo.each_pair do |block, values| -%>
+    <<%= @@SYSINFO_BLOCKS[block][:xml] %>>
+    <%- unless block == :oem_strings -%>
+    <%- @sysinfo[block].each do |name, value| -%>
+      <entry name='<%= name %>'><%= value %></entry>
     <% end -%>
-    </bios>
-  <% end -%>
-  <%- if @sysinfo.has_key?('system') -%>
-    <system>
-    <%- @sysinfo[:system].each do |key, value| -%>
-      <entry name='<%= key %>'><%= value %></entry>
-    <% end -%>
-    </system>
-  <% end -%>
-  <%- if @sysinfo.has_key?('base_board') -%>
-    <baseBoard>
-    <%- @sysinfo[:base_board].each do |key, value| -%>
-      <entry name='<%= key %>'><%= value %></entry>
-    <% end -%>
-    </baseBoard>
-  <% end -%>
-  <%- if @sysinfo.has_key?('chassis') -%>
-    <chassis>
-    <%- @sysinfo[:chassis].each do |key, value| -%>
-      <entry name='<%= key %>'><%= value %></entry>
-    <% end -%>
-    </chassis>
-  <% end -%>
-  <%- if @sysinfo.has_key?('oem_strings') -%>
-    <oemStrings>
-    <%- @sysinfo[:oem_strings].each do |value| -%>
+    <%- else -%>
+    <%- @sysinfo[block].each do |value| -%>
       <entry><%= value %></entry>
     <% end -%>
-    </oemStrings>
+    <% end -%>
+    </<%= @@SYSINFO_BLOCKS[block][:xml] %>>
   <% end -%>
   </sysinfo>
 <% end -%>
