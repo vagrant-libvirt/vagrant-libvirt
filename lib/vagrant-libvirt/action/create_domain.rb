@@ -73,18 +73,14 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
-          @sysinfo_bios = config.sysinfo.has_key?('bios') ? config.sysinfo['bios'] : {}
-          @sysinfo_system = config.sysinfo.has_key?('system') ? config.sysinfo['system'] : {}
-          @sysinfo_base_board = config.sysinfo.has_key?('base_board') ? config.sysinfo['base_board'] : {}
-          @sysinfo_chassis = config.sysinfo.has_key?('chassis') ? config.sysinfo['chassis'] : {}
-          @sysinfo_oem_strings = config.sysinfo.has_key?('oem_strings') ? config.sysinfo['oem_strings'] : []
-          @sysinfo_empty = [
-            @sysinfo_bios.empty?,
-            @sysinfo_system.empty?,
-            @sysinfo_base_board.empty?,
-            @sysinfo_chassis.empty?,
-            @sysinfo_oem_strings.empty?
-          ].all?
+          @sysinfo = config.sysinfo
+          @sysinfo_blocks = {
+            'bios' => {:section => "BIOS", :xml => "bios"},
+            'system' => {:section => "System", :xml => "system"},
+            'base_board' => {:section => "Base Board", :xml => "baseBoard"},
+            'chassis' => {:section => "Chassis", :xml => "chassis"},
+            'oem_strings' => {:section => "OEM Strings", :xml => "oemStrings"},
+          }
 
           # Boot order
           @boot_order = config.boot_order
@@ -268,36 +264,18 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
           end
 
-          unless @sysinfo_empty
+          unless @sysinfo.empty?
             env[:ui].info(" -- Sysinfo:")
-            unless @sysinfo_bios.empty?
-              env[:ui].info("   -- BIOS:")
-              @sysinfo_bios.each_pair do |name, value|
-                env[:ui].info("    -> #{name}: #{value}")
-              end
-            end
-            unless @sysinfo_system.empty?
-              env[:ui].info("   -- System:")
-              @sysinfo_system.each_pair do |name, value|
-                env[:ui].info("    -> #{name}: #{value}")
-              end
-            end
-            unless @sysinfo_base_board.empty?
-              env[:ui].info("   -- Base Board:")
-              @sysinfo_base_board.each_pair do |name, value|
-                env[:ui].info("    -> #{name}: #{value}")
-              end
-            end
-            unless @sysinfo_chassis.empty?
-              env[:ui].info("   -- Chassis:")
-              @sysinfo_chassis.each_pair do |name, value|
-                env[:ui].info("    -> #{name}: #{value}")
-              end
-            end
-            unless @sysinfo_oem_strings.empty?
-              env[:ui].info("   -- OEM Strings:")
-              @sysinfo_oem_strings.each do |value|
-                env[:ui].info("    -> #{value}")
+            @sysinfo.each_pair do |block, values|
+              env[:ui].info("   -- #{@sysinfo_blocks[block][:section]}:")
+              unless block == 'oem_strings'
+                values.each_pair do |name, value|
+                  env[:ui].info("    -> #{name}: #{value}")
+                end
+              else
+                value.each do |value|
+                  env[:ui].info("    -> #{value}")
+                end
               end
             end
           end
