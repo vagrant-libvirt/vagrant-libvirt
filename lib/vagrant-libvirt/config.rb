@@ -931,7 +931,7 @@ module VagrantPlugins
 
         # only take valid values and ignore the rest
         sysinfo = @sysinfo.dup
-        @sysinfo = {}
+        @sysinfo = {:bios => {:serial => 'BBBBBBB'}}
         @@SYSINFO_BLOCKS.each_pair do |block, valid_keys|
           if sysinfo.has_key?(block)
             unless valid_keys.nil?
