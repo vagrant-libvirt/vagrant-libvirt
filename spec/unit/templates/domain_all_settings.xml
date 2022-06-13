@@ -29,6 +29,9 @@
     <system>
       <entry name='serial'>AAAAAAAA</entry>
     </system>
+    <oemStrings>
+      <entry>AAAAAAAA</entry>
+    </oemStrings>
   </sysinfo>
   <features>
     <acpi/>
