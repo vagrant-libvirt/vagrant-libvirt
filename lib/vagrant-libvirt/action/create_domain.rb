@@ -11,14 +11,6 @@ module VagrantPlugins
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
         include VagrantPlugins::ProviderLibvirt::Util::StorageUtil
 
-        @@SYSINFO_BLOCKS = {
-          :bios => {:section => "BIOS", :xml => "bios"},
-          :system => {:section => "System", :xml => "system"},
-          :base_board => {:section => "Base Board", :xml => "baseBoard"},
-          :chassis => {:section => "Chassis", :xml => "chassis"},
-          :oem_strings => {:section => "OEM Strings", :xml => "oemStrings"},
-        }
-
         def initialize(app, _env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_domain')
           @app = app
@@ -82,6 +74,13 @@ module VagrantPlugins
           @tpm_version = config.tpm_version
 
           @sysinfo = config.sysinfo
+          @sysinfo_blocks = {
+            :bios => {:section => "BIOS", :xml => "bios"},
+            :system => {:section => "System", :xml => "system"},
+            :base_board => {:section => "Base Board", :xml => "baseBoard"},
+            :chassis => {:section => "Chassis", :xml => "chassis"},
+            :oem_strings => {:section => "OEM Strings", :xml => "oemStrings"},
+          }
 
           # Boot order
           @boot_order = config.boot_order
@@ -268,7 +267,7 @@ module VagrantPlugins
           unless @sysinfo.empty?
             env[:ui].info(" -- Sysinfo:")
             @sysinfo.each_pair do |block, values|
-              env[:ui].info("   -- #{@@SYSINFO_BLOCKS[block][:section]}:")
+              env[:ui].info("   -- #{@sysinfo_blocks[block][:section]}:")
               unless block == :oem_strings
                 values.each_pair do |name, value|
                   env[:ui].info("    -> #{name}: #{value}")
