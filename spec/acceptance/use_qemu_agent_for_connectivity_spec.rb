@@ -15,7 +15,8 @@ describe 'use qemu agent to determine machine private address', acceptance: true
 
   it 'should succeed' do
     status('Test: machine is created successfully')
-    expect(environment.execute('vagrant', 'up')).to exit_with(0)
+    result = environment.execute('vagrant', 'up')
+    expect(result).to exit_with(0)
 
     # extract SSH IP address emitted as it should be the private network since
     # the mgmt network has not been attached
