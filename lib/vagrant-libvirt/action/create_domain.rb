@@ -73,13 +73,20 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
-          @sysinfo = config.sysinfo
+          @sysinfo = config.sysinfo.dup
+          @sysinfo.each do |section, _v|
+            if @sysinfo[section].respond_to?(:each_pair)
+              @sysinfo[section].delete_if { |_k, v| v.to_s.empty? }
+            else
+              @sysinfo[section].reject! { |e| e.to_s.empty? }
+            end
+          end.reject! { |_k, v| v.empty? }
           @sysinfo_blocks = {
-            'bios' => {:section => "BIOS", :xml => "bios"},
-            'system' => {:section => "System", :xml => "system"},
-            'base_board' => {:section => "Base Board", :xml => "baseBoard"},
-            'chassis' => {:section => "Chassis", :xml => "chassis"},
-            'oem_strings' => {:section => "OEM Strings", :xml => "oemStrings"},
+            'bios' => {:ui => "BIOS", :xml => "bios"},
+            'system' => {:ui => "System", :xml => "system"},
+            'base board' => {:ui => "Base Board", :xml => "baseBoard"},
+            'chassis' => {:ui => "Chassis", :xml => "chassis"},
+            'oem strings' => {:ui => "OEM Strings", :xml => "oemStrings"},
           }
 
           # Boot order
@@ -267,13 +274,13 @@ module VagrantPlugins
           unless @sysinfo.empty?
             env[:ui].info(" -- Sysinfo:")
             @sysinfo.each_pair do |block, values|
-              env[:ui].info("   -- #{@sysinfo_blocks[block][:section]}:")
-              unless block == 'oem_strings'
+              env[:ui].info("   -- #{@sysinfo_blocks[block.to_s][:ui]}:")
+              if values.respond_to?(:each_pair)
                 values.each_pair do |name, value|
                   env[:ui].info("    -> #{name}: #{value}")
                 end
               else
-                value.each do |value|
+                values.each do |value|
                   env[:ui].info("    -> #{value}")
                 end
               end

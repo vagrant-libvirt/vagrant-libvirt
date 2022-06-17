@@ -152,6 +152,47 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
           expect(subject.call(env)).to be_nil
         end
       end
+
+      context 'sysinfo' do
+        let(:domain_xml_file) { 'sysinfo.xml' }
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.sysinfo = {
+            'bios': {
+              'vendor': 'Test Vendor',
+              'version': '',
+            },
+            'system': {
+              'manufacturer': 'Test Manufacturer',
+              'version': '0.1.0',
+              'serial': '',
+            },
+            'base board': {
+              'manufacturer': 'Test Manufacturer',
+              'version': '',
+            },
+            'chassis': {
+              'manufacturer': 'Test Manufacturer',
+              'serial': 'AABBCCDDEE',
+              'asset': '',
+            },
+            'oem strings': [
+              'app1: string1',
+              'app1: string2',
+              'app2: string1',
+              'app2: string2',
+              '',
+              '',
+            ],
+          }
+          EOF
+        end
+        it 'should populate sysinfo as expected' do
+          expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
     end
 
     context 'connection => qemu:///session' do

@@ -288,14 +288,7 @@ module VagrantPlugins
         @tpm_path          = UNSET_VALUE
         @tpm_version       = UNSET_VALUE
 
-        @sysinfo           = {}
-        @sysinfo_blocks    = {
-          'bios' => [ 'vendor', 'version', 'date', 'release' ],
-          'system' => [ 'manufacturer', 'product', 'version', 'serial', 'uuid', 'sku', 'family' ],
-          'base_board' => [ 'manufacturer', 'product', 'version', 'serial', 'asset', 'location' ],
-          'chassis' => [ 'manufacturer', 'version', 'serial', 'asset', 'sku' ],
-          'oem_strings' => nil,
-        }
+        @sysinfo           = UNSET_VALUE
 
         @memballoon_enabled = UNSET_VALUE
         @memballoon_model   = UNSET_VALUE
@@ -929,30 +922,7 @@ module VagrantPlugins
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 
-        # only take valid values and ignore the rest
-        sysinfo = @sysinfo.dup
-        @sysinfo = {}
-        @sysinfo_blocks.each_pair do |block, valid_keys|
-          if sysinfo.has_key?(block)
-            unless valid_keys.nil?
-              # every block except 'oem_strings'
-              valid_keys.each do |valid_key|
-                if sysinfo[block].has_key?(valid_key)
-                  value = sysinfo[block][valid_key]
-                  unless value.nil? or value.empty?
-                    if @sysinfo[block].nil?
-                      @sysinfo[block] = {}
-                    end
-                    @sysinfo[block][valid_key] = String(sysinfo[block][valid_key])
-                  end
-                end
-              end
-            else
-              # 'oem_strings'
-              @sysinfo[block_name] = String(sysinfo[block_name])
-            end
-          end
-        end
+        @sysinfo = {} if @sysinfo == UNSET_VALUE
 
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
@@ -1111,23 +1081,7 @@ module VagrantPlugins
           end
         end
 
-        machine.provider_config.sysinfo.each_pair do |block_name, values|
-          if @sysinfo_blocks.has_key?(block_name)
-            unless @sysinfo_blocks[block_name].nil?
-              values.each_pair do |value_name, value|
-                if @sysinfo_blocks[block_name].include?(value_name)
-                  if value.nil? or value.empty?
-                    machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{value_name} is nil or empty and therefore has no effect.")
-                  end
-                else
-                  machine.ui.warn("Libvirt Provider: sysinfo.#{block_name} has key '#{value_name}' with no effect.")
-                end
-              end
-            end
-          else
-            machine.ui.warn("Libvirt Provider: sysinfo has key '#{block_name}' with no effect.")
-          end
-        end
+        errors = validate_sysinfo(machine, errors)
 
         { 'Libvirt Provider' => errors }
       end
@@ -1144,7 +1098,9 @@ module VagrantPlugins
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 
-          result.sysinfo = sysinfo.merge(other.sysinfo) { |k, x, y| k == 'oem_strings' ? x + y : x.merge(y) }
+          c = sysinfo == UNSET_VALUE ? {} : sysinfo.dup
+          c.merge!(other.sysinfo) { |_k, x, y| x.respond_to(:each_pair) ? x.merge(y) : x + y } if other.sysinfo != UNSET_VALUE
+          result.sysinfo = c
 
           c = clock_timers.dup
           c += other.clock_timers
@@ -1262,6 +1218,52 @@ module VagrantPlugins
             dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
           end
         end
+      end
+
+      def validate_sysinfo(machine, errors)
+        valid_sysinfo = {
+          'bios' => %w[vendor version date release],
+          'system' => %w[manufacturer product version serial uuid sku family],
+          'base board' => %w[manufacturer product version serial asset location],
+          'chassis' => %w[manufacturer version serial asset sku],
+          'oem strings' => nil,
+        }
+
+        machine.provider_config.sysinfo.each_pair do |block_name, entries|
+          block_name = block_name.to_s
+          unless valid_sysinfo.key?(block_name)
+            errors << "invalid sysinfo element '#{block_name}'; smbios sysinfo elements supported: #{valid_sysinfo.keys.join(', ')}"
+            next
+          end
+
+          if valid_sysinfo[block_name].nil?
+            # assume simple array of text entries
+            entries.each do |entry|
+              if entry.respond_to?(:to_str)
+                if entry.to_s.empty?
+                  machine.ui.warn("Libvirt Provider: 'sysinfo.#{block_name}' contains an empty or nil entry and will be discarded")
+                end
+              else
+                errors << "sysinfo.#{block_name} expects entries to be stringy, got #{entry.class} containing '#{entry}'"
+              end
+            end
+          else
+            entries.each_pair do |entry_name, entry_text|
+              entry_name = entry_name.to_s
+              unless valid_sysinfo[block_name].include?(entry_name)
+                errors << "'sysinfo.#{block_name}' does not support entry name '#{entry_name}'; entries supported: #{valid_sysinfo[block_name].join(', ')}"
+                next
+              end
+
+              # this allows removal of entries specified by other Vagrantfile's in the hierarchy
+              if entry_text.to_s.empty?
+                machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{entry_name} is nil or empty and therefore has no effect.")
+              end
+            end
+          end
+        end
+
+        errors
       end
     end
   end

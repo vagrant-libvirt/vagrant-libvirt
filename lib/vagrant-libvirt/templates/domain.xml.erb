@@ -89,17 +89,17 @@
 <%- unless @sysinfo.empty? -%>
   <sysinfo type='smbios'>
   <%- @sysinfo.each_pair do |block, values| -%>
-    <<%= @sysinfo_blocks[block][:xml] %>>
-    <%- unless block == 'oem_strings' -%>
-    <%- @sysinfo[block].each do |name, value| -%>
+    <<%= @sysinfo_blocks[block.to_s][:xml] %>>
+    <%- if values.respond_to?(:each_pair) -%>
+      <%- values.each do |name, value| -%>
       <entry name='<%= name %>'><%= value %></entry>
-    <% end -%>
+      <% end -%>
     <%- else -%>
-    <%- @sysinfo[block].each do |value| -%>
+      <%- values.each do |value| -%>
       <entry><%= value %></entry>
+      <% end -%>
     <% end -%>
-    <% end -%>
-    </<%= @sysinfo_blocks[block][:xml] %>>
+    </<%= @sysinfo_blocks[block.to_s][:xml] %>>
   <% end -%>
   </sysinfo>
 <% end -%>

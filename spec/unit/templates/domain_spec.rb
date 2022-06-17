@@ -16,6 +16,13 @@ describe 'templates/domain' do
     def initialize
       super
       @domain_volumes = []
+      @sysinfo_blocks = {
+        'bios' => {:section => "BIOS", :xml => "bios"},
+        'system' => {:section => "System", :xml => "system"},
+        'base board' => {:section => "Base Board", :xml => "baseBoard"},
+        'chassis' => {:section => "Chassis", :xml => "chassis"},
+        'oem strings' => {:section => "OEM Strings", :xml => "oemStrings"},
+      }
     end
 
     def finalize!
@@ -103,14 +110,8 @@ describe 'templates/domain' do
       domain.sysinfo = {
         'system' => {
           'serial' => 'AAAAAAAA',
-          'ignored' => 'ignored',
-          'manufacturer' => '',
         },
-        'chassis' => {
-          'serial' => '',
-        },
-        'ignored' => nil,
-        'oem_strings' => [
+        'oem strings' => [
           'AAAAAAAA',
         ],
       }
