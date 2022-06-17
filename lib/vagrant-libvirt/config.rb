@@ -1099,7 +1099,7 @@ module VagrantPlugins
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 
           c = sysinfo == UNSET_VALUE ? {} : sysinfo.dup
-          c.merge!(other.sysinfo) { |_k, x, y| x.respond_to(:each_pair) ? x.merge(y) : x + y } if other.sysinfo != UNSET_VALUE
+          c.merge!(other.sysinfo) { |_k, x, y| x.respond_to?(:each_pair) ? x.merge(y) : x + y } if other.sysinfo != UNSET_VALUE
           result.sysinfo = c
 
           c = clock_timers.dup

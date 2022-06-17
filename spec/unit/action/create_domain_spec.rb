@@ -187,10 +187,33 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
           }
           EOF
         end
+
         it 'should populate sysinfo as expected' do
           expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
 
           expect(subject.call(env)).to be_nil
+        end
+
+        context 'with block of empty entries' do
+          let(:domain_xml_file) { 'sysinfo_only_required.xml' }
+          let(:vagrantfile_providerconfig) do
+            <<-EOF
+            libvirt.sysinfo = {
+              'bios': {
+                'vendor': 'Test Vendor',
+              },
+              'system': {
+                'serial': '',
+              },
+            }
+            EOF
+          end
+
+          it 'should skip outputting the surrounding tags' do
+            expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
+
+            expect(subject.call(env)).to be_nil
+          end
         end
       end
     end
