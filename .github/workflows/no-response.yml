@@ -16,5 +16,5 @@ jobs:
       - uses: lee-dohm/no-response@v0.5.0
         with:
           token: ${{ github.token }}
-          daysUtilClose: 30
+          daysUntilClose: 30
           responseRequiredLabel: needinfo
