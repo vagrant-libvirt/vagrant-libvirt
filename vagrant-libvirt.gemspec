@@ -20,10 +20,6 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.version       = VagrantPlugins::ProviderLibvirt.get_version
 
-  s.add_development_dependency "rspec-core", ">= 3.5"
-  s.add_development_dependency "rspec-expectations", ">= 3.5"
-  s.add_development_dependency "rspec-mocks", ">= 3.5"
-
   s.add_runtime_dependency 'fog-libvirt', '>= 0.6.0'
   s.add_runtime_dependency 'fog-core', '~> 2'
   s.add_runtime_dependency 'rexml'
@@ -33,4 +29,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'nokogiri', '~> 1.6'
 
   s.add_development_dependency 'rake'
+  s.add_development_dependency "rspec-core", ">= 3.5"
+  s.add_development_dependency "rspec-expectations", ">= 3.5"
+  s.add_development_dependency "rspec-mocks", ">= 3.5"
 end

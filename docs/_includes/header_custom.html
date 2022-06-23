@@ -1,0 +1,52 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js"></script>
+<div class="site-footer">
+  Docs Version:
+  <select id="docs-version" onChange="changeVersion(this.selectedIndex)">
+  </select>
+</div>
+
+<script>
+async function loadOptions(select) {
+    {%- assign repo = site.github.public_repositories | where: "name", site.github.repository_name %}
+    const defaultBranch = '{{ repo.first.default_branch }}';
+    const baseUrl = '{{ site.baseurl }}';
+    const repoName = '{{ site.github.repository_nwo }}';
+
+    let res = await axios.get(
+        'https://api.github.com/repos/' + repoName + '/git/trees/gh-pages',
+    );
+    const versionDir = res.data.tree.find(t => {
+        return t.path.toLowerCase() === 'version';
+    });
+
+    if (versionDir === undefined ) {
+        var options = [];
+    } else {
+        res = await axios.get(versionDir.url);
+        var options = res.data.tree.map(t => {
+            return {value: t.path, text: t.path};
+        });
+    };
+    options.unshift({ value: defaultBranch, text: 'latest'});
+
+    options = options.sort( (a, b) => b.value.localeCompare(a.value, undefined, { numeric:true }) );
+
+    options.forEach( item => {
+        var opt = document.createElement('option');
+        opt.value = item.value;
+        opt.innerHTML = item.text;
+
+        select.appendChild(opt);
+    });
+
+    const path = window.location.pathname.toLowerCase();
+    if (path.startsWith(baseUrl + '/version/')) {
+        const start = baseUrl.length + 9;
+        const end = path.indexOf('/', start);
+        select.selected = path.substring(start, end);
+    } else {
+        select.selected = defaultBranch;
+    }
+};
+loadOptions(document.getElementById("docs-version"));
+</script>

@@ -1,0 +1,77 @@
+
+$callouts: (
+    info: ($blue-000, rgba($blue-200, .2), 'INFO'),
+    warn: ($yellow-300, rgba($yellow-200, .2), 'WARNING'),
+    danger: ($red-300, rgba($red-000, .2), 'DANGER')
+);
+
+@each $class, $props in $callouts {
+    .#{$class} {
+        background: nth($props, 2);
+        border-left: $border-radius solid nth($props, 1);
+        border-radius: $border-radius;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 3px 10px rgba(0, 0, 0, 0.08);
+        padding: .8rem;
+
+        &::before {
+            color: nth($props, 1);
+            content: nth($props, 3);
+            display: block;
+            font-weight: bold;
+            font-size: .75em;
+            padding-bottom: .125rem;
+        }
+    }
+}
+
+// override site-title padding to ensure logo is better sized
+.site-title {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}
+@media (min-width: 50rem) { .site-title { padding-right: 1rem; padding-left: 1rem; } }
+
+// override search styles to ensure default text is readable with dark theme
+.search-active #search-input { color: white; }
+#search-input::placeholder {
+  color: white;
+  opacity: 0.6;
+}
+
+// tweak the toc plugin styles to keep toc in nav more left aligned
+ul#toc ul {
+  padding-left: 0.6rem;
+}
+
+ul#toc {
+  padding-left: 2.75rem;
+}
+
+ul#toc li {
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.toc-entry a {
+/*
+  background: initial;
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  display: block;
+  padding-right: $gutter-spacing-sm;
+  line-height: 1.5rem;
+  text-decoration: none;
+  &.active {
+    font-weight: 600;
+    text-decoration: none;
+  }
+  &:hover {
+    background-image: linear-gradient(
+      -90deg,
+      rgba($feedback-color, 1) 20% 40%,
+      rgba($feedback-color, 0.8) 80%,
+      rgba($feedback-color, 0) 100%
+    );
+  }
+*/
+}

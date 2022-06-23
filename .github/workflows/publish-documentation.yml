@@ -1,0 +1,41 @@
+name: Deploy Docs
+on:
+  push:
+    branches:
+      - main
+      - master
+      - migrate-documentation
+    paths:
+      - 'docs/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+      - name: Install and Build 🔧
+        run: |
+          # TODO find a way for jekyll to perform this automatically
+          convert docs/_assets/images/logo.png -define icon:auto-resize=256,64,48,32,16 docs/favicon.ico
+
+          BUNDLE_GEMFILE=./docs/Gemfile bundle install
+          BUNDLE_GEMFILE=./docs/Gemfile bundle exec jekyll build --source docs/ --destination build
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages
+          folder: build
+          clean: true
+          single-commit: true
+          clean-exclude: |
+            pr-preview/
+            version/

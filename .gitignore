@@ -20,6 +20,7 @@ tmp
 .vagrant
 *.swp
 .deps
+docs/favicon.ico
 
 # don't commit the generated version
 lib/vagrant-libvirt/version
