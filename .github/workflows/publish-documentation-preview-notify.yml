@@ -1,0 +1,25 @@
+name: Deploy Docs Preview Requires Label
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronized
+    paths:
+      - 'docs/**'
+
+permissions:
+  pull-requests: write
+jobs:
+  notify-label-required:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview-docs') }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Comment on label required for docs preview deploy
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        recreate: true
+        header: notify-label-required
+        message: |-
+          Maintainers: This PR updates the documentation, please review and apply
+          the label 'preview-docs' if satisfied it is safe to publish.

@@ -1,0 +1,42 @@
+* Upstream Vagrant Install<br />
+Download and execute the vagrant-libvirt-qa install script (installs latest vagrant by default):
+```shell
+curl -O https://github.com/vagrant-libvirt/vagrant-libvirt-qa/blob/main/scripts/install.bash
+chmod a+x ./install.bash
+./install.bash
+```
+* Alternatively install vagrant following [https://www.vagrantup.com/downloads](https://www.vagrantup.com/downloads):
+{% if include.distro == "debian" or include.distro == "ubuntu" -%}
+```shell
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt-get update && sudo apt-get install vagrant
+```
+{% elsif include.distro == "fedora" -%}
+```shell
+sudo dnf install -y dnf-plugins-core
+sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
+sudo dnf -y install vagrant
+```
+{% elsif include.distro == "centos" or include.distro == "rhel" -%}
+```shell
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+sudo yum -y install vagrant
+```
+{% elsif include.distro == "opensuse" %}
+  As there is no upstream repository this will not be kept up to date automatically.
+  {: .warn }
+
+  ```shell
+  version="$(
+      wget -qO - https://checkpoint-api.hashicorp.com/v1/check/vagrant 2>/dev/null | \
+          tr ',' '\n' | grep current_version | cut -d: -f2 | tr -d '"'
+  )"
+  wget --no-verbose -O vagrant.rpm \
+        https://releases.hashicorp.com/vagrant/${version}/vagrant_${version}_x86_64.rpm
+  sudo zypper install --allow-unsigned-rpm --no-confirm vagrant.rpm
+  ```
+{% else -%}
+Missing the correct distro for vagrant install in site generation
+{% endif -%}
