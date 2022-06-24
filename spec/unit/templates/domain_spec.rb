@@ -20,7 +20,20 @@ describe 'templates/domain' do
 
     def finalize!
       super
+
+      disks.each do |disk|
+        disk[:absolute_path] = '/var/lib/libvirt/images/' + disk[:path]
+      end
     end
+  end
+
+  def resolve
+    # resolving is now done during create domain, so need to recreate
+    # the same behaviour before calling the template until that
+    # is separated out from create domain.
+    resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=domain.disk_device[0..1])
+    resolver.resolve!(domain.domain_volumes.dup.each { |volume| volume[:device] = volume[:dev] })
+    resolver.resolve!(domain.disks)
   end
 
   let(:domain) { DomainTemplateHelper.new }
@@ -58,23 +71,8 @@ describe 'templates/domain' do
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
       domain.disk_driver(:cache => 'unsafe', :io => 'threads', :copy_on_read => 'on', :discard => 'unmap', :detect_zeroes => 'on')
-      domain.domain_volumes.push({
-        :dev => 'vda',
-        :cache => 'unsafe',
-        :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test.qcow2'
-      })
-      domain.domain_volumes.push({
-        :dev => 'vdb',
-        :cache => 'unsafe',
-        :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test2.qcow2'
-      })
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
-      domain.disks.each do |disk|
-        disk[:absolute_path] = '/var/lib/libvirt/images/' + disk[:path]
-      end
       domain.storage(:file, device: :cdrom)
       domain.storage(:file, device: :cdrom)
       domain.channel(type: 'unix',
@@ -119,12 +117,18 @@ describe 'templates/domain' do
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do
       domain.finalize!
-      # resolving is now done during create domain, so need to recreate
-      # the same behaviour before calling the template until that
-      # is separated out from create domain.
-      resolver = ::VagrantPlugins::ProviderLibvirt::Util::DiskDeviceResolver.new(prefix=domain.disk_device[0..1])
-      resolver.resolve!(domain.domain_volumes.dup.each { |volume| volume[:device] = volume[:dev] })
-      resolver.resolve!(domain.disks)
+
+      domain.domain_volumes.push({
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :absolute_path => '/var/lib/libvirt/images/test.qcow2'
+      })
+      domain.domain_volumes.push({
+        :cache => 'unsafe',
+        :bus => domain.disk_bus,
+        :absolute_path => '/var/lib/libvirt/images/test2.qcow2'
+      })
+      resolve
 
       expect(domain.to_xml('domain')).to eq xml_expected
     end
