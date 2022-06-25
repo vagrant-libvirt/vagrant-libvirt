@@ -522,6 +522,12 @@ end
   _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
   option applies only to disks associated with a box image. To set the bus type
   on additional disks, see the [Additional Disks](#additional-disks) section.
+* `disk_controller_model` - the controller model to use. Ignored unless either
+  `disk_bus` is set to `scsi` or `disk_device` starts with `sd`, which is a hint
+  to use scsi. Defaults to `virtio-scsi` when it encounters either of the
+  config values for `disk_bus` or `disk_device`. See [libvirt controller models](
+  https://libvirt.org/formatdomain.html#controllers) for other posible values.
+  NOTE: this option applies only to the disks associated with a box image.
 * `disk_device` - The disk device to emulate. Defaults to vda if not
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to

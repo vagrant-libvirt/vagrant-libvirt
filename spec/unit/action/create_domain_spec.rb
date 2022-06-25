@@ -152,6 +152,24 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
           expect(subject.call(env)).to be_nil
         end
       end
+
+      context 'with disk controller model virtio-scsi' do
+        before do
+          allow(machine.provider_config).to receive(:disk_controller_model).and_return('virtio-scsi')
+          expect(volumes).to receive(:all).with(name: 'vagrant-test_default.img').and_return([domain_volume])
+
+          env[:domain_volumes][0][:bus] = 'scsi'
+        end
+
+        it 'should add a virtio-scsi disk controller' do
+          expect(ui).to receive(:info).with(/ -- Image\(vda\):.*/)
+          expect(servers).to receive(:create) do |args|
+            expect(args[:xml]).to match(/<controller type='scsi' model='virtio-scsi' index='0'\/>/)
+          end.and_return(machine)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
     end
 
     context 'connection => qemu:///session' do

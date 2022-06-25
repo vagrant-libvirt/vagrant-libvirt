@@ -44,6 +44,7 @@ module VagrantPlugins
           @nvram = config.nvram
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
+          @disk_controller_model = config.disk_controller_model
           @disk_driver_opts = config.disk_driver_opts
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
