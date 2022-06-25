@@ -122,8 +122,9 @@
       <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
     </disk>
 <%- end -%>
-<%- if @disk_bus == "scsi" and @disk_controller_model != nil %>
-  <%- for idx in 0..(@domain_volumes.length / 7) do %>
+<%- scsi_volumes = @domain_volumes.select { |x| x[:bus] == 'scsi' } %>
+<%- if !scsi_volumes.empty? and !@disk_controller_model.nil? %>
+  <%- for idx in 0..(scsi_volumes.length / 7) do %>
     <controller type='scsi' model='<%= @disk_controller_model %>' index='<%= idx -%>'/>
   <%- end -%>
 <%- end -%>
