@@ -9,7 +9,10 @@ toc: true
 Libvirt ready boxes can be downloaded at
 [Vagrant Cloud](https://app.vagrantup.com/boxes/search?provider=libvirt).
 
-
+There is an effort made to ensure that vagrant-libvirt supports the generic images available
+from [https://app.vagrantup.com/generic](https://app.vagrantup.com/generic). These are built with
+packer and are typically available as Docker, Libvirt, and VirtualBox images, allowing for
+easy switching between.
 
 ## Creating Boxes
 
