@@ -45,7 +45,7 @@ module VagrantPlugins
             mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
             folder_opts[:mount_tag] = mount_tag
 
-            machine.ui.info "================\nMachine id: #{machine.id}\nShould be mounting folders\n #{id}, opts: #{folder_opts}"
+            machine.ui.info I18n.t("vagrant_libvirt.cap.9p.preparing")
 
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: folder_opts[:accessmode]) do
@@ -74,7 +74,7 @@ module VagrantPlugins
       # once up, mount folders
       def enable(machine, folders, _opts)
         # Go through each folder and mount
-        machine.ui.info('mounting 9p share in guest')
+        machine.ui.info I18n.t("vagrant_libvirt.cap.9p.mounting")
         # Only mount folders that have a guest path specified.
         mount_folders = {}
         folders.each do |id, opts|
@@ -94,6 +94,7 @@ module VagrantPlugins
           raise Vagrant::Errors::Error('No Libvirt connection')
         end
         @conn = machine.provider.driver.connection.client
+        machine.ui.info I18n.t("vagrant_libvirt.cap.9p.cleanup")
         begin
           if machine.id && machine.id != ''
             dom = @conn.lookup_domain_by_uuid(machine.id)
@@ -101,7 +102,6 @@ module VagrantPlugins
               '/domain/devices/filesystem'
             ).each do |xml|
               dom.detach_device(xml.to_s)
-              machine.ui.info 'Cleaned up shared folders'
             end
           end
         rescue => e
