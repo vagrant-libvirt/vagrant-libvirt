@@ -34,6 +34,8 @@ module VagrantPlugins
         raise Vagrant::Errors::Error('No Libvirt connection') if machine.provider.driver.connection.nil?
         @conn = machine.provider.driver.connection.client
 
+        machine.ui.info I18n.t("vagrant_libvirt.cap.9p.preparing")
+
         begin
           # loop through folders
           folders.each do |id, folder_opts|
@@ -44,8 +46,6 @@ module VagrantPlugins
 
             mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
             folder_opts[:mount_tag] = mount_tag
-
-            machine.ui.info I18n.t("vagrant_libvirt.cap.9p.preparing")
 
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: folder_opts[:accessmode]) do
