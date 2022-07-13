@@ -3,11 +3,7 @@
 require 'fileutils'
 require 'log4r'
 
-class String
-  def unindent
-    gsub(/^#{scan(/^\s*/).min_by{|l|l.length}}/, "")
-  end
-end
+require 'vagrant-libvirt/util/unindent'
 
 module VagrantPlugins
   module ProviderLibvirt

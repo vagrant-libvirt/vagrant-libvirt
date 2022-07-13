@@ -195,7 +195,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::ClearForwardedPorts do
         end
       end
       it 'should terminate each of the processes' do
-        expect(logger).to receive(:info).with(no_args) # don't know how to test translations from vagrant
         expect(subject).to receive(:ssh_pid?).with("10001").and_return(true)
         expect(subject).to receive(:ssh_pid?).with("10002").and_return(true)
         expect(logger).to receive(:debug).with(/Killing pid/).twice()
