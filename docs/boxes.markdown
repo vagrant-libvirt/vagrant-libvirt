@@ -93,7 +93,7 @@ $ packer build ubuntu-14.04-server-amd64-vagrant.json
 This is the original format that most boxes currently use.
 
 You can view an example box in the
-[`example_box/directory`](https://github.com/vagrant-libvirt/vagrant-libvirt/tree/master/example_box).
+[`example_box/directory`](https://github.com/vagrant-libvirt/vagrant-libvirt/tree/main/example_box).
 That directory also contains instructions on how to build a box.
 
 The box is a tarball containing:
@@ -115,7 +115,7 @@ to verify ahead of it becoming the default, export the variable `VAGRANT_LIBVIRT
 before running `vagrant package`
 
 Additionally there is a script in the tools folder
-([`tools/create_box_with_two_disks.sh`](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/tools/create_box_with_two_disks.sh))
+([`tools/create_box_with_two_disks.sh`](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/tools/create_box_with_two_disks.sh))
 that provides a guideline on how to create such a box from qcow2 images should it not be practical use
 a vagrant machine with additional storage as a starting point.
 

@@ -147,7 +147,7 @@ vagrant(){
 }
 ```
 
-Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
 
 #### Extending the container image with additional vagrant plugins
 

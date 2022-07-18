@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-      - master
-      - migrate-documentation
     paths:
       - 'docs/**'
 
@@ -40,7 +38,6 @@ jobs:
           branch: gh-pages
           folder: build
           clean: true
-          single-commit: true
           clean-exclude: |
             pr-preview/
             version/
