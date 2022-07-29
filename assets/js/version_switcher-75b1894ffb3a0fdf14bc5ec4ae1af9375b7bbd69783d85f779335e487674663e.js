@@ -1,26 +1,37 @@
-changeVersion = function handleVersionedDocs() {
-    const basePath = '/vagrant-libvirt';
 
+const basePath = '/vagrant-libvirt';
+const repository_nwo = 'vagrant-libvirt/vagrant-libvirt';
+
+const { buildWebStorage, setupCache } = window.AxiosCacheInterceptor;
+const storage = buildWebStorage(sessionStorage, 'axios-cache:');
+const axiosCached = setupCache(axios.create(), { storage });
+
+changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
     async function loadOptions(select) {
-        const defaultBranchPromise = axios.get(
-            'https://api.github.com/repos/vagrant-libvirt/vagrant-libvirt',
+        const defaultBranchPromise = axiosCached.get(
+            `https://api.github.com/repos/${repository_nwo}`,
         ).then(res => {
             return res.data.default_branch;
         });
 
-        const versionDir = await axios.get(
-            'https://api.github.com/repos/vagrant-libvirt/vagrant-libvirt/git/trees/gh-pages',
+        const statusPredicate = (status) => status === 404 || status >= 200 && status < 400
+        const versionDir = await axiosCached.get(
+            `https://api.github.com/repos/${repository_nwo}/git/trees/gh-pages`, {
+                cache: {
+                    cachePredicate: {
+                        statusCheck: statusPredicate
+                    }
+                },
+                validateStatus: statusPredicate
+            }
         ).then(res => {
-            return res.data.tree.find(t => {
-                return t.path.toLowerCase() === 'version';
-            });
-
-        }).catch(e => {
-            if (e.response.status == "404") {
+            if (res.status === 404) {
                 return null;
             }
 
-            throw(e);
+            return res.data.tree.find(t => {
+                return t.path.toLowerCase() === 'version';
+            });
         });
 
         if (versionDir === undefined || versionDir === null) {
@@ -70,7 +81,7 @@ changeVersion = function handleVersionedDocs() {
         window.location.pathname = targetPath;
     };
 
-    loadOptions(document.getElementById("docs-version"));
+    loadOptions(document.getElementById("plugin-version"));
 
     return changeVersion;
-}();
+}(repository_nwo, basePath);
