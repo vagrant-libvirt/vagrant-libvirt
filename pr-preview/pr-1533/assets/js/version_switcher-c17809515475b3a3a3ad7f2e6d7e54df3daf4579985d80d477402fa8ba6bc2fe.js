@@ -14,7 +14,7 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
             return res.data.default_branch;
         });
 
-        const statusPredicate = (status) => status === 404 || status > 200 && status < 400
+        const statusPredicate = (status) => status === 404 || status >= 200 && status < 400
         const versionDir = await axiosCached.get(
             `https://api.github.com/repos/${repository_nwo}/git/trees/gh-pages`, {
                 cache: {
