@@ -43,7 +43,7 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
             });
         });
 
-        if (versionDir === null) {
+        if (versionDir === undefined || versionDir === null) {
             var options = [];
         } else {
             res = await axios.get(versionDir.url);
