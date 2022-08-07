@@ -1,6 +1,3 @@
-<div class="plugin-version-select site-footer">
-  Plugin Version:
-  <select id="plugin-version" onChange="changeVersion(this)">
-  </select>
-</div>
-<script src="{% asset "js/version_switcher.js" @path %}"></script>
+<script src="{% asset "js/site_constants.js" @path %}"></script>
+<div id="plugin-version-menu" class="site-footer"></div>
+<script src="{% asset "js/plugin_versions_menu.js" @path %}"></script>

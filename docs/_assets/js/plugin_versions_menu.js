@@ -1,22 +1,9 @@
-{%- comment %}handle development serving site on root{% endcomment %}
-{%- if site.baseurl.size == 0 %}
-const basePath = '';
-{%- else %}
-const basePath = '/{{ site.github.repository_name }}';
-{%- endif %}
-
-{%- if site.repository_nwo != nil %}
-const repository_nwo = '{{ site.repository_nwo }}';
-{%- else %}
-const repository_nwo = '{{ site.github.repository_nwo }}';
-{%- endif %}
-
 const { buildWebStorage, setupCache } = window.AxiosCacheInterceptor;
 const storage = buildWebStorage(sessionStorage, 'axios-cache:');
 const axiosCached = setupCache(axios.create(), { storage });
 
 changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
-    async function loadOptions(select) {
+    async function loadOptions(selectElement) {
         const defaultBranchPromise = axiosCached.get(
             `https://api.github.com/repos/${repository_nwo}`,
         ).then(res => {
@@ -62,7 +49,7 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
             opt.value = item.value;
             opt.innerHTML = item.text;
 
-            select.appendChild(opt);
+            selectElement.appendChild(opt);
         });
 
         const path = window.location.pathname.toLowerCase();
@@ -70,9 +57,9 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
         if (path.startsWith(versionPath)) {
             const start = versionPath.length;
             const end = path.indexOf('/', start);
-            select.value = path.substring(start, end);
+            selectElement.value = path.substring(start, end);
         } else {
-            select.value = 'latest';
+            selectElement.value = 'latest';
         }
     };
 
@@ -90,7 +77,14 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
         window.location.pathname = targetPath;
     };
 
-    loadOptions(document.getElementById("plugin-version"));
+    var pluginVersionMenuElement = document.getElementById("plugin-version-menu")
+    pluginVersionMenuElement.innerHTML = "Plugin Version: "
+    var selectElement = document.createElement('select');
+    selectElement.id = "plugin-version"
+    selectElement.addEventListener('change', function() {changeVersion(this); });
+    pluginVersionMenuElement.appendChild(selectElement);
+
+    loadOptions(selectElement);
 
     return changeVersion;
 }(repository_nwo, basePath);
