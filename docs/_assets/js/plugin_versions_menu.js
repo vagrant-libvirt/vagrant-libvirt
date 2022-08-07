@@ -3,7 +3,10 @@ const storage = buildWebStorage(sessionStorage, 'axios-cache:');
 const axiosCached = setupCache(axios.create(), { storage });
 
 changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
-    async function loadOptions(selectElement) {
+    menuBackgroundImageClosed = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 6 9 12 15 18'%3E%3C/polyline%3E%3C/svg%3E\")";
+    menuBackgroundImageOpen = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")";
+
+    async function loadOptions(menu, dropdown) {
         const defaultBranchPromise = axiosCached.get(
             `https://api.github.com/repos/${repository_nwo}`,
         ).then(res => {
@@ -44,47 +47,97 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
         const defaultBranch = await defaultBranchPromise;
         options.unshift({ value: 'latest', text: defaultBranch });
 
-        options.forEach( item => {
-            var opt = document.createElement('option');
-            opt.value = item.value;
-            opt.innerHTML = item.text;
-
-            selectElement.appendChild(opt);
-        });
-
-        const path = window.location.pathname.toLowerCase();
+        var current = "";
         const versionPath = `${basePath}/version/`;
+        const path = window.location.pathname.toLowerCase();
         if (path.startsWith(versionPath)) {
             const start = versionPath.length;
             const end = path.indexOf('/', start);
-            selectElement.value = path.substring(start, end);
+            current = path.substring(start, end);
         } else {
-            selectElement.value = 'latest';
+            current = defaultBranch;
         }
+        menu.innerHTML = `Plugin Version: ${current}`;
+        menu.appendChild(dropdown);
+
+        options.forEach( item => {
+            var opt = document.createElement('a');
+            opt.href = item.value === 'latest' ? '' : `${versionPath}/${item.value}`;
+            opt.innerHTML = item.text;
+            opt.style.cssText = `
+            padding-left: 1rem;
+            `
+
+            if (item.value === options[0].value) {
+                opt.className = "plugin-version-selected"
+            }
+
+            dropdown.appendChild(opt);
+        });
     };
 
-    function changeVersion(selectElement) {
-        const targetVersionPath =
-            selectElement.value === 'latest' ? '' : `/version/${selectElement.value}`;
+    function showMenu(menu, dropdown) {
+        dropdown.style.display = 'block';
+        menu.style.backgroundImage = menuBackgroundImageOpen;
+    }
 
-        const path = window.location.pathname.toLowerCase();
+    function hideMenu(menu, dropdown) {
+        dropdown.style.display = 'none';
+        menu.style.backgroundImage = menuBackgroundImageClosed;
+    }
 
-        const versionPath = `${basePath}/version/`;
-        const startIdx = path.startsWith(`${basePath}/version/`) ? versionPath.length : basePath.length;
-        const endIdx = path.indexOf('/', startIdx);
-        const targetPath =
-            basePath + targetVersionPath + window.location.pathname.substring(endIdx);
-        window.location.pathname = targetPath;
-    };
+    function toggleMenu(menu, dropdown) {
+        if (dropdown.style.display == 'none') {
+            showMenu(menu, dropdown);
+        } else {
+            hideMenu(menu, dropdown);
+        }
+    }
 
-    var pluginVersionMenuElement = document.getElementById("plugin-version-menu")
-    pluginVersionMenuElement.innerHTML = "Plugin Version: "
-    var selectElement = document.createElement('select');
-    selectElement.id = "plugin-version"
-    selectElement.addEventListener('change', function() {changeVersion(this); });
-    pluginVersionMenuElement.appendChild(selectElement);
+    function toggleMenuDisplay(menuElement, dropDownElement, e) {
+        if (dropDownElement.contains(e.target)) {
+            return;
+        }
 
-    loadOptions(selectElement);
+        if (menuElement.contains(e.target)) {
+            toggleMenu(menuElement, dropDownElement);
+        }
+    }
 
-    return changeVersion;
+    // get main menu element and style as needed
+    menuElement = document.getElementById("plugin-version-menu");
+    menuElement.style.backgroundImage = menuBackgroundImageOpen; // preload open image so no delay in rendering
+    menuElement.className = 'plugin-version-menu-background-fonts-style';
+    menuElement.style.cssText = `
+      position: relative;
+      width: 180px;
+      border: 1px solit transparent;
+      padding: 1rem 1rem;
+      background-image: ${menuBackgroundImageClosed};
+      background-repeat: no-repeat;
+      background-position: 90% 40%;
+    `;
+
+    dropdown = document.createElement('div');
+    dropdown.id = "plugin-version-dropdown";
+    dropdown.className = 'plugin-version-menu-background-fonts-style';
+    dropdown.style.cssText = `
+      position: absolute;
+      min-width: 145px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      z-index: 1;
+    `;
+    // ensure initial style of drop down menu is set
+    toggleMenu(menuElement, dropdown);
+
+    // populate menu with available options and current version
+    loadOptions(menuElement, dropdown);
+    menuElement.addEventListener('click', function(e) {toggleMenuDisplay(menuElement, dropdown, e);})
+    window.addEventListener('click', function(e){
+        if (!menuElement.contains(e.target)){
+            // Clicked outside the drop down menu
+            hideMenu(menuElement, dropdown);
+        }
+    });
 }(repository_nwo, basePath);
