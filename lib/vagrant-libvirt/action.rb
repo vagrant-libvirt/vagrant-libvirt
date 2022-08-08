@@ -162,7 +162,7 @@ module VagrantPlugins
                 # Start it..
                 b3.use StartDomain
 
-                # Machine should gain IP address when comming up,
+                # Machine should gain IP address when coming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
                 require 'vagrant/action/builtin/wait_for_communicator'

@@ -16,7 +16,7 @@ en:
       Created volume larger than box defaults, will require manual resizing of
       filesystems to utilize.
     box_version_missing: |-
-      No verison detected for %{name}, using timestamp to watch for modifications. Consider
+      No version detected for %{name}, using timestamp to watch for modifications. Consider
       generating a local metadata for the box with a version to allow better handling.
       See https://www.vagrantup.com/docs/boxes/format#box-metadata for further details.
     uploading_volume: |-

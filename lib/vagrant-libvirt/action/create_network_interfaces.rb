@@ -41,7 +41,7 @@ module VagrantPlugins
           # Vagrant gives you adapter 0 by default
           # Assign interfaces to slots.
           configured_networks(env, @logger).each do |options|
-            # dont need to create interface for this type
+            # don't need to create interface for this type
             next if options[:iface_type] == :forwarded_port
 
             # TODO: fill first ifaces with adapter option specified.

@@ -44,7 +44,7 @@ module VagrantPlugins
           end
 
           # only one vm at a time should try to set up networks
-          # otherwise they'll have inconsitent views of current state
+          # otherwise they'll have inconsistent views of current state
           # and conduct redundant operations that cause errors
           @@lock.synchronize do
             # Iterate over networks If some network is not
@@ -124,7 +124,7 @@ module VagrantPlugins
         # Throw an error if dhcp setting for an existing network does not
         # match what was configured in the vagrantfile
         # since we always enable dhcp for the management network
-        # this ensures we wont start a vm vagrant cant reach
+        # this ensures we won't start a vm vagrant can't reach
         # Allow the situation where DHCP is not requested (:libvirt__dhcp_enabled == false)
         # but where it is enabled on the virtual network
         def verify_dhcp
