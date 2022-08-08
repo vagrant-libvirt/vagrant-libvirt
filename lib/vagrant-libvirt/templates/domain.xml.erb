@@ -226,7 +226,7 @@
     </graphics><% end -%>
     <video>
       <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'<% if not @video_accel3d %>/><% else %>>
-	<acceleration accel3d='yes'/>
+        <acceleration accel3d='yes'/>
       </model><% end -%>
     </video>
     <%#End Video -%>
@@ -256,13 +256,13 @@
     <hostdev mode='subsystem' type='usb'>
       <source startupPolicy='<%= usb[:startupPolicy] || "mandatory" %>'>
   <%- if usb[:vendor] -%>
-	<vendor id='<%= usb[:vendor] %>'/>
+        <vendor id='<%= usb[:vendor] %>'/>
   <%- end -%>
   <%- if usb[:product] -%>
-	<product id='<%= usb[:product] %>'/>
+        <product id='<%= usb[:product] %>'/>
   <%- end -%>
   <%- if usb[:bus] && usb[:device] -%>
-	<address bus='<%= usb[:bus] %>' device='<%= usb[:device] %>'/>
+        <address bus='<%= usb[:bus] %>' device='<%= usb[:device] %>'/>
   <%- end -%>
       </source>
     </hostdev>
