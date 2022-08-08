@@ -6,7 +6,7 @@
 Vagrant.configure("2") do |config|
 
   # Example configuration of new VM..
-  # 
+  #
   #config.vm.define :test_vm do |test_vm|
     # Box name
     #
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
     #end
 
     # Interfaces for VM
-    # 
+    #
     # Networking features in the form of `config.vm.network`
     #
     #test_vm.vm.network :private_network, :ip => '10.20.30.40'
@@ -59,4 +59,3 @@ Vagrant.configure("2") do |config|
     #libvirt.default_prefix = ''
   end
 end
-

@@ -1088,7 +1088,7 @@ module VagrantPlugins
           result.cdroms = c
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
-          
+
           c = clock_timers.dup
           c += other.clock_timers
           result.clock_timers = c

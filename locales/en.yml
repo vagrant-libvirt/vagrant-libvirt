@@ -194,7 +194,7 @@ en:
       snapshot_creation_error: |-
         Cannot create snapshot(s): %{error_message}.
       snapshot_reversion_error: |-
-        Cannot revert snapshot(s): %{error_message}.      
+        Cannot revert snapshot(s): %{error_message}.
       serial_cannot_create_path_error: |-
         Error creating path for serial port output log: %{path}
 

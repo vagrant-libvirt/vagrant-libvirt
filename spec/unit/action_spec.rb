@@ -170,7 +170,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
       end
     end
   end
-  
+
   describe '#action_snapshot_delete' do
     context 'when not created' do
       before do
@@ -229,7 +229,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
       end
     end
   end
-  
+
   describe '#action_snapshot_save' do
     context 'when not created' do
       before do

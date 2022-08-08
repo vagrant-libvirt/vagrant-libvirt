@@ -411,7 +411,7 @@ module VagrantPlugins
           end
         end
       end
-      
+
       # This is the action that is primarily responsible for restoring a snapshot
       def self.action_snapshot_restore
         Vagrant::Action::Builder.new.tap do |b|
@@ -420,7 +420,7 @@ module VagrantPlugins
             unless env[:result]
               raise Vagrant::Errors::VMNotCreatedError
             end
-            
+
             b2.use SnapshotRestore
           end
         end
@@ -434,7 +434,7 @@ module VagrantPlugins
             unless env[:result]
               raise Vagrant::Errors::VMNotCreatedError
             end
-            
+
             b2.use SnapshotSave
           end
         end
