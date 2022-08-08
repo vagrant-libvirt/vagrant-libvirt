@@ -67,7 +67,7 @@ mkdir -p "$TMP_DIR"
 [[ ! -r "$IMG" ]] && error "'$IMG': Permission denied"
 
 if [ -n "$3" ] && [ -r "$3" ]; then
-  VAGRANTFILE_ADD="$(cat $3)"
+  VAGRANTFILE_ADD="$(cat "$3")"
 fi
 
 # We move / copy (when the image has master) the image to the tempdir
