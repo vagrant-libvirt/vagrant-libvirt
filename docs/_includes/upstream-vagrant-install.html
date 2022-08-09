@@ -8,8 +8,8 @@ chmod a+x ./install.bash
 * Alternatively install vagrant following [https://www.vagrantup.com/downloads](https://www.vagrantup.com/downloads):
 {% if include.distro == "debian" or include.distro == "ubuntu" -%}
 ```shell
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.asc
+echo "deb [ signed-by=/usr/share/keyrings/hashicorp-archive-keyring.asc ] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt-get update && sudo apt-get install vagrant
 ```
 {% elsif include.distro == "fedora" -%}
