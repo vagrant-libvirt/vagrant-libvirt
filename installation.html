@@ -54,8 +54,8 @@ vagrant plugin <span class="nb">install </span>vagrant-libvirt
 </code></pre></div> </div> </li> <li>Upstream Vagrant Install<br /> Download and execute the vagrant-libvirt-qa install script (installs latest vagrant by default): <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-O</span> https://github.com/vagrant-libvirt/vagrant-libvirt-qa/blob/main/scripts/install.bash
 <span class="nb">chmod </span>a+x ./install.bash
 ./install.bash
-</code></pre></div> </div> </li> <li>Alternatively install vagrant following <a href="https://www.vagrantup.com/downloads">https://www.vagrantup.com/downloads</a>: <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="nb">sudo </span>apt-key add -
-<span class="nb">sudo </span>apt-add-repository <span class="s2">"deb [arch=amd64] https://apt.releases.hashicorp.com </span><span class="si">$(</span>lsb_release <span class="nt">-cs</span><span class="si">)</span><span class="s2"> main"</span>
+</code></pre></div> </div> </li> <li>Alternatively install vagrant following <a href="https://www.vagrantup.com/downloads">https://www.vagrantup.com/downloads</a>: <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="nb">sudo tee</span> /usr/share/keyrings/hashicorp-archive-keyring.asc
+<span class="nb">echo</span> <span class="s2">"deb [ signed-by=/usr/share/keyrings/hashicorp-archive-keyring.asc ] https://apt.releases.hashicorp.com </span><span class="si">$(</span>lsb_release <span class="nt">-cs</span><span class="si">)</span><span class="s2"> main"</span> | <span class="nb">sudo tee</span> /etc/apt/sources.list.d/hashicorp.list
 <span class="nb">sudo </span>apt-get update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt-get <span class="nb">install </span>vagrant
 </code></pre></div> </div> <p>And subsequently install remaining dependencies and plugin:</p> <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get build-dep vagrant ruby-libvirt
 <span class="nb">sudo </span>apt-get <span class="nb">install</span> <span class="nt">-y</span> qemu libvirt-daemon-system ebtables libguestfs-tools <span class="se">\</span>
@@ -64,8 +64,8 @@ vagrant plugin <span class="nb">install </span>vagrant-libvirt
 </code></pre></div> </div> </li> </ul> <h4 id="ubuntu-1804-debian-8-and-older"> <a href="#ubuntu-1804-debian-8-and-older" class="anchor-heading" aria-labelledby="ubuntu-1804-debian-8-and-older"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Ubuntu 18.04, Debian 8 and older </h4> <p class="warn">This has been kept for historical reasons, however only Ubuntu 18.04 is supported due to LTS, please consider all other versions unsupported.</p> <ul> <li>Upstream Vagrant Install<br /> Download and execute the vagrant-libvirt-qa install script (installs latest vagrant by default): <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-O</span> https://github.com/vagrant-libvirt/vagrant-libvirt-qa/blob/main/scripts/install.bash
 <span class="nb">chmod </span>a+x ./install.bash
 ./install.bash
-</code></pre></div> </div> </li> <li>Alternatively install vagrant following <a href="https://www.vagrantup.com/downloads">https://www.vagrantup.com/downloads</a>: <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="nb">sudo </span>apt-key add -
-<span class="nb">sudo </span>apt-add-repository <span class="s2">"deb [arch=amd64] https://apt.releases.hashicorp.com </span><span class="si">$(</span>lsb_release <span class="nt">-cs</span><span class="si">)</span><span class="s2"> main"</span>
+</code></pre></div> </div> </li> <li>Alternatively install vagrant following <a href="https://www.vagrantup.com/downloads">https://www.vagrantup.com/downloads</a>: <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-fsSL</span> https://apt.releases.hashicorp.com/gpg | <span class="nb">sudo tee</span> /usr/share/keyrings/hashicorp-archive-keyring.asc
+<span class="nb">echo</span> <span class="s2">"deb [ signed-by=/usr/share/keyrings/hashicorp-archive-keyring.asc ] https://apt.releases.hashicorp.com </span><span class="si">$(</span>lsb_release <span class="nt">-cs</span><span class="si">)</span><span class="s2"> main"</span> | <span class="nb">sudo tee</span> /etc/apt/sources.list.d/hashicorp.list
 <span class="nb">sudo </span>apt-get update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt-get <span class="nb">install </span>vagrant
 </code></pre></div> </div> <p>And subsequently install remaining dependencies and plugin:</p> <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get build-dep vagrant ruby-libvirt
 <span class="nb">sudo </span>apt-get <span class="nb">install</span> <span class="nt">-y</span> qemu libvirt-bin ebtables libguestfs-tools <span class="se">\</span>
@@ -230,7 +230,7 @@ git checkout imports/c8s/libssh-0.9.4-1.el8
 into_srpm.sh <span class="nt">-d</span> c8s
 <span class="nb">cd </span>SRPMS
 
-<span class="c"># common commands (make sure to adjust verison accordingly)</span>
+<span class="c"># common commands (make sure to adjust version accordingly)</span>
 rpm2cpio libssh-0.9.4-1c8s.src.rpm | cpio <span class="nt">-imdV</span>
 <span class="nb">tar </span>xf libssh-0.9.4.tar.xz
 <span class="nb">mkdir </span>build
@@ -253,7 +253,7 @@ get_sources.sh
 into_srpm.sh <span class="nt">-d</span> c8s
 <span class="nb">cd </span>SRPMS
 
-<span class="c"># common commands (make sure to adjust verison accordingly)</span>
+<span class="c"># common commands (make sure to adjust version accordingly)</span>
 rpm2cpio krb5-1.18.2-8c8s.src.rpm | cpio <span class="nt">-imdV</span>
 <span class="nb">tar </span>xf krb5-1.18.2.tar.gz
 <span class="nb">cd </span>krb5-1.18.2/src
