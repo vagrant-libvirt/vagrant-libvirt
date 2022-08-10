@@ -52,7 +52,7 @@ module VagrantPlugins
         #  :username => "mitchellh",
         #  :private_key_path => "/path/to/my/key"
         # }
-        # note that modifing @machine.id or accessing @machine.state is not
+        # note that modifying @machine.id or accessing @machine.state is not
         # thread safe, so be careful to avoid these here as this method may
         # be called from other threads of execution.
         return nil if state.id != :running

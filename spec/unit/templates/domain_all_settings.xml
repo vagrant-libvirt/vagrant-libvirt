@@ -99,7 +99,7 @@
     </graphics>
     <video>
       <model type='cirrus' vram='16384' heads='1'>
-	<acceleration accel3d='yes'/>
+        <acceleration accel3d='yes'/>
       </model>
     </video>
     <rng model='virtio'>
@@ -123,9 +123,9 @@
     </hostdev>
     <hostdev mode='subsystem' type='usb'>
       <source startupPolicy='mandatory'>
-	<vendor id='0x1234'/>
-	<product id='0xabcd'/>
-	<address bus='1' device='2'/>
+        <vendor id='0x1234'/>
+        <product id='0xabcd'/>
+        <address bus='1' device='2'/>
       </source>
     </hostdev>
     <redirdev bus='usb' type='tcp'>

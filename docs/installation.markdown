@@ -147,7 +147,7 @@ vagrant(){
 }
 ```
 
-Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/entrypoint.sh) and mount persistent storage directly to `/vagrant`. 
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/entrypoint.sh) and mount persistent storage directly to `/vagrant`.
 
 #### Extending the container image with additional vagrant plugins
 
@@ -396,7 +396,7 @@ git checkout imports/c8s/libssh-0.9.4-1.el8
 into_srpm.sh -d c8s
 cd SRPMS
 
-# common commands (make sure to adjust verison accordingly)
+# common commands (make sure to adjust version accordingly)
 rpm2cpio libssh-0.9.4-1c8s.src.rpm | cpio -imdV
 tar xf libssh-0.9.4.tar.xz
 mkdir build
@@ -428,7 +428,7 @@ get_sources.sh
 into_srpm.sh -d c8s
 cd SRPMS
 
-# common commands (make sure to adjust verison accordingly)
+# common commands (make sure to adjust version accordingly)
 rpm2cpio krb5-1.18.2-8c8s.src.rpm | cpio -imdV
 tar xf krb5-1.18.2.tar.gz
 cd krb5-1.18.2/src

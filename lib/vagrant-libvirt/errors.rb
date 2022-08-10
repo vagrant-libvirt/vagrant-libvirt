@@ -201,7 +201,7 @@ module VagrantPlugins
       class SnapshotListError < VagrantLibvirtError
         error_key(:snapshot_list_error)
       end
-      
+
       class SnapshotCreationError < VagrantLibvirtError
         error_key(:snapshot_creation_error)
       end

@@ -95,7 +95,7 @@ that due to a well known limitation only the TCP protocol is supported. For
 each `forwarded_port` directive you specify in your Vagrantfile,
 vagrant-libvirt will maintain an active ssh process for the lifetime of the VM.
 If your VM should happen to be rebooted, the SSH session will need to be
-restablished by halting the VM and bringing it back up.
+re-established by halting the VM and bringing it back up.
 
 vagrant-libvirt supports an additional `forwarded_port` option `gateway_ports`
 which defaults to `false`, but can be set to `true` if you want the forwarded

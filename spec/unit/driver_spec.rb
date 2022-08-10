@@ -197,7 +197,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           allow(machine.provider_config).to receive(:qemu_use_session).and_return(true)
         end
 
-        it 'should retreive the address via the system dhcp-leases API' do
+        it 'should retrieve the address via the system dhcp-leases API' do
           expect(domain).to receive(:mac).and_return("52:54:00:8b:dc:5f")
           expect(subject).to receive(:system_connection).and_return(system_connection1)
           expect(system_connection1).to receive(:list_all_networks).and_return(networks)

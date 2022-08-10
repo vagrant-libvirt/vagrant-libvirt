@@ -246,7 +246,7 @@ module VagrantPlugins
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
-          env[:ui].info(" -- Sound Type:	#{@sound_type}")
+          env[:ui].info(" -- Sound Type:        #{@sound_type}")
           env[:ui].info(" -- Keymap:            #{@keymap}")
           env[:ui].info(" -- TPM Backend:       #{@tpm_type}")
           if @tpm_type == 'emulator'

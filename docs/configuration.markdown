@@ -82,7 +82,7 @@ end
   `disk_bus` is set to `scsi` or `disk_device` starts with `sd`, which is a hint
   to use scsi. Defaults to `virtio-scsi` when it encounters either of the
   config values for `disk_bus` or `disk_device`. See [libvirt controller models](
-  https://libvirt.org/formatdomain.html#controllers) for other posible values.
+  https://libvirt.org/formatdomain.html#controllers) for other possible values.
   NOTE: this option applies only to the disks associated with a box image.
 * `disk_device` - The disk device to emulate. Defaults to vda if not
   set, which should be fine for paravirtualized guests, but some fully
@@ -418,7 +418,7 @@ starts with `libvirt__` string. Here is a list of those options:
   only when dhcp is enabled.By default is the same host that runs the DHCP
   server.
 * `:libvirt__tftp_root` - Path to the root directory served via TFTP.
-* `:libvirt__adapter` - Number specifiyng sequence number of interface.
+* `:libvirt__adapter` - Number specifying sequence number of interface.
 * `:libvirt__forward_mode` - Specify one of `veryisolated`, `none`, `open`, `nat`
   or `route` options.  This option is used only when creating new network. Mode
   `none` will create isolated network without NATing or routing outside. You
@@ -472,7 +472,7 @@ starts with `libvirt__` string. Here is a list of those options:
 * `:libvirt__driver_name` - Define which network driver to use. [More
   info](https://libvirt.org/formatdomain.html#elementsDriverBackendOptions)
 * `:libvirt__driver_queues` - Define a number of queues to be used for network
-  interface. Set equal to numer of vCPUs for best performance. [More
+  interface. Set equal to number of vCPUs for best performance. [More
   info](http://www.linux-kvm.org/page/Multiqueue)
 * `:autostart` - Automatic startup of network by the Libvirt daemon.
   If not specified the default is 'false'.
@@ -549,7 +549,7 @@ the corresponding IP address.
 
 It is also possible to use the Qemu Agent to extract the management interface
 configuration from the booted virtual machine. This is helpful in libvirt
-environments where no local dnsmasq is used for automatic address assigment,
+environments where no local dnsmasq is used for automatic address assignment,
 but external dhcp services via bridged libvirt networks.
 
 Prerequisite is to enable the qemu agent channel via ([Libvirt communication
@@ -582,7 +582,7 @@ to setup a bridged host network manually and define it via
 You can create and attach additional disks to a VM via `libvirt.storage :file`.
 It has a number of options:
 
-* `path` - Location of the disk image. If unspecified, a path is automtically
+* `path` - Location of the disk image. If unspecified, a path is automatically
   chosen in the same storage pool as the VMs primary disk.
 * `device` - Name of the device node the disk image will have in the VM, e.g.
   *vdb*. If unspecified, the next available device is chosen.
@@ -705,7 +705,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.pci :domain => '0x0000', :bus => '0x06', :slot => '0x12', :function => '0x5'
 
-    # Add another one if it is neccessary
+    # Add another one if it is necessary
     libvirt.pci :domain => '0x0000', :bus => '0x03', :slot => '0x00', :function => '0x0'
   end
 end
@@ -808,7 +808,7 @@ Note that in order to enable USB redirection with Spice clients,
 you may need to also set `libvirt.graphics_type = "spice"`
 
 #### Filter for USB Redirector Devices
-You can define filter for redirected devices. These filters can be positiv or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
+You can define filter for redirected devices. These filters can be positive or negative, by setting the mandatory option `allow=yes` or `allow=no`. All available options are listed below. Note the option `allow` is mandatory.
 
 * `class` - The device class of the USB device. A list of device classes is available on [Wikipedia](https://en.wikipedia.org/wiki/USB#Device_classes).
 * `vendor` - The vendor of the USB device.
@@ -901,7 +901,7 @@ end
 ```
 
 ## Smartcard device
-A virtual smartcard device can be supplied to the guest via the `libvirt.smartcard` element. The option `mode` is mandatory and currently only value `passthrough` is supported. The value `spicevmc` for option `type` is default value and can be supressed. On using `type = tcp`, the options `source_mode`, `source_host` and `source_service` are mandatory.
+A virtual smartcard device can be supplied to the guest via the `libvirt.smartcard` element. The option `mode` is mandatory and currently only value `passthrough` is supported. The value `spicevmc` for option `type` is default value and can be suppressed. On using `type = tcp`, the options `source_mode`, `source_host` and `source_service` are mandatory.
 
 ```ruby
 Vagrant.configure("2") do |config|

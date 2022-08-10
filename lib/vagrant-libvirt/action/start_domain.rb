@@ -64,7 +64,7 @@ module VagrantPlugins
                 disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
               end
 
-              # Iterface type
+              # Interface type
               unless config.nic_model_type.nil?
                 REXML::XPath.each(xml_descr, '/domain/devices/interface/model') do |iface_model|
                   if iface_model.attributes['type'] != config.nic_model_type
