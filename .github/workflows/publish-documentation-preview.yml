@@ -49,9 +49,11 @@ jobs:
 
           case $event_type in
             "labeled")
+              echo "action set to deploy"
               echo "action=deploy" >> "$GITHUB_ENV"
               ;;
             "closed")
+              echo "action set to remove"
               echo "action=remove" >> "$GITHUB_ENV"
               ;;
             *)
@@ -62,6 +64,7 @@ jobs:
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
+          action: ${{ env.action }}
           source-dir: ./build/
           preview-branch: gh-pages
           umbrella-dir: pr-preview
