@@ -82,3 +82,11 @@ ul#toc li {
   }
 */
 }
+
+.plugin-version-menu-background-fonts-style {
+  @include fs-2;
+  @media (prefers-color-scheme: dark) {
+    background-color: $grey-dk-300;
+    color: $grey-dk-000;
+  }
+}
