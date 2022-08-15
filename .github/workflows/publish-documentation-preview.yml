@@ -38,6 +38,7 @@ jobs:
           # avoid look up of API as it doesn't work from within actions without exposing the GITHUB_TOKEN here which is a security risk
           cat <<EOF >> docs/_config.yml
           repository_nwo: vagrant-libvirt/vagrant-libvirt
+          plugin_script_base_path: /${REPO_NAME}/pr-preview/pr-${PR_NUMBER}
           EOF
 
           BUNDLE_GEMFILE=./docs/Gemfile bundle install
