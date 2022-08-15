@@ -2273,6 +2273,5 @@ ul#toc li { margin-bottom: 0px; margin-top: 0px; }
 .toc-entry a { /* background: initial; padding-top: 0.1rem; padding-bottom: 0.1rem; display: block; padding-right: $gutter-spacing-sm; line-height: 1.5rem; text-decoration: none; &.active { font-weight: 600; text-decoration: none; } &:hover { background-image: linear-gradient( -90deg, rgba($feedback-color, 1) 20% 40%, rgba($feedback-color, 0.8) 80%, rgba($feedback-color, 0) 100% ); }
 */ }
 
-.plugin-version-menu-background-fonts-style { font-size: 11px !important; }
+.plugin-version-menu-background-fonts-style { font-size: 11px !important; background-color: inherit; }
 @media (min-width: 31.25rem) { .plugin-version-menu-background-fonts-style { font-size: 12px !important; } }
-@media (prefers-color-scheme: dark) { .plugin-version-menu-background-fonts-style { background-color: #27262b; color: #959396; } }

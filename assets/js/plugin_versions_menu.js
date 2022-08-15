@@ -47,61 +47,62 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
         const defaultBranch = await defaultBranchPromise;
         options.unshift({ value: 'latest', text: defaultBranch });
 
-        var current = "";
+        var currentVersion = "";
         const versionPath = `${basePath}/version/`;
         const path = window.location.pathname.toLowerCase();
         if (path.startsWith(versionPath)) {
             const start = versionPath.length;
-            const end = path.indexOf('/', start);
-            current = path.substring(start, end);
+            const end = path.indexOf('/', start+1);
+            currentVersion = path.substring(start, end < 0 ? path.length : end);
+            currentPage = path.substring(end < 0 ? path.length : end);
         } else {
-            current = defaultBranch;
+            currentVersion = defaultBranch;
+            currentPage = path.substring(basePath.length);
         }
-        menu.innerHTML = `Plugin Version: ${current}`;
+        menu.innerHTML = `Plugin Version: ${currentVersion}`;
         menu.appendChild(dropdown);
 
         options.forEach( item => {
-            var opt = document.createElement('a');
-            opt.href = item.value === 'latest' ? '' : `${versionPath}/${item.value}`;
-            opt.innerHTML = item.text;
-            opt.style.cssText = `
-            padding-left: 1rem;
-            `
+            var link = document.createElement('a');
+            var wrapper = document.createElement('div');
+            link.href = (item.value === 'latest' ? basePath : versionPath + item.value) + currentPage;
+            link.innerHTML = item.text;
+            link.className = 'plugin-version-menu-option';
+            link.style.cssText = `
+            width: 100%;
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            display: block;
+            `;
+            wrapper.style.cssText = `
+            width: 100%;
+            height: 100%;
+            display: block;
+            backdrop-filter: brightness(0.85);
+            `;
 
-            if (item.value === options[0].value) {
-                opt.className = "plugin-version-selected"
+            wrapper.addEventListener('mouseover', function(e) { brightenMenuOption(e.target); });
+            wrapper.addEventListener('mouseout', function(e) { restoreMenuOption(e.target); });
+
+            if (item.text === currentVersion) {
+                link.style.fontWeight = 'bold';
             }
 
-            dropdown.appendChild(opt);
+            wrapper.appendChild(link);
+            dropdown.appendChild(wrapper);
         });
     };
 
-    function showMenu(menu, dropdown) {
-        dropdown.style.display = 'block';
-        menu.style.backgroundImage = menuBackgroundImageOpen;
+    function brightenMenuOption(option) {
+        option.style.backdropFilter = 'brightness(1.1)';
+        // possible alternatives
+        //option.style.boxShadow = 'inset 0 0 0 10em rgba(255, 255, 255, 0.6)';
+        //option.style.backgroundColor = 'rgba(255,255,255,0.5)';
     }
 
-    function hideMenu(menu, dropdown) {
-        dropdown.style.display = 'none';
-        menu.style.backgroundImage = menuBackgroundImageClosed;
-    }
-
-    function toggleMenu(menu, dropdown) {
-        if (dropdown.style.display == 'none') {
-            showMenu(menu, dropdown);
-        } else {
-            hideMenu(menu, dropdown);
-        }
-    }
-
-    function toggleMenuDisplay(menuElement, dropDownElement, e) {
-        if (dropDownElement.contains(e.target)) {
-            return;
-        }
-
-        if (menuElement.contains(e.target)) {
-            toggleMenu(menuElement, dropDownElement);
-        }
+    function restoreMenuOption(option) {
+        option.style.backdropFilter = 'brightness(0.9)';
+        //option.style.boxShadow = 'none';
+        //option.style.backgroundColor = 'transparent';
     }
 
     // get main menu element and style as needed
@@ -116,28 +117,60 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
       background-image: ${menuBackgroundImageClosed};
       background-repeat: no-repeat;
       background-position: 90% 40%;
+      cursor: pointer;
     `;
 
     dropdown = document.createElement('div');
     dropdown.id = "plugin-version-dropdown";
     dropdown.className = 'plugin-version-menu-background-fonts-style';
     dropdown.style.cssText = `
-      position: absolute;
-      min-width: 145px;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      padding: 12px 16px;
+      position: relative;
+      top: 0.25rem;
+      left: -0.25rem;
+      min-width: 150px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+      padding: 0;
       z-index: 1;
     `;
+
+    function showMenu() {
+        dropdown.style.display = 'block';
+        menuElement.style.backgroundImage = menuBackgroundImageOpen;
+    }
+
+    function hideMenu() {
+        dropdown.style.display = 'none';
+        menuElement.style.backgroundImage = menuBackgroundImageClosed;
+    }
+
+    function toggleMenu() {
+        if (dropdown.style.display == 'none') {
+            showMenu();
+        } else {
+            hideMenu();
+        }
+    }
+
+    function toggleMenuDisplay(e) {
+        if (dropdown.contains(e.target)) {
+            return;
+        }
+
+        if (menuElement.contains(e.target)) {
+            toggleMenu();
+        }
+    }
+
     // ensure initial style of drop down menu is set
-    toggleMenu(menuElement, dropdown);
+    toggleMenu();
 
     // populate menu with available options and current version
     loadOptions(menuElement, dropdown);
-    menuElement.addEventListener('click', function(e) {toggleMenuDisplay(menuElement, dropdown, e);})
+    menuElement.addEventListener('click', toggleMenuDisplay)
     window.addEventListener('click', function(e){
         if (!menuElement.contains(e.target)){
             // Clicked outside the drop down menu
-            hideMenu(menuElement, dropdown);
+            hideMenu();
         }
     });
 }(repository_nwo, basePath);
