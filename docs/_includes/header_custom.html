@@ -1,7 +1,9 @@
 <script src="{% asset "js/site_constants.js" @path %}"></script>
 <div id="plugin-version-menu" class="site-footer"></div>
 {%- assign basePath = "" %}
-{%- if site.baseurl.size != 0 %}
+{%- if site.plugin_script_base_path %}
+{%-   assign basePath = site.plugin_script_base_path %}
+{%- elsif site.baseurl.size != 0 %}
 {%-   assign basePath = "/vagrant-libvirt" %}
 {%- endif %}
 <script src="{{ basePath }}/assets/js/plugin_versions_menu.js"></script>
