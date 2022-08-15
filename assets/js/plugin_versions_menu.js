@@ -1,8 +1,61 @@
-const { buildWebStorage, setupCache } = window.AxiosCacheInterceptor;
-const storage = buildWebStorage(sessionStorage, 'axios-cache:');
-const axiosCached = setupCache(axios.create(), { storage });
+// Look at webpack to replace the dependency loading
+// also would allow use yarn + jest to support unit testing code below
 
-changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
+const dependencies = [
+    {
+        src: 'https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js',
+        integrity: 'sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==',
+        crossOrigin: 'anonymous',
+    },
+    {
+        src: 'https://cdn.jsdelivr.net/npm/axios-cache-interceptor@0.10.6/dist/index.bundle.js',
+        integrity: 'sha256-yJbSlTxKmgU+sjlMx48OSjoiUsboy18gXTxUBniEEO0=',
+        crossOrigin: 'anonymous',
+    },
+]
+
+const loaded = [];
+
+dependencies.forEach( (dep, i) => {
+    loaded[i] = false;
+    loadScript(dep, function() {
+        loaded[i] = true;
+        if (loaded.every(value => value === true)) {
+            // arguments come from a site constants file
+            handleVersionedDocs(repository_nwo, basePath);
+        }
+    });
+})
+
+// helper taken from https://stackoverflow.com/a/950146 under CC BY-SA 4.0, added support
+// for additional attributes to be set on the script tag.
+function loadScript(url, callback)
+{
+    // Adding the script tag to the head as suggested before
+    var head = document.head;
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url.src;
+    delete url.src;
+    for (var attribute in url) {
+        script[attribute] = url[attribute];
+    }
+
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // Fire the loading
+    head.appendChild(script);
+}
+
+// main function, must wait until dependencies are loaded before calling
+function handleVersionedDocs(repository_nwo, basePath) {
+    const { buildWebStorage, setupCache } = window.AxiosCacheInterceptor;
+    const storage = buildWebStorage(sessionStorage, 'axios-cache:');
+    const axiosCached = setupCache(axios.create(), { storage });
+
     menuBackgroundImageClosed = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 6 9 12 15 18'%3E%3C/polyline%3E%3C/svg%3E\")";
     menuBackgroundImageOpen = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")";
 
@@ -173,4 +226,4 @@ changeVersion = function handleVersionedDocs(repository_nwo, basePath) {
             hideMenu();
         }
     });
-}(repository_nwo, basePath);
+}
