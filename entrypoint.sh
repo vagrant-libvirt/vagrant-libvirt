@@ -119,7 +119,7 @@ done
 
 # make sure the directories can be written to by vagrant otherwise will
 # get a start up error
-find ${VAGRANT_HOME} -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
+find "${VAGRANT_HOME}" -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
 
 LIBVIRT_SOCK=/var/run/libvirt/libvirt-sock
 if [[ ! -S ${LIBVIRT_SOCK} ]]

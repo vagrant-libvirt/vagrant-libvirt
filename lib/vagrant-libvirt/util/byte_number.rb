@@ -68,4 +68,3 @@ class ByteNumber < Numeric
         (to_f/(1024 ** n)).ceil
     end
 end
-  

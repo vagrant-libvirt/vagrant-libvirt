@@ -162,7 +162,7 @@ module VagrantPlugins
                 # Start it..
                 b3.use StartDomain
 
-                # Machine should gain IP address when comming up,
+                # Machine should gain IP address when coming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
                 require 'vagrant/action/builtin/wait_for_communicator'
@@ -411,7 +411,7 @@ module VagrantPlugins
           end
         end
       end
-      
+
       # This is the action that is primarily responsible for restoring a snapshot
       def self.action_snapshot_restore
         Vagrant::Action::Builder.new.tap do |b|
@@ -420,7 +420,7 @@ module VagrantPlugins
             unless env[:result]
               raise Vagrant::Errors::VMNotCreatedError
             end
-            
+
             b2.use SnapshotRestore
           end
         end
@@ -434,7 +434,7 @@ module VagrantPlugins
             unless env[:result]
               raise Vagrant::Errors::VMNotCreatedError
             end
-            
+
             b2.use SnapshotSave
           end
         end

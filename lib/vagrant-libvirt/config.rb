@@ -11,7 +11,7 @@ module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
       # manually specify URI
-      # will supercede most other options if provided
+      # will supersede most other options if provided
       attr_accessor :uri
 
       # A hypervisor name to access via Libvirt.
@@ -1023,7 +1023,7 @@ module VagrantPlugins
         end
 
         if @qemu_use_agent == true
-          # if qemu agent is used to optain domain ip configuration, at least
+          # if qemu agent is used to obtain domain ip configuration, at least
           # one qemu channel has to be configured. As there are various options,
           # error out and leave configuration to the user
           unless machine.provider_config.channels.any? { |channel| channel[:target_name].start_with?("org.qemu.guest_agent") }

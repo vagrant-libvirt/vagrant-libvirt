@@ -239,7 +239,7 @@ module VagrantPlugins
 
             interface['ip-addresses'].each do |ip|
               # returning ipv6 addresses might break windows guests because
-              # winrm cant handle connection, winrm fails with "invalid uri"
+              # winrm can't handle connection, winrm fails with "invalid uri"
               next unless ip['ip-address-type'] == 'ipv4'
 
               ip_address = ip['ip-address']
