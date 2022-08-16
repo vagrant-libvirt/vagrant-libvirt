@@ -360,6 +360,44 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## SMBIOS System Information
+
+Libvirt allows to specify
+[SMBIOS System Information](https://libvirt.org/formatdomain.html#smbios-system-information)
+like a base board or chassis manufacturer or a system serial number.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.sysinfo = {
+      'bios': {
+        'vendor': 'Test Vendor',
+        'version': '0.1.2',
+      },
+      'system': {
+        'manufacturer': 'Test Manufacturer',
+        'version': '0.1.0',
+        'serial': '',
+      },
+      'base board': {
+        'manufacturer': 'Test Manufacturer',
+        'version': '1.2',
+      },
+      'chassis': {
+        'manufacturer': 'Test Manufacturer',
+        'serial': 'AABBCCDDEE',
+      },
+      'oem strings': [
+        'app1: string1',
+        'app1: string2',
+        'app2: string1',
+        'app2: string2',
+      ],
+    }
+  end
+end
+```
+
 ## Memory balloon
 
 The configuration of the memory balloon device can be overridden. By default,

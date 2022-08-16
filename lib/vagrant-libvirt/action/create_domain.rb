@@ -74,6 +74,22 @@ module VagrantPlugins
           @tpm_path = config.tpm_path
           @tpm_version = config.tpm_version
 
+          @sysinfo = config.sysinfo.dup
+          @sysinfo.each do |section, _v|
+            if @sysinfo[section].respond_to?(:each_pair)
+              @sysinfo[section].delete_if { |_k, v| v.to_s.empty? }
+            else
+              @sysinfo[section].reject! { |e| e.to_s.empty? }
+            end
+          end.reject! { |_k, v| v.empty? }
+          @sysinfo_blocks = {
+            'bios' => {:ui => "BIOS", :xml => "bios"},
+            'system' => {:ui => "System", :xml => "system"},
+            'base board' => {:ui => "Base Board", :xml => "baseBoard"},
+            'chassis' => {:ui => "Chassis", :xml => "chassis"},
+            'oem strings' => {:ui => "OEM Strings", :xml => "oemStrings"},
+          }
+
           # Boot order
           @boot_order = config.boot_order
 
@@ -254,6 +270,22 @@ module VagrantPlugins
             env[:ui].info(" -- TPM Version:       #{@tpm_version}")
           else
             env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+          end
+
+          unless @sysinfo.empty?
+            env[:ui].info(" -- Sysinfo:")
+            @sysinfo.each_pair do |block, values|
+              env[:ui].info("   -- #{@sysinfo_blocks[block.to_s][:ui]}:")
+              if values.respond_to?(:each_pair)
+                values.each_pair do |name, value|
+                  env[:ui].info("    -> #{name}: #{value}")
+                end
+              else
+                values.each do |value|
+                  env[:ui].info("    -> #{value}")
+                end
+              end
+            end
           end
 
           if @memballoon_enabled

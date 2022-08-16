@@ -16,6 +16,13 @@ describe 'templates/domain' do
     def initialize
       super
       @domain_volumes = []
+      @sysinfo_blocks = {
+        'bios' => {:section => "BIOS", :xml => "bios"},
+        'system' => {:section => "System", :xml => "system"},
+        'base board' => {:section => "Base Board", :xml => "baseBoard"},
+        'chassis' => {:section => "Chassis", :xml => "chassis"},
+        'oem strings' => {:section => "OEM Strings", :xml => "oemStrings"},
+      }
     end
 
     def finalize!
@@ -99,6 +106,15 @@ describe 'templates/domain' do
       domain.watchdog(model: 'i6300esb', action: 'reset')
       domain.smartcard(mode: 'passthrough')
       domain.tpm_path = '/dev/tpm0'
+
+      domain.sysinfo = {
+        'system' => {
+          'serial' => 'AAAAAAAA',
+        },
+        'oem strings' => [
+          'AAAAAAAA',
+        ],
+      }
 
       domain.qemuargs(value: '-device')
       domain.qemuargs(value: 'dummy-device')

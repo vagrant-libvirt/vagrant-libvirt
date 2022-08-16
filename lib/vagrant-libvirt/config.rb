@@ -129,6 +129,9 @@ module VagrantPlugins
       attr_accessor :tpm_path
       attr_accessor :tpm_version
 
+      # Configure sysinfo values
+      attr_accessor :sysinfo
+
       # Configure the memballoon
       attr_accessor :memballoon_enabled
       attr_accessor :memballoon_model
@@ -284,6 +287,8 @@ module VagrantPlugins
         @tpm_type          = UNSET_VALUE
         @tpm_path          = UNSET_VALUE
         @tpm_version       = UNSET_VALUE
+
+        @sysinfo           = UNSET_VALUE
 
         @memballoon_enabled = UNSET_VALUE
         @memballoon_model   = UNSET_VALUE
@@ -917,6 +922,8 @@ module VagrantPlugins
         @nic_adapter_count = 8 if @nic_adapter_count == UNSET_VALUE
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 
+        @sysinfo = {} if @sysinfo == UNSET_VALUE
+
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
 
@@ -1074,6 +1081,8 @@ module VagrantPlugins
           end
         end
 
+        errors = validate_sysinfo(machine, errors)
+
         { 'Libvirt Provider' => errors }
       end
 
@@ -1088,6 +1097,10 @@ module VagrantPlugins
           result.cdroms = c
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
+
+          c = sysinfo == UNSET_VALUE ? {} : sysinfo.dup
+          c.merge!(other.sysinfo) { |_k, x, y| x.respond_to?(:each_pair) ? x.merge(y) : x + y } if other.sysinfo != UNSET_VALUE
+          result.sysinfo = c
 
           c = clock_timers.dup
           c += other.clock_timers
@@ -1205,6 +1218,52 @@ module VagrantPlugins
             dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
           end
         end
+      end
+
+      def validate_sysinfo(machine, errors)
+        valid_sysinfo = {
+          'bios' => %w[vendor version date release],
+          'system' => %w[manufacturer product version serial uuid sku family],
+          'base board' => %w[manufacturer product version serial asset location],
+          'chassis' => %w[manufacturer version serial asset sku],
+          'oem strings' => nil,
+        }
+
+        machine.provider_config.sysinfo.each_pair do |block_name, entries|
+          block_name = block_name.to_s
+          unless valid_sysinfo.key?(block_name)
+            errors << "invalid sysinfo element '#{block_name}'; smbios sysinfo elements supported: #{valid_sysinfo.keys.join(', ')}"
+            next
+          end
+
+          if valid_sysinfo[block_name].nil?
+            # assume simple array of text entries
+            entries.each do |entry|
+              if entry.respond_to?(:to_str)
+                if entry.to_s.empty?
+                  machine.ui.warn("Libvirt Provider: 'sysinfo.#{block_name}' contains an empty or nil entry and will be discarded")
+                end
+              else
+                errors << "sysinfo.#{block_name} expects entries to be stringy, got #{entry.class} containing '#{entry}'"
+              end
+            end
+          else
+            entries.each_pair do |entry_name, entry_text|
+              entry_name = entry_name.to_s
+              unless valid_sysinfo[block_name].include?(entry_name)
+                errors << "'sysinfo.#{block_name}' does not support entry name '#{entry_name}'; entries supported: #{valid_sysinfo[block_name].join(', ')}"
+                next
+              end
+
+              # this allows removal of entries specified by other Vagrantfile's in the hierarchy
+              if entry_text.to_s.empty?
+                machine.ui.warn("Libvirt Provider: sysinfo.#{block_name}.#{entry_name} is nil or empty and therefore has no effect.")
+              end
+            end
+          end
+        end
+
+        errors
       end
     end
   end

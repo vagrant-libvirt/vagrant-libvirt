@@ -577,24 +577,28 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
   def assert_invalid
     subject.finalize!
-    errors = subject.validate(machine)
-    raise "No errors: #{errors.inspect}" if errors.values.all?(&:empty?)
+    errors = subject.validate(machine).values.first
+    expect(errors).to_not be_empty
+    errors
   end
 
   def assert_valid
     subject.finalize!
-    errors = subject.validate(machine)
-    raise "Errors: #{errors.inspect}" unless errors.values.all?(&:empty?)
+    errors = subject.validate(machine).values.first
+    expect(errors).to be_empty
   end
 
   describe '#validate' do
+    before do
+      allow(machine).to receive(:provider_config).and_return(subject)
+      allow(machine).to receive(:ui).and_return(ui)
+    end
+
     it 'is valid with defaults' do
       assert_valid
     end
 
     context 'with disks defined' do
-      before { expect(machine).to receive(:provider_config).and_return(subject).at_least(:once) }
-
       it 'is valid if relative path used for disk' do
         subject.storage :file, path: '../path/to/file.qcow2'
         assert_valid
@@ -709,6 +713,60 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         assert_valid
       end
     end
+
+    context 'with sysinfo defined' do
+      context 'when invalid block name provided' do
+        it 'should be invalid' do
+          subject.sysinfo = {'bad bios': {'vendor': 'some vendor'}}
+
+          errors = assert_invalid
+          expect(errors).to include(match(/invalid sysinfo element 'bad bios';/))
+        end
+      end
+
+      context 'when invalid element name provided' do
+        it 'should be invalid' do
+          subject.sysinfo = {'bios': {'bad vendor': 'some vendor'}}
+
+          errors = assert_invalid
+          expect(errors).to include(match(/'sysinfo.bios' does not support entry name 'bad vendor'/))
+        end
+      end
+
+      context 'when empty element value provided' do
+        it 'should succeed with a warning' do
+          expect(ui).to receive(:warn).with(/Libvirt Provider: sysinfo.bios.vendor is nil or empty/)
+          subject.sysinfo = {'bios': {'vendor': ''}}
+
+          assert_valid
+        end
+      end
+
+      context 'when handling "oem strings"' do
+        it 'should succeed' do
+          subject.sysinfo = {'oem strings': ['string 1']}
+
+          assert_valid
+        end
+
+        context 'when empty entries' do
+          it 'should succeed with a warning' do
+            expect(ui).to receive(:warn).with(/Libvirt Provider: 'sysinfo.oem strings' contains an empty/)
+            subject.sysinfo = {'oem strings': ['']}
+
+            assert_valid
+          end
+        end
+
+        context 'when non string passed' do
+          it 'should be invalid' do
+            subject.sysinfo = {'oem strings': [true]}
+
+            assert_invalid
+          end
+        end
+      end
+    end
   end
 
   describe '#merge' do
@@ -770,6 +828,28 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         expect(subject.clock_timers).to include(include(name: 'rtc'),
                                                 include(name: 'hpet'))
+      end
+    end
+
+    context 'sysinfo' do
+      it 'should merge' do
+        one.sysinfo = {
+          'bios' => {'vendor': 'Some Vendor'},
+          'system' => {'manufacturer': 'some manufacturer'},
+          'oem strings' => ['string 1'],
+        }
+        two.sysinfo = {
+          'bios' => {'vendor': 'Another Vendor'},
+          'system' => {'serial': 'AABBCCDDEE'},
+          'oem strings' => ['string 2'],
+        }
+
+        subject.finalize!
+        expect(subject.sysinfo).to eq(
+          'bios' => {'vendor': 'Another Vendor'},
+          'system' => {'manufacturer': 'some manufacturer', 'serial': 'AABBCCDDEE'},
+          'oem strings' => ['string 1', 'string 2'],
+        )
       end
     end
   end

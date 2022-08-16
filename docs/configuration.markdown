@@ -210,6 +210,11 @@ end
 * `tpm_type` - The type of TPM device to which you are connecting.
 * `tpm_path` - The path to the TPM device on the host system.
 * `tpm_version` - The TPM version to use.
+* `sysinfo` - The [SMBIOS System Information](https://libvirt.org/formatdomain.html#smbios-system-information) to use.
+  This is a hash with key names aligning with the different section XML tags of
+  bios, system, base board, chassis, and oem strings. Nested hashes then use
+  entry attribute names as the keys for the values to assign, except for oem strings
+  which is a simple array of strings.
 * `dtb` - The device tree blob file, mostly used for non-x86 platforms. In case
   the device tree isn't added in-line to the kernel, it can be manually
   specified here.
