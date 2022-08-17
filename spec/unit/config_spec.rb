@@ -635,13 +635,15 @@ describe VagrantPlugins::ProviderLibvirt::Config do
     end
 
     context 'with public_network defined' do
+      let(:libvirt_client)  { instance_double(::Libvirt::Connect) }
       let(:host_devices) { [
-        instance_double(Socket::Ifaddr),
-        instance_double(Socket::Ifaddr),
+        instance_double(Libvirt::Interface),
+        instance_double(Libvirt::Interface),
       ] }
       before do
         machine.config.vm.network :public_network, dev: 'eth0', ip: "192.168.2.157"
-        expect(Socket).to receive(:getifaddrs).and_return(host_devices)
+        expect(machine).to receive_message_chain('provider.driver.connection.client').and_return(libvirt_client)
+        expect(libvirt_client).to receive(:list_all_interfaces).and_return(host_devices)
         expect(host_devices[0]).to receive(:name).and_return('eth0')
         expect(host_devices[1]).to receive(:name).and_return('virbr0')
       end
