@@ -20,7 +20,7 @@ jobs:
           ruby-version: 2.6
       - name: Install and Build 🔧
         run: |
-          VERSION={{ github.ref_name }}
+          VERSION=${{ github.ref_name }}
           REPO_NAME=$(jq -r ".repository.name" "$GITHUB_EVENT_PATH")
 
           # TODO find a way for jekyll to perform this automatically
@@ -40,7 +40,7 @@ jobs:
           folder: build
           clean: true
           force: false
-          target-folder: version/{{ github.ref_name }}
+          target-folder: version/${{ github.ref_name }}
           clean-exclude: |
             pr-preview/
             version/
