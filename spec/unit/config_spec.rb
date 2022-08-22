@@ -652,8 +652,8 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         expect(driver).to receive(:list_networks).and_return(libvirt_networks)
         expect(host_devices[0]).to receive(:name).and_return('eth0')
         expect(host_devices[1]).to receive(:name).and_return('virbr0')
-        expect(libvirt_networks[0]).to receive(:bridge_name).and_return('').twice
-        expect(libvirt_networks[1]).to receive(:bridge_name).and_return('virbr0').twice
+        expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')
+        expect(libvirt_networks[1]).to receive(:bridge_name).and_return('virbr0')
       end
 
       it 'should validate use of existing device' do
