@@ -1213,7 +1213,10 @@ module VagrantPlugins
 
       def host_devices(machine)
         @host_devices ||= begin
-          machine.provider.driver.connection.client.list_all_interfaces().map { |iface| iface.name }.uniq.select do |dev|
+          (
+            machine.provider.driver.list_host_devices.map { |iface| iface.name } +
+            machine.provider.driver.list_networks.map { |net| net.bridge_name if net.bridge_name }
+          ).uniq do |dev|
             dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
           end
         end
