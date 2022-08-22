@@ -512,6 +512,14 @@ virtual network.
   are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default is 'false'.
 
+Additionally for public networks, to facilitate validating if the device provided
+can be used, vagrant-libvirt will check both the host interfaces visible to libvirt
+and the existing networks for any existing bridge names. While some name patterns are
+automatically excluded as presumed incorrect, if this pattern list is incorrect
+it may be overridden by setting the option:
+* `host_device_exclude_prefixes` - ignore any device starting with any of these
+  string patterns as a valid bridge device for a public network definition.
+
 ### Management Network
 
 vagrant-libvirt uses a private network to perform some management operations on

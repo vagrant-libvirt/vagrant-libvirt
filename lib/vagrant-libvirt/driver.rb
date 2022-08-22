@@ -201,6 +201,14 @@ module VagrantPlugins
         state
       end
 
+      def list_host_devices
+        @connection.client.list_all_interfaces
+      end
+
+      def list_networks
+        @connection.client.list_all_networks
+      end
+
       private
 
       def get_ipaddress_from_system(mac)
