@@ -782,7 +782,7 @@ module VagrantPlugins
           finalize_id_ssh_key_file
 
           uri += '+ssh://'
-          uri += "#{@username}@" if @username && @username != UNSET_VALUE
+          uri += "#{URI.encode_www_form_component(@username)}@" if @username && @username != UNSET_VALUE
 
           uri += (@host && @host != UNSET_VALUE ? @host : 'localhost')
 

@@ -197,6 +197,13 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
           }
         ],
+        [ # when username explicitly set with @ symbol for domains
+          {:username => 'my_user@my_domain', :host => 'remote'},
+          {:uri => %r{qemu://remote/(system|session)}, :username => 'my_user@my_domain'},
+          {
+            :env => {'LIBVIRT_DEFAULT_URI' => 'qemu:///custom'},
+          }
+        ],
         [ # when username explicitly set with host but without ssh
           {:username => 'my_user', :host => 'remote'},
           {:uri => %r{qemu://remote/(system|session)}, :username => 'my_user'},
