@@ -1,6 +1,6 @@
 # Vagrant Libvirt Provider
 
-![Vagrant Libvirt Logo](docs/assets/images/logo.png?raw=true "Vagrant Libvirt")
+![Vagrant Libvirt Logo](docs/_assets/images/logo.png?raw=true "Vagrant Libvirt")
 
 [![Join the chat at https://gitter.im/vagrant-libvirt/vagrant-libvirt](https://badges.gitter.im/vagrant-libvirt/vagrant-libvirt.svg)](https://gitter.im/vagrant-libvirt/vagrant-libvirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/vagrant-libvirt/vagrant-libvirt/actions/workflows/unit-tests.yml)
