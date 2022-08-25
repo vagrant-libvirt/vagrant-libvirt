@@ -1089,6 +1089,8 @@ module VagrantPlugins
 
       def merge(other)
         super.tap do |result|
+          result.boot_order = other.boot_order != [] ? other.boot_order : boot_order
+
           c = disks.dup
           c += other.disks
           result.disks = c
