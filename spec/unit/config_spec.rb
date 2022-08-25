@@ -869,5 +869,23 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         )
       end
     end
+
+    context 'boot_order' do
+      it 'should merge' do
+        one.boot 'network'
+
+        subject.finalize!
+        expect(subject.boot_order).to eq(['network'])
+      end
+
+      it 'should have last definition win' do
+        one.boot 'network'
+        two.boot 'hd'
+        two.boot 'cdrom'
+
+        subject.finalize!
+        expect(subject.boot_order).to eq(['hd', 'cdrom'])
+      end
+    end
   end
 end

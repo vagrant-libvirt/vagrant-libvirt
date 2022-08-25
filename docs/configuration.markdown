@@ -196,7 +196,9 @@ end
 * `boot` - Change the boot order and enables the boot menu. Possible options
   are "hd", "network", "cdrom". Defaults to "hd" with boot menu disabled. When
   "network" is set without "hd", only all NICs will be tried; see below for
-  more detail.
+  more detail. Defining this in subsequent provider blocks or latter Vagrantfile's
+  (see [Load Order and Merging](https://www.vagrantup.com/docs/vagrantfile)) will
+  result in the definition in the last block being used.
 * `nic_adapter_count` - Defaults to '8'. Only use case for increasing this
   count is for VMs that virtualize switches such as Cumulus Linux. Max value
   for Cumulus Linux VMs is 33.
