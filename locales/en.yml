@@ -142,6 +142,8 @@ en:
         Error while creating a storage pool volume: %{error_message}
       fog_create_domain_volume_error: |-
         Error while creating volume for domain: %{error_message}
+      already_locked_error: |-
+        Lock %{name} already held
       create_server_error: |-
         Error while creating domain: %{error_message}
       domain_name_exists: |-

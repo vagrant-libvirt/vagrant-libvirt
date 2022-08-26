@@ -154,6 +154,10 @@ module VagrantPlugins
       end
 
       # Other exceptions
+      class AlreadyLockedError < VagrantLibvirtError
+        error_key(:already_locked_error)
+      end
+
       class UpdateServerError < VagrantLibvirtError
         error_key(:create_server_error)
       end
