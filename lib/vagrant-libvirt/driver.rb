@@ -202,11 +202,11 @@ module VagrantPlugins
       end
 
       def list_host_devices
-        @connection.client.list_all_interfaces
+        connection.client.list_all_interfaces
       end
 
       def list_networks
-        @connection.client.list_all_networks
+        connection.client.list_all_networks
       end
 
       private
