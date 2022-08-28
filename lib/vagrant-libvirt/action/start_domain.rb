@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require 'diffy'
 require 'log4r'
+
+require 'equivalent-xml'
 require 'rexml/document'
 
 module VagrantPlugins
@@ -425,24 +426,29 @@ module VagrantPlugins
                 end
 
                 begin
+                  # need to check whether the updated XML contains all the changes requested
+
+                  # This normalizes the attribute order to be consistent across both XML docs to
+                  # eliminate differences for subsequent comparison by diffy
+                  applied_xml_descr = REXML::Document.new(libvirt_domain.xml_desc(1))
+                  applied_xml = String.new
+                  applied_xml_descr.write(applied_xml)
+
                   proposed = Nokogiri::XML(new_xml, &:noblanks)
+                  applied = Nokogiri::XML(applied_xml, &:noblanks)
 
-                  # This normalizes the attribute order to be consistent across both XML docs to eliminate differences
-                  # for subsequent comparison by diffy
-                  updated_xml_descr = REXML::Document.new(libvirt_domain.xml_desc(1))
-                  updated_xml = String.new
-                  updated_xml_descr.write(updated_xml)
+                  if !EquivalentXml.equivalent?(proposed, applied)
+                    require 'diffy'
 
-                  updated = Nokogiri::XML(updated_xml, &:noblanks)
+                    # pretty print the XML as even though there can be additional changes,
+                    # the output with diffy appears to be clearer
+                    pretty_proposed = StringIO.new
+                    pretty_applied = StringIO.new
+                    proposed.write_xml_to(pretty_proposed, indent: 2)
+                    applied.write_xml_to(pretty_applied, indent: 2)
 
-                  pretty_proposed = StringIO.new
-                  pretty_updated = StringIO.new
-                  proposed.write_xml_to(pretty_proposed, indent: 2)
-                  updated.write_xml_to(pretty_updated, indent: 2)
+                    diff = Diffy::Diff.new(pretty_proposed.string, pretty_applied.string, :context => 3).to_s(:text)
 
-                  diff = Diffy::Diff.new(pretty_proposed.string, pretty_updated.string, :context => 3).to_s(:text)
-
-                  unless diff.empty?
                     error_msg = "Libvirt failed to fully update the domain with the specified XML. Result differs from requested:\n" +
                       "--- requested\n+++ result\n#{diff}\n" +
                       "Typically this means there is a bug in the XML being sent, please log an issue"
