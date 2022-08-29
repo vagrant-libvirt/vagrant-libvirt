@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'fog-libvirt', '>= 0.6.0'
   s.add_runtime_dependency 'fog-core', '~> 2'
   s.add_runtime_dependency 'rexml'
-  s.add_runtime_dependency 'compare-xml'
+  s.add_runtime_dependency 'xml-simple'
   s.add_runtime_dependency 'diffy'
 
   # Make sure to allow use of the same version as Vagrant by being less specific
