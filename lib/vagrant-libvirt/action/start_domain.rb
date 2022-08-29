@@ -2,7 +2,7 @@
 
 require 'log4r'
 
-require 'equivalent-xml'
+require 'compare-xml'
 require 'rexml/document'
 
 module VagrantPlugins
@@ -437,7 +437,7 @@ module VagrantPlugins
                   proposed = Nokogiri::XML(new_xml, &:noblanks)
                   applied = Nokogiri::XML(applied_xml, &:noblanks)
 
-                  if !EquivalentXml.equivalent?(proposed, applied)
+                  if CompareXML.equivalent?(proposed, applied, { force_children: true })
                     require 'diffy'
 
                     # pretty print the XML as even though there can be additional changes,
