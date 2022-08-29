@@ -72,7 +72,30 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
         expect(subject.call(env)).to be_nil
       end
+    end
 
+    context 'when xml not applied' do
+      let(:test_file) { 'default_with_different_formatting.xml' }
+      let(:updated_domain_xml) {
+        new_xml = domain_xml.dup
+        new_xml.gsub!(/<cpu .*<\/cpu>/m, '<cpu mode="host-passthrough"/>')
+        new_xml
+      }
+      let(:vagrantfile_providerconfig) do
+        <<-EOF
+        libvirt.cpu_mode = "host-passthrough"
+        EOF
+      end
+
+      xit 'should error and revert the update' do
+        expect(ui).to receive(:error)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(connection).to receive(:define_domain).with(domain_xml) # undo
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+        expect(domain).to_not receive(:start)
+
+        expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::FogError)
+      end
     end
 
     context 'when any setting changed' do
