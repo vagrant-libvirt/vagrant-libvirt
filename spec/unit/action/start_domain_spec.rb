@@ -94,7 +94,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
         expect(domain).to_not receive(:start)
 
-        expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::FogError)
+        expect { subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::UpdateServerError)
       end
     end
 

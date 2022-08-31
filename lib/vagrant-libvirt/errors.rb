@@ -178,6 +178,10 @@ module VagrantPlugins
         error_key(:no_domain_error)
       end
 
+      class DomainStartError < VagrantLibvirtError
+        error_key(:domain_start_error)
+      end
+
       class AttachDeviceError < VagrantLibvirtError
         error_key(:attach_device_error)
       end
