@@ -1,3 +1,7 @@
 Dockerfile
 Gemfile.Lock
 pkg
+
+
+# Vim swap files
+**/.*.sw[po]

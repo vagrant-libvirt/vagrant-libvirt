@@ -104,19 +104,6 @@ then
     ${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" -m ${USER} >/dev/null 2>&1 || exit 3
 fi
 
-# Perform switching in of boxes, data directory containing machine index
-# and temporary directory from the user mounted environment
-for dir in boxes data tmp
-do
-    # if the directory hasn't been explicitly mounted over, remove it.
-    if [[ -e "/vagrant/${dir}/.remove" ]]
-    then
-        rm -rf /vagrant/${dir}
-        [[ ! -e ${vdir}/${dir} ]] && gosu ${USER} mkdir ${vdir}/${dir}
-        ln -s ${vdir}/${dir} /vagrant/${dir}
-    fi
-done
-
 # make sure the directories can be written to by vagrant otherwise will
 # get a start up error
 find "${VAGRANT_HOME}" -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+

@@ -1,5 +1,5 @@
-# syntax = docker/dockerfile:1.0-experimental
-ARG VAGRANT_VERSION=2.2.19
+# syntax = docker/dockerfile:1.3-labs
+ARG VAGRANT_VERSION=2.3.0
 
 
 FROM ubuntu:bionic as base
@@ -19,19 +19,17 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists \
     ;
 
-RUN mkdir /vagrant
-ENV VAGRANT_HOME /vagrant
+ENV VAGRANT_HOME /.vagrant.d
 
 ARG VAGRANT_VERSION
 ENV VAGRANT_VERSION ${VAGRANT_VERSION}
 RUN set -e \
-    && curl https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb -o vagrant.deb \
+    && curl https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}-1_amd64.deb -o vagrant.deb \
     && apt update \
     && apt install -y ./vagrant.deb \
     && rm -rf /var/lib/apt/lists/* \
     && rm -f vagrant.deb \
     ;
-
 
 ENV VAGRANT_DEFAULT_PROVIDER=libvirt
 
@@ -58,17 +56,34 @@ WORKDIR /build
 
 COPY . .
 RUN rake build
-RUN vagrant plugin install ./pkg/vagrant-libvirt*.gem
 
-RUN for dir in boxes data tmp; \
-    do \
-        touch /vagrant/${dir}/.remove; \
-    done \
-    ;
+RUN find /opt/vagrant/embedded/ -type f | grep -v /opt/vagrant/embedded/plugins.json > /files-to-delete.txt
+
+RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems/${VAGRANT_VERSION} ./pkg/vagrant-libvirt*.gem
+
+RUN cat <<EOF > /opt/vagrant/embedded/plugins.json
+{
+    "version": "1",
+    "installed": {
+        "vagrant-libvirt": {
+            "ruby_version":"$(/opt/vagrant/embedded/bin/ruby -e 'puts RUBY_VERSION')",
+            "vagrant_version":"${VAGRANT_VERSION}",
+            "gem_version":"",
+            "require":"",
+            "sources":[]
+        }
+    }
+}
+EOF
+
+FROM build as pruned
+
+RUN cat /files-to-delete.txt | xargs rm -f
 
 FROM base as slim
 
-COPY --from=build /vagrant /vagrant
+COPY --from=pruned /opt/vagrant/embedded/gems /opt/vagrant/embedded/gems
+COPY --from=build /opt/vagrant/embedded/plugins.json /opt/vagrant/embedded/plugins.json
 
 COPY entrypoint.sh /usr/local/bin/
 
