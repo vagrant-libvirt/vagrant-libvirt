@@ -110,21 +110,11 @@ vagrant(){
 
 #### Using Podman
 
-Preparing the podman run, only once:
-
-```bash
-mkdir -p ~/.vagrant.d/{boxes,data,tmp}
-```
-_N.B. This is needed until the entrypoint works for podman to only mount the `~/.vagrant.d` directory_
-
 To run with Podman you need to include
 
 ```bash
   --entrypoint /bin/bash \
   --security-opt label=disable \
-  -v ~/.vagrant.d/boxes:/vagrant/boxes \
-  -v ~/.vagrant.d/data:/vagrant/data \
-  -v ~/.vagrant.d/tmp:/vagrant/tmp \
 ```
 
 for example:
@@ -134,9 +124,7 @@ vagrant(){
   podman run -it --rm \
     -e LIBVIRT_DEFAULT_URI \
     -v /var/run/libvirt/:/var/run/libvirt/ \
-    -v ~/.vagrant.d/boxes:/vagrant/boxes \
-    -v ~/.vagrant.d/data:/vagrant/data \
-    -v ~/.vagrant.d/tmp:/vagrant/tmp \
+    -v ~/.vagrant.d:/.vagrant.d \
     -v $(realpath "${PWD}"):${PWD} \
     -w $(realpath "${PWD}") \
     --network host \
@@ -147,21 +135,25 @@ vagrant(){
 }
 ```
 
-Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/entrypoint.sh) and mount persistent storage directly to `/vagrant`.
+Running Podman in rootless mode maps the root user inside the container to your host user so we need to bypass [entrypoint.sh](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/entrypoint.sh).
 
 #### Extending the container image with additional vagrant plugins
 
 By default the image published and used contains the entire tool chain required
-to reinstall the vagrant-libvirt plugin and it's dependencies, as this is the
-default behaviour of vagrant anytime a new plugin is installed. This means it
-should be possible to use a simple `FROM` statement and ask vagrant to install
-additional plugins.
+to install the vagrant-libvirt plugin and it's dependencies. This allows any plugin
+that requires native extensions to be installed and should be possible to use a
+simple `FROM` statement and ask vagrant to install additional plugins.
 
 ```
 FROM vagrantlibvirt/vagrant-libvirt:latest
 
 RUN vagrant plugin install <plugin>
 ```
+
+Recently the image has now moved to bundling the plugin with the vagrant system plugins
+it should no longer attempt to reinstall each time. Eventually this will become
+the default so additional plugin installs will need to install any dependencies needed
+by them.
 
 ### Ubuntu / Debian
 
