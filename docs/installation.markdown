@@ -110,10 +110,6 @@ vagrant(){
 
 #### Using Podman
 
-Preparing the podman run, only once:
-
-_N.B. This is needed until the entrypoint works for podman to only mount the `~/.vagrant.d` directory_
-
 To run with Podman you need to include
 
 ```bash
