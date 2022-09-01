@@ -7,19 +7,20 @@ module VagrantPlugins
       class ForwardPorts
         @@lock = Mutex.new
 
-        def initialize(app, _env)
+        def initialize(app, env)
           @app    = app
           @logger = Log4r::Logger.new('vagrant_libvirt::action::forward_ports')
+          @ui     = env[:ui]
         end
 
         def call(env)
           # Get the ports we're forwarding
-          env[:forwarded_ports] = compile_forwarded_ports(env, env[:machine].config)
+          env[:forwarded_ports] = compile_forwarded_ports(env[:machine])
 
           # Warn if we're port forwarding to any privileged ports
           env[:forwarded_ports].each do |fp|
             next unless fp[:host] <= 1024
-            env[:ui].warn I18n.t(
+            @ui.warn I18n.t(
               'vagrant.actions.vm.forward_ports.privileged_ports'
             )
             break
@@ -29,7 +30,7 @@ module VagrantPlugins
           @app.call env
 
           if env[:forwarded_ports].any?
-            env[:ui].info I18n.t('vagrant.actions.vm.forward_ports.forwarding')
+            @ui.info I18n.t('vagrant.actions.vm.forward_ports.forwarding')
             forward_ports(env)
           end
         end
@@ -42,13 +43,12 @@ module VagrantPlugins
               host_port: fp[:host]
             }
 
-            env[:ui].info(I18n.t(
+            @ui.info(I18n.t(
                              'vagrant.actions.vm.forward_ports.forwarding_entry',
                              **message_attributes
             ))
 
             ssh_pid = redirect_port(
-              env,
               env[:machine],
               fp[:host_ip] || '*',
               fp[:host],
@@ -62,18 +62,18 @@ module VagrantPlugins
 
         private
 
-        def compile_forwarded_ports(env, config)
+        def compile_forwarded_ports(machine)
           mappings = {}
 
-          config.vm.networks.each do |type, options|
+          machine.config.vm.networks.each do |type, options|
             next if options[:disabled]
 
             if options[:protocol] == 'udp'
-              env[:ui].warn I18n.t('vagrant_libvirt.warnings.forwarding_udp')
+              @ui.warn I18n.t('vagrant_libvirt.warnings.forwarding_udp')
               next
             end
 
-            next if type != :forwarded_port || ( options[:id] == 'ssh' && !env[:machine].provider_config.forward_ssh_port )
+            next if type != :forwarded_port || ( options[:id] == 'ssh' && !machine.provider_config.forward_ssh_port )
             if options.fetch(:host_ip, '').to_s.strip.empty?
               options.delete(:host_ip)
             end
@@ -83,7 +83,7 @@ module VagrantPlugins
           mappings.values
         end
 
-        def redirect_port(env, machine, host_ip, host_port, guest_ip, guest_port,
+        def redirect_port(machine, host_ip, host_port, guest_ip, guest_port,
                           gateway_ports)
           ssh_info = machine.ssh_info
           params = %W(
@@ -118,7 +118,7 @@ module VagrantPlugins
           if host_port <= 1024
             @@lock.synchronize do
               # TODO: add i18n
-              env[:ui].info 'Requesting sudo for host port(s) <= 1024'
+              @ui.info 'Requesting sudo for host port(s) <= 1024'
               r = system('sudo -v')
               if r
                 ssh_cmd.unshift('sudo') # add sudo prefix
@@ -128,7 +128,7 @@ module VagrantPlugins
 
           @logger.debug "Forwarding port with `#{ssh_cmd.join(' ')}`"
           log_file = ssh_forward_log_file(
-            env[:machine], host_ip, host_port, guest_ip, guest_port,
+            machine, host_ip, host_port, guest_ip, guest_port,
           )
           @logger.info "Logging to #{log_file}"
           spawn(*ssh_cmd, [:out, :err] => [log_file, 'w'], :pgroup => true)
@@ -164,17 +164,18 @@ module VagrantPlugins
       class ClearForwardedPorts
         @@lock = Mutex.new
 
-        def initialize(app, _env)
+        def initialize(app, env)
           @app = app
           @logger = Log4r::Logger.new(
             'vagrant_libvirt::action::clear_forward_ports'
           )
+          @ui = env[:ui]
         end
 
         def call(env)
           pids = ssh_pids(env[:machine])
           if pids.any?
-            env[:ui].info I18n.t(
+            @ui.info I18n.t(
               'vagrant.actions.vm.clear_forward_ports.deleting'
             )
             pids.each do |tag|
