@@ -53,9 +53,18 @@ USER_UID=${USER_UID:-$(stat -c %u ${path})} || exit 3
 USER_GID=${USER_GID:-$(stat -c %g ${path})} || exit 3
 if [[ ${USER_UID} -eq 0 ]]
 then
-    if [[ -z "${IGNORE_RUN_AS_ROOT:-}" ]]
+    if [[ "${IGNORE_RUN_AS_ROOT:-0}" == "0" ]]
     then
-        echo "WARNING! Running as root, if this breaks, you get to keep both pieces"
+        echo "ERROR! Running as root, this usually means there has been a mistake" \
+            "in how the image has been launched."
+        echo "If this is actually intended, please pass '-e IGNORE_RUN_AS_ROOT=1'" \
+            "via the docker run command to allow execution as root."
+        echo
+        echo "Used '${path}' to determine uid/gid, typically starting looking for the" \
+            "file '$(pwd)/Vagrantfile' or if there is a Vagrantfile in the parent directory" \
+            "otherwise fall back to owner/group of'$(pwd)'"
+
+        exit 2
     fi
 else
     vdir_uid=$(stat -c %u ${vdir})
@@ -104,9 +113,12 @@ then
     ${USERCMD} --shell /bin/bash -u ${USER_UID} -g ${USER_GID} -o -c "" -m ${USER} >/dev/null 2>&1 || exit 3
 fi
 
-# make sure the directories can be written to by vagrant otherwise will
-# get a start up error
-find "${VAGRANT_HOME}" -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
+if [[ "${USER_UID}" != "0" ]]
+then
+    # make sure the directories can be written to by vagrant otherwise will
+    # get a start up error
+    find "${VAGRANT_HOME}" -maxdepth 1 ! -exec chown -h ${USER}:${GROUP} {} \+
+fi
 
 LIBVIRT_SOCK=/var/run/libvirt/libvirt-sock
 if [[ ! -S ${LIBVIRT_SOCK} ]]
@@ -121,7 +133,7 @@ then
 else
     LIBVIRT_GID=$(stat -c %g ${LIBVIRT_SOCK})
     # only do this if the host uses a non-root group for libvirt
-    if [[ ${LIBVIRT_GID} -ne 0 ]]
+    if [[ "${USER_UID}" != "0" ]] && [[ ${LIBVIRT_GID} -ne 0 ]]
     then
         if getent group libvirt >/dev/null
         then
@@ -138,7 +150,17 @@ fi
 if [[ $# -eq 0 ]]
 then
     # if no command provided
-    exec gosu ${USER} vagrant help >&3
+    if [[ "${USER_UID}" != "0" ]]
+    then
+        exec gosu ${USER} vagrant help >&3
+    else
+        exec vagrant help >&3
+    fi
 fi
 
-exec gosu ${USER} "$@" >&3
+if [[ "${USER_UID}" != "0" ]]
+then
+    exec gosu ${USER} "$@" >&3
+else
+    exec "$@" >&3
+fi
