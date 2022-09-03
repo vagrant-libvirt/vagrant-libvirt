@@ -2,7 +2,7 @@
 ARG VAGRANT_VERSION=2.3.0
 
 
-FROM ubuntu:bionic as base
+FROM ubuntu:jammy as base
 
 RUN apt update \
     && apt install -y --no-install-recommends \
@@ -12,7 +12,7 @@ RUN apt update \
         git \
         gosu \
         kmod \
-        libvirt-bin \
+        libvirt-clients \
         openssh-client \
         qemu-utils \
         rsync \
@@ -38,7 +38,7 @@ FROM base as build
 # allow caching of packages for build
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
+RUN --mount=id=apt-cache-v1,type=cache,target=/var/cache/apt --mount=id=apt-lib-v1,type=cache,target=/var/lib/apt \
     apt update \
     && apt build-dep -y \
         vagrant \
