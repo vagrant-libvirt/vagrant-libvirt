@@ -210,6 +210,7 @@ module VagrantPlugins
                   descr_changed = true
                   graphics.attributes['autoport'] = config.graphics_autoport
                   if config.graphics_autoport == 'no'
+                    graphics.attributes.delete('autoport')
                     graphics.attributes['port'] = config.graphics_port
                   end
                 end
