@@ -436,7 +436,7 @@ module VagrantPlugins
                   if proposed != applied
                     require 'diffy'
 
-                    diff = Diffy::Diff.new(proposed, applied, :context => 3).to_s(:text)
+                    diff = Diffy::Diff.new(proposed.to_str, applied.to_str, :context => 3).to_s(:text)
 
                     error_msg = "Libvirt failed to fully update the domain with the specified XML. Result differs from requested:\n" +
                       "--- requested\n+++ result\n#{diff}\n" +

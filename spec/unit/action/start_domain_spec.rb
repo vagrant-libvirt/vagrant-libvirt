@@ -88,7 +88,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
 
       it 'should error and revert the update' do
-        expect(ui).to receive(:error)
+        expect(ui).to receive(:error).with(/\+  <cpu mode="host-passthrough" \/>.*Typically this means there is a bug in the XML being sent, please log an issue/m)
         expect(connection).to receive(:define_domain).and_return(libvirt_domain)
         expect(connection).to receive(:define_domain).with(domain_xml) # undo
         expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
