@@ -86,7 +86,7 @@ docker run -i --rm \
   -v /var/run/libvirt/:/var/run/libvirt/ \
   -v ~/.vagrant.d:/.vagrant.d \
   -v $(realpath "${PWD}"):${PWD} \
-  -w $(realpath "${PWD}") \
+  -w "${PWD}" \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
@@ -100,7 +100,7 @@ vagrant(){
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
     -v $(realpath "${PWD}"):${PWD} \
-    -w $(realpath "${PWD}") \
+    -w "${PWD}" \
     --network host \
     vagrantlibvirt/vagrant-libvirt:latest \
       vagrant $@
@@ -126,7 +126,7 @@ vagrant(){
     -v /var/run/libvirt/:/var/run/libvirt/ \
     -v ~/.vagrant.d:/.vagrant.d \
     -v $(realpath "${PWD}"):${PWD} \
-    -w $(realpath "${PWD}") \
+    -w "${PWD}" \
     --network host \
     --entrypoint /bin/bash \
     --security-opt label=disable \
