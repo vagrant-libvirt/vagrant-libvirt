@@ -6,7 +6,7 @@
   <span class="nt">-v</span> /var/run/libvirt/:/var/run/libvirt/ <span class="se">\</span>
   <span class="nt">-v</span> ~/.vagrant.d:/.vagrant.d <span class="se">\</span>
   <span class="nt">-v</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span>:<span class="k">${</span><span class="nv">PWD</span><span class="k">}</span> <span class="se">\</span>
-  <span class="nt">-w</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span> <span class="se">\</span>
+  <span class="nt">-w</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--network</span> host <span class="se">\</span>
   vagrantlibvirt/vagrant-libvirt:latest <span class="se">\</span>
     vagrant status
@@ -16,7 +16,7 @@
     <span class="nt">-v</span> /var/run/libvirt/:/var/run/libvirt/ <span class="se">\</span>
     <span class="nt">-v</span> ~/.vagrant.d:/.vagrant.d <span class="se">\</span>
     <span class="nt">-v</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span>:<span class="k">${</span><span class="nv">PWD</span><span class="k">}</span> <span class="se">\</span>
-    <span class="nt">-w</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span> <span class="se">\</span>
+    <span class="nt">-w</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
     <span class="nt">--network</span> host <span class="se">\</span>
     vagrantlibvirt/vagrant-libvirt:latest <span class="se">\</span>
       vagrant <span class="nv">$@</span>
@@ -30,7 +30,7 @@
     <span class="nt">-v</span> /var/run/libvirt/:/var/run/libvirt/ <span class="se">\</span>
     <span class="nt">-v</span> ~/.vagrant.d:/.vagrant.d <span class="se">\</span>
     <span class="nt">-v</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span>:<span class="k">${</span><span class="nv">PWD</span><span class="k">}</span> <span class="se">\</span>
-    <span class="nt">-w</span> <span class="si">$(</span><span class="nb">realpath</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span><span class="si">)</span> <span class="se">\</span>
+    <span class="nt">-w</span> <span class="s2">"</span><span class="k">${</span><span class="nv">PWD</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
     <span class="nt">--network</span> host <span class="se">\</span>
     <span class="nt">--entrypoint</span> /bin/bash <span class="se">\</span>
     <span class="nt">--security-opt</span> <span class="nv">label</span><span class="o">=</span>disable <span class="se">\</span>
