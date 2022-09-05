@@ -3,6 +3,7 @@
 require 'spec_helper'
 require 'support/sharedcontext'
 
+require 'vagrant-libvirt'
 require 'vagrant-libvirt/plugin'
 
 

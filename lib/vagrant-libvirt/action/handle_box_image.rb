@@ -5,6 +5,8 @@ require 'open3'
 require 'json'
 
 require 'vagrant-libvirt/util/byte_number'
+require 'vagrant-libvirt/util/storage_util'
+require 'vagrant-libvirt/util/ui'
 
 module VagrantPlugins
   module ProviderLibvirt

@@ -38,18 +38,21 @@ rescue LoadError
   end
 end
 
-
-require 'vagrant-libvirt'
-require 'vagrant-spec/unit'
-
-Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }
-
 RSpec.configure do |config|
+  # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
+  # the global plugin manager from trying to use the default VAGRANT_HOME.
+  temp_dir = Dir.mktmpdir("rspec-")
+  ENV['VAGRANT_HOME'] = temp_dir
+
   # ensure that setting of LIBVIRT_DEFAULT_URI in the environment is not picked
   # up directly by tests, instead they must set as needed. Some build envs will
   # may have it set to 'qemu:///session'.
   config.before(:suite) do
     ENV.delete('LIBVIRT_DEFAULT_URI')
+  end
+
+  config.after(:suite) do
+    FileUtils.remove_entry temp_dir
   end
 
   config.mock_with :rspec do |mocks|
@@ -59,3 +62,7 @@ RSpec.configure do |config|
   # don't run acceptance tests by default
   config.filter_run_excluding :acceptance => true
 end
+
+require 'vagrant-spec/unit'
+
+Dir[File.dirname(__FILE__) + '/support/**/*.rb'].each { |f| require f }

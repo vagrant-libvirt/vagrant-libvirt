@@ -8,6 +8,8 @@ rescue LoadError
   require 'rexml/rexml'
 end
 
+require 'vagrant-libvirt/util/domain_flags'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action

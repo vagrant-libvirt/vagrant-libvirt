@@ -7,7 +7,9 @@ require 'digest/md5'
 
 require 'vagrant/util/subprocess'
 require 'vagrant/errors'
+
 require 'vagrant-libvirt/errors'
+require 'vagrant-libvirt/util/erb_template'
 
 module VagrantPlugins
   module SyncedFolder9P
