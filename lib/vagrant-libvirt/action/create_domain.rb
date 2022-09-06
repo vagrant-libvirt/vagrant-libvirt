@@ -2,7 +2,9 @@
 
 require 'log4r'
 
+require 'vagrant-libvirt/util/erb_template'
 require 'vagrant-libvirt/util/resolvers'
+require 'vagrant-libvirt/util/storage_util'
 
 module VagrantPlugins
   module ProviderLibvirt
