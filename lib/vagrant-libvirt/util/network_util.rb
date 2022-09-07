@@ -120,7 +120,7 @@ module VagrantPlugins
             logger.debug "In config found network type #{type} options #{original_options}"
             # Options can be specified in Vagrantfile in short format (:ip => ...),
             # or provider format # (:libvirt__network_name => ...).
-            # https://github.com/mitchellh/vagrant/blob/master/lib/vagrant/util/scoped_hash_override.rb
+            # https://github.com/mitchellh/vagrant/blob/main/lib/vagrant/util/scoped_hash_override.rb
             options = scoped_hash_override(original_options, :libvirt)
             # store type in options
             # use default values if not already set
