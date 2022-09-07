@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'log4r'
 
+require 'vagrant-libvirt/util/ui'
 require 'vagrant-libvirt/util/unindent'
 
 module VagrantPlugins

@@ -153,6 +153,8 @@ en:
         Error while downloading volume '%{volume_name}' from storage pool '%{pool_name}': %{error_message}
       no_domain_error: |-
         No domain found. %{error_message}
+      domain_start_error: |-
+        Failed to start domain: %{error_message}
       attach_device_error: |-
         Error while attaching new device to domain. %{error_message}
       detach_device_error: |-
