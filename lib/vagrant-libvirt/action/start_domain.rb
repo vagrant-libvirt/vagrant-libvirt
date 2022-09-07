@@ -438,16 +438,17 @@ module VagrantPlugins
 
               error_msg = "Libvirt failed to fully update the domain with the specified XML. Result differs from requested:\n" +
                 "--- requested\n+++ result\n#{diff}\n" +
-                "Typically this means there is a bug in the XML being sent, please log an issue"
+                "Typically this means there is a bug in the XML being sent, please log an issue as this will halt machine start in the future."
 
-              env[:ui].error("Updated domain settings did not fully apply, attempting restore to previous definition: #{error_msg}")
-              begin
-                env[:machine].provider.driver.connection.define_domain(descr)
-              rescue Fog::Errors::Error => e
-                env[:ui].error("Failed to restore previous domain definition: #{e.message}")
-              end
+              env[:ui].warn(error_msg)
+              #env[:ui].error("Updated domain settings did not fully apply, attempting restore to previous definition: #{error_msg}")
+              #begin
+              #  env[:machine].provider.driver.connection.define_domain(descr)
+              #rescue Fog::Errors::Error => e
+              #  env[:ui].error("Failed to restore previous domain definition: #{e.message}")
+              #end
 
-              raise Errors::UpdateServerError, error_message: error_msg
+              #raise Errors::UpdateServerError, error_message: error_msg
             end
           end
 
