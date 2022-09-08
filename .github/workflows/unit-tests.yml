@@ -52,19 +52,19 @@ jobs:
             allow_fail: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Clone vagrant for ruby 3.0 support
       if: ${{ matrix.ruby == '3.0.0' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: hashicorp/vagrant
         path: .deps/vagrant
         ref: f7973f00edb9438d0b36085f210c80af71cfe5c5
     - name: Clone ruby-libvirt for ruby 3.0 support
       if: ${{ matrix.ruby == '3.0.0' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: libvirt/libvirt-ruby
         path: .deps/libvirt-ruby
