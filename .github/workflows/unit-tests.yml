@@ -41,6 +41,12 @@ jobs:
           - ruby: 2.6.6
             vagrant: v2.2.14
             allow_fail: false
+          - ruby: 2.7.2
+            vagrant: v2.2.10
+            allow_fail: false
+            # above block is to ensure compatible with Ubuntu 20.04 vagrant package
+            # although it uses 2.2.10 it is the earliest version that will install on
+            # ruby 2.7 without patching
           - ruby: 3.0.0
             vagrant:
             allow_fail: false
