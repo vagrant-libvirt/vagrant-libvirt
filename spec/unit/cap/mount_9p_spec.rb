@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'support/sharedcontext'
 
-require 'vagrant-libvirt/plugin'
+require 'vagrant-libvirt'
 
 describe 'VagrantPlugins::ProviderLibvirt::Cap::Mount9P' do
   include_context 'unit'
