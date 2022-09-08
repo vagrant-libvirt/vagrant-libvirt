@@ -3,6 +3,8 @@
 require 'log4r'
 
 require 'rexml/document'
+require 'rexml/formatters/pretty'
+require 'rexml/xpath'
 
 require 'vagrant-libvirt/util/xml'
 

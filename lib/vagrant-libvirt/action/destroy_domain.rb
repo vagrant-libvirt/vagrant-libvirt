@@ -2,11 +2,8 @@
 
 require 'log4r'
 
-begin
-  require 'rexml'
-rescue LoadError
-  require 'rexml/rexml'
-end
+require 'rexml/document'
+require 'rexml/xpath'
 
 require 'vagrant-libvirt/util/domain_flags'
 
