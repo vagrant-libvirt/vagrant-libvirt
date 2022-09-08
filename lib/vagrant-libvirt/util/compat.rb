@@ -11,7 +11,7 @@ module VagrantPlugins
       module Compat
         def self.action_hook_args(name, action)
           # handle different number of arguments for action_hook depending on vagrant version
-          if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('2.2.11')
+          if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('2.2.10')
             return name, action
           end
 
