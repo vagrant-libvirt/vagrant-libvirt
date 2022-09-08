@@ -73,7 +73,7 @@ jobs:
           path: .github_changelog_generator_cache
       -
         name: Changelog Generation
-        uses: CharMixer/auto-changelog-action@v1.1
+        uses: CharMixer/auto-changelog-action@v1.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           since_tag: ${{ steps.prep.outputs.previous_version }}
