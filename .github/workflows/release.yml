@@ -21,6 +21,7 @@ jobs:
         id: remote_default_branch
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
+          result-encoding: string
           script: |
             repo = await github.repos.get({
                 owner: context.repo.owner,
