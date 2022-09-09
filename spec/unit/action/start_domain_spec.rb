@@ -74,6 +74,26 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
     end
 
+    context 'when xml elements and attributes reordered' do
+      let(:test_file) { 'existing.xml' }
+      let(:updated_test_file) { 'existing_reordered.xml' }
+      let(:vagrantfile_providerconfig) do
+        <<-EOF
+        libvirt.cpu_mode = "host-passthrough"
+        EOF
+      end
+
+      it 'should correctly detect the domain was updated' do
+        expect(ui).to_not receive(:warn)
+        expect(libvirt_domain).to receive(:autostart=)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+        expect(domain).to receive(:start)
+
+        expect(subject.call(env)).to be_nil
+      end
+    end
+
     context 'when xml not applied' do
       let(:test_file) { 'default_with_different_formatting.xml' }
       let(:updated_domain_xml) {
