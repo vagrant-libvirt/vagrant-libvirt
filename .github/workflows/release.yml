@@ -12,7 +12,7 @@ jobs:
     steps:
       -
         name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       -
@@ -21,6 +21,7 @@ jobs:
         id: remote_default_branch
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
+          result-encoding: string
           script: |
             repo = await github.repos.get({
                 owner: context.repo.owner,
@@ -72,7 +73,7 @@ jobs:
           path: .github_changelog_generator_cache
       -
         name: Changelog Generation
-        uses: CharMixer/auto-changelog-action@v1.1
+        uses: CharMixer/auto-changelog-action@v1.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           since_tag: ${{ steps.prep.outputs.previous_version }}
