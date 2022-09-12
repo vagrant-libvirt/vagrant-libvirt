@@ -67,7 +67,7 @@ jobs:
       -
         name: Cache Github API requests
         id: cache-changelog-api-requests
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           key: github-changelog-cache
           path: .github_changelog_generator_cache
