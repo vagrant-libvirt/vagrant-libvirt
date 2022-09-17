@@ -234,7 +234,6 @@ module VagrantPlugins
           @logger.debug(response)
           addresses = JSON.parse(response)
         rescue StandardError => e
-          puts "Unable to receive IP via qemu agent: [#{e.message}]"
           @logger.debug("Unable to receive IP via qemu agent: [#{e.message}]")
         end
 
