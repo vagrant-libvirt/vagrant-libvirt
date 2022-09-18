@@ -239,6 +239,7 @@ module VagrantPlugins
 
         unless addresses.nil?
           addresses['return'].each do |interface|
+            next unless interface.key?('hardware-address')
             next unless domain.mac.downcase == interface['hardware-address'].downcase
 
             @logger.debug("Found matching interface: [#{interface['name']}]")
