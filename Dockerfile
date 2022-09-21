@@ -61,20 +61,18 @@ RUN find /opt/vagrant/embedded/ -type f | grep -v /opt/vagrant/embedded/plugins.
 
 RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems/${VAGRANT_VERSION} ./pkg/vagrant-libvirt*.gem
 
-RUN cat <<EOF > /opt/vagrant/embedded/plugins.json
-{
-    "version": "1",
-    "installed": {
-        "vagrant-libvirt": {
-            "ruby_version":"$(/opt/vagrant/embedded/bin/ruby -e 'puts RUBY_VERSION')",
-            "vagrant_version":"${VAGRANT_VERSION}",
-            "gem_version":"",
-            "require":"",
-            "sources":[]
-        }
-    }
-}
-EOF
+RUN echo -n '{\n\
+    "version": "1",\n\
+    "installed": {\n\
+        "vagrant-libvirt": {\n\
+            "ruby_version": "'$(/opt/vagrant/embedded/bin/ruby -e 'puts "#{RUBY_VERSION}"')'",\n\
+            "vagrant_version": "'${VAGRANT_VERSION}'",\n\
+            "gem_version":"",\n\
+            "require":"",\n\
+            "sources":[]\n\
+        }\n\
+    }\n\
+}' > /opt/vagrant/embedded/plugins.json
 
 FROM build as pruned
 
