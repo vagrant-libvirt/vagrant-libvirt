@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.3-labs
+# syntax = docker/dockerfile:1.0-experimental
 ARG VAGRANT_VERSION=2.3.0
 
 
@@ -38,8 +38,7 @@ FROM base as build
 # allow caching of packages for build
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-RUN --mount=id=apt-cache-v1,type=cache,target=/var/cache/apt --mount=id=apt-lib-v1,type=cache,target=/var/lib/apt \
-    apt update \
+RUN apt update \
     && apt build-dep -y \
         vagrant \
         ruby-libvirt \
@@ -61,20 +60,18 @@ RUN find /opt/vagrant/embedded/ -type f | grep -v /opt/vagrant/embedded/plugins.
 
 RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems/${VAGRANT_VERSION} ./pkg/vagrant-libvirt*.gem
 
-RUN cat <<EOF > /opt/vagrant/embedded/plugins.json
-{
-    "version": "1",
-    "installed": {
-        "vagrant-libvirt": {
-            "ruby_version":"$(/opt/vagrant/embedded/bin/ruby -e 'puts RUBY_VERSION')",
-            "vagrant_version":"${VAGRANT_VERSION}",
-            "gem_version":"",
-            "require":"",
-            "sources":[]
-        }
-    }
-}
-EOF
+RUN echo -n '{\n\
+    "version": "1",\n\
+    "installed": {\n\
+        "vagrant-libvirt": {\n\
+            "ruby_version": "'$(/opt/vagrant/embedded/bin/ruby -e 'puts "#{RUBY_VERSION}"')'",\n\
+            "vagrant_version": "'${VAGRANT_VERSION}'",\n\
+            "gem_version":"",\n\
+            "require":"",\n\
+            "sources":[]\n\
+        }\n\
+    }\n\
+}' > /opt/vagrant/embedded/plugins.json
 
 FROM build as pruned
 
