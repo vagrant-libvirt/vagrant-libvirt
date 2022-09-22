@@ -9,6 +9,18 @@ on:
   pull_request:
 
 jobs:
+  build-image-with-buildah:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      -
+        name: Build with buildah
+        run: buildah bud .
+
   build-docker-image:
     runs-on: ubuntu-latest
     steps:
