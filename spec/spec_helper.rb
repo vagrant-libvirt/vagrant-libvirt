@@ -39,6 +39,8 @@ rescue LoadError
 end
 
 RSpec.configure do |config|
+  require 'tmpdir'
+
   # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
   # the global plugin manager from trying to use the default VAGRANT_HOME.
   temp_dir = Dir.mktmpdir("rspec-")
