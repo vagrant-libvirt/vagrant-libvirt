@@ -38,8 +38,7 @@ FROM base as build
 # allow caching of packages for build
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-RUN --mount=id=apt-cache-v1,type=cache,target=/var/cache/apt --mount=id=apt-lib-v1,type=cache,target=/var/lib/apt \
-    apt update \
+RUN apt update \
     && apt build-dep -y \
         vagrant \
         ruby-libvirt \
