@@ -63,10 +63,19 @@ RSpec.configure do |config|
 
   # don't run acceptance tests by default
   config.filter_run_excluding :acceptance => true
+end
 
-  config.expect_with :rspec do |c|
-    c.max_formatted_output_length = 2000 if c.respond_to?("max_formatted_output_length=")
+begin
+  require 'test-prof'
+
+  TestProf.configure do |config|
+    # use unique filenames for reports (by simply appending current timestamp)
+    config.timestamps = true
+
+    # color output
+    config.color = true
   end
+rescue LoadError
 end
 
 require 'vagrant-spec/unit'
