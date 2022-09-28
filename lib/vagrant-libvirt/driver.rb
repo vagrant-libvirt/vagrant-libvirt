@@ -66,65 +66,48 @@ module VagrantPlugins
         @system_connection
       end
 
-      def get_domain(machine)
-        begin
-          domain = connection.servers.get(machine.id)
-        rescue Libvirt::RetrieveError => e
-          raise e unless e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
-
-          @logger.debug("machine #{machine.name} domain not found #{e}.")
-          return nil
-        end
-
-        domain
-      end
-
-      def created?(machine)
-        domain = get_domain(machine)
+      def created?
+        domain = get_domain()
         !domain.nil?
       end
 
-      def get_ipaddress(machine)
+      def get_ipaddress(domain=nil)
         # Find the machine
-        domain = get_domain(machine)
+        domain = get_domain() if domain.nil?
 
         if domain.nil?
           # The machine can't be found
           return nil
         end
 
-        get_domain_ipaddress(machine, domain)
-      end
-
-      def get_domain_ipaddress(machine, domain)
         # attempt to get ip address from qemu agent
-        if machine.provider_config.qemu_use_agent == true
+        if @machine.provider_config.qemu_use_agent == true
           @logger.info('Get IP via qemu agent')
-          return get_ipaddress_from_qemu_agent(domain, machine.id, machine.config.vm.boot_timeout)
+          return get_ipaddress_from_qemu_agent(@machine.config.vm.boot_timeout, domain)
         end
 
-        return get_ipaddress_from_system domain.mac if machine.provider_config.qemu_use_session
+        return get_ipaddress_from_system domain.mac if @machine.provider_config.qemu_use_session
 
         # Get IP address from dhcp leases table
         begin
           ip_address = get_ipaddress_from_domain(domain)
         rescue Fog::Errors::TimeoutError
-          @logger.info("Timeout at waiting for an ip address for machine #{machine.name}")
+          @logger.info("Timeout at waiting for an ip address for machine #{@machine.name}")
 
           raise
         end
 
         unless ip_address
-          @logger.info("No arp table entry found for machine #{machine.name}")
+          @logger.info("No arp table entry found for machine #{@machine.name}")
           return nil
         end
 
         ip_address
       end
 
-      def restore_snapshot(machine, snapshot_name)
-        domain = get_libvirt_domain(machine)
-        snapshot = get_snapshot_if_exists(machine, snapshot_name)
+      def restore_snapshot(snapshot_name)
+        domain = get_libvirt_domain()
+        snapshot = get_snapshot_if_exists(@machine, snapshot_name)
         begin
           # 4 is VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
           # needed due to https://bugzilla.redhat.com/show_bug.cgi?id=1006886
@@ -134,52 +117,52 @@ module VagrantPlugins
         end
       end
 
-      def list_snapshots(machine)
-        get_libvirt_domain(machine).list_snapshots
+      def list_snapshots
+        get_libvirt_domain().list_snapshots
       rescue Fog::Errors::Error => e
         raise Errors::SnapshotListError, error_message: e.message
       end
 
-      def delete_snapshot(machine, snapshot_name)
-        get_snapshot_if_exists(machine, snapshot_name).delete
+      def delete_snapshot(snapshot_name)
+        get_snapshot_if_exists(snapshot_name).delete
       rescue Errors::SnapshotMissing => e
         raise Errors::SnapshotDeletionError, error_message: e.message
       end
 
-      def create_new_snapshot(machine, snapshot_name)
+      def create_new_snapshot(snapshot_name)
         snapshot_desc = <<-EOF
         <domainsnapshot>
           <name>#{snapshot_name}</name>
           <description>Snapshot for vagrant sandbox</description>
         </domainsnapshot>
         EOF
-        get_libvirt_domain(machine).snapshot_create_xml(snapshot_desc)
+        get_libvirt_domain().snapshot_create_xml(snapshot_desc)
       rescue Fog::Errors::Error => e
         raise Errors::SnapshotCreationError, error_message: e.message
       end
 
-      def create_snapshot(machine, snapshot_name)
+      def create_snapshot(snapshot_name)
         begin
-          delete_snapshot(machine, snapshot_name)
+          delete_snapshot(snapshot_name)
         rescue Errors::SnapshotDeletionError
         end
-        create_new_snapshot(machine, snapshot_name)
+        create_new_snapshot(snapshot_name)
       end
 
       # if we can get snapshot description without exception it exists
-      def get_snapshot_if_exists(machine, snapshot_name)
-        snapshot = get_libvirt_domain(machine).lookup_snapshot_by_name(snapshot_name)
+      def get_snapshot_if_exists(snapshot_name)
+        snapshot = get_libvirt_domain().lookup_snapshot_by_name(snapshot_name)
         return snapshot if snapshot.xml_desc
       rescue Libvirt::RetrieveError => e
         raise Errors::SnapshotMissing, error_message: e.message
       end
 
-      def state(machine)
+      def state
         # may be other error states with initial retreival we can't handle
         begin
-          domain = get_domain(machine)
+          domain = get_domain
         rescue Libvirt::RetrieveError => e
-          @logger.debug("Machine #{machine.id} not found #{e}.")
+          @logger.debug("Machine #{@machine.id} not found #{e}.")
           return :not_created
         end
 
@@ -191,14 +174,27 @@ module VagrantPlugins
         state = domain.state.tr('-', '_').to_sym
         if state == :running
           begin
-            get_domain_ipaddress(machine, domain)
+            get_ipaddress(domain)
           rescue Fog::Errors::TimeoutError => e
-            @logger.debug("Machine #{machine.id} running but no IP address available: #{e}.")
+            @logger.debug("Machine #{@machine.id} running but no IP address available: #{e}.")
             return :inaccessible
           end
         end
 
         state
+      end
+
+      def get_domain
+        begin
+          domain = connection.servers.get(@machine.id)
+        rescue Libvirt::RetrieveError => e
+          raise e unless e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
+
+          @logger.debug("machine #{@machine.name} domain not found #{e}.")
+          return nil
+        end
+
+        domain
       end
 
       def list_host_devices
@@ -207,6 +203,14 @@ module VagrantPlugins
 
       def list_networks
         connection.client.list_all_networks
+      end
+
+      def attach_device(xml)
+        get_libvirt_domain.attach_device(xml)
+      end
+
+      def detach_device(xml)
+        get_libvirt_domain.detach_device(xml)
       end
 
       private
@@ -224,10 +228,10 @@ module VagrantPlugins
         ip_address
       end
 
-      def get_ipaddress_from_qemu_agent(domain, machine_id, timeout)
+      def get_ipaddress_from_qemu_agent(timeout, domain=nil)
         ip_address = nil
         addresses = nil
-        libvirt_domain = connection.client.lookup_domain_by_uuid(machine_id)
+        libvirt_domain = get_libvirt_domain()
         begin
           response = libvirt_domain.qemu_agent_command('{"execute":"guest-network-get-interfaces"}', timeout)
           @logger.debug('Got Response from qemu agent')
@@ -274,13 +278,13 @@ module VagrantPlugins
         ip_address
       end
 
-      def get_libvirt_domain(machine)
+      def get_libvirt_domain
         begin
-          libvirt_domain = connection.client.lookup_domain_by_uuid(machine.id)
+          libvirt_domain = connection.client.lookup_domain_by_uuid(@machine.id)
         rescue Libvirt::RetrieveError => e
           raise e unless e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_DOMAIN
 
-          @logger.debug("machine #{machine.name} not found #{e}.")
+          @logger.debug("machine #{@machine.name} not found #{e}.")
           return nil
         end
 

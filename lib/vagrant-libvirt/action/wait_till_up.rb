@@ -23,7 +23,7 @@ module VagrantPlugins
           env[:metrics] ||= {}
 
           driver = env[:machine].provider.driver
-          domain = driver.get_domain(env[:machine])
+          domain = driver.get_domain
 
           if domain.nil?
             raise Errors::NoDomainError,
@@ -42,7 +42,7 @@ module VagrantPlugins
               return if env[:interrupted]
 
               # Wait for domain to obtain an ip address
-              env[:ip_address] = driver.get_domain_ipaddress(env[:machine], domain)
+              env[:ip_address] = driver.get_ipaddress(domain)
             end
           end
           @logger.info("Got IP address #{env[:ip_address]}")
