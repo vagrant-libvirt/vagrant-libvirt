@@ -114,7 +114,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         # ideally should be able to yield a block to wait_for and check that
         # the 'addresses' function on the domain is called correctly.
         expect(domain).to receive(:wait_for).and_return(nil)
-        expect(subject.get_ipaddress(machine)).to eq(nil)
+        expect(subject.get_ipaddress).to eq(nil)
       end
 
       context 'when qemu_use_agent is enabled' do
@@ -159,7 +159,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           expect(libvirt_domain).to receive(:qemu_agent_command).and_return(qemu_agent_interfaces)
           expect(domain).to receive(:mac).and_return("52:54:00:f8:67:98").exactly(2).times
 
-          expect(subject.get_ipaddress(machine)).to eq("192.168.122.42")
+          expect(subject.get_ipaddress).to eq("192.168.122.42")
         end
 
         context 'when qemu_use_session is enabled' do
@@ -173,7 +173,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
             expect(libvirt_domain).to receive(:qemu_agent_command).and_return(qemu_agent_interfaces)
             expect(domain).to receive(:mac).and_return("52:54:00:f8:67:98").exactly(2).times
 
-            expect(subject.get_ipaddress(machine)).to eq("192.168.122.42")
+            expect(subject.get_ipaddress).to eq("192.168.122.42")
           end
         end
       end
@@ -203,7 +203,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           expect(system_connection1).to receive(:list_all_networks).and_return(networks)
           expect(networks[0]).to receive(:dhcp_leases).and_return([dhcp_leases])
 
-          expect(subject.get_ipaddress(machine)).to eq("192.168.122.43")
+          expect(subject.get_ipaddress).to eq("192.168.122.43")
         end
 
         context 'when qemu_use_agent is enabled' do
@@ -214,7 +214,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           it 'should retrieve the address via the agent' do
             expect(subject).to receive(:get_ipaddress_from_qemu_agent).and_return("192.168.122.44")
 
-            expect(subject.get_ipaddress(machine)).to eq("192.168.122.44")
+            expect(subject.get_ipaddress).to eq("192.168.122.44")
           end
         end
       end
@@ -271,7 +271,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         {
           :setup => ProcWithBinding.new do
             expect(domain).to receive(:state).and_return('running').at_least(:once)
-            expect(subject).to receive(:get_domain_ipaddress).and_raise(Fog::Errors::TimeoutError)
+            expect(subject).to receive(:get_ipaddress).and_raise(Fog::Errors::TimeoutError)
           end,
         }
       ],
@@ -281,7 +281,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         {
           :setup => ProcWithBinding.new do
             expect(domain).to receive(:state).and_return('running').at_least(:once)
-            expect(subject).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
+            expect(subject).to receive(:get_ipaddress).and_return('192.168.121.2')
           end,
         }
       ],
@@ -294,7 +294,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           opts[:setup].apply_binding(binding)
         end
 
-        expect(subject.state(machine)).to eq(expected)
+        expect(subject.state).to eq(expected)
       end
     end
   end
