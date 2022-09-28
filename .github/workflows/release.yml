@@ -2,13 +2,17 @@ name: release
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - '*.*.*'
 
 jobs:
-  release:
-    name: Create Release
+  release-notes:
+    name: Generate Release Notes
     runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.prep.outputs.release_branch }}
     steps:
       -
         name: Checkout code
@@ -17,13 +21,13 @@ jobs:
           fetch-depth: 0
       -
         name: Determine remote default branch
-        uses: actions/github-script@v3.0.0
+        uses: actions/github-script@v6.2.0
         id: remote_default_branch
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           result-encoding: string
           script: |
-            repo = await github.repos.get({
+            repo = await github.rest.repos.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
             })
@@ -34,16 +38,24 @@ jobs:
         run: |
           set -eu -o pipefail
 
-          # exclude unreleased in case re-running workflow
-          echo "unreleased=false" >> .github_changelog_generator
           echo "max-issues=200" >> .github_changelog_generator
-          # in case we've tagged subsequently ensure consistent run
-          NEXT_TAG_SHA1="$(git rev-list --tags --skip=0 --no-walk | grep -B 1 ${{ github.sha }} || true)"
-          if [[ "${NEXT_TAG_SHA1:-}" != "${{ github.sha }}" ]]
+          # cache requests to reduce load on API
+          echo "cache-file=.github_changelog_generator_cache" >> .github_changelog_generator
+
+          # only apply this section if triggered by a tag event
+          if [[ ${GITHUB_REF} == refs/tags/* ]]
           then
-              NEXT_TAG=$(git describe --tags --abbrev=0 ${NEXT_TAG_SHA1})
-              echo "due-tag=${NEXT_TAG}" >> .github_changelog_generator
+            # exclude unreleased in case re-running workflow
+              echo "unreleased=false" >> .github_changelog_generator
+              # in case we've tagged subsequently ensure consistent run
+              NEXT_TAG_SHA1="$(git rev-list --tags --skip=0 --no-walk | grep -B 1 ${{ github.sha }} || true)"
+              if [[ "${NEXT_TAG_SHA1:-}" != "${{ github.sha }}" ]]
+              then
+                  NEXT_TAG=$(git describe --tags --abbrev=0 ${NEXT_TAG_SHA1})
+                  echo "due-tag=${NEXT_TAG}" >> .github_changelog_generator
+              fi
           fi
+
           # limit list to next tag if any
           LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || true)
 
@@ -79,6 +91,22 @@ jobs:
           since_tag: ${{ steps.prep.outputs.previous_version }}
           output: release_notes.md
       -
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-notes
+          path: release_notes.md
+
+  publish-release:
+    name: Create Release
+    needs: release-notes
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/download-artifact@v2
+        with:
+          name: release-notes
+      -
         name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -86,6 +114,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          commitish: ${{ steps.prep.outputs.release_branch }}
+          commitish: ${{ needs.release-notes.outputs.release_branch }}
           release_name: Release ${{ github.ref }}
           body_path: release_notes.md

@@ -238,12 +238,12 @@ module VagrantPlugins
           @logger.debug(response)
           addresses = JSON.parse(response)
         rescue StandardError => e
-          puts "Unable to receive IP via qemu agent: [#{e.message}]"
           @logger.debug("Unable to receive IP via qemu agent: [#{e.message}]")
         end
 
         unless addresses.nil?
           addresses['return'].each do |interface|
+            next unless interface.key?('hardware-address')
             next unless domain.mac.downcase == interface['hardware-address'].downcase
 
             @logger.debug("Found matching interface: [#{interface['name']}]")

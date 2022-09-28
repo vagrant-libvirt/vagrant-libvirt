@@ -39,6 +39,8 @@ rescue LoadError
 end
 
 RSpec.configure do |config|
+  require 'tmpdir'
+
   # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
   # the global plugin manager from trying to use the default VAGRANT_HOME.
   temp_dir = Dir.mktmpdir("rspec-")
@@ -61,6 +63,10 @@ RSpec.configure do |config|
 
   # don't run acceptance tests by default
   config.filter_run_excluding :acceptance => true
+
+  config.expect_with :rspec do |c|
+    c.max_formatted_output_length = 2000 if c.respond_to?("max_formatted_output_length=")
+  end
 end
 
 require 'vagrant-spec/unit'
