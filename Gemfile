@@ -45,3 +45,9 @@ end
 group :plugins do
   gemspec
 end
+
+group :test do
+  gem "test-prof", "~> 1.0", require: false
+  gem "ruby-prof", ">= 0.17.0", require: false
+  gem 'stackprof', '>= 0.2.9', require: false
+end
