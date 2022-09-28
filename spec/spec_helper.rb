@@ -39,6 +39,8 @@ rescue LoadError
 end
 
 RSpec.configure do |config|
+  require 'tmpdir'
+
   # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
   # the global plugin manager from trying to use the default VAGRANT_HOME.
   temp_dir = Dir.mktmpdir("rspec-")
@@ -61,6 +63,19 @@ RSpec.configure do |config|
 
   # don't run acceptance tests by default
   config.filter_run_excluding :acceptance => true
+end
+
+begin
+  require 'test-prof'
+
+  TestProf.configure do |config|
+    # use unique filenames for reports (by simply appending current timestamp)
+    config.timestamps = true
+
+    # color output
+    config.color = true
+  end
+rescue LoadError
 end
 
 require 'vagrant-spec/unit'

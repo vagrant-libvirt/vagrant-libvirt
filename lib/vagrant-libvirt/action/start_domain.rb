@@ -429,9 +429,20 @@ module VagrantPlugins
               raise Errors::UpdateServerError, error_message: e.message
             end
 
+            # this normalises the attribute order to be the same as what was sent in the above
+            # request to update the domain XML. Without this, if the XML documents are not
+            # equivalent, many more differences will be reported than there actually are.
+            applied_xml = String.new
+            REXML::Document.new(libvirt_domain.xml_desc(1)).write(applied_xml)
+
             # need to check whether the updated XML contains all the changes requested
             proposed = VagrantPlugins::ProviderLibvirt::Util::Xml.new(new_xml)
-            applied = VagrantPlugins::ProviderLibvirt::Util::Xml.new(libvirt_domain.xml_desc(1))
+            applied = VagrantPlugins::ProviderLibvirt::Util::Xml.new(applied_xml)
+
+            # perform some sorting to allow comparison otherwise order of devices differing
+            # even if they are equivalent will be reported as being different.
+            proposed.xml['devices'][0].each { |_, v| next unless v.is_a?(Array); v.sort_by! { |e| [e['type'], e['index']]} }
+            applied.xml['devices'][0].each { |_, v| next unless v.is_a?(Array); v.sort_by! { |e| [e['type'], e['index']]} }
 
             if proposed != applied
               require 'diffy'

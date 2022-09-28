@@ -74,7 +74,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
         allow(domain).to receive(:wait_for).and_return(true)
         allow(env).to receive(:[]).and_call_original
         allow(env).to receive(:[]).with(:interrupted).and_return(false)
-        allow(driver).to receive(:get_domain_ipaddress).and_return('192.168.121.2')
+        allow(driver).to receive(:get_ipaddress).and_return('192.168.121.2')
       end
       it 'should call the next hook' do
         expect(app).to receive(:call)
