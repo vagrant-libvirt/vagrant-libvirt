@@ -1,10 +1,12 @@
-# syntax = docker/dockerfile:1.0-experimental
+# syntax = docker/dockerfile:1.2
 ARG VAGRANT_VERSION=2.3.0
 
 
-FROM ubuntu:jammy as base
+FROM ubuntu:jammy as distro
 
-RUN apt update \
+FROM distro as base
+RUN --mount=type=cache,id=apt-cache-v1,from=distro,target=/var/cache/apt --mount=type=cache,id=apt-lib-v1,from=distro,target=/var/lib/apt \
+    apt update \
     && apt install -y --no-install-recommends \
         bash \
         ca-certificates \
@@ -17,7 +19,6 @@ RUN apt update \
         openssh-client \
         qemu-utils \
         rsync \
-    && rm -rf /var/lib/apt/lists \
     ;
 
 ENV VAGRANT_HOME /.vagrant.d
@@ -28,7 +29,6 @@ RUN set -e \
     && curl https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}-1_amd64.deb -o vagrant.deb \
     && apt update \
     && apt install -y ./vagrant.deb \
-    && rm -rf /var/lib/apt/lists/* \
     && rm -f vagrant.deb \
     ;
 
@@ -39,7 +39,8 @@ FROM base as build
 # allow caching of packages for build
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
-RUN apt update \
+RUN --mount=type=cache,id=apt-cache-v1,from=base,target=/var/cache/apt --mount=type=cache,id=apt-lib-v1,from=base,target=/var/lib/apt \
+    apt update \
     && apt build-dep -y \
         vagrant \
         ruby-libvirt \
