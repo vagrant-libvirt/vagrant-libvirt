@@ -22,10 +22,23 @@ describe VagrantPlugins::ProviderLibvirt::Action do
     allow(machine).to receive(:state).and_return(state)
 
     allow(logger).to receive(:info)
+    allow(logger).to receive(:trace)
     allow(logger).to receive(:debug)
     allow(logger).to receive(:error)
 
     allow(connection.client).to receive(:libversion).and_return(6_002_000)
+
+    # patch out iterating synced_folders by emptying the list returned
+    # where vagrant us using a Collection, otherwise fallback to using
+    # the env value to disable the behaviour for older versions.
+    begin
+      require 'vagrant/plugin/v2/synced_folder'
+
+      synced_folders = Vagrant::Plugin::V2::SyncedFolder::Collection.new
+      allow(machine).to receive(:synced_folders).and_return(synced_folders)
+    rescue NameError
+      env[:synced_folders_disable] = true
+    end
   end
 
   def allow_action_env_result(action, *responses)
@@ -52,7 +65,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
       it 'should execute without error' do
         expect(ui).to receive(:info).with('Domain is not created. Please run `vagrant up` first.')
 
-        expect { runner.run(subject.action_halt) }.not_to raise_error
+        expect(runner.run(subject.action_halt)).to match(hash_including({:machine => machine}))
       end
     end
 
@@ -74,7 +87,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
           expect(ui).to_not receive(:info).with('Domain is not created. Please run `vagrant up` first.')
           expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::HaltDomain).to_not receive(:call)
 
-          expect { runner.run(subject.action_halt) }.not_to raise_error
+          expect(runner.run(subject.action_halt)).to match(hash_including({:machine => machine}))
         end
       end
 
@@ -87,7 +100,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
         it 'should call halt' do
           expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::HaltDomain).to receive(:call)
 
-          expect { runner.run(subject.action_halt) }.not_to raise_error
+          expect(runner.run(subject.action_halt)).to match(hash_including({:machine => machine}))
         end
       end
     end
