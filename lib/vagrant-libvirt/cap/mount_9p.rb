@@ -23,7 +23,15 @@ module VagrantPlugins
             mount_tag = Digest::MD5.new.update(opts[:hostpath]).to_s[0, 31]
 
             mount_opts = '-o trans=virtio'
-            mount_opts += ",access=#{opts[:owner]}" if opts[:owner]
+            mount_opts += ",access=#{opts[:access]}" if opts[:access]
+            if opts[:owner]
+              if opts[:access]
+                machine.ui.warn('deprecated `:owner` option ignored as replacement `:access` option already set, please update your Vagrantfile and remove the `:owner` option to prevent this warning.')
+              else
+                machine.ui.warn('`:owner` option for 9p mount options deprecated in favour of `:access`, please update your Vagrantfile and replace `:owner` with `:access`')
+                mount_opts += ",access=#{opts[:owner]}"
+              end
+            end
             mount_opts += ",version=#{opts[:version]}" if opts[:version]
             mount_opts += ",#{opts[:mount_opts]}" if opts[:mount_opts]
 
