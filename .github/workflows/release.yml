@@ -87,6 +87,7 @@ jobs:
         name: Changelog Generation
         uses: CharMixer/auto-changelog-action@v1.4
         with:
+          release_branch: ${{ steps.prep.outputs.release_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           since_tag: ${{ steps.prep.outputs.previous_version }}
           output: release_notes.md
