@@ -4,6 +4,7 @@ require 'spec_helper'
 require 'support/sharedcontext'
 
 require 'vagrant/action/runner'
+require 'vagrant/plugin/v2/synced_folder'
 
 require 'vagrant-libvirt/action'
 
