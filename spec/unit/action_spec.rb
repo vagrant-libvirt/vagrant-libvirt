@@ -4,7 +4,6 @@ require 'spec_helper'
 require 'support/sharedcontext'
 
 require 'vagrant/action/runner'
-require 'vagrant/plugin/v2/synced_folder'
 
 require 'vagrant-libvirt/action'
 
@@ -17,7 +16,6 @@ describe VagrantPlugins::ProviderLibvirt::Action do
 
   let(:runner) { Vagrant::Action::Runner.new(env) }
   let(:state) { double('state') }
-  let(:synced_folders) { Vagrant::Plugin::V2::SyncedFolder::Collection.new }
 
   before do
     allow(machine).to receive(:id).and_return('test-machine-id')
@@ -29,7 +27,18 @@ describe VagrantPlugins::ProviderLibvirt::Action do
     allow(logger).to receive(:error)
 
     allow(connection.client).to receive(:libversion).and_return(6_002_000)
-    allow(machine).to receive(:synced_folders).and_return(synced_folders)
+
+    # patch out iterating synced_folders by emptying the list returned
+    # where vagrant us using a Collection, otherwise fallback to using
+    # the env value to disable the behaviour for older versions.
+    begin
+      require 'vagrant/plugin/v2/synced_folder'
+
+      synced_folders = Vagrant::Plugin::V2::SyncedFolder::Collection.new
+      allow(machine).to receive(:synced_folders).and_return(synced_folders)
+    rescue NameError
+      env[:synced_folders_disable] = true
+    end
   end
 
   def allow_action_env_result(action, *responses)
