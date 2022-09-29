@@ -92,7 +92,7 @@ jobs:
           since_tag: ${{ steps.prep.outputs.previous_version }}
           output: release_notes.md
       -
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: release-notes
           path: release_notes.md
