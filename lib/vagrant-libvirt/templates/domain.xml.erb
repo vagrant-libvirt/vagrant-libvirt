@@ -73,9 +73,7 @@
 <%- if @nvram -%>
     <nvram><%= @nvram %></nvram>
 <%- end -%>
-<%- if @boot_order.count >= 1 -%>
-    <bootmenu enable='yes'/>
-<%- end -%>
+    <bootmenu enable='<%= @boot_order.count >= 1 ? "yes" : "no" %>'/>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
