@@ -580,6 +580,22 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         end
       end
     end
+
+    context '@inputs' do
+      it 'should contain ps/2 mouse by default' do
+        subject.finalize!
+
+        expect(subject.inputs).to eq([{:bus=>"ps2", :type=>"mouse"}])
+      end
+
+      it 'should contain only the specific entries' do
+        subject.input :type => "keyboard", :bus => "usb"
+
+        subject.finalize!
+
+        expect(subject.inputs).to eq([{:bus=>"usb", :type=>"keyboard"}])
+      end
+    end
   end
 
   def assert_invalid
@@ -885,6 +901,23 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         subject.finalize!
         expect(subject.boot_order).to eq(['hd', 'cdrom'])
+      end
+    end
+
+    context 'inputs' do
+      it 'should merge' do
+        one.input :type => "tablet", :bus => "usb"
+        two.input :type => "keyboard", :bus => "usb"
+
+        subject.finalize!
+        expect(subject.inputs).to eq([{:type => "tablet", :bus => "usb"}, {:type => "keyboard", :bus => "usb"}])
+      end
+
+      it 'should respect explicit blanking' do
+        one.inputs = []
+
+        subject.finalize!
+        expect(subject.inputs).to eq([])
       end
     end
   end
