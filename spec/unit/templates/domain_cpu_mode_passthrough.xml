@@ -12,6 +12,7 @@
   </cpu>
   <os>
     <type>hvm</type>
+    <bootmenu enable='no'/>
     <kernel></kernel>
     <initrd></initrd>
     <cmdline></cmdline>
