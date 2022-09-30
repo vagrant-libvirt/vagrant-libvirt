@@ -83,6 +83,58 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Using kernel and initrd
+
+It's possible to use a direct kernel boot to modify the kernel boot parameters used to boot the VM. This typically involves either downloading the kernel/initrd directly and placing somewhere locally for use, or making use of a tool such as `virt-copy-out` to extract the relevant files from a disk image file.
+
+Looking at a generic/fedora35 image with the following contents of /boot and /boot/grub2, it should be possible to copy out the kernel, initrd, and the grub.cfg file (provides a starting cmdline).
+```shell
+BOX_DIR="${VAGRANT_HOME:-~/.vagrant.d}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt"
+virt-ls -a ${BOX_DIR}/box.img /boot/ /boot/grub2
+.vmlinuz-5.18.19-100.fc35.x86_64.hmac
+System.map-5.18.19-100.fc35.x86_64
+config-5.18.19-100.fc35.x86_64
+efi
+grub2
+initramfs-0-rescue-5cbe0655dcd04b46a88f5a424135fbb8.img
+initramfs-5.18.19-100.fc35.x86_64.img
+loader
+symvers-5.18.19-100.fc35.x86_64.gz
+vmlinuz-0-rescue-5cbe0655dcd04b46a88f5a424135fbb8
+vmlinuz-5.18.19-100.fc35.x86_64
+device.map
+fonts
+grub.cfg
+grubenv
+i386-pc
+locale
+```
+
+Assuming you run something like the following:
+```shell
+BOX_DIR="${VAGRANT_HOME:-~/.vagrant.d}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt"
+virt-copy-out -a ${BOX_DIR}/box.img \
+  /boot/vmlinuz-5.18.19-100.fc35.x86_64 \
+  /boot/initramfs-5.18.19-100.fc35.x86_64.img \
+  /boot/grub2/grub.cfg \
+  .
+```
+
+The final Vagrantfile should contain something like the following:
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/fedora35"
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.kernel = "#{Dir.pwd}/vmlinuz-5.18.19-100.fc35.x86_64"
+    libvirt.initrd = "#{Dir.pwd}/initramfs-5.18.19-100.fc35.x86_64.img"
+    # cmd_line is taken from the grub.cfg to ensure starting from a working value
+    libvirt.cmd_line = 'root=/dev/mapper/fedora-root ro biosdevname=0 no_timer_check ' +
+        'resume=/dev/mapper/fedora-swap rd.lvm.lv=fedora/root rd.lvm.lv=fedora/swap net.ifnames=0'
+  end
+end
+```
+
 ## SSH Access To VM
 
 vagrant-libvirt supports vagrant's [standard ssh
