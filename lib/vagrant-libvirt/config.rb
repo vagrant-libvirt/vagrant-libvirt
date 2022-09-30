@@ -1100,6 +1100,8 @@ module VagrantPlugins
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 
+          result.inputs = inputs != UNSET_VALUE ? inputs.dup + (other.inputs != UNSET_VALUE ? other.inputs : []) : other.inputs
+
           c = sysinfo == UNSET_VALUE ? {} : sysinfo.dup
           c.merge!(other.sysinfo) { |_k, x, y| x.respond_to?(:each_pair) ? x.merge(y) : x + y } if other.sysinfo != UNSET_VALUE
           result.sysinfo = c
