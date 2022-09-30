@@ -89,7 +89,8 @@ It's possible to use a direct kernel boot to modify the kernel boot parameters u
 
 Looking at a generic/fedora35 image with the following contents of /boot and /boot/grub2, it should be possible to copy out the kernel, initrd, and the grub.cfg file (provides a starting cmdline).
 ```shell
-virt-ls -a ${VAGRANT_HOME}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt/box.img /boot/ /boot/grub2
+BOX_DIR="${VAGRANT_HOME:-~/.vagrant.d}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt"
+virt-ls -a ${BOX_DIR}/box.img /boot/ /boot/grub2
 .vmlinuz-5.18.19-100.fc35.x86_64.hmac
 System.map-5.18.19-100.fc35.x86_64
 config-5.18.19-100.fc35.x86_64
@@ -110,8 +111,9 @@ locale
 ```
 
 Assuming you run something like the following:
-```
-virt-copy-out -a ${VAGRANT_HOME:-~/.vagrant.d}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt/box.img \
+```shell
+BOX_DIR="${VAGRANT_HOME:-~/.vagrant.d}/boxes/generic-VAGRANTSLASH-fedora35/4.1.10/libvirt"
+virt-copy-out -a ${BOX_DIR}/box.img \
   /boot/vmlinuz-5.18.19-100.fc35.x86_64 \
   /boot/initramfs-5.18.19-100.fc35.x86_64.img \
   /boot/grub2/grub.cfg \
@@ -127,7 +129,8 @@ Vagrant.configure("2") do |config|
     libvirt.kernel = "#{Dir.pwd}/vmlinuz-5.18.19-100.fc35.x86_64"
     libvirt.initrd = "#{Dir.pwd}/initramfs-5.18.19-100.fc35.x86_64.img"
     # cmd_line is taken from the grub.cfg to ensure starting from a working value
-    libvirt.cmd_line = 'root=/dev/mapper/fedora-root ro biosdevname=0 no_timer_check  resume=/dev/mapper/fedora-swap rd.lvm.lv=fedora/root rd.lvm.lv=fedora/swap net.ifnames=0'
+    libvirt.cmd_line = 'root=/dev/mapper/fedora-root ro biosdevname=0 no_timer_check ' +
+        'resume=/dev/mapper/fedora-swap rd.lvm.lv=fedora/root rd.lvm.lv=fedora/swap net.ifnames=0'
   end
 end
 ```
