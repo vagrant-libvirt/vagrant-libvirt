@@ -30,7 +30,7 @@ module VagrantPlugins
 
           # Execute, logging out the stdout/stderr as we get it
           @logger.info("Executing: #{[command].concat(args).inspect}")
-          Vagrant::Spec::Subprocess.execute(command, *args, **options) do |type, data|
+          Vagrant::Spec::Subprocess.new(command, *args, **options).execute do |type, data|
             @logger.debug("#{type}: #{data}") if type == :stdout || type == :stderr
             yield type, data if block_given?
           end

@@ -110,7 +110,7 @@ jobs:
       run: |
         mkdir -p $HOME/.vagrant.d/
         # tell integration tests to use boxes from the cached location
-        export VAGRANT_HOME=$HOME/.vagrant.d
+        export VAGRANT_LIBVIRT_VAGRANT_HOME=$HOME/.vagrant.d
         # use software emulation due to lack of nested emulation
         cat <<EOF > $HOME/.vagrant.d/Vagrantfile
         Vagrant.configure("2") do |config|

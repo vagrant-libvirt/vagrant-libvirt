@@ -75,20 +75,18 @@ To work on the `vagrant-libvirt` plugin, clone this repository out, and use
 ```shell
 git clone https://github.com/vagrant-libvirt/vagrant-libvirt.git
 cd vagrant-libvirt
+bundle config --local with development
+bundle config --local path 'vendor/bundle'
 bundle install
 ```
 
 Once you have the dependencies, verify the unit tests pass with `rspec`:
 
 ```shell
-export VAGRANT_HOME=$(mktemp -d)
 bundle exec rspec --fail-fast --color --format documentation
 ```
 
 If those pass, you're ready to start developing the plugin.
-
-Setting `VAGRANT_HOME` is to avoid issues with conflicting with other
-plugins/gems or data already present under `~/.vagrant.d`.
 
 Additionally if you wish to test against a specific version of vagrant you
 can control the version using the following before running the tests:
@@ -96,6 +94,13 @@ can control the version using the following before running the tests:
 ```shell
 export VAGRANT_VERSION=v2.2.14
 bundle update && bundle exec rspec --fail-fast --color --format documentation
+```
+
+To run the acceptance tests which involve bringing up VMs and exercising
+various functionality aspects run the following (warning, may have issues if
+distro ruby is newer than supported by vagrant):
+```shell
+bundle exec rspec --fail-fast --color --format documentation --tag acceptance
 ```
 
 **Note** rvm is used by the maintainers to help provide an environment to test
@@ -132,7 +137,7 @@ end
 Now you can use bundler to execute Vagrant:
 
 ```shell
-$ bundle exec vagrant up --provider=libvirt
+bundle exec vagrant up --provider=libvirt
 ```
 
 **IMPORTANT NOTE:** bundle is crucial. You need to use bundled Vagrant.

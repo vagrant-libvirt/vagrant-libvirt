@@ -22,7 +22,7 @@ shared_context 'libvirt_acceptance' do
 
   before(:each) do
     # allow execution environment to cache boxes used
-    symlink_boxes(ENV.fetch('VAGRANT_HOME', nil), environment)
+    symlink_boxes(ENV.fetch('VAGRANT_HOME', File.expand_path('~/.vagrant.d')), environment)
   end
 
   after(:each) do
