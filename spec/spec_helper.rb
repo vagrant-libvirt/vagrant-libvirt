@@ -41,10 +41,18 @@ end
 RSpec.configure do |config|
   require 'tmpdir'
 
-  # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
-  # the global plugin manager from trying to use the default VAGRANT_HOME.
-  temp_dir = Dir.mktmpdir("rspec-")
-  ENV['VAGRANT_HOME'] = temp_dir
+  if ENV['VAGRANT_LIBVIRT_VAGRANT_HOME'].nil?
+    # set VAGRANT_HOME before any thing that requires vagrant is loaded to prevent
+    # the global plugin manager from trying to use the default VAGRANT_HOME.
+    temp_dir = Dir.mktmpdir("rspec-")
+    ENV['VAGRANT_HOME'] = temp_dir
+  else
+    ENV['VAGRANT_HOME'] = ENV['VAGRANT_LIBVIRT_VAGRANT_HOME']
+  end
+
+  # acceptance tests need the boxes dir to exist to allow symlinking of isolated
+  # environments while allowing the boxes to be cached.
+  FileUtils.mkdir_p(File.join(ENV['VAGRANT_HOME'], 'boxes'))
 
   # ensure that setting of LIBVIRT_DEFAULT_URI in the environment is not picked
   # up directly by tests, instead they must set as needed. Some build envs will
