@@ -29,6 +29,8 @@ en:
       Updating domain definition due to configuration change
     starting_domain: |-
       Starting domain.
+    starting_domain_with_graphics: |-
+      Domain launching with graphics connection settings...
     terminating: |-
       Removing domain...
     poweroff_domain: |-

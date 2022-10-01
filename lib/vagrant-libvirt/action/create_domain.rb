@@ -258,9 +258,11 @@ module VagrantPlugins
           env[:ui].info(" -- Kernel:            #{@kernel}")
           env[:ui].info(" -- Initrd:            #{@initrd}")
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
-          env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
-          env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
-          env[:ui].info(" -- Graphics Password: #{@graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
+          if !@graphics_autoport
+            env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
+            env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
+            env[:ui].info(" -- Graphics Password: #{@graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
+          end
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
