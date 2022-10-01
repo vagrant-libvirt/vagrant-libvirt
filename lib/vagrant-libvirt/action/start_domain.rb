@@ -478,6 +478,16 @@ module VagrantPlugins
             raise Errors::DomainStartError, error_message: e.message
           end
 
+          if config.graphics_autoport
+            #libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
+            xmldoc = REXML::Document.new(libvirt_domain.xml_desc)
+            graphics = REXML::XPath.first(xmldoc, '/domain/devices/graphics')
+            env[:ui].info(I18n.t('vagrant_libvirt.starting_domain_with_graphics'))
+            env[:ui].info(" -- Graphics Port:     #{graphics.attributes['port']}")
+            env[:ui].info(" -- Graphics IP:       #{graphics.attributes['listen']}")
+            env[:ui].info(" -- Graphics Password: #{config.graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
+          end
+
           @app.call(env)
         end
       end

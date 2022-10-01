@@ -34,6 +34,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
       allow(logger).to receive(:debug)
       allow(logger).to receive(:info)
+      allow(ui).to receive(:info)
 
       allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
 
@@ -158,6 +159,28 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           expect(connection).to receive(:define_domain).and_raise(Interrupt)
 
           expect { subject.call(env) }.to raise_error(Interrupt)
+        end
+      end
+    end
+
+    context 'graphics' do
+      context 'autoport not disabled' do
+        let(:test_file) { 'existing.xml' }
+        let(:launched_domain_xml) {
+          new_xml = domain_xml.dup
+          new_xml.gsub!(/graphics type='vnc' port='-1'/m, "graphics type='vnc' port='5900'")
+          new_xml
+        }
+
+        it 'should retrieve the port from XML' do
+          expect(ui).to_not receive(:warn)
+          expect(connection).to_not receive(:define_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, launched_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+          expect(ui).to receive(:info).with(' -- Graphics Port:     5900')
+
+          expect(subject.call(env)).to be_nil
         end
       end
     end

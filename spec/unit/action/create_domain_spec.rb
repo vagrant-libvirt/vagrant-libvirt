@@ -64,6 +64,22 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         expect(subject.call(env)).to be_nil
       end
 
+      context 'graphics autoport disabled' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.graphics_port = 5900
+          EOF
+        end
+
+        it 'should emit the graphics port' do
+          expect(servers).to receive(:create).and_return(machine)
+          expect(volumes).to_not receive(:create) # additional disks only
+          expect(ui).to receive(:info).with(' -- Graphics Port:     5900')
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
       context 'additional disks' do
         let(:disks) do
           [
