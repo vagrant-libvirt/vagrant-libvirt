@@ -901,12 +901,12 @@ module VagrantPlugins
            @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
         end
-        @graphics_port = -1 if @graphics_port == UNSET_VALUE
-        @graphics_ip = '127.0.0.1' if @graphics_ip == UNSET_VALUE
-        @video_type = 'cirrus' if @video_type == UNSET_VALUE
-        @video_vram = 16384 if @video_vram == UNSET_VALUE
+        @graphics_port = @graphics_type == 'spice' ? nil : -1 if @graphics_port == UNSET_VALUE
+        @graphics_ip = @graphics_type == 'spice' ? nil : '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_accel3d = false if @video_accel3d == UNSET_VALUE
         @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE
+        @video_type = @video_accel3d ? 'virtio' : 'cirrus' if @video_type == UNSET_VALUE
+        @video_vram = 16384 if @video_vram == UNSET_VALUE
         @sound_type = nil if @sound_type == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
         @kvm_hidden = false if @kvm_hidden == UNSET_VALUE
@@ -938,12 +938,15 @@ module VagrantPlugins
         @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
 
         # Channels
-        if @channels == UNSET_VALUE
-          @channels = []
-          if @qemu_use_agent == true
-            if @channels.all? { |channel| !channel.fetch(:target_name, '').start_with?('org.qemu.guest_agent.') }
-              channel(:type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio')
-            end
+        @channels = [] if @channels == UNSET_VALUE
+        if @qemu_use_agent == true
+          if @channels.all? { |channel| !channel.fetch(:target_name, '').start_with?('org.qemu.guest_agent.') }
+            channel(:type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio')
+          end
+        end
+        if @graphics_type == 'spice'
+          if @channels.all? { |channel| !channel.fetch(:target_name, '').start_with?('com.redhat.spice.') }
+            channel(:type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio')
           end
         end
 

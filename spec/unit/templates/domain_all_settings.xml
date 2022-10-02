@@ -107,7 +107,7 @@
       <gl enable='yes'/>
     </graphics>
     <video>
-      <model type='cirrus' vram='16384' heads='1'>
+      <model type='virtio' vram='16384' heads='1'>
         <acceleration accel3d='yes'/>
       </model>
     </video>

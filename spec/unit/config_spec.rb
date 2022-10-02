@@ -559,6 +559,19 @@ describe VagrantPlugins::ProviderLibvirt::Config do
           expect(subject.channels).to match([a_hash_including({:target_name => 'org.qemu.guest_agent.0'})])
         end
 
+        context 'another channel type already defined' do
+          it 'should inject a qemu agent channel' do
+            subject.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+            subject.finalize!
+
+            expect(subject.channels).to_not be_empty
+            expect(subject.channels).to match([
+              a_hash_including({:target_name => 'com.redhat.spice.0'}),
+              a_hash_including({:target_name => 'org.qemu.guest_agent.0'}),
+            ])
+          end
+        end
+
         context 'when agent channel already added' do
           it 'should not modify the channels' do
             subject.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
@@ -568,9 +581,55 @@ describe VagrantPlugins::ProviderLibvirt::Config do
             expect(subject.channels.length).to eq(1)
           end
 
-          context 'when agent channel explicitly disbaled' do
+          context 'when agent channel explicitly disabled' do
             it 'should not include an agent channel' do
               subject.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :disabled => true
+
+              subject.finalize!
+
+              expect(subject.channels).to be_empty
+            end
+          end
+        end
+      end
+
+      context 'when graphics type set to spice' do
+        before do
+          subject.graphics_type = 'spice'
+        end
+
+        it 'should inject a spice agent channel' do
+          subject.finalize!
+
+          expect(subject.channels).to_not be_empty
+          expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
+        end
+
+        context 'another channel type already defined' do
+          it 'should inject a spice agent channel' do
+            subject.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+            subject.finalize!
+
+            expect(subject.channels).to_not be_empty
+            expect(subject.channels).to match([
+              a_hash_including({:target_name => 'org.qemu.guest_agent.0'}),
+              a_hash_including({:target_name => 'com.redhat.spice.0'}),
+            ])
+          end
+        end
+
+        context 'when spice channel already added' do
+          it 'should not modify the channels' do
+            subject.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+
+            subject.finalize!
+
+            expect(subject.channels.length).to eq(1)
+          end
+
+          context 'when agent channel explicitly disabled' do
+            it 'should not include an agent channel' do
+              subject.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :disabled => true
 
               subject.finalize!
 
@@ -594,6 +653,28 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         subject.finalize!
 
         expect(subject.inputs).to eq([{:bus=>"usb", :type=>"keyboard"}])
+      end
+    end
+
+    context '@graphics_* and @video_*' do
+      it 'should set reasonable defaults' do
+        subject.finalize!
+
+        expect(subject.graphics_type).to eq('vnc')
+        expect(subject.graphics_port).to eq(-1)
+        expect(subject.graphics_ip).to eq('127.0.0.1')
+        expect(subject.graphics_autoport).to eq('yes')
+        expect(subject.channels).to be_empty
+      end
+
+      it 'should handle graphics_type set to spice' do
+        subject.graphics_type = 'spice'
+        subject.finalize!
+
+        expect(subject.graphics_port).to eq(nil)
+        expect(subject.graphics_ip).to eq(nil)
+        expect(subject.graphics_autoport).to eq('yes')
+        expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
       end
     end
   end
