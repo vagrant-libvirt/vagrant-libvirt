@@ -48,7 +48,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: publish package
       run: |
+        ls -la pkg/*.gem 
         echo "gem push --key github \
-          --host https://rubygems.pkg.github.com/${GITHUB_OWNER} \
+          --host https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER} \
           pkg/*.gem"
 
