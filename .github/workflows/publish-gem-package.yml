@@ -39,6 +39,7 @@ jobs:
         name: gem
     - name: setup credentials
       run: |
+        mkdir ~/.gem
         cat <<EOF > ~/.gem/credentials
         ---
         :github: Bearer ${GITHUB_TOKEN}
