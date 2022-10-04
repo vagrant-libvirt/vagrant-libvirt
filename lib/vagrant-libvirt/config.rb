@@ -19,6 +19,7 @@ module VagrantPlugins
 
       # The name of the server, where Libvirtd is running.
       attr_accessor :host
+      attr_accessor :port
 
       # If use ssh tunnel to connect to Libvirt.
       attr_accessor :connect_via_ssh
@@ -1191,6 +1192,7 @@ module VagrantPlugins
       end
 
       def finalize_proxy_command
+        puts "port class is #{@port.class}"
         if @connect_via_ssh
           if @proxy_command == UNSET_VALUE
             proxy_command = "ssh '#{@host}' "
@@ -1218,14 +1220,9 @@ module VagrantPlugins
       end
 
       def host_devices(machine)
-        @host_devices ||= begin
-          (
-            machine.provider.driver.list_host_devices.map { |iface| iface.name } +
-            machine.provider.driver.list_networks.map { |net| net.bridge_name }
-          ).uniq.select do |dev|
-            next if dev.empty?
-            dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
-          end
+        machine.provider.driver.host_devices.select do |dev|
+          next if dev.empty?
+          dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
         end
       end
 

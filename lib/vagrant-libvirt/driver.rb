@@ -197,12 +197,28 @@ module VagrantPlugins
         domain
       end
 
-      def list_host_devices
-        connection.client.list_all_interfaces
-      end
+      def host_devices
+        @host_devices ||= begin
+          cmd = []
+          if !@machine.provider_config.proxy_command.empty?
+            cmd = ['ssh', @machine.provider_config.host]
+            cmd += ['-p', @machine.provider_config.port.to_s] if @machine.provider_config.port
+            cmd += ['-l', @machine.provider_config.username] if @machine.provider_config.username
+            cmd += ['-i', @machine.provider_config.id_ssh_key_file] if @machine.provider_config.id_ssh_key_file
+          end
+          ip_cmd = cmd + %W(ip -j link show)
 
-      def list_networks
-        connection.client.list_all_networks
+          result = Vagrant::Util::Subprocess.execute(*ip_cmd)
+          raise Errors::FogLibvirtConnectionError unless result.exit_code == 0
+
+          info = JSON.parse(result.stdout)
+
+          (
+            info.map { |iface| iface['ifname'] } +
+            connection.client.list_all_interfaces.map { |iface| iface.name } +
+            connection.client.list_all_networks.map { |net| net.bridge_name }
+          ).uniq.reject(&:empty?)
+        end
       end
 
       def attach_device(xml)

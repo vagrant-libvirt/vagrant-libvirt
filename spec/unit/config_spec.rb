@@ -741,23 +741,15 @@ describe VagrantPlugins::ProviderLibvirt::Config do
     context 'with public_network defined' do
       let(:libvirt_client)  { instance_double(::Libvirt::Connect) }
       let(:host_devices) { [
-        instance_double(Libvirt::Interface),
-        instance_double(Libvirt::Interface),
-      ] }
-      let(:libvirt_networks) { [
-        instance_double(Libvirt::Network),
-        instance_double(Libvirt::Network),
+        'lo',
+        'eth0',
+        'virbr0',
       ] }
       let(:driver) { instance_double(::VagrantPlugins::ProviderLibvirt::Driver) }
       before do
         machine.config.vm.network :public_network, dev: 'eth0', ip: "192.168.2.157"
         allow(machine.provider).to receive(:driver).and_return(driver)
-        expect(driver).to receive(:list_host_devices).and_return(host_devices)
-        expect(driver).to receive(:list_networks).and_return(libvirt_networks)
-        expect(host_devices[0]).to receive(:name).and_return('eth0')
-        expect(host_devices[1]).to receive(:name).and_return('virbr0')
-        expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')
-        expect(libvirt_networks[1]).to receive(:bridge_name).and_return('virbr0')
+        expect(driver).to receive(:host_devices).and_return(host_devices).at_least(:once).times
       end
 
       it 'should validate use of existing device' do
