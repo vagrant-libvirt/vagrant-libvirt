@@ -31,6 +31,7 @@ jobs:
         path: pkg/**.gem
 
   publish-package:
+    needs: build-package
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/download-artifact@v3
