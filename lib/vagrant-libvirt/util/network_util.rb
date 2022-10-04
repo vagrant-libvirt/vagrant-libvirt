@@ -152,14 +152,16 @@ module VagrantPlugins
         def libvirt_networks(libvirt_client)
           libvirt_networks = []
 
-          active = libvirt_client.list_networks
-          inactive = libvirt_client.list_defined_networks
-
           # Iterate over all (active and inactive) networks.
-          active.concat(inactive).each do |network_name|
-            libvirt_network = libvirt_client.lookup_network_by_name(
-              network_name
-            )
+          libvirt_client.list_all_networks.each do |libvirt_network|
+            begin
+              bridge_name = libvirt_network.bridge_name
+            rescue Libvirt::Error
+              # there does not appear to be a mechanism to determine the type of network, only by
+              # querying the attribute and catching the error is it possible to ignore unsupported.
+              @logger.debug "Ignoring #{libvirt_network.name} as it does not support retrieval of bridge_name attribute"
+              next
+            end
 
             # Parse ip address and netmask from the network xml description.
             xml = Nokogiri::XML(libvirt_network.xml_desc)
@@ -182,12 +184,12 @@ module VagrantPlugins
             network_address = (network_address(ip, netmask) if ip && netmask)
 
             libvirt_networks << {
-              name:             network_name,
+              name:             libvirt_network.name,
               ip_address:       ip,
               netmask:          netmask,
               network_address:  network_address,
               dhcp_enabled:     dhcp_enabled,
-              bridge_name:      libvirt_network.bridge_name,
+              bridge_name:      bridge_name,
               domain_name:      domain_name,
               created:          true,
               active:           libvirt_network.active?,
