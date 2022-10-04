@@ -33,6 +33,7 @@ jobs:
   publish-package:
     needs: build-package
     runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -48,8 +49,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: publish package
       run: |
-        ls -la *.gem 
-        echo "gem push --key github \
+        gem push --key github \
           --host https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER} \
-          pkg/*.gem"
+          *.gem
 
