@@ -191,20 +191,25 @@ collisions for multi machine environments gracefully.
 Vagrant automatically syncs the project folder on the host to `/vagrant` in
 the guest. You can also configure additional synced folders.
 
+If the type is not specified, vagrant will attempt to select one based on the
+highest priority that is usable. This can mean that depending on whether you have
+the packages installed to support nfs and or rsync, you may experience different
+behaviour on different machines. Recommendation is to be explicit.
+
 **SECURITY NOTE:** for remote Libvirt, nfs synced folders requires a bridged
 public network interface and you must connect to Libvirt via ssh.
 
 **NFS**
 
 `vagrant-libvirt` supports
-[NFS](https://www.vagrantup.com/docs/synced-folders/nfs) as default with
+[NFS](https://www.vagrantup.com/docs/synced-folders/nfs) as with
 bidirectional synced folders.
 
 Example with NFS:
 
 ``` ruby
 Vagrant.configure("2") do |config|
-  config.vm.synced_folder "./", "/vagrant"
+  config.vm.synced_folder "./", "/vagrant", type: "nfs"
 end
 ```
 
