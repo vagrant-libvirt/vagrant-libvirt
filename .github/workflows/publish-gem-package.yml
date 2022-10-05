@@ -12,6 +12,8 @@ permissions:
 jobs:
   build-package:
     runs-on: ubuntu-22.04
+    outputs:
+      artifact_name: ${{ steps.artifact_name.outputs.artifact_name }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -25,9 +27,15 @@ jobs:
     - name: Build gem
       run: |
         rake build
+    - name: Generate artifact name
+      id: artifact_name
+      run: |
+        cd pkg/
+        GEM_PKG=$(ls -1 *.gem)
+        echo ::set-output name=artifact_name::${GEM_PKG}
     - uses: actions/upload-artifact@v3
       with:
-        name: gem
+        name: ${{ steps.artifact_name.outputs.artifact_name }}
         path: pkg/**.gem
 
   publish-package:
@@ -37,7 +45,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: gem
+        name: ${{ needs.build-package.outputs.artifact_name }}
     - name: setup credentials
       run: |
         mkdir ~/.gem
