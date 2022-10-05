@@ -45,6 +45,7 @@ jobs:
         ---
         :github: Bearer ${GITHUB_TOKEN}
         EOF
+        chmod 0600 ~/.gem/credentials
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: publish package
