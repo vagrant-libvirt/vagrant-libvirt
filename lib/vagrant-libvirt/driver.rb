@@ -200,7 +200,7 @@ module VagrantPlugins
       def host_devices
         @host_devices ||= begin
           cmd = []
-          if !@machine.provider_config.proxy_command.empty?
+          unless @machine.provider_config.proxy_command.nil? || @machine.provider_config.proxy_command.empty?
             cmd = ['ssh', @machine.provider_config.host]
             cmd += ['-p', @machine.provider_config.port.to_s] if @machine.provider_config.port
             cmd += ['-l', @machine.provider_config.username] if @machine.provider_config.username

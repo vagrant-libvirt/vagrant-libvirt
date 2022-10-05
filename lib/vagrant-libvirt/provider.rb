@@ -70,7 +70,7 @@ module VagrantPlugins
           forward_x11: @machine.config.ssh.forward_x11
         }
 
-        ssh_info[:proxy_command] = @machine.provider_config.proxy_command if @machine.provider_config.proxy_command
+        ssh_info[:proxy_command] = @machine.provider_config.proxy_command if @machine.provider_config.proxy_command && !@machine.provider_config.proxy_command.empty?
 
         ssh_info
       end

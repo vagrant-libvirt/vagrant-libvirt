@@ -258,7 +258,6 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     ] }
 
     before do
-      allow(machine.provider_config).to receive(:proxy_command).and_return('')
       allow(subject).to receive(:connection).and_return(connection)
 
       allow(Vagrant::Util::Subprocess).to receive(:execute) do |*arr|
@@ -277,8 +276,14 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
       expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
     end
 
+    it 'should handle empty string' do
+      expect(machine.provider_config).to receive(:proxy_command).and_return('').twice
+
+      expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
+    end
+
     it 'should cache the result' do
-      expect(machine.provider_config).to receive(:proxy_command).and_return('').once
+      expect(machine.provider_config).to receive(:proxy_command).and_return(nil).once
 
       expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
       expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])

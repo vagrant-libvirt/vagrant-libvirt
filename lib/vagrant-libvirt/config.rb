@@ -1192,7 +1192,6 @@ module VagrantPlugins
       end
 
       def finalize_proxy_command
-        puts "port class is #{@port.class}"
         if @connect_via_ssh
           if @proxy_command == UNSET_VALUE
             proxy_command = "ssh '#{@host}' "
