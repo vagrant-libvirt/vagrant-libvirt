@@ -37,6 +37,18 @@ jobs:
       with:
         name: ${{ steps.artifact_name.outputs.artifact_name }}
         path: pkg/**.gem
+    # workflow_run doesn't receive a list of the pull requests triggering if it's
+    # from a fork, so use this to save the PR number for use in the notify job
+    - name: Save PR number
+      if: github.ref != 'refs/heads/main'
+      run: |
+        mkdir -p ./pr
+        echo ${{ github.event.number }} > ./pr/NR
+    - uses: actions/upload-artifact@v2
+      if: github.ref != 'refs/heads/main'
+      with:
+        name: pr
+        path: pr/
 
   publish-package:
     needs: build-package
