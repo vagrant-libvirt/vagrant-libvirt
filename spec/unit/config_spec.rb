@@ -677,6 +677,33 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
       end
     end
+
+    context '@machine_arch and @cpu_*' do
+      context 'should set @cpu_mode based on @machine_arch support' do
+        # it's possible when this is unset that the host arch should be read
+        it 'should default to host-model if machine_arch unset' do
+          subject.finalize!
+
+          expect(subject.cpu_mode).to eq('host-model')
+        end
+
+        it 'should default to host-model if supported' do
+          subject.machine_arch = 'aarch64'
+
+          subject.finalize!
+
+          expect(subject.cpu_mode).to eq('host-model')
+        end
+
+        it 'should default to nil if unsupported' do
+          subject.machine_arch = 'ppc'
+
+          subject.finalize!
+
+          expect(subject.cpu_mode).to be_nil
+        end
+      end
+    end
   end
 
   def assert_invalid
@@ -802,6 +829,32 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
           assert_valid
         end
+      end
+    end
+
+    context '@machine_arch and @cpu_*' do
+      it 'should be valid if cpu_* settings and no arch set' do
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        assert_valid
+      end
+
+      it 'should be valid if cpu_* settings and supported' do
+        subject.machine_arch = 'aarch64'
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        assert_valid
+      end
+
+      it 'should flag settings invalid if unsupported' do
+        subject.machine_arch = 'ppc'
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        errors = assert_invalid
+        expect(errors).to include(match(/Architecture ppc does not support .* cpu_mode, nested/))
       end
     end
 

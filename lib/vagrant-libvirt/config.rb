@@ -203,6 +203,14 @@ module VagrantPlugins
       # internal helper attributes
       attr_accessor :host_device_exclude_prefixes
 
+      # list of architectures that support cpu based on https://github.com/libvirt/libvirt/tree/master/src/cpu
+      ARCH_SUPPORT_CPU = [
+        'aarch64', 'armv6l', 'armv7b', 'armv7l',
+        'i686', 'x86_64',
+        'ppc64', 'ppc64le',
+        's390', 's390x',
+      ]
+
       def initialize
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
@@ -852,12 +860,23 @@ module VagrantPlugins
         @title = '' if @title == UNSET_VALUE
         @description = '' if @description == UNSET_VALUE
         @uuid = '' if @uuid == UNSET_VALUE
+        @machine_type = nil if @machine_type == UNSET_VALUE
+        @machine_arch = nil if @machine_arch == UNSET_VALUE
         @memory = 512 if @memory == UNSET_VALUE
         @nodeset = nil if @nodeset == UNSET_VALUE
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpuset = nil if @cpuset == UNSET_VALUE
-        @cpu_mode = 'host-model' if @cpu_mode == UNSET_VALUE
+        @cpu_mode = if @cpu_mode == UNSET_VALUE
+                      # only some architectures support the cpu element
+                      if @machine_arch.nil? || ARCH_SUPPORT_CPU.include?(@machine_arch.downcase)
+                        'host-model'
+                      else
+                        nil
+                      end
+                    else
+                      @cpu_mode
+                    end
         @cpu_model = if (@cpu_model == UNSET_VALUE) && (@cpu_mode == 'custom')
                        'qemu64'
                      elsif @cpu_mode != 'custom'
@@ -876,8 +895,6 @@ module VagrantPlugins
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
-        @machine_type = nil if @machine_type == UNSET_VALUE
-        @machine_arch = nil if @machine_arch == UNSET_VALUE
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_device = @disk_bus == 'scsi' ? 'sda' : 'vda' if @disk_device == UNSET_VALUE
         @disk_bus = @disk_device.start_with?('sd') ? 'scsi' : 'virtio' if @disk_bus == UNSET_VALUE
@@ -1003,6 +1020,22 @@ module VagrantPlugins
 
       def validate(machine)
         errors = _detected_errors
+
+        unless @machine_arch.nil? || ARCH_SUPPORT_CPU.include?(@machine_arch.downcase)
+          unsupported = [:cpu_mode, :cpu_model, :nested, :cpu_features, :cpu_topology, :numa_nodes]
+          cpu_support_required_by = unsupported.select { |x|
+            value = instance_variable_get("@#{x.to_s}")
+            next if value.nil?  # not set
+            is_bool = !!value == value
+            next if is_bool && !value  # boolean and set to false
+            next if !is_bool && value.empty?  # not boolean, but empty '', [], {}
+            true
+          }
+
+          unless cpu_support_required_by.empty?
+            errors << "Architecture #{@machine_arch} does not support /domain/cpu XML, which is required when setting the config options #{cpu_support_required_by.join(", ")}"
+          end
+        end
 
         # technically this shouldn't occur, but ensure that if somehow it does, it gets rejected.
         if @cpu_mode == 'host-passthrough' && @cpu_model != ''
