@@ -11,6 +11,35 @@ jobs:
     name: Add artifact links to pull request
     runs-on: ubuntu-22.04
     steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const artifacts = await github.paginate(
+              github.rest.actions.listWorkflowRunArtifacts, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: ${{github.event.workflow_run.id }},
+              },
+            );
+            if (!artifacts.length) {
+              return core.error(`No artifacts found`);
+            }
+            var matchArtifact = artifacts.find((artifact) => {
+              return artifact.name == "pr"
+            });
+            if (matchArtifact === undefined) {
+              return core.error(`No PR artifact found`);
+            }
+            var download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
+      - run: unzip pr.zip
       - uses: actions/github-script@v5
         with:
           # This snippet is public-domain, taken from
@@ -37,21 +66,19 @@ jobs:
             }
             const {owner, repo} = context.repo;
             const run_id = ${{github.event.workflow_run.id}};
-            const pull_requests = ${{ toJSON(github.event.workflow_run.pull_requests) }};
-            if (!pull_requests.length) {
-              return core.error("This workflow doesn't match any pull requests!");
-            }
             const artifacts = await github.paginate(
               github.rest.actions.listWorkflowRunArtifacts, {owner, repo, run_id});
             if (!artifacts.length) {
               return core.error(`No artifacts found`);
             }
+            var fs = require('fs');
+            var issue_number = Number(fs.readFileSync('./NR'));
             let body = `Download the latest artifacts for this pull request here:\n`;
             for (const art of artifacts) {
+              if (art.name == 'pr') {
+                continue;
+              }
               body += `\n* [${art.name}.zip](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
             }
             core.info("Review thread message body:", body);
-            for (const pr of pull_requests) {
-              await upsertComment(owner, repo, pr.number,
-                "nightly-link", body);
-            }
+            await upsertComment(owner, repo, issue_number, "nightly-link", body);
