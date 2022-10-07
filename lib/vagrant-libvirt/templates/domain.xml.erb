@@ -1,282 +1,356 @@
 <domain type='<%= @domain_type %>' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name><%= @name %></name>
+  <title><%= @title %></title>
+  <description><%= @description %></description>
   <uuid><%= @uuid %></uuid>
   <memory><%= @memory_size %></memory>
   <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
-
-
   <cpu mode='<%= @cpu_mode %>'>
-    <% if @cpu_mode != 'host-passthrough' %>
-      <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
-      <% if @nested %>
-        <% if @cpu_features.select{|x| x[:name] == 'vmx'}.empty? %>
-          <feature policy='optional' name='vmx'/>
-        <% end %>
-        <% if @cpu_features.select{|x| x[:name] == 'svm'}.empty? %>
-          <feature policy='optional' name='svm'/>
-        <% end %>
-      <% end %>
-      <% @cpu_features.each do |cpu_feature| %>
-        <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
-      <% end %>
-      <% unless @cpu_topology.empty? %>
-        <%# CPU topology -%>
-        <topology sockets='<%= @cpu_topology[:sockets] %>' cores='<%= @cpu_topology[:cores] %>' threads='<%= @cpu_topology[:threads] %>'/>
-      <% end %>
-    <% end %>
-    <% if @numa_nodes %>
-      <numa>
-        <% @numa_nodes.each_with_index do |node, index| %>
-          <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'/>
-        <% end %>
-      </numa>
-    <% end %>
+<%- if @cpu_mode != 'host-passthrough' -%>
+    <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
+<%- end -%>
+<%- if @nested -%>
+  <%- if @cpu_features.select{|x| x[:name] == 'vmx'}.empty? -%>
+    <feature policy='optional' name='vmx'/>
+  <%- end -%>
+  <%- if @cpu_features.select{|x| x[:name] == 'svm'}.empty? -%>
+    <feature policy='optional' name='svm'/>
+  <%- end -%>
+<%- end -%>
+<%- @cpu_features.each do |cpu_feature| -%>
+    <feature name='<%= cpu_feature[:name] %>' policy='<%= cpu_feature[:policy] %>'/>
+<%- end -%>
+<%- unless @cpu_topology.empty? -%>
+    <%# CPU topology -%>
+    <topology sockets='<%= @cpu_topology[:sockets] %>' cores='<%= @cpu_topology[:cores] %>' threads='<%= @cpu_topology[:threads] %>'/>
+<%- end -%>
+<%- if @numa_nodes -%>
+    <numa>
+  <%- @numa_nodes.each_with_index do |node, index| -%>
+      <cell id='<%= index %>' cpus='<%= node[:cpus] %>' memory='<%= node[:memory] %>'<% if node.key?(:memAccess) %> memAccess='<%= node[:memAccess] %>'<% end %>/>
+  <%- end -%>
+    </numa>
+<%- end -%>
   </cpu>
-
 <%- if @nodeset -%>
   <numatune>
     <memory nodeset='<%= @nodeset %>'/>
   </numatune>
 <%- end -%>
-<% unless @memory_backing.empty? %>
+<%- unless @memory_backing.empty? -%>
   <memoryBacking>
-  <% @memory_backing.each do |backing| %>
+  <%- @memory_backing.each do |backing| -%>
     <<%= backing[:name] %> <%= backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>/>
-  <% end %>
+  <%- end -%>
   </memoryBacking>
-<% end%>
-<% if @shares %>
+<%- end%>
+<%- if @shares -%>
   <cputune>
     <shares><%= @shares %></shares>
   </cputune>
-<% end %>
-
+<%- end -%>
   <os>
-    <% if @machine_type %>
-      <% if @machine_arch %>
-        <type arch='<%= @machine_arch %>' machine='<%= @machine_type %>'>hvm</type>
-      <% else %>
-        <type machine='<%= @machine_type %>'>hvm</type>
-      <% end %>
-    <% else %>
-      <% if @machine_arch %>
-        <type arch='<%= @machine_arch %>'>hvm</type>
-      <% else %>
-        <type>hvm</type>
-      <% end %>
-    <% end %>
-    <% if @loader %>
-      <% if @nvram %>
-        <loader readonly='yes' type='pflash'><%= @loader %></loader>
-      <% else %>
-        <loader readonly='yes' type='rom'><%= @loader %></loader>
-      <% end %>
-    <% end %>
-    <% if @nvram %>
-      <nvram><%= @nvram %></nvram>
-    <% end %>
-    <% if @boot_order.count >= 1 %>
-      <bootmenu enable='yes'/>
-    <% end %>
+<%- if @machine_type -%>
+  <%- if @machine_arch -%>
+    <type arch='<%= @machine_arch %>' machine='<%= @machine_type %>'>hvm</type>
+  <%- else -%>
+    <type machine='<%= @machine_type %>'>hvm</type>
+  <%- end -%>
+<%- else -%>
+  <%- if @machine_arch -%>
+    <type arch='<%= @machine_arch %>'>hvm</type>
+  <%- else -%>
+    <type>hvm</type>
+  <%- end -%>
+<%- end -%>
+<%- if @loader -%>
+  <%- if @nvram -%>
+    <loader readonly='yes' type='pflash'><%= @loader %></loader>
+  <%- else -%>
+    <loader readonly='yes' type='rom'><%= @loader %></loader>
+  <%- end -%>
+<%- end -%>
+<%- if @nvram -%>
+    <nvram><%= @nvram %></nvram>
+<%- end -%>
+    <bootmenu enable='<%= @boot_order.count >= 1 ? "yes" : "no" %>'/>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>
     <cmdline><%= @cmd_line %></cmdline>
-    <% if @dtb %>
-      <dtb><%= @dtb %></dtb>
-    <% end %>
+<%- if @dtb -%>
+    <dtb><%= @dtb %></dtb>
+<% end -%>
+<%- unless @sysinfo.empty? -%>
+    <smbios mode='sysinfo'/>
+<% end -%>
   </os>
+<%- unless @sysinfo.empty? -%>
+  <sysinfo type='smbios'>
+  <%- @sysinfo.each_pair do |block, values| -%>
+    <<%= @sysinfo_blocks[block.to_s][:xml] %>>
+    <%- if values.respond_to?(:each_pair) -%>
+      <%- values.each do |name, value| -%>
+      <entry name='<%= name %>'><%= value %></entry>
+      <% end -%>
+    <%- else -%>
+      <%- values.each do |value| -%>
+      <entry><%= value %></entry>
+      <% end -%>
+    <% end -%>
+    </<%= @sysinfo_blocks[block.to_s][:xml] %>>
+  <% end -%>
+  </sysinfo>
+<% end -%>
   <features>
-    <% @features.each do |feature| %>
+<%- @features.each do |feature| -%>
     <<%= feature %>/>
-    <% end %>
-    <% if @kvm_hidden %>
-      <kvm>
-        <hidden state='on'/>
-      </kvm>
-    <% end %>
-    <% if !@features_hyperv.empty? %>
+<%- end -%>
+<%- if @kvm_hidden -%>
+    <kvm>
+      <hidden state='on'/>
+    </kvm>
+<%- end -%>
+<%- if !@features_hyperv.empty? -%>
     <hyperv>
-      <% @features_hyperv.each do |feature| %>
-      <<%= feature[:name] %> state='<%= feature[:state] %>' />
-      <% end %>
+  <%- @features_hyperv.each do |feature| -%>
+      <<%= feature[:name] %> state='<%= feature[:state] %>'<% if feature[:name] == 'spinlocks' %> retries='<%= feature[:retries] %>'<% end %> />
+  <%- end -%>
     </hyperv>
-    <% end %>
+<%- end -%>
   </features>
-  <clock offset='utc'/>
+  <clock offset='<%= @clock_offset %>'>
+<%- @clock_timers.each do |clock_timer| -%>
+    <timer<% clock_timer.each do |attr, value| %> <%= attr %>='<%= value %>'<% end %>/>
+<%- end -%>
+  </clock>
   <devices>
-    <% if @emulator_path %>
+<%- if @emulator_path -%>
     <emulator><%= @emulator_path %></emulator>
-    <% end %>
-    <% if @domain_volume_path %>
+<%- end -%>
+<%- @domain_volumes.each_with_index do |volume, index| -%>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2' cache='<%= @domain_volume_cache %>'/>
-      <source file='<%= @domain_volume_path %>'/>
+      <alias name='ua-box-volume-<%= index -%>'/>
+      <driver name='qemu' type='qcow2' <%=
+        @disk_driver_opts.empty? ? "cache='#{volume[:cache]}'" :
+            @disk_driver_opts.reject { |k,v| v.nil? }
+                             .map { |k,v| "#{k}='#{v}'"}
+                             .join(' ') -%>/>
+      <source file='<%= volume[:absolute_path] %>'/>
       <%# we need to ensure a unique target dev -%>
-      <target dev='<%= @disk_device %>' bus='<%= @disk_bus %>'/>
-      <% if @disk_address_type %>
-        <address type='<%= @disk_address_type %>'/>
-      <% end %>
-    </disk>
+      <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
+    <%- if volume[:address_type] -%>
+      <address type='<%= volume[:address_type] %>'/>
     <% end %>
+    </disk>
+<%- end -%>
+<%- scsi_volumes = @domain_volumes.select { |x| x[:bus] == 'scsi' } %>
+<%- if !scsi_volumes.empty? and !@disk_controller_model.nil? %>
+  <%- for idx in 0..(scsi_volumes.length / 7) do %>
+    <controller type='scsi' model='<%= @disk_controller_model %>' index='<%= idx -%>'/>
+  <%- end -%>
+<%- end -%>
 <%# additional disks -%>
-<% @disks.each do |d| -%>
+<%- @disks.each_with_index do |d, index| -%>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='<%= d[:type] %>' cache='<%= d[:cache] %>'/>
+      <alias name='ua-disk-volume-<%= index -%>'/>
+      <driver name='qemu' type='<%= d[:type] %>' <%=
+        d.select { |k,_| [:cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
+         .reject { |k,v| v.nil? }
+         .map { |k,v| "#{k}='#{v}'"}
+         .join(' ')
+      -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
-      <% if d[:address_type] %>
-        <address type='<%= d[:address_type] %>'/>
-      <% end %>
-      <% if d[:shareable] %>
-        <shareable/>
-      <% end %>
-      <% if d[:serial] %>
-        <serial><%= d[:serial] %></serial>
-      <% end %>
+  <%- if d[:address_type] || @disk_address_type -%>
+      <address type='<%= d[:address_type]  || @disk_address_type %>'/>
+  <%- end -%>
+  <%- if d[:shareable] -%>
+      <shareable/>
+  <%- end -%>
+  <%- if d[:serial] -%>
+      <serial><%= d[:serial] %></serial>
+  <%- end -%>
+  <%- if d[:wwn] -%>
+      <wwn><%= d[:wwn] %></wwn>
+  <%- end -%>
 <%# this will get auto generated by Libvirt
       <address type='pci' domain='0x0000' bus='0x00' slot='???' function='0x0'/>
 -%>
     </disk>
 <% end -%>
-
-<% @cdroms.each do |c| %>
+<%- @cdroms.each do |c| -%>
     <disk type='file' device='cdrom'>
+      <driver name='qemu' type='<%= c[:type] %>' />
       <source file='<%= c[:path] %>'/>
       <target dev='<%= c[:dev] %>' bus='<%= c[:bus] %>'/>
       <readonly/>
     </disk>
-<% end %>
-
-    <serial type='pty'>
-      <target port='0'/>
+<%- end -%>
+<%- @serials.each_with_index do |serial, port| -%>
+    <serial type='<%= serial[:type] %>'>
+      <%- unless serial[:source].nil? -%>
+      <source path='<%= serial[:source][:path] %>'/>
+      <%- end -%>
+      <target port='<%= port %>'/>
     </serial>
-    <console type='pty'>
+<%- end -%>
+<%- unless @serials.empty? -%>
+    <%- console_log = @serials.first -%>
+    <console type='<%= console_log[:type] %>'>
+      <%- unless console_log[:source].nil? -%>
+      <source path='<%= console_log[:source][:path] %>'/>
+      <%- end -%>
       <target port='0'/>
     </console>
-
-<% @channels.each do |channel| %>
-  <channel type='<%= channel[:type] %>' >
-      <%if channel[:source_mode] or channel[:source_path] %>
-      <source
-          <% if channel[:source_mode] %>
-               mode='<%= channel[:source_mode] %>'
-          <% end %>
-          <% if channel[:source_path] %>
-               path="<%= channel[:source_path] %>"
-          <% end %>
-      />
-      <% end %>
-      <target type='<%= channel[:target_type] %>'
-          <% if channel[:target_name] %>
-               name="<%= channel[:target_name] %>"
-          <% end %>
-          <% if channel[:target_address] %>
-               address="<%= channel[:target_address] %>"
-          <% end %>
-          <% if channel[:target_port] %>
-               port="<%= channel[:target_port] %>"
-          <% end %>
-      />
-  </channel>
-<% end %>
-
-<% @inputs.each do |input| %>
+<%- end -%>
+<%- @channels.each do |channel| -%>
+    <channel type='<%= channel[:type] %>' >
+  <%-if channel[:source_mode] or channel[:source_path] -%>
+      <source <%=
+        channel.select { |k,_| [:source_mode, :source_path].include? k }
+         .reject { |k,v| v.nil? }
+         .map { |k,v| "#{k.to_s.split('_').last}='#{v}'"}
+         .join(' ')
+      -%>/>
+  <%- end -%>
+      <target type='<%= channel[:target_type] %>' <%=
+        channel.select { |k,_| [:target_name, :target_address, :target_port].include? k }
+         .reject { |k,v| v.nil? }
+         .map { |k,v| "#{k.to_s.split('_').last}='#{v}'"}
+         .join(' ')
+      -%>/>
+    </channel>
+<%- end -%>
+<%- @inputs.each do |input| -%>
     <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
-<% end %>
-
-    <% if !@sound_type.nil? %>
-      <%# Sound device-%>
-      <sound model='<%= @sound_type %>'>
-      </sound>
-      <%# End Sound%>
-    <% end %>
-    <% if @graphics_type != 'none' %>
-      <%# Video device -%>
-      <graphics type='<%= @graphics_type %>' port='<%= @graphics_port %>' autoport='<%= @graphics_autoport %>' listen='<%= @graphics_ip %>' keymap='<%= @keymap %>' <%= @graphics_passwd%> />
-      <video>
-        <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'/>
-      </video>
-      <%#End Video -%>
-    <% end %>
-    <% if @rng[:model] == "random"%>
-      <rng model='virtio'>
-        <backend model='random'>/dev/random</backend>
-      </rng>
-    <% end %>
-    <% @pcis.each do |pci| %>
-      <hostdev mode='subsystem' type='pci' managed='yes'>
-        <source>
-          <address domain='<%= pci[:domain] %>'
-            bus='<%= pci[:bus] %>'
-            slot='<%= pci[:slot] %>'
-            function='<%= pci[:function] %>'/>
-        </source>
-      </hostdev>
-    <% end %>
-    <% @usbs.each do |usb| %>
-      <hostdev mode='subsystem' type='usb'>
-        <source startupPolicy='<%= usb[:startupPolicy] || "mandatory" %>'>
-          <% if usb[:vendor] %>
-          <vendor id='<%= usb[:vendor] %>'/>
-          <% end %>
-          <% if usb[:product] %>
-          <product id='<%= usb[:product] %>'/>
-          <% end %>
-          <% if usb[:bus] && usb[:device] %>
-          <address bus='<%= usb[:bus] %>' device='<%= usb[:device] %>'/>
-          <% end %>
-        </source>
-      </hostdev>
-    <% end %>
-    <% unless @redirdevs.empty? %>
-      <% @redirdevs.each do |redirdev| %>
-        <redirdev bus='usb' type='<%= redirdev[:type] %>'>
-        </redirdev>
-      <% end %>
-      <% unless @redirfilters.empty? %>
-        <redirfilter>
-        <% @redirfilters.each do |usbdev| %>
-          <usbdev class='<%= usbdev[:class]  %>' vendor='<%= usbdev[:vendor] %>' product='<%= usbdev[:product] %>' version='<%= usbdev[:version] %>' allow='<%= usbdev[:allow] %>'/>
-        <% end %>
-        </redirfilter>
-      <% end %>
-    <% end %>
-    <% unless @watchdog_dev.empty? %>
+<%- end -%>
+<%- if !@sound_type.nil? -%>
+    <%# Sound device-%>
+    <sound model='<%= @sound_type %>'>
+    </sound>
+    <%# End Sound%>
+<%- end -%>
+<%- if @graphics_type != 'none'
+      graphics = {
+        'type' => @graphics_type,
+        'port' => @graphics_port,
+        'autoport' => @graphics_autoport,
+        'listen' => @graphics_ip,
+        'keymap' => @keymap,
+        'passwd' => @graphics_passwd,
+      }
+-%>
+    <%# Video device -%>
+    <graphics <%=
+  graphics.reject { |k,v| v.nil? }
+    .map { |k,v| "#{k}='#{v}'" }
+    .join(' ')
+  -%><%- if not @graphics_gl %>/><% else %>>
+      <gl enable='yes'/>
+    </graphics><% end -%>
+    <video>
+      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'<% if not @video_accel3d %>/><% else %>>
+        <acceleration accel3d='yes'/>
+      </model><% end -%>
+    </video>
+    <%#End Video -%>
+<%- end -%>
+<%- if @rng[:model] == "random"%>
+    <rng model='virtio'>
+      <backend model='random'>/dev/random</backend>
+    </rng>
+<%- end -%>
+<%-
+  @pcis.each do |pci|
+    pci = pci.reject { |k,v| v.nil? }
+    guest_prefix = "guest_"
+    pci_host = pci.select { |k,_| !k.to_s.start_with?(guest_prefix) }
+    pci_guest = pci.select { |k,_| k.to_s.start_with?(guest_prefix) }
+-%>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source>
+        <address <%= pci_host.map { |k,v| "#{k.to_s}='#{v}'" } .join(' ') -%>/>
+      </source>
+    <%- if !pci_guest.empty? -%>
+      <address type='pci' <%= pci_guest.map { |k,v| "#{k.to_s[guest_prefix.length..-1]}='#{v}'" } .join(' ') -%>/>
+    <%- end -%>
+    </hostdev>
+<%- end -%>
+<%- @usbs.each do |usb| -%>
+    <hostdev mode='subsystem' type='usb'>
+      <source startupPolicy='<%= usb[:startupPolicy] || "mandatory" %>'>
+  <%- if usb[:vendor] -%>
+        <vendor id='<%= usb[:vendor] %>'/>
+  <%- end -%>
+  <%- if usb[:product] -%>
+        <product id='<%= usb[:product] %>'/>
+  <%- end -%>
+  <%- if usb[:bus] && usb[:device] -%>
+        <address bus='<%= usb[:bus] %>' device='<%= usb[:device] %>'/>
+  <%- end -%>
+      </source>
+    </hostdev>
+<%- end -%>
+<%- unless @redirdevs.empty? -%>
+  <%- @redirdevs.each do |redirdev| -%>
+    <redirdev bus='usb' type='<%= redirdev[:type] %>'>
+    </redirdev>
+  <%- end -%>
+  <%- unless @redirfilters.empty? -%>
+    <redirfilter>
+    <%- @redirfilters.each do |usbdev| -%>
+      <usbdev class='<%= usbdev[:class]  %>' vendor='<%= usbdev[:vendor] %>' product='<%= usbdev[:product] %>' version='<%= usbdev[:version] %>' allow='<%= usbdev[:allow] %>'/>
+    <%- end -%>
+    </redirfilter>
+  <%- end -%>
+<%- end -%>
+<%- unless @watchdog_dev.empty? -%>
     <%# Watchdog Device -%>
     <watchdog model='<%= @watchdog_dev[:model] %>' action='<%= @watchdog_dev[:action] %>'/>
-    <% end %>
-
-    <% unless @smartcard_dev.empty? -%>
-      <% if @smartcard_dev[:mode] == 'passthrough' %>
-        <% if @smartcard_dev[:type] == 'tcp' %>
-        <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'>
-            <source mode='<%= @smartcard_dev[:source_mode] %>' host='<%= @smartcard_dev[:source_host] %>' service='<%= @smartcard_dev[:source_service] %>'/>
-        </smartcard>
-        <% else %>
-        <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'/>
-        <% end %>
-      <% end %>
-    <% end -%>
-
-    <% if @tpm_path -%>
+<%- end -%>
+<%- unless @smartcard_dev.empty? -%>
+  <%- if @smartcard_dev[:mode] == 'passthrough' -%>
+    <%- if @smartcard_dev[:type] == 'tcp' -%>
+    <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'>
+      <source mode='<%= @smartcard_dev[:source_mode] %>' host='<%= @smartcard_dev[:source_host] %>' service='<%= @smartcard_dev[:source_service] %>'/>
+    </smartcard>
+    <%- else -%>
+    <smartcard mode='<%= @smartcard_dev[:mode] %>' type='<%= @smartcard_dev[:type] %>'/>
+    <%- end -%>
+  <%- end -%>
+<%- end -%>
+<%- if @tpm_path || @tpm_version -%>
     <%# TPM Device -%>
     <tpm model='<%= @tpm_model %>'>
-      <backend type='<%= @tpm_type %>'>
+      <backend type='<%= @tpm_type %>'<% if @tpm_version %> version='<%= @tpm_version %>'<% end %>>
+  <%- if @tpm_path -%>
         <device path='<%= @tpm_path %>'/>
+  <%- end -%>
       </backend>
     </tpm>
-    <% end -%>
-    <% if not @usbctl_dev.empty? %>
+<%- end -%>
+<%- if not @usbctl_dev.empty? -%>
     <%# USB Controller -%>
     <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>/>
-    <% end %>
+<%- end -%>
+<%- unless @memballoon_enabled.nil? -%>
+  <%- if @memballoon_enabled -%>
+    <memballoon model='<%= @memballoon_model %>'>
+      <address type='pci' domain='0x0000' bus='<%= @memballoon_pci_bus %>' slot='<%= @memballoon_pci_slot %>' function='0x0'/>
+    </memballoon>
+  <%- else -%>
+    <memballoon model='none'/>
+  <%- end -%>
+<%- end -%>
   </devices>
-
-  <% unless @qargs.empty? %>
+<%- if not @qemu_args.empty? or not @qemu_env.empty? -%>
   <qemu:commandline>
-    <% @qargs.each do |arg| %>
+  <%- @qemu_args.each do |arg| -%>
     <qemu:arg value='<%= arg[:value] %>'/>
-    <% end %>
+  <%- end -%>
+  <%- @qemu_env.each do |env_var, env_value| -%>
+    <qemu:env name='<%= env_var.to_s %>' value='<%= env_value %>'/>
+  <%- end -%>
   </qemu:commandline>
-  <% end %>
+<%- end -%>
 </domain>

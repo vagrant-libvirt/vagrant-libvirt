@@ -1,0 +1,122 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up libvirt for test generation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libvirt-dev \
+          libz-dev \
+        ;
+    - uses: actions/cache@v3
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.6
+    - name: Run bundler using cached path
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+    - name: Generate matrix
+      id: generate-matrix
+      run: |
+        bundle exec rspec --color --format json --fail-fast --dry-run --tag acceptance --out report.json
+        tests="$(jq -c '[.examples[].full_description]' report.json)"
+
+        echo "::set-output name=matrix::${tests}"
+
+  run-tests:
+    needs: generate-matrix
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test_name: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+
+    env:
+      NOKOGIRI_USE_SYSTEM_LIBRARIES: true
+      VAGRANT_VERSION: v2.2.14
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up libvirt
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          bridge-utils \
+          dnsmasq-base \
+          ebtables \
+          libarchive-tools \
+          libguestfs-tools \
+          libvirt-clients \
+          libvirt-daemon \
+          libvirt-daemon-system \
+          qemu-kvm \
+          qemu-utils \
+        ;
+        sudo apt-get install -y \
+          libvirt-dev \
+          libz-dev \
+        ;
+
+        # start daemon
+        sudo systemctl start libvirtd
+
+        # add user to group
+        sudo usermod -a -G libvirt $USER
+    - uses: actions/cache@v3
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gems-
+    - uses: actions/cache@v3
+      with:
+        path: ~/.vagrant.d/boxes
+        key: ${{ runner.os }}-${{ env.VAGRANT_VERSION }}
+        restore-keys: |
+          ${{ runner.os }}-
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.6
+    - name: Run bundler using cached path
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+    - name: Run tests
+      run: |
+        mkdir -p $HOME/.vagrant.d/
+        # tell integration tests to use boxes from the cached location
+        export VAGRANT_LIBVIRT_VAGRANT_HOME=$HOME/.vagrant.d
+        # use software emulation due to lack of nested emulation
+        cat <<EOF > $HOME/.vagrant.d/Vagrantfile
+        Vagrant.configure("2") do |config|
+          config.vm.provider :libvirt do |libvirt|
+            libvirt.driver = "qemu"
+          end
+        end
+        # run under libvirt group
+        sg libvirt -c "bundle exec rspec --color --fail-fast --tag acceptance -e '${{ matrix.test_name }}'"

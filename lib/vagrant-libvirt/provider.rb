@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'vagrant'
 
 module VagrantPlugins
@@ -50,12 +52,12 @@ module VagrantPlugins
         #  :username => "mitchellh",
         #  :private_key_path => "/path/to/my/key"
         # }
-        # note that modifing @machine.id or accessing @machine.state is not
+        # note that modifying @machine.id or accessing @machine.state is not
         # thread safe, so be careful to avoid these here as this method may
         # be called from other threads of execution.
         return nil if state.id != :running
 
-        ip = driver.get_ipaddress(@machine)
+        ip = driver.get_ipaddress
 
         # if can't determine the IP, just return nil and let the core
         # deal with it, similar to the docker provider
@@ -68,14 +70,7 @@ module VagrantPlugins
           forward_x11: @machine.config.ssh.forward_x11
         }
 
-        if @machine.provider_config.connect_via_ssh
-          ssh_info[:proxy_command] =
-            "ssh '#{@machine.provider_config.host}' " \
-            "-l '#{@machine.provider_config.username}' " \
-            "-i '#{@machine.provider_config.id_ssh_key_file}' " \
-            'nc %h %p'
-
-        end
+        ssh_info[:proxy_command] = @machine.provider_config.proxy_command if @machine.provider_config.proxy_command && !@machine.provider_config.proxy_command.empty?
 
         ssh_info
       end
@@ -98,9 +93,9 @@ module VagrantPlugins
         state_id = nil
         state_id = :not_created unless @machine.id
         state_id = :not_created if
-          !state_id && (!@machine.id || !driver.created?(@machine.id))
+          !state_id && (!@machine.id || !driver.created?)
         # Query the driver for the current state of the machine
-        state_id = driver.state(@machine) if @machine.id && !state_id
+        state_id = driver.state if @machine.id && !state_id
         state_id = :unknown unless state_id
 
         # This is a special pseudo-state so that we don't set the

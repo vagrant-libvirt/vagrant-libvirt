@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
@@ -28,12 +30,21 @@ module VagrantPlugins
 
         def call(env)
           if env[:machine].provider_config.qemu_use_session
+            # Get a list of all (active and inactive) Libvirt networks. This
+            # triggers a side effect to ensure networking is fully available
+            # for VMs using sessions. It is likely that this should be done
+            # to determine the correct virtual device for the management
+            # network for sessions instead of assuming the default of virbr0.
+            @available_networks = libvirt_networks(
+              env[:machine].provider.driver.system_connection
+            )
+
             @app.call(env)
             return
           end
 
           # only one vm at a time should try to set up networks
-          # otherwise they'll have inconsitent views of current state
+          # otherwise they'll have inconsistent views of current state
           # and conduct redundant operations that cause errors
           @@lock.synchronize do
             # Iterate over networks If some network is not
@@ -54,6 +65,8 @@ module VagrantPlugins
                 env[:machine].provider.driver.connection.client
               )
 
+              current_network = @available_networks.detect { |network| network[:name] == @options[:network_name] }
+
               # Prepare a hash describing network for this specific interface.
               @interface_network = {
                 name:             nil,
@@ -64,11 +77,11 @@ module VagrantPlugins
                 domain_name:      nil,
                 ipv6_address:     options[:ipv6_address] || nil,
                 ipv6_prefix:      options[:ipv6_prefix] || nil,
-                created:          false,
-                active:           false,
+                created:          current_network.nil? ? false : true,
+                active:           current_network.nil? ? false : current_network[:active],
                 autostart:        options[:autostart] || false,
                 guest_ipv6:       @options[:guest_ipv6] || 'yes',
-                libvirt_network:  nil
+                libvirt_network:  current_network.nil? ? nil : current_network[:libvirt_network]
               }
 
               if @options[:ip]
@@ -111,7 +124,7 @@ module VagrantPlugins
         # Throw an error if dhcp setting for an existing network does not
         # match what was configured in the vagrantfile
         # since we always enable dhcp for the management network
-        # this ensures we wont start a vm vagrant cant reach
+        # this ensures we won't start a vm vagrant can't reach
         # Allow the situation where DHCP is not requested (:libvirt__dhcp_enabled == false)
         # but where it is enabled on the virtual network
         def verify_dhcp
@@ -158,7 +171,7 @@ module VagrantPlugins
             if @interface_network[:created]
               # Just check for mismatch error here - if name and ip from
               # config match together.
-              if @options[:network_name] != @interface_network[:name]
+              if @options[:network_name] != @interface_network[:name] and @qemu_use_agent == false
                 raise Errors::NetworkNameAndAddressMismatch,
                       ip_address:   @options[:ip],
                       network_name: @options[:network_name]
@@ -204,6 +217,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -243,6 +259,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -255,7 +274,9 @@ module VagrantPlugins
 
           # Do we need to create new network?
           unless @interface_network[:created]
-            @interface_network[:name] = 'vagrant-private-dhcp'
+            @interface_network[:name] = @options[:network_name] ?
+                                        @options[:network_name] :
+                                        'vagrant-private-dhcp'
             @interface_network[:network_address] = net_address
 
             # Set IP address of network (actually bridge). It will be used as
@@ -267,6 +288,9 @@ module VagrantPlugins
 
             # Create a private network.
             create_private_network(env)
+            write_created_network(env)
+          else
+            write_created_network(env) unless @options[:always_destroy] == false
           end
         end
 
@@ -298,6 +322,9 @@ module VagrantPlugins
           @network_ipv6_address = @interface_network[:ipv6_address]
           @network_ipv6_prefix = @interface_network[:ipv6_prefix]
 
+          @network_bridge_stp = @options[:bridge_stp].nil? || @options[:bridge_stp] ? 'on' : 'off'
+          @network_bridge_delay = @options[:bridge_delay] ? @options[:bridge_delay] : 0
+
           @network_forward_mode = @options[:forward_mode]
           if @options[:forward_device]
             @network_forward_device = @options[:forward_device]
@@ -305,8 +332,7 @@ module VagrantPlugins
 
           if @options[:dhcp_enabled]
             # Find out DHCP addresses pool range.
-            network_address = "#{@interface_network[:network_address]}/"
-            network_address << (@interface_network[:netmask]).to_s
+            network_address = "#{@interface_network[:network_address]}/#{(@interface_network[:netmask]).to_s}"
             net = @interface_network[:network_address] ? IPAddr.new(network_address) : nil
 
             # First is address of network, second is gateway (by default).
@@ -326,22 +352,31 @@ module VagrantPlugins
             @network_dhcp_enabled = false
           end
 
+          if @options[:tftp_root]
+            @tftp_root = @options[:tftp_root]
+          end
+
           @network_domain_name = @options[:domain_name]
 
           begin
+            xml = to_xml('private_network')
+            @logger.debug {
+              "Creating private network with XML:\n#{xml}"
+            }
             @interface_network[:libvirt_network] = \
-              @libvirt_client.define_network_xml(to_xml('private_network'))
+              @libvirt_client.define_network_xml(xml)
             @logger.debug 'created network'
           rescue => e
             raise Errors::CreateNetworkError, error_message: e.message
           end
+        end
 
+        def write_created_network(env)
           created_networks_file = env[:machine].data_dir + 'created_networks'
 
-          message = 'Saving information about created network '
-          message << "#{@interface_network[:name]}, "
-          message << "UUID=#{@interface_network[:libvirt_network].uuid} "
-          message << "to file #{created_networks_file}."
+          message = 'Saving information about created network ' \
+            "#{@interface_network[:name]}, UUID=#{@interface_network[:libvirt_network].uuid} " \
+            "to file #{created_networks_file}."
           @logger.info(message)
 
           File.open(created_networks_file, 'a') do |file|

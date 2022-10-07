@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
@@ -39,7 +41,7 @@ module VagrantPlugins
           # Vagrant gives you adapter 0 by default
           # Assign interfaces to slots.
           configured_networks(env, @logger).each do |options|
-            # dont need to create interface for this type
+            # don't need to create interface for this type
             next if options[:iface_type] == :forwarded_port
 
             # TODO: fill first ifaces with adapter option specified.
@@ -95,6 +97,7 @@ module VagrantPlugins
               template_name = 'public_interface'
               @logger.info("Setting up public interface using device #{@device} in mode #{@mode}")
               @ovs = iface_configuration.fetch(:ovs, false)
+              @ovs_interfaceid = iface_configuration.fetch(:ovs_interfaceid, false)
               @trust_guest_rx_filters = iface_configuration.fetch(:trust_guest_rx_filters, false)
             # configuration for udp or tcp tunnel interfaces (p2p conn btwn guest OSes)
             elsif iface_configuration.fetch(:tunnel_type, nil)
@@ -127,10 +130,10 @@ module VagrantPlugins
             end
 
             message = "Creating network interface eth#{@iface_number}"
-            message << " connected to network #{@network_name}."
+            message += " connected to network #{@network_name}."
             if @mac
               @mac = @mac.scan(/(\h{2})/).join(':')
-              message << " Using MAC address: #{@mac}"
+              message += " Using MAC address: #{@mac}"
             end
             @logger.info(message)
 
@@ -156,6 +159,9 @@ module VagrantPlugins
                     else
                       to_xml(template_name)
                     end
+              @logger.debug {
+                "Attaching Network Device with XML:\n#{xml}"
+              }
               domain.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,
@@ -207,14 +213,15 @@ module VagrantPlugins
                   type: :static,
                   ip: options[:ip],
                   netmask: options[:netmask],
-                  gateway: options[:gateway]
+                  gateway: options[:gateway],
+                  route: options[:route]
                 }.merge(network)
+                if IPAddr.new(options[:ip]).ipv6?
+                  network[:type] = :static6
+                end
               else
                 network[:type] = :dhcp
               end
-
-              # do not run configure_networks for tcp tunnel interfaces
-              next if options.fetch(:tunnel_type, nil)
 
               networks_to_configure << network
             end
@@ -248,6 +255,7 @@ module VagrantPlugins
                           udp_tunnel={}, pci_bus, pci_slot)
           Nokogiri::XML::Builder.new do |xml|
             xml.interface(type: type || 'network') do
+              xml.alias(name: "ua-net-#{iface_number}")
               xml.source(source_options) do
                 xml.local(udp_tunnel) if type == 'udp'
               end

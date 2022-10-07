@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'nokogiri'
 
@@ -45,10 +47,10 @@ module VagrantPlugins
               )
             rescue Libvirt::RetrieveError => e
               # this network is already destroyed, so move on
-              if e.message =~ /Network not found/
+              if e.libvirt_code == ProviderLibvirt::Util::ErrorCodes::VIR_ERR_NO_NETWORK
                 @logger.info 'It is already undefined'
                 next
-              # some other error occured, so raise it again
+              # some other error occurred, so raise it again
               else
                 raise e
               end
@@ -66,7 +68,7 @@ module VagrantPlugins
             # Shutdown network first.
             # Undefine network.
             begin
-              libvirt_network.destroy
+              libvirt_network.destroy if libvirt_network.active?
               libvirt_network.undefine
               @logger.info 'Undefined it'
             rescue => e

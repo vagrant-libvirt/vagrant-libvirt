@@ -1,0 +1,131 @@
+<domain type='' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name></name>
+  <title></title>
+  <description></description>
+  <uuid></uuid>
+  <memory></memory>
+  <vcpu>1</vcpu>
+  <cpu mode='host-model'>
+    <model fallback='allow'></model>
+  </cpu>
+  <os>
+    <type>hvm</type>
+    <bootmenu enable='no'/>
+    <kernel></kernel>
+    <initrd></initrd>
+    <cmdline></cmdline>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'>
+  </clock>
+  <devices>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-0'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-1.img'/>
+      <target dev='sda' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-1'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-2.img'/>
+      <target dev='sdb' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-2'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-3.img'/>
+      <target dev='sdc' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-3'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-4.img'/>
+      <target dev='sdd' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-4'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-5.img'/>
+      <target dev='sde' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-5'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-6.img'/>
+      <target dev='sdf' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-6'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-7.img'/>
+      <target dev='sdg' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-7'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-8.img'/>
+      <target dev='sdh' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-8'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-9.img'/>
+      <target dev='sdi' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-9'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-10.img'/>
+      <target dev='sdj' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-10'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-11.img'/>
+      <target dev='sdk' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-11'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-12.img'/>
+      <target dev='sdl' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-12'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-13.img'/>
+      <target dev='sdm' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-13'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-14.img'/>
+      <target dev='sdn' bus='scsi'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-box-volume-14'/>
+      <driver name='qemu' type='qcow2' cache='unsafe'/>
+      <source file='/var/lib/libvirt/images/test-15.img'/>
+      <target dev='sdo' bus='scsi'/>
+    </disk>
+    <controller type='scsi' model='virtio-scsi' index='0'/>
+    <controller type='scsi' model='virtio-scsi' index='1'/>
+    <controller type='scsi' model='virtio-scsi' index='2'/>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'/>
+    <video>
+      <model type='cirrus' vram='16384' heads='1'/>
+    </video>
+  </devices>
+</domain>

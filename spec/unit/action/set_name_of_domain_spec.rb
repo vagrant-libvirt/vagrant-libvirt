@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain do
@@ -10,12 +12,12 @@ describe VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain do
     dmn = VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain.new(Object.new, @env)
     first  = dmn.build_domain_name(@env)
     second = dmn.build_domain_name(@env)
-    first.should_not eq(second)
+    expect(first).to_not eq(second)
   end
 
   it 'builds simple domain name' do
     @env.default_prefix = 'pre_'
     dmn = VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain.new(Object.new, @env)
-    dmn.build_domain_name(@env).should eq('pre_')
+    expect(dmn.build_domain_name(@env)).to eq('pre_')
   end
 end

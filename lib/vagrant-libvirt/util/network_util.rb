@@ -1,5 +1,16 @@
+# frozen_string_literal: true
+
+require 'ipaddr'
 require 'nokogiri'
 require 'vagrant/util/network_ip'
+
+class IPAddr
+  def get_mask
+    if @addr
+      _to_string(@mask_addr)
+    end
+  end
+end
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -9,6 +20,7 @@ module VagrantPlugins
 
         def configured_networks(env, logger)
           qemu_use_session = env[:machine].provider_config.qemu_use_session
+          qemu_use_agent = env[:machine].provider_config.qemu_use_agent
           management_network_device = env[:machine].provider_config.management_network_device
           management_network_name = env[:machine].provider_config.management_network_name
           management_network_address = env[:machine].provider_config.management_network_address
@@ -19,6 +31,8 @@ module VagrantPlugins
           management_network_pci_bus = env[:machine].provider_config.management_network_pci_bus
           management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
           management_network_domain = env[:machine].provider_config.management_network_domain
+          management_network_mtu = env[:machine].provider_config.management_network_mtu
+          management_network_keep = env[:machine].provider_config.management_network_keep
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -70,13 +84,27 @@ module VagrantPlugins
             management_network_options[:domain_name] = management_network_domain
           end
 
+          unless management_network_mtu.nil?
+            management_network_options[:mtu] = management_network_mtu
+          end
+
           unless management_network_pci_bus.nil? and management_network_pci_slot.nil?
             management_network_options[:bus] = management_network_pci_bus
             management_network_options[:slot] = management_network_pci_slot
           end
 
-          if (env[:machine].config.vm.box &&
-              !env[:machine].provider_config.mgmt_attach)
+          if management_network_keep
+            management_network_options[:always_destroy] = false
+          end
+
+          # if there is a box and management network is disabled
+          # need qemu agent enabled and at least one network that can be accessed
+          if (
+            env[:machine].config.vm.box &&
+            !env[:machine].provider_config.mgmt_attach &&
+            !env[:machine].provider_config.qemu_use_agent &&
+            !env[:machine].config.vm.networks.any? { |type, _| ["private_network", "public_network"].include?(type.to_s) }
+          )
             raise Errors::ManagementNetworkRequired
           end
 
@@ -92,19 +120,24 @@ module VagrantPlugins
             logger.debug "In config found network type #{type} options #{original_options}"
             # Options can be specified in Vagrantfile in short format (:ip => ...),
             # or provider format # (:libvirt__network_name => ...).
-            # https://github.com/mitchellh/vagrant/blob/master/lib/vagrant/util/scoped_hash_override.rb
+            # https://github.com/mitchellh/vagrant/blob/main/lib/vagrant/util/scoped_hash_override.rb
             options = scoped_hash_override(original_options, :libvirt)
             # store type in options
             # use default values if not already set
             options = {
-              iface_type:  type,
-              netmask:      '255.255.255.0',
+              iface_type:   type,
+              netmask:      options[:network_address] ?
+                            IPAddr.new(options[:network_address]).get_mask :
+                            '255.255.255.0',
               dhcp_enabled: true,
-              forward_mode: 'nat'
+              forward_mode: 'nat',
+              always_destroy: true
             }.merge(options)
 
             if options[:type].to_s == 'dhcp' && options[:ip].nil?
-              options[:network_name] = 'vagrant-private-dhcp'
+              options[:network_name] = options[:network_name] ?
+                                       options[:network_name] :
+                                       'vagrant-private-dhcp'
             end
 
             # add to list of networks to check
@@ -119,14 +152,16 @@ module VagrantPlugins
         def libvirt_networks(libvirt_client)
           libvirt_networks = []
 
-          active = libvirt_client.list_networks
-          inactive = libvirt_client.list_defined_networks
-
           # Iterate over all (active and inactive) networks.
-          active.concat(inactive).each do |network_name|
-            libvirt_network = libvirt_client.lookup_network_by_name(
-              network_name
-            )
+          libvirt_client.list_all_networks.each do |libvirt_network|
+            begin
+              bridge_name = libvirt_network.bridge_name
+            rescue Libvirt::Error
+              # there does not appear to be a mechanism to determine the type of network, only by
+              # querying the attribute and catching the error is it possible to ignore unsupported.
+              @logger.debug "Ignoring #{libvirt_network.name} as it does not support retrieval of bridge_name attribute"
+              next
+            end
 
             # Parse ip address and netmask from the network xml description.
             xml = Nokogiri::XML(libvirt_network.xml_desc)
@@ -149,12 +184,12 @@ module VagrantPlugins
             network_address = (network_address(ip, netmask) if ip && netmask)
 
             libvirt_networks << {
-              name:             network_name,
+              name:             libvirt_network.name,
               ip_address:       ip,
               netmask:          netmask,
               network_address:  network_address,
               dhcp_enabled:     dhcp_enabled,
-              bridge_name:      libvirt_network.bridge_name,
+              bridge_name:      bridge_name,
               domain_name:      domain_name,
               created:          true,
               active:           libvirt_network.active?,

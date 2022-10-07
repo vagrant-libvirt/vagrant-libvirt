@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'vagrant-libvirt/util/nfs'
 require 'yaml'
 
@@ -8,15 +10,16 @@ module VagrantPlugins
         include VagrantPlugins::ProviderLibvirt::Util::Nfs
 
         def initialize(app, _env)
+          @logger = Log4r::Logger.new('vagrant_libvirt::action::prune_nfs_exports')
           @app = app
         end
 
         def call(env)
-	  @machine = env[:machine]
+          @machine = env[:machine]
 
-	  if using_nfs?
+          if using_nfs?
             @logger.info('Using NFS, prunning NFS settings from host')
-	    if env[:host]
+            if env[:host]
               uuid = env[:machine].id
               # get all uuids
               uuids = env[:machine].provider.driver.connection.servers.all.map(&:id)

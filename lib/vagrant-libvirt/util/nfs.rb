@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'vagrant/action/builtin/mixin_synced_folders'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Util

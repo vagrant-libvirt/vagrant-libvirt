@@ -1,11 +1,12 @@
+# frozen_string_literal: true
+
 begin
   require 'vagrant'
 rescue LoadError
   raise 'The Vagrant Libvirt plugin must be run within Vagrant.'
 end
 
-# compatibility fix to define constant not available Vagrant <1.6
-::Vagrant::MachineState::NOT_CREATED_ID ||= :not_created
+require 'vagrant-libvirt/util/compat'
 
 module VagrantPlugins
   module ProviderLibvirt
@@ -25,13 +26,18 @@ module VagrantPlugins
         Provider
       end
 
-      action_hook(:remove_libvirt_image) do |hook|
+      action_hook(*(Util::Compat.action_hook_args(:remove_libvirt_image, :box_remove))) do |hook|
+        require_relative 'action'
         hook.after Vagrant::Action::Builtin::BoxRemove, Action.remove_libvirt_image
       end
 
-      guest_capability('linux', 'mount_p9_shared_folder') do
-        require_relative 'cap/mount_p9'
-        Cap::MountP9
+      guest_capability('linux', 'mount_9p_shared_folder') do
+        require_relative 'cap/mount_9p'
+        Cap::Mount9P
+      end
+      guest_capability('linux', 'mount_virtiofs_shared_folder') do
+        require_relative 'cap/mount_virtiofs'
+        Cap::MountVirtioFS
       end
 
       provider_capability(:libvirt, :nic_mac_addresses) do
@@ -39,11 +45,25 @@ module VagrantPlugins
         Cap::NicMacAddresses
       end
 
+      provider_capability(:libvirt, :public_address) do
+        require_relative 'cap/public_address'
+        Cap::PublicAddress
+      end
+
+      provider_capability(:libvirt, :snapshot_list) do
+        require_relative 'cap/snapshots'
+        Cap::Snapshots
+      end
+
       # lower priority than nfs or rsync
       # https://github.com/vagrant-libvirt/vagrant-libvirt/pull/170
       synced_folder('9p', 4) do
-        require_relative 'cap/synced_folder'
-        VagrantPlugins::SyncedFolder9p::SyncedFolder
+        require_relative 'cap/synced_folder_9p'
+        VagrantPlugins::SyncedFolder9P::SyncedFolder
+      end
+      synced_folder('virtiofs', 5) do
+        require_relative 'cap/synced_folder_virtiofs'
+        VagrantPlugins::SyncedFolderVirtioFS::SyncedFolder
       end
 
       # This initializes the internationalization strings.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -16,9 +18,9 @@ module VagrantPlugins
           libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
           if config.suspend_mode == 'managedsave'
             if libvirt_domain.has_managed_save?
-              env[:result] = libvirt_domain.has_managed_save?
+              env[:result] = env[:machine].state.id == :shutoff
             else
-              env[:result] = domain.state.to_s == 'paused'
+              env[:result] = env[:machine].state.id == :paused
               if env[:result]
                 env[:ui].warn('One time switching to pause suspend mode, found a paused VM.')
                 config.suspend_mode = 'pause'
@@ -27,10 +29,10 @@ module VagrantPlugins
           else
             if libvirt_domain.has_managed_save?
               env[:ui].warn('One time switching to managedsave suspend mode, state found.')
-              env[:result] = true
+              env[:result] = [:shutoff, :paused].include?(env[:machine].state.id)
               config.suspend_mode = 'managedsave'
             else
-              env[:result] = domain.state.to_s == 'paused'
+              env[:result] = env[:machine].state.id == :paused
             end
           end
 

@@ -11,6 +11,10 @@ usage() {
     echo "Usage: ${0} IMAGE [BOX] [Vagrantfile.add]"
     echo
     echo "Package a qcow2 image into a vagrant-libvirt reusable box"
+    echo ""
+    echo "If packaging from a Vagrant machine ensure 'config.ssh.insert_key = false' was "
+    echo "set in the original Vagrantfile to avoid removal of the default ssh key, "
+    echo "otherwise vagrant will not be able to connect to machines created from this box"
 }
 
 # Print the image's backing file
@@ -63,7 +67,7 @@ mkdir -p "$TMP_DIR"
 [[ ! -r "$IMG" ]] && error "'$IMG': Permission denied"
 
 if [ -n "$3" ] && [ -r "$3" ]; then
-  VAGRANTFILE_ADD="$(cat $3)"
+  VAGRANTFILE_ADD="$(cat "$3")"
 fi
 
 # We move / copy (when the image has master) the image to the tempdir

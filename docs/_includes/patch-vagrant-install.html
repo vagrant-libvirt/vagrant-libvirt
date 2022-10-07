@@ -1,0 +1,97 @@
+  libssh issue:
+  ```
+  /opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /opt/vagrant/embedded/lib64/libcrypto.so.1.1: version `OPENSSL_1_1_1b' not found (required by /lib64/libssh.so.4) - /home/xxx/.vagrant.d/gems/2.4.6/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+  ```
+  Solution identified thanks to James Reynolds (see [https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472](https://github.com/hashicorp/vagrant/issues/11020#issuecomment-540043472)).
+
+  libk5crypto issue:
+  ```
+  /opt/vagrant/embedded/lib/ruby/2.4.0/rubygems/core_ext/kernel_require.rb:55:in `require': /usr/lib64/libk5crypto.so.3: undefined symbol: EVP_KDF_ctrl, version OPENSSL_1_1_1b - /home/rbelgrave/.vagrant.d/gems/2.4.9/gems/ruby-libvirt-0.7.1/lib/_libvirt.so (LoadError)
+  ```
+  Solution identified thanks to Marco Bevc (see [https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983](https://github.com/hashicorp/vagrant/issues/11020#issuecomment-625801983)).
+
+  Compile libraries to replaced those bundled with Vagrant to allow linking ruby-libvirt against
+  vagrant's embedded ruby and the system libvirt (updated originals to be generic):
+
+  ```bash
+  mkdir patches
+  pushd patches
+{%- if include.distro == "centos" or include.distro == "rhel" %}
+
+  [[ ! -d centos-git-common ]] && git clone https://git.centos.org/centos-git-common
+  export PATH=$(readlink -f ./centos-git-common):$PATH
+  chmod a+x ./centos-git-common/*.sh
+
+  git clone https://git.centos.org/rpms/libssh
+{%- else %}
+
+  mkdir libssh
+{%- endif %}
+  pushd libssh
+  nvr=$(rpm -q --queryformat "libssh-%{version}-%{release}" libssh)
+  nv=$(rpm -q --queryformat "libssh-%{version}" libssh)
+{%- if include.distro == "fedora" %}
+  dnf download --source libssh
+  rpm2cpio ${nvr}.src.rpm | cpio -imdV
+  rm -rf ${nv}
+  tar xf ${nv}.tar.*z
+{%- elsif include.distro == "centos" %}
+  git checkout $(git tag -l | grep "${nvr}\$" | tail -n1)
+  into_srpm.sh -d c8s
+  pushd BUILD
+  tar xf ../SOURCES/${nv}.tar.*z
+{%- elsif include.distro == "opensuse" %}
+{%- else %}
+
+  *******Missing the correct distro for patch commands********
+{%- endif %}
+
+  mkdir libssh-build
+  pushd libssh-build
+  cmake ../${nv} -DOPENSSL_ROOT_DIR=/opt/vagrant/embedded/
+  make
+  sudo cp lib/libssh* /opt/vagrant/embedded/lib64
+  popd
+  popd
+{%- if include.distro == "centos" %}
+
+  popd
+{%- endif %}
+
+{%- if include.distro == "centos" or include.distro == "rhel" %}
+
+  git clone https://git.centos.org/rpms/krb5
+{%- else %}
+
+  mkdir krb5
+{%- endif %}
+  pushd krb5
+  nvr=$(rpm -q --queryformat "krb5-%{version}-%{release}" krb5-libs)
+  nv=$(rpm -q --queryformat "krb5-%{version}" krb5-libs)
+{%- if include.distro == "fedora" %}
+  dnf download --source krb5-libs
+  rpm2cpio ${nvr}.src.rpm | cpio -imdV
+  tar xf ${nv}.tar.*z
+{%- elsif include.distro == "centos" %}
+  git checkout $(git tag -l | grep "${nvr}\$" | tail -n1)
+  into_srpm.sh -d c8s
+  pushd BUILD
+  tar xf ../SOURCES/${nv}.tar.*z
+{%- elsif include.distro == "opensuse" %}
+{%- else %}
+  *******Missing the correct distro for patch commands********
+{%- endif %}
+
+  pushd ${nv}/src
+  ./configure
+  make
+  sudo cp -P lib/crypto/libk5crypto.* /opt/vagrant/embedded/lib64/
+  popd
+  popd
+{%- if include.distro == "centos" %}
+
+  popd
+{%- endif %}
+
+  popd
+  ```

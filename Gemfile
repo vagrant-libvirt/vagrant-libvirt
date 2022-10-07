@@ -1,18 +1,18 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-# Specify your gem's dependencies in vagrant-libvirt.gemspec
-gemspec
+source 'https://rubygems.org'
 
 group :development do
   # We depend on Vagrant for development, but we don't add it as a
   # gem dependency because we expect to be installed within the
   # Vagrant environment itself using `vagrant plugin`.
   vagrant_version = ENV['VAGRANT_VERSION']
-  if vagrant_version
+  if !vagrant_version.nil? && !vagrant_version.empty?
     gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git',
-      tag: vagrant_version
+      :ref => vagrant_version
   else
-    gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git'
+    gem 'vagrant', :git => 'https://github.com/hashicorp/vagrant.git',
+      :branch => 'main'
   end
 
   begin
@@ -24,17 +24,30 @@ group :development do
     vagrant_gem_version = Gem::Version.new('2.2.8')
   end
 
-  if vagrant_gem_version <= Gem::Version.new('2.2.7')
-    gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec', :ref => '161128f2216cee8edb7bcd30da18bd4dea86f98a'
+  vagrant_spec_version = ENV['VAGRANT_SPEC_VERSION']
+  if !vagrant_spec_version.nil? && !vagrant_spec_version.empty?
+    gem 'vagrant-spec', :git => 'https://github.com/hashicorp/vagrant-spec', :ref => vagrant_spec_version
+  elsif vagrant_gem_version <= Gem::Version.new('2.2.7')
+    gem 'vagrant-spec', :git => 'https://github.com/hashicorp/vagrant-spec', :ref => '161128f2216cee8edb7bcd30da18bd4dea86f98a'
   else
-    gem 'vagrant-spec', :github => 'hashicorp/vagrant-spec'
+    gem 'vagrant-spec', :git => 'https://github.com/hashicorp/vagrant-spec', :branch => "main"
+  end
+
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0.0')
+    gem 'rexml'
   end
 
   gem 'pry'
+  gem 'simplecov'
+  gem 'simplecov-lcov'
 end
 
 group :plugins do
   gemspec
 end
 
-gem 'coveralls', require: false
+group :test do
+  gem "test-prof", require: false
+  gem "ruby-prof", ">= 0.17.0", require: false
+  gem 'stackprof', '>= 0.2.9', require: false
+end

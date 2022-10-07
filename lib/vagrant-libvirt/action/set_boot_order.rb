@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'log4r'
 require 'nokogiri'
 
@@ -14,6 +16,12 @@ module VagrantPlugins
         end
 
         def call(env)
+          # Only execute specific boot ordering if this is defined
+          # in the Vagrant file
+          unless @boot_order.count >= 1
+            return @app.call(env)
+          end
+
           # Get domain first
           begin
             domain = env[:machine].provider
@@ -28,52 +36,48 @@ module VagrantPlugins
                   error_message: e.message
           end
 
-          # Only execute specific boot ordering if this is defined
-          # in the Vagrant file
-          if @boot_order.count >= 1
+          # If a domain is initially defined with no box or disk or
+          # with an explicit boot order, Libvirt adds <boot dev="foo">
+          # This conflicts with an explicit boot_order configuration,
+          # so we need to remove it from the domain xml and feed it back.
+          # Also see https://bugzilla.redhat.com/show_bug.cgi?id=1248514
+          # as to why we have to do this after all devices have been defined.
+          xml = Nokogiri::XML(domain.xml_desc)
+          xml.search('/domain/os/boot').each(&:remove)
 
-            # If a domain is initially defined with no box or disk or
-            # with an explicit boot order, Libvirt adds <boot dev="foo">
-            # This conflicts with an explicit boot_order configuration,
-            # so we need to remove it from the domain xml and feed it back.
-            # Also see https://bugzilla.redhat.com/show_bug.cgi?id=1248514
-            # as to why we have to do this after all devices have been defined.
-            xml = Nokogiri::XML(domain.xml_desc)
-            xml.search('/domain/os/boot').each(&:remove)
+          # Parse the XML and find each defined drive and network interfacee
+          hd = xml.search("/domain/devices/disk[@device='disk']")
+          cdrom = xml.search("/domain/devices/disk[@device='cdrom']")
+          # implemented only for 1 network
+          nets = @boot_order.flat_map do |x|
+            x.class == Hash ? x : nil
+          end.compact
+          raise 'Defined only for 1 network for boot' if nets.size > 1
+          network = search_network(nets, xml)
 
-            # Parse the XML and find each defined drive and network interfacee
-            hd = xml.search("/domain/devices/disk[@device='disk']")
-            cdrom = xml.search("/domain/devices/disk[@device='cdrom']")
-            # implemented only for 1 network
-            nets = @boot_order.flat_map do |x|
-              x.class == Hash ? x : nil
-            end.compact
-            raise 'Defined only for 1 network for boot' if nets.size > 1
-            network = search_network(nets, xml)
+          # Generate an array per device group and a flattened
+          # array from all of those
+          devices = { 'hd' => hd,
+                      'cdrom' => cdrom,
+                      'network' => network }
 
-            # Generate an array per device group and a flattened
-            # array from all of those
-            devices = { 'hd' => hd,
-                        'cdrom' => cdrom,
-                        'network' => network }
-
-            final_boot_order = final_boot_order(@boot_order, devices)
-            # Loop over the entire defined boot order array and
-            # create boot order entries in the domain XML
-            final_boot_order.each_with_index do |node, index|
-              boot = "<boot order='#{index + 1}'/>"
-              node.add_child(boot)
-              logger_msg(node, index)
-            end
-
-            # Finally redefine the domain XML through Libvirt
-            # to apply the boot ordering
-            env[:machine].provider
-                         .driver
-                         .connection
-                         .client
-                         .define_domain_xml(xml.to_s)
+          final_boot_order = final_boot_order(@boot_order, devices)
+          # Loop over the entire defined boot order array and
+          # create boot order entries in the domain XML
+          final_boot_order.each_with_index do |node, index|
+            next if node.nil?
+            boot = "<boot order='#{index + 1}'/>"
+            node.add_child(boot)
+            logger_msg(node, index)
           end
+
+          # Finally redefine the domain XML through Libvirt
+          # to apply the boot ordering
+          env[:machine].provider
+                        .driver
+                        .connection
+                        .client
+                        .define_domain_xml(xml.to_s)
 
           @app.call(env)
         end
@@ -86,9 +90,13 @@ module VagrantPlugins
 
         def search_network(nets, xml)
           str = '/domain/devices/interface'
-          str += "[(@type='network' or @type='udp' or @type='bridge')"
+          str += "[(@type='network' or @type='udp' or @type='bridge' or @type='direct')"
           unless nets.empty?
-            str += " and source[@network='#{nets.first['network']}']"
+            net = nets.first
+            network = net['network']
+            dev = net['dev']
+            str += " and source[@network='#{network}']" if network
+            str += " and source[@dev='#{dev}']" if dev
           end
           str += ']'
           @logger.debug(str)

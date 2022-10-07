@@ -1,6 +1,6 @@
 <network ipv6='<%= @guest_ipv6 %>'>
   <name><%= @network_name %></name>
-  <bridge name="<%= @network_bridge_name %>" />
+  <bridge name="<%= @network_bridge_name %>" stp="<%= @network_bridge_stp %>" delay="<%= @network_bridge_delay %>" />
 
   <% if @network_domain_name %>
     <domain name="<%= @network_domain_name %>" localOnly="yes" />
@@ -18,8 +18,11 @@
     <% end %>
   <% end %>
 
-  <% if @network_forward_mode != 'veryisolated' %>
+  <% if @network_forward_mode != 'veryisolated' && !@network_address.nil? %>
     <ip address="<%= @network_address %>" netmask="<%= @network_netmask %>">
+    <% if @tftp_root %>
+      <tftp root="<%= @tftp_root %>" />
+    <% end %>
     <% if @network_dhcp_enabled  %>
       <dhcp>
         <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>" />

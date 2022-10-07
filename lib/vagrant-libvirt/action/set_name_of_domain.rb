@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'securerandom'
 module VagrantPlugins
   module ProviderLibvirt
@@ -46,7 +48,7 @@ module VagrantPlugins
               env[:root_path].basename.to_s.dup.concat('_')
             elsif config.default_prefix.empty?
               # don't have any prefix, not even "_"
-              ''
+              String.new
             else
               config.default_prefix.to_s.dup
             end
