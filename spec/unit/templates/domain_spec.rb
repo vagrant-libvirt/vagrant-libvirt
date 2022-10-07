@@ -139,12 +139,14 @@ describe 'templates/domain' do
       domain.domain_volumes.push({
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test.qcow2',
+        :address_type => 'virtio-mmio',
       })
       domain.domain_volumes.push({
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test2.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test2.qcow2',
+        :address_type => 'virtio-mmio',
       })
       resolve
 
