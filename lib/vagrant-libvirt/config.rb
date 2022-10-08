@@ -148,6 +148,7 @@ module VagrantPlugins
       # Storage
       attr_accessor :disks
       attr_accessor :cdroms
+      attr_accessor :floppies
 
       # Inputs
       attr_accessor :inputs
@@ -305,6 +306,7 @@ module VagrantPlugins
         # Storage
         @disks             = []
         @cdroms            = []
+        @floppies          = []
 
         # Inputs
         @inputs            = UNSET_VALUE
@@ -380,6 +382,25 @@ module VagrantPlugins
 
         # is it better to raise our own error, or let Libvirt cause the exception?
         raise 'Only four cdroms may be attached at a time'
+      end
+
+
+      def _get_floppy_dev(floppies)
+        exist = Hash[floppies.collect { |x| [x[:dev], true] }]
+        # fda - fdb
+        curr = 'a'.ord
+        while curr <= 'b'.ord
+          dev = "fd#{curr.chr}"
+          if exist[dev]
+            curr += 1
+            next
+          else
+            return dev
+          end
+        end
+
+        # is it better to raise our own error, or let Libvirt cause the exception?
+        raise 'Only two floppies may be attached at a time'
       end
 
       def _generate_numa
@@ -654,8 +675,11 @@ module VagrantPlugins
       # NOTE: this will run twice for each time it's needed- keep it idempotent
       def storage(storage_type, options = {})
         if storage_type == :file
-          if options[:device] == :cdrom
+          case options[:device]
+          when :cdrom
             _handle_cdrom_storage(options)
+          when :floppy
+            _handle_floppy_storage(options)
           else
             _handle_disk_storage(options)
           end
@@ -687,6 +711,28 @@ module VagrantPlugins
         }
 
         @cdroms << cdrom
+      end
+
+      def _handle_floppy_storage(options = {})
+        # <disk type='file' device='floppy'>
+        # <source file='/var/lib/libvirt/images/floppy.vfd'/>
+        # <target dev='fda' bus='fdc'/>
+        # </disk>
+        #
+        # note the target dev will need to be changed with each floppy drive (fda or fdb)
+
+        options = {
+          bus: 'fdc',
+          path: nil
+        }.merge(options)
+
+        floppy = {
+          dev: options[:dev],
+          bus: options[:bus],
+          path: options[:path]
+        }
+
+        @floppies << floppy
       end
 
       def _handle_disk_storage(options = {})
@@ -947,6 +993,11 @@ module VagrantPlugins
           cdrom[:dev] = _get_cdrom_dev(@cdroms) if cdrom[:dev].nil?
           cdrom
         end
+        @floppies = [] if @floppies == UNSET_VALUE
+        @floppies.map! do |floppy|
+          floppy[:dev] = _get_floppy_dev(@floppies) if floppy[:dev].nil?
+          floppy
+        end
 
         # Inputs
         @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
@@ -1114,6 +1165,10 @@ module VagrantPlugins
           c = cdroms.dup
           c += other.cdroms
           result.cdroms = c
+
+          c = floppies.dup
+          c += other.floppies
+          result.floppies = c
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 

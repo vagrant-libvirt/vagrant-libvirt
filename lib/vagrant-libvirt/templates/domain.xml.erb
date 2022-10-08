@@ -185,6 +185,12 @@
       <readonly/>
     </disk>
 <%- end -%>
+<%- @floppies.each do |f| -%>
+    <disk type='file' device='floppy'>
+      <source file='<%= f[:path] %>'/>
+      <target dev='<%= f[:dev] %>' bus='<%= f[:bus] %>'/>
+    </disk>
+<%- end -%>
 <%- @serials.each_with_index do |serial, port| -%>
     <serial type='<%= serial[:type] %>'>
       <%- unless serial[:source].nil? -%>
