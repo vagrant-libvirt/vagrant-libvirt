@@ -14,6 +14,7 @@
     <memory nodeset='1-4,^3,6'/>
   </numatune>
   <cputune>
+    <vcpupin vcpu="0" cpuset="0" />
     <shares>1024</shares>
   </cputune>
   <os>
@@ -94,6 +95,10 @@
       <source file=''/>
       <target dev='hdb' bus='ide'/>
       <readonly/>
+    </disk>
+    <disk type='file' device='floppy'>
+      <source file=''/>
+      <target dev='fda' bus='fdc'/>
     </disk>
     <serial type='file'>
       <source path='/var/log/vm_consoles/machine.log'/>

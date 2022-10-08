@@ -32,6 +32,7 @@ module VagrantPlugins
           @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @cpu_affinity = config.cpu_affinity
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
@@ -101,6 +102,7 @@ module VagrantPlugins
           @domain_volumes = env[:domain_volumes] || []
           @disks = env[:disks] || []
           @cdroms = config.cdroms
+          @floppies = config.floppies
 
           # Input
           @inputs = config.inputs
@@ -207,13 +209,16 @@ module VagrantPlugins
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           unless @cpuset.nil?
-            env[:ui].info(" -- Cpuset:            #{@cpuset}")
+            env[:ui].info("   -- Cpuset:          #{@cpuset}")
           end
           if not @cpu_topology.empty?
-            env[:ui].info(" -- CPU topology:   sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
+            env[:ui].info(" -- CPU topology:      sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
+          end
+          @cpu_affinity.each do |vcpu, cpuset|
+            env[:ui].info(" -- CPU affinity:      vcpu #{vcpu} => cpuset #{cpuset}")
           end
           @cpu_features.each do |cpu_feature|
-            env[:ui].info(" -- CPU Feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
+            env[:ui].info(" -- CPU feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
           end
           @features.each do |feature|
             env[:ui].info(" -- Feature:           #{feature}")
@@ -321,6 +326,14 @@ module VagrantPlugins
 
           @cdroms.each do |cdrom|
             env[:ui].info(" -- CDROM(#{cdrom[:dev]}):        #{cdrom[:path]}")
+          end
+
+          unless @floppies.empty?
+            env[:ui].info(" -- Floppies:          #{_floppies_print(@floppies)}")
+          end
+
+          @floppies.each do |floppy|
+            env[:ui].info(" -- Floppy(#{floppy[:dev]}):      #{floppy[:path]}")
           end
 
           @inputs.each do |input|
@@ -439,6 +452,10 @@ module VagrantPlugins
 
         def _cdroms_print(cdroms)
           cdroms.collect { |x| x[:dev] }.join(', ')
+        end
+
+        def _floppies_print(floppies)
+          floppies.collect { |x| x[:dev] }.join(', ')
         end
       end
     end

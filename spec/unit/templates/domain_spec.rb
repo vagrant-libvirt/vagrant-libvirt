@@ -67,6 +67,7 @@ describe 'templates/domain' do
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
+      domain.cpuaffinitiy(0 => '0')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
       domain.loader = '/efi/loader'
@@ -82,6 +83,7 @@ describe 'templates/domain' do
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
       domain.storage(:file, path: 'test-disk3.qcow2', address_type: 'pci')
+      domain.storage(:file, device: :floppy)
       domain.storage(:file, device: :cdrom)
       domain.storage(:file, device: :cdrom)
       domain.channel(type: 'unix',

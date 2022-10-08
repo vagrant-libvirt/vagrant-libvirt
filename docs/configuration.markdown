@@ -111,7 +111,6 @@ end
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
 * `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
 * `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
-* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 
   ```ruby
   Vagrant.configure("2") do |config|
@@ -123,6 +122,18 @@ end
   end
   ```
 
+* `cpuaffinitiy` - Mapping of vCPUs to host CPUs. [See `vcpupin`](https://libvirt.org/formatdomain.html#cpu-tuning).
+
+  ```ruby
+  Vagrant.configure("2") do |config|
+    config.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = 4
+      libvirt.cpuaffinitiy 0 => '0-4,^3', 1 => '5', 2 => '6,7'
+    end
+  end
+  ```
+
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
 * `nested` - [Enable nested virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
 * `cpu_mode` - [CPU emulation mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
@@ -676,6 +687,25 @@ Vagrant.configure("2") do |config|
     libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso1.iso'
     libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso2.iso'
     libvirt.storage :file, :device => :cdrom, :path => '/path/to/iso3.iso'
+  end
+end
+```
+
+## Floppies
+
+You can attach up to two floppies to a VM via `libvirt.storage :file,
+:device => :floppy`. Available options are:
+
+* `path` - The path to the vfd image to be used for the floppy drive.
+* `dev` - The device to use (`fda` or `fdb`). This will be
+  automatically determined if unspecified.
+
+The following example creates a floppy drive in the VM:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.storage :file, :device => :floppy, :path => '/path/to/floppy.vfs'
   end
 end
 ```
