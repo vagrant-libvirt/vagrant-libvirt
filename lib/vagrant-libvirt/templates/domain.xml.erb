@@ -46,9 +46,14 @@
   <%- end -%>
   </memoryBacking>
 <%- end%>
-<%- if @shares -%>
+<%- if !@cpu_affinity.empty? || @shares -%>
   <cputune>
+  <%- @cpu_affinity.each do |vcpu, cpuset| -%>
+    <vcpupin vcpu="<%= vcpu %>" cpuset="<%= cpuset %>" />
+  <%- end -%>
+  <%- if @shares -%>
     <shares><%= @shares %></shares>
+  <%- end -%>
   </cputune>
 <%- end -%>
   <os>
