@@ -32,6 +32,7 @@ module VagrantPlugins
           @cpuset = config.cpuset
           @cpu_features = config.cpu_features
           @cpu_topology = config.cpu_topology
+          @cpu_affinity = config.cpu_affinity
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
@@ -207,13 +208,16 @@ module VagrantPlugins
           env[:ui].info(" -- Domain type:       #{@domain_type}")
           env[:ui].info(" -- Cpus:              #{@cpus}")
           unless @cpuset.nil?
-            env[:ui].info(" -- Cpuset:            #{@cpuset}")
+            env[:ui].info("   -- Cpuset:          #{@cpuset}")
           end
           if not @cpu_topology.empty?
-            env[:ui].info(" -- CPU topology:   sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
+            env[:ui].info(" -- CPU topology:      sockets=#{@cpu_topology[:sockets]}, cores=#{@cpu_topology[:cores]}, threads=#{@cpu_topology[:threads]}")
+          end
+          @cpu_affinity.each do |vcpu, cpuset|
+            env[:ui].info(" -- CPU affinity:      vcpu #{vcpu} => cpuset #{cpuset}")
           end
           @cpu_features.each do |cpu_feature|
-            env[:ui].info(" -- CPU Feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
+            env[:ui].info(" -- CPU feature:       name=#{cpu_feature[:name]}, policy=#{cpu_feature[:policy]}")
           end
           @features.each do |feature|
             env[:ui].info(" -- Feature:           #{feature}")
