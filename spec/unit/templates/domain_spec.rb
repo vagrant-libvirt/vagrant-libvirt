@@ -67,6 +67,7 @@ describe 'templates/domain' do
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
+      domain.cpuaffinitiy(0 => '0')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
       domain.loader = '/efi/loader'
