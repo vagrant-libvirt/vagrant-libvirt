@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: 'Download artifact'
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const artifacts = await github.paginate(
@@ -40,7 +40,7 @@ jobs:
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
       - run: unzip pr.zip
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v6
         with:
           # This snippet is public-domain, taken from
           # https://github.com/oprypin/nightly.link/blob/master/.github/workflows/pr-comment.yml
