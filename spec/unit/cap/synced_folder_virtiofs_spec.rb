@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'support/sharedcontext'
 
 require 'vagrant-libvirt/cap/synced_folder_virtiofs'
 require 'vagrant-libvirt/util/unindent'

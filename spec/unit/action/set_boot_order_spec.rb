@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'support/sharedcontext'
-require 'support/libvirt_context'
 
 require 'vagrant-libvirt/action/set_boot_order'
 

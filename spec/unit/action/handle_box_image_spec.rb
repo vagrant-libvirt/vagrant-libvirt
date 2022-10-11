@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 require 'json'
-require 'support/sharedcontext'
-require 'support/libvirt_context'
 
 require 'vagrant-libvirt/action/destroy_domain'
 require 'vagrant-libvirt/util/byte_number'

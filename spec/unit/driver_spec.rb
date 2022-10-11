@@ -4,7 +4,6 @@ require 'fog/libvirt/requests/compute/dhcp_leases'
 
 require 'spec_helper'
 require 'support/binding_proc'
-require 'support/sharedcontext'
 
 require 'vagrant-libvirt/driver'
 

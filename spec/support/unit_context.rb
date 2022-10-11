@@ -22,21 +22,36 @@ shared_context 'unit' do
     test_env.vagrantfile vagrantfile
     test_env
   end
-  let(:env)              { { env: iso_env, machine: machine, ui: ui, root_path: '/rootpath' } }
-  let(:conf)             { Vagrant::Config::V2::DummyConfig.new }
-  let(:ui)               { Vagrant::UI::Silent.new }
   let(:iso_env)          { test_env.create_vagrant_env ui_class: Vagrant::UI::Basic }
   let(:machine)          { iso_env.machine(:test, :libvirt) }
+  let(:ui)               { Vagrant::UI::Silent.new }
+  let(:env)              { { env: iso_env, machine: machine, ui: ui, root_path: '/rootpath' } }
+
   # Mock the communicator to prevent SSH commands for being executed.
   let(:communicator)     { double('communicator') }
   # Mock the guest operating system.
   let(:guest)            { double('guest') }
   let(:app)              { ->(env) {} }
-  let(:plugin)           { register_plugin }
 
   before (:each) do
     allow(machine).to receive(:guest).and_return(guest)
     allow(machine).to receive(:communicate).and_return(communicator)
     allow(machine).to receive(:ui).and_return(ui)
+  end
+
+  around do |example|
+    Dir.mktmpdir do |tmpdir|
+      original_home = ENV['HOME']
+
+      begin
+        virtual_home = File.expand_path(File.join(tmpdir, 'home'))
+        Dir.mkdir(virtual_home)
+        ENV['HOME'] = virtual_home
+
+        example.run
+      ensure
+        ENV['HOME'] = original_home
+      end
+    end
   end
 end
