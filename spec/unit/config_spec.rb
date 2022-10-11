@@ -3,7 +3,6 @@
 require 'support/binding_proc'
 
 require 'spec_helper'
-require 'support/sharedcontext'
 
 require 'vagrant-libvirt/config'
 
