@@ -673,7 +673,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         expect(subject.graphics_port).to eq(nil)
         expect(subject.graphics_ip).to eq(nil)
-        expect(subject.graphics_autoport).to eq('yes')
+        expect(subject.graphics_autoport).to eq(nil)
         expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
       end
     end

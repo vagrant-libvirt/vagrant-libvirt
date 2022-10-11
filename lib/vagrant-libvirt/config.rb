@@ -956,7 +956,7 @@ module VagrantPlugins
         @initrd = '' if @initrd == UNSET_VALUE
         @dtb = nil if @dtb == UNSET_VALUE
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
-        @graphics_autoport = @graphics_port == UNSET_VALUE ? 'yes' : nil
+        @graphics_autoport = @graphics_type != 'spice' && @graphics_port == UNSET_VALUE ? 'yes' : nil
         if (@graphics_type != 'vnc' && @graphics_type != 'spice') ||
            @graphics_passwd == UNSET_VALUE
           @graphics_passwd = nil
