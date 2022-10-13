@@ -52,8 +52,8 @@ module VagrantPlugins
         # @return [String]
         def read_machine_ip(machine)
           # check host only ip
-          ssh_host = machine.ssh_info[:host]
-          return ssh_host if ping(ssh_host)
+          ssh_info = machine.ssh_info
+          return ssh_info[:host] if ping(ssh_info[:host], ssh_info[:port])
 
           # check other ips
           command = "ip=$(which ip); ${ip:-/sbin/ip} addr show | grep -i 'inet ' | grep -v '127.0.0.1' | tr -s ' ' | cut -d' ' -f3 | cut -d'/' -f 1"
@@ -65,17 +65,19 @@ module VagrantPlugins
           ips = result.chomp.split("\n").uniq
           @logger.info("guest IPs: #{ips.join(', ')}")
           ips.each do |ip|
-            next if ip == ssh_host
+            next if ip == ssh_info[:host]
             return ip if ping(ip)
           end
+
+          nil
         end
 
         private
 
         # Check if we can open a connection to the host
-        def ping(host, timeout = 3)
+        def ping(host, port=nil, timeout = 3)
           ::Timeout.timeout(timeout) do
-            s = TCPSocket.new(host, 'ssh')
+            s = TCPSocket.new(host, port || 'ssh')
             s.close
           end
           true
