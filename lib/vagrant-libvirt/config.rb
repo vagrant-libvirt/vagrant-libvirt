@@ -953,7 +953,7 @@ module VagrantPlugins
         @volume_cache = nil if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
         @cmd_line = '' if @cmd_line == UNSET_VALUE
-        @initrd = '' if @initrd == UNSET_VALUE
+        @initrd = nil if @initrd == UNSET_VALUE
         @dtb = nil if @dtb == UNSET_VALUE
         @graphics_type = 'vnc' if @graphics_type == UNSET_VALUE
         @graphics_autoport = @graphics_type != 'spice' && @graphics_port == UNSET_VALUE ? 'yes' : nil
