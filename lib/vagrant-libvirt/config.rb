@@ -3,6 +3,7 @@
 require 'cgi'
 
 require 'vagrant'
+require 'vagrant/action/builtin/mixin_synced_folders'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/resolvers'
@@ -10,6 +11,8 @@ require 'vagrant-libvirt/util/resolvers'
 module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
+      include Vagrant::Action::Builtin::MixinSyncedFolders
+
       # manually specify URI
       # will supersede most other options if provided
       attr_accessor :uri
@@ -1146,6 +1149,20 @@ module VagrantPlugins
 
           if !machine.provider_config.disk_driver_opts.empty?
             machine.ui.warn("Libvirt Provider: volume_cache has no effect when disk_driver is defined.")
+          end
+        end
+
+        # if run via a session, then qemu will be run with user permissions, make sure the user
+        # has permissions to access the host paths otherwise there will be an error triggered
+        if machine.provider_config.qemu_use_session
+          synced_folders(machine).fetch(:"9p", []).each do |_, options|
+            unless File.readable?(options[:hostpath])
+              errors << "9p synced_folder cannot mount host path #{options[:hostpath]} into guest #{options[:guestpath]} when using qemu session as executing user does not have permissions to read the directory on the user."
+            end
+          end
+
+          unless synced_folders(machine)[:"virtiofs"].nil?
+            machine.ui.warn("Note: qemu session may not support virtiofs for synced_folders, use 9p or enable use of qemu:///system context unless you know what you are doing")
           end
         end
 
