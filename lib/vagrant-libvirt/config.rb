@@ -1149,6 +1149,20 @@ module VagrantPlugins
           end
         end
 
+        # if run via a session, then qemu will be run with user permissions, make sure the user
+        # has permissions to access the host paths otherwise there will be an error triggered
+        if machine.provider_config.qemu_use_session
+          machine.synced_folders.fetch(:"9p", []).each do |_, options|
+            unless File.readable?(options[:hostpath])
+              errors << "9p synced_folder cannot mount host path #{options[:hostpath]} into guest #{options[:guestpath]} when using qemu session as executing user does not have permissions to read the directory on the user."
+            end
+          end
+
+          unless machine.synced_folders[:"virtiofs"].nil?
+            machine.ui.warn("Note: qemu session may not support virtiofs for synced_folders, use 9p or enable use of qemu:///system context unless you know what you are doing")
+          end
+        end
+
         errors = validate_sysinfo(machine, errors)
 
         { 'Libvirt Provider' => errors }
