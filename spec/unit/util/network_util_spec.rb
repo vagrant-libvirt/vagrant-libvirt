@@ -45,23 +45,12 @@ describe 'VagrantPlugins::ProviderLibvirt::Util::NetworkUtil' do
   describe '#libvirt_networks' do
     let(:default_network) { create_libvirt_network('default') }
     let(:additional_network) { create_libvirt_network('vagrant-libvirt') }
-    let(:hostdev_network) { create_libvirt_network('hostdev', {:active? => false}) }
 
     it 'should retrieve the list of networks' do
       expect(logger).to_not receive(:debug)
-      expect(libvirt_client).to receive(:list_all_networks).and_return([default_network, additional_network])
+      expect(driver).to receive(:list_all_networks).and_return([default_network, additional_network])
 
-      expect(subject.libvirt_networks(libvirt_client)).to match_array([
-        hash_including(:name => 'default'),
-        hash_including(:name => 'vagrant-libvirt'),
-      ])
-    end
-
-    it 'should handle networks without bridge names' do
-      expect(logger).to receive(:debug).with(/Ignoring hostdev as it does not/)
-      expect(libvirt_client).to receive(:list_all_networks).and_return([default_network, hostdev_network, additional_network])
-
-      expect(subject.libvirt_networks(libvirt_client)).to match_array([
+      expect(subject.libvirt_networks(driver)).to match_array([
         hash_including(:name => 'default'),
         hash_including(:name => 'vagrant-libvirt'),
       ])
