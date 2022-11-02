@@ -242,7 +242,8 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     ] }
 
     before do
-      allow(subject).to receive(:system_connection).and_return(libvirt_client)
+      allow(subject).to receive(:connection).and_return(connection)
+      allow(connection).to receive(:client).and_return(libvirt_client)
       expect(libvirt_client).to receive(:list_all_networks).and_return(libvirt_networks)
     end
 
