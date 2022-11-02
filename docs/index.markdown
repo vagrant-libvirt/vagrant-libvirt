@@ -36,18 +36,21 @@ See [Requirements]({{ '/installation/#requirements' | relative_url }}) for guide
    * Ubuntu
 
    ```
+   sudo apt-get purge vagrant-libvirt
+   sudo apt-mark hold vagrant-libvirt
    sudo apt-get update && \
-       sudo apt install -y qemu libvirt-daemon-system libvirt-clients \
-           ebtables dnsmasq-base libguestfs-tools
-   sudo apt install -y --no-install-recommends vagrant ruby-fog-libvirt
+       sudo apt-get install -y qemu libvirt-daemon-system ebtables libguestfs-tools \
+           vagrant ruby-fog-libvirt
    ```
 
    * Fedora
 
    ```
-   vagrant_libvirt_deps=($(sudo dnf repoquery --depends vagrant-libvirt 2>/dev/null | cut -d' ' -f1))
-   dependencies=$(sudo dnf repoquery --qf "%{name}" ${vagrant_libvirt_deps[@]/#/--whatprovides })
-   sudo dnf install --assumeyes --setopt=install_weak_deps=False @virtualization ${dependencies}
+   sudo dnf remove vagrant-libvirt
+   sudo sed -i \
+       '/^\(exclude=.*\)/ {/vagrant-libvirt/! s//\1 vagrant-libvirt/;:a;n;ba;q}; $aexclude=vagrant-libvirt' \
+       /etc/dnf/dnf.conf
+   sudo dnf install --assumeyes @virtualization vagrant rubygem-fog-libvirt
    ```
 2. Install the latest release of vagrant-libvirt
 ```
