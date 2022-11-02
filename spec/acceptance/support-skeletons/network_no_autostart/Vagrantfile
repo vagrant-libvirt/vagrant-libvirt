@@ -1,0 +1,18 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# frozen_string_literal: true
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "infernix/tinycore"
+  config.ssh.shell = "/bin/sh"
+  config.ssh.insert_key = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.provider :libvirt do |libvirt|
+    # try to use a separate network
+    libvirt.management_network_name = 'vagrant-libvirt-test'
+    # aim for a network address not in use, hopefully!
+    libvirt.management_network_address = '192.168.120.0/24'
+  end
+end

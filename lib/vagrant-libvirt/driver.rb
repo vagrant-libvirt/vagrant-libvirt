@@ -198,7 +198,13 @@ module VagrantPlugins
       end
 
       def list_all_networks
-        system_connection.list_all_networks.select do |net|
+        client = if @machine.provider_config.qemu_use_session
+                   system_connection
+                else
+                  connection.client
+                end
+
+        client.list_all_networks.select do |net|
           begin
             net.bridge_name
           rescue Libvirt::Error
