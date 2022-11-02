@@ -16,35 +16,49 @@
   ```bash
   mkdir patches
   pushd patches
-{%- if include.distro == "centos" or include.distro == "rhel" %}
+{%- case include.distro %}
+{%-   when "centos" %}
 
   [[ ! -d centos-git-common ]] && git clone https://git.centos.org/centos-git-common
   export PATH=$(readlink -f ./centos-git-common):$PATH
   chmod a+x ./centos-git-common/*.sh
 
   git clone https://git.centos.org/rpms/libssh
-{%- else %}
+{%-   else %}
 
   mkdir libssh
-{%- endif %}
+{%- endcase %}
   pushd libssh
+{%- case include.distro %}
+{%-   when "fedora" %}
   nvr=$(rpm -q --queryformat "libssh-%{version}-%{release}" libssh)
   nv=$(rpm -q --queryformat "libssh-%{version}" libssh)
-{%- if include.distro == "fedora" %}
   dnf download --source libssh
   rpm2cpio ${nvr}.src.rpm | cpio -imdV
   rm -rf ${nv}
   tar xf ${nv}.tar.*z
-{%- elsif include.distro == "centos" %}
+{%-   when "centos" %}
+  nvr=$(rpm -q --queryformat "libssh-%{version}-%{release}" libssh)
+  nv=$(rpm -q --queryformat "libssh-%{version}" libssh)
   git checkout $(git tag -l | grep "${nvr}\$" | tail -n1)
   into_srpm.sh -d c8s
   pushd BUILD
   tar xf ../SOURCES/${nv}.tar.*z
-{%- elsif include.distro == "opensuse" %}
-{%- else %}
+{%-   when "opensuse" %}
+  nvr=$(rpm -q --queryformat "libssh-%{version}-%{release}" libssh4)
+  nv=$(rpm -q --queryformat "libssh-%{version}" libssh4)
+
+  repository=$(zypper --quiet --no-refresh --xmlout search --type srcpackage --match-exact --details libssh | xpath -q -e 'string(//solvable/@repository)')
+  url=$(zypper --quiet --xmlout repos | xpath -q -e "//repo[@name='${repository}']/url/text()")
+
+  wget ${url}/src/${nvr}.src.rpm
+  rpm2cpio ${nvr}.src.rpm | cpio -imdV
+  rm -rf ${nv}
+  tar xf ${nv}.tar.*z
+{%-   else %}
 
   *******Missing the correct distro for patch commands********
-{%- endif %}
+{%- endcase %}
 
   mkdir libssh-build
   pushd libssh-build
@@ -58,29 +72,42 @@
   popd
 {%- endif %}
 
-{%- if include.distro == "centos" or include.distro == "rhel" %}
+{%- case include.distro %}
+{%-   when "centos" %}
 
   git clone https://git.centos.org/rpms/krb5
-{%- else %}
+{%-   else %}
 
   mkdir krb5
-{%- endif %}
+{%- endcase %}
   pushd krb5
+{%- case include.distro %}
+{%-   when "fedora" %}
   nvr=$(rpm -q --queryformat "krb5-%{version}-%{release}" krb5-libs)
   nv=$(rpm -q --queryformat "krb5-%{version}" krb5-libs)
-{%- if include.distro == "fedora" %}
   dnf download --source krb5-libs
   rpm2cpio ${nvr}.src.rpm | cpio -imdV
   tar xf ${nv}.tar.*z
-{%- elsif include.distro == "centos" %}
+{%-   when "centos" %}
+  nvr=$(rpm -q --queryformat "krb5-%{version}-%{release}" krb5-libs)
+  nv=$(rpm -q --queryformat "krb5-%{version}" krb5-libs)
   git checkout $(git tag -l | grep "${nvr}\$" | tail -n1)
   into_srpm.sh -d c8s
   pushd BUILD
   tar xf ../SOURCES/${nv}.tar.*z
-{%- elsif include.distro == "opensuse" %}
-{%- else %}
+{%-   when "opensuse" %}
+  nvr=$(rpm -q --queryformat "krb5-%{version}-%{release}\n" krb5 | uniq)
+  nv=$(rpm -q --queryformat "krb5-%{version}\n" krb5 | uniq)
+  repository=$(zypper --quiet --no-refresh --xmlout search --type srcpackage --match-exact --details krb5 | xpath -q -e 'string(//solvable/@repository)')
+  url=$(zypper --quiet --xmlout repos | xpath -q -e "//repo[@name='${repository}']/url/text()")
+
+  [[ ! -e ${nvr}.src.rpm ]] && wget ${url}/src/${nvr}.src.rpm
+  rpm2cpio ${nvr}.src.rpm | cpio -imdV
+  rm -rf ${nv}
+  tar xf ${nv}.tar.*z
+{%-   else %}
   *******Missing the correct distro for patch commands********
-{%- endif %}
+{%- endcase %}
 
   pushd ${nv}/src
   ./configure
