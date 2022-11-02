@@ -161,6 +161,71 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
     end
 
+    context 'cpu' do
+      let(:test_file) { 'existing.xml' }
+      let(:updated_domain_xml) {
+        new_xml = domain_xml.dup
+        new_xml.gsub!(
+          /<cpu .*\/>/,
+          <<-EOF
+          <cpu check='partial' mode='custom'>
+            <model fallback='allow'>Haswell</model>
+            <feature name='vmx' policy='optional'/>
+            <feature name='svm' policy='optional'/>
+          </cpu>
+          EOF
+        )
+        new_xml
+      }
+      let(:vagrantfile_providerconfig) {
+        <<-EOF
+        libvirt.cpu_mode = 'custom'
+        libvirt.cpu_model = 'Haswell'
+        libvirt.nested = true
+        EOF
+      }
+
+      it 'should set cpu related settings when changed' do
+        expect(ui).to_not receive(:warn)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+        expect(libvirt_domain).to receive(:autostart=)
+        expect(domain).to receive(:start)
+
+        expect(subject.call(env)).to be_nil
+      end
+
+      let(:domain_xml_no_cpu) {
+        new_xml = domain_xml.dup
+        new_xml.gsub!(/<cpu .*\/>/, '')
+        new_xml
+      }
+      let(:updated_domain_xml_new_cpu) {
+        new_xml = domain_xml.dup
+        new_xml.gsub!(
+          /<cpu .*\/>/,
+          <<-EOF
+          <cpu mode='custom'>
+            <model fallback='allow'>Haswell</model>
+            <feature name='vmx' policy='optional'/>
+            <feature name='svm' policy='optional'/>
+          </cpu>
+          EOF
+        )
+        new_xml
+      }
+
+      it 'should add cpu settings if not already present' do
+        expect(ui).to_not receive(:warn)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml_no_cpu, updated_domain_xml_new_cpu)
+        expect(libvirt_domain).to receive(:autostart=)
+        expect(domain).to receive(:start)
+
+        expect(subject.call(env)).to be_nil
+      end
+    end
+
     context 'graphics' do
       context 'autoport not disabled' do
         let(:test_file) { 'existing.xml' }

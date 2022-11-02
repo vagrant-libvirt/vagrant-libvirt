@@ -87,79 +87,83 @@ module VagrantPlugins
           end
 
           # cpu_mode
-          cpu = REXML::XPath.first(xml_descr, '/domain/cpu')
-          if cpu.nil?
-            @logger.debug "cpu_mode updated from not set to '#{config.cpu_mode}'"
-            descr_changed = true
-            cpu = REXML::Element.new('cpu', REXML::XPath.first(xml_descr, '/domain'))
-            cpu.attributes['mode'] = config.cpu_mode
-          else
-            if cpu.attributes['mode'] != config.cpu_mode
-              @logger.debug "cpu_mode updated from '#{cpu.attributes['mode']}' to '#{config.cpu_mode}'"
+          if !config.cpu_mode.nil?
+            cpu = REXML::XPath.first(xml_descr, '/domain/cpu')
+            if cpu.nil?
+              @logger.debug "cpu_mode updated from not set to '#{config.cpu_mode}'"
               descr_changed = true
+              cpu = REXML::Element.new('cpu', REXML::XPath.first(xml_descr, '/domain'))
               cpu.attributes['mode'] = config.cpu_mode
+            else
+              if cpu.attributes['mode'] != config.cpu_mode
+                @logger.debug "cpu_mode updated from '#{cpu.attributes['mode']}' to '#{config.cpu_mode}'"
+                descr_changed = true
+                cpu.attributes['mode'] = config.cpu_mode
+              end
             end
-          end
 
-          if config.cpu_mode != 'host-passthrough'
-            cpu_model = REXML::XPath.first(xml_descr, '/domain/cpu/model')
-            if cpu_model.nil?
-              if config.cpu_model.strip != ''
-                @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
-                descr_changed = true
-                cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
-                cpu_model.attributes['fallback'] = 'allow'
-                cpu_model.text = config.cpu_model
+            if config.cpu_mode != 'host-passthrough'
+              cpu_model = REXML::XPath.first(xml_descr, '/domain/cpu/model')
+              if cpu_model.nil?
+                if config.cpu_model.strip != ''
+                  @logger.debug "cpu_model updated from not set to '#{config.cpu_model}'"
+                  descr_changed = true
+                  cpu_model = REXML::Element.new('model', REXML::XPath.first(xml_descr, '/domain/cpu'))
+                  cpu_model.attributes['fallback'] = config.cpu_fallback
+                  cpu_model.text = config.cpu_model
+                end
+              else
+                if (cpu_model.text or '').strip != config.cpu_model.strip
+                  @logger.debug "cpu_model text updated from #{cpu_model.text} to '#{config.cpu_model}'"
+                  descr_changed = true
+                  cpu_model.text = config.cpu_model
+                end
+                if cpu_model.attributes['fallback'] != config.cpu_fallback
+                  @logger.debug "cpu_model fallback attribute updated from #{cpu_model.attributes['fallback']} to '#{config.cpu_fallback}'"
+                  descr_changed = true
+                  cpu_model.attributes['fallback'] = config.cpu_fallback
+                end
               end
-            else
-              if (cpu_model.text or '').strip != config.cpu_model.strip
-                @logger.debug "cpu_model text updated from #{cpu_model.text} to '#{config.cpu_model}'"
-                descr_changed = true
-                cpu_model.text = config.cpu_model
+              vmx_feature = REXML::XPath.first(xml_descr, '/domain/cpu/feature[@name="vmx"]')
+              svm_feature = REXML::XPath.first(xml_descr, '/domain/cpu/feature[@name="svm"]')
+              if config.nested
+                if vmx_feature.nil?
+                  @logger.debug "nested mode enabled from unset by setting cpu vmx feature"
+                  descr_changed = true
+                  vmx_feature = REXML::Element.new('feature', REXML::XPath.first(xml_descr, '/domain/cpu'))
+                  vmx_feature.attributes['policy'] = 'optional'
+                  vmx_feature.attributes['name'] = 'vmx'
+                end
+                if svm_feature.nil?
+                  @logger.debug "nested mode enabled from unset by setting cpu svm feature"
+                  descr_changed = true
+                  svm_feature = REXML::Element.new('feature', REXML::XPath.first(xml_descr, '/domain/cpu'))
+                  svm_feature.attributes['policy'] = 'optional'
+                  svm_feature.attributes['name'] = 'svm'
+                end
+              else
+                unless vmx_feature.nil?
+                  @logger.debug "nested mode disabled for cpu by removing vmx feature"
+                  descr_changed = true
+                  cpu.delete_element(vmx_feature)
+                end
+                unless svm_feature.nil?
+                  @logger.debug "nested mode disabled for cpu by removing svm feature"
+                  descr_changed = true
+                  cpu.delete_element(svm_feature)
+                end
               end
-              if cpu_model.attributes['fallback'] != config.cpu_fallback
-                @logger.debug "cpu_model fallback attribute updated from #{cpu_model.attributes['fallback']} to '#{config.cpu_fallback}'"
+            elsif config.numa_nodes == nil
+              unless cpu.elements.to_a.empty?
+                @logger.debug "switching cpu_mode to host-passthrough and removing emulated cpu features"
                 descr_changed = true
-                cpu_model.attributes['fallback'] = config.cpu_fallback
+                cpu.elements.each do |elem|
+                  cpu.delete_element(elem)
+                end
               end
             end
-            vmx_feature = REXML::XPath.first(xml_descr, '/domain/cpu/feature[@name="vmx"]')
-            svm_feature = REXML::XPath.first(xml_descr, '/domain/cpu/feature[@name="svm"]')
-            if config.nested
-              if vmx_feature.nil?
-                @logger.debug "nested mode enabled from unset by setting cpu vmx feature"
-                descr_changed = true
-                vmx_feature = REXML::Element.new('feature', REXML::XPath.first(xml_descr, '/domain/cpu'))
-                vmx_feature.attributes['policy'] = 'optional'
-                vmx_feature.attributes['name'] = 'vmx'
-              end
-              if svm_feature.nil?
-                @logger.debug "nested mode enabled from unset by setting cpu svm feature"
-                descr_changed = true
-                svm_feature = REXML::Element.new('feature', REXML::XPath.first(xml_descr, '/domain/cpu'))
-                svm_feature.attributes['policy'] = 'optional'
-                svm_feature.attributes['name'] = 'svm'
-              end
-            else
-              unless vmx_feature.nil?
-                @logger.debug "nested mode disabled for cpu by removing vmx feature"
-                descr_changed = true
-                cpu.delete_element(vmx_feature)
-              end
-              unless svm_feature.nil?
-                @logger.debug "nested mode disabled for cpu by removing svm feature"
-                descr_changed = true
-                cpu.delete_element(svm_feature)
-              end
-            end
-          elsif config.numa_nodes == nil
-            unless cpu.elements.to_a.empty?
-              @logger.debug "switching cpu_mode to host-passthrough and removing emulated cpu features"
-              descr_changed = true
-              cpu.elements.each do |elem|
-                cpu.delete_element(elem)
-              end
-            end
+          else
+            xml_descr.delete_element('/domain/cpu')
           end
 
           # Clock
