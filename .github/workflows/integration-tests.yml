@@ -42,7 +42,7 @@ jobs:
         bundle exec rspec --color --format json --fail-fast --dry-run --tag acceptance --out report.json
         tests="$(jq -c '[.examples[].full_description]' report.json)"
 
-        echo "::set-output name=matrix::${tests}"
+        echo "matrix=${tests}" >> ${GITHUB_OUTPUT}
 
   run-tests:
     needs: generate-matrix

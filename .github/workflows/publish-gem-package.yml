@@ -32,7 +32,7 @@ jobs:
       run: |
         cd pkg/
         GEM_PKG=$(ls -1 *.gem)
-        echo ::set-output name=artifact_name::${GEM_PKG}
+        echo "artifact_name=${GEM_PKG}" >> ${GITHUB_OUTPUT}
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.artifact_name.outputs.artifact_name }}
