@@ -61,7 +61,7 @@ module VagrantPlugins
             # We have slot for interface, fill it with interface configuration.
             adapters[free_slot] = options
             adapters[free_slot][:network_name] = interface_network(
-              env[:machine].provider.driver.connection.client, adapters[free_slot]
+              env[:machine].provider.driver, adapters[free_slot]
             )
           end
 
@@ -282,7 +282,7 @@ module VagrantPlugins
         end
 
         # Return network name according to interface options.
-        def interface_network(libvirt_client, options)
+        def interface_network(driver, options)
           # no need to get interface network for tcp tunnel config
           return 'tunnel_interface' if options.fetch(:tunnel_type, nil)
 
@@ -292,7 +292,7 @@ module VagrantPlugins
           end
 
           # Get list of all (active and inactive) Libvirt networks.
-          available_networks = libvirt_networks(libvirt_client)
+          available_networks = libvirt_networks(driver)
 
           return 'public' if options[:iface_type] == :public_network
 

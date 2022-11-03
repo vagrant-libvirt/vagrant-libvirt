@@ -3,7 +3,6 @@
 require 'support/binding_proc'
 
 require 'spec_helper'
-require 'support/sharedcontext'
 
 require 'vagrant-libvirt/config'
 
@@ -673,8 +672,35 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         expect(subject.graphics_port).to eq(nil)
         expect(subject.graphics_ip).to eq(nil)
-        expect(subject.graphics_autoport).to eq('yes')
+        expect(subject.graphics_autoport).to eq(nil)
         expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
+      end
+    end
+
+    context '@machine_arch and @cpu_*' do
+      context 'should set @cpu_mode based on @machine_arch support' do
+        # it's possible when this is unset that the host arch should be read
+        it 'should default to host-model if machine_arch unset' do
+          subject.finalize!
+
+          expect(subject.cpu_mode).to eq('host-model')
+        end
+
+        it 'should default to host-model if supported' do
+          subject.machine_arch = 'aarch64'
+
+          subject.finalize!
+
+          expect(subject.cpu_mode).to eq('host-model')
+        end
+
+        it 'should default to nil if unsupported' do
+          subject.machine_arch = 'ppc'
+
+          subject.finalize!
+
+          expect(subject.cpu_mode).to be_nil
+        end
       end
     end
   end
@@ -689,7 +715,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
   def assert_valid
     subject.finalize!
     errors = subject.validate(machine).values.first
-    expect(errors).to be_empty
+    expect(errors).to be_empty, lambda { "received errors unexpectedly: #{errors}" }
   end
 
   describe '#validate' do
@@ -805,6 +831,32 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
+    context '@machine_arch and @cpu_*' do
+      it 'should be valid if cpu_* settings and no arch set' do
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        assert_valid
+      end
+
+      it 'should be valid if cpu_* settings and supported' do
+        subject.machine_arch = 'aarch64'
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        assert_valid
+      end
+
+      it 'should flag settings invalid if unsupported' do
+        subject.machine_arch = 'ppc'
+        subject.cpu_mode = 'host-passthrough'
+        subject.nested = true
+
+        errors = assert_invalid
+        expect(errors).to include(match(/Architecture ppc does not support .* cpu_mode, nested/))
+      end
+    end
+
     context 'with cpu_mode and cpu_model defined' do
       it 'should discard model if mode is passthrough' do
         subject.cpu_mode = 'host-passthrough'
@@ -891,6 +943,87 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         subject.storage :file, :device => :floppy
 
         expect{ subject.finalize! }.to raise_error('Only two floppies may be attached at a time')
+      end
+    end
+
+    context 'with synced_folders' do
+      let(:vagrantfile) do
+        <<-EOF
+        Vagrant.configure('2') do |config|
+          config.vm.box = "vagrant-libvirt/test"
+          config.vm.define :test
+
+          config.vm.synced_folder "/path/to/share", "/srv", type: "#{type}"
+        end
+        EOF
+      end
+      let(:driver) { instance_double(::VagrantPlugins::ProviderLibvirt::Driver) }
+
+      before do
+        allow(machine.provider).to receive(:driver).and_return(driver)
+        allow(driver).to receive_message_chain('connection.client.libversion').and_return(6_002_000)
+      end
+
+      context 'when type is 9p' do
+        let(:type) { "9p" }
+
+        context 'when using qemu:///session' do
+          before do
+            subject.qemu_use_session = true
+          end
+
+          it 'should validate if user can read host path' do
+            expect(File).to receive(:readable?).with('/path/to/share').and_return(true)
+
+            assert_valid
+          end
+
+          it 'should reject if user does not have read access to host path' do
+            expect(File).to receive(:readable?).with('/path/to/share').and_return(false)
+
+            assert_invalid
+          end
+        end
+
+        context 'when using qemu:///system' do
+          before do
+            subject.qemu_use_session = false
+          end
+
+          it 'should validate without checking if user has read access to host path' do
+            expect(File).to_not receive(:readable?)
+
+            assert_valid
+          end
+        end
+      end
+
+      context 'when type is virtiofs' do
+        let(:type) { "virtiofs" }
+
+        context 'when using qemu:///session' do
+          before do
+            subject.qemu_use_session = true
+          end
+
+          it 'should warn that it may not be supported' do
+            expect(ui).to receive(:warn).with(/Note: qemu session may not support virtiofs for synced_folders.*/)
+
+            assert_valid
+          end
+        end
+
+        context 'when using qemu:///system' do
+          before do
+            subject.qemu_use_session = false
+          end
+
+          it 'should not emit a warning message' do
+            expect(ui).to_not receive(:warn)
+
+            assert_valid
+          end
+        end
       end
     end
   end

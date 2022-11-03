@@ -1,0 +1,58 @@
+name: Docker Metadata
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        required: false
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_ORGANIZATION:
+        required: false
+    outputs:
+      labels:
+        value: ${{ jobs.generate-metadata.outputs.labels }}
+      tags:
+        value: ${{ jobs.generate-metadata.outputs.tags }}
+
+jobs:
+  generate-metadata:
+    name: Generate Metadata
+    runs-on: ubuntu-22.04
+    outputs:
+      labels: ${{ steps.metadata.outputs.labels }}
+      tags: ${{ steps.metadata.outputs.tags }}
+    steps:
+      -
+        name:  Generate docker image names for publishing
+        id: docker_image_names
+        run: |
+          IMAGE_NAMES="ghcr.io/${{ github.repository_owner }}/vagrant-libvirt"
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]] && [[ ${{ github.event_name }} != pull_request* ]]
+          then
+              IMAGE_NAMES="${IMAGE_NAMES}\n${{ secrets.DOCKERHUB_ORGANIZATION }}/vagrant-libvirt"
+          fi
+
+          echo "image_names=${IMAGE_NAMES}" >> ${GITHUB_OUTPUT}
+      -
+        name: Setup publish tags and versions for image
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.docker_image_names.outputs.image_names }}
+          tags: |
+            # nightly
+            type=schedule
+            # tag events
+            type=pep440,pattern={{version}}
+            type=pep440,pattern={{major}}
+            type=pep440,pattern={{major}}.{{minor}}
+            type=pep440,pattern={{version}},value=latest
+            # push to master
+            type=edge,branch=${{ github.event.repository.default_branch }}
+            type=sha,enable={{is_default_branch}}
+            # pull requests
+            type=ref,event=pr
+          flavor: ${{ inputs.flavor }}

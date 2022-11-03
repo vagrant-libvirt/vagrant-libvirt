@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
+require 'spec_helper'
+
 require 'vagrant-libvirt/action/wait_till_up'
 require 'vagrant-libvirt/errors'
-
-require 'spec_helper'
-require 'support/sharedcontext'
-require 'support/libvirt_context'
 
 describe VagrantPlugins::ProviderLibvirt::Action::WaitTillUp do
   subject { described_class.new(app, env) }

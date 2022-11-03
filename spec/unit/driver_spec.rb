@@ -4,7 +4,6 @@ require 'fog/libvirt/requests/compute/dhcp_leases'
 
 require 'spec_helper'
 require 'support/binding_proc'
-require 'support/sharedcontext'
 
 require 'vagrant-libvirt/driver'
 
@@ -187,7 +186,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
 
       context 'when qemu_use_session is enabled' do
         let(:system_connection) { double("system connection") }
-        let(:networks) { [instance_double(::Fog::Libvirt::Compute::Real)] }
+        let(:networks) { [instance_double(::Libvirt::Network)] }
         let(:dhcp_leases) {
           {
             "iface"      =>"virbr0",
@@ -207,8 +206,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
 
         it 'should retrieve the address via the system dhcp-leases API' do
           expect(domain).to receive(:mac).and_return("52:54:00:8b:dc:5f")
-          expect(subject).to receive(:system_connection).and_return(system_connection)
-          expect(system_connection).to receive(:list_all_networks).and_return(networks)
+          expect(subject).to receive(:list_all_networks).and_return(networks)
           expect(networks[0]).to receive(:dhcp_leases).and_return([dhcp_leases])
 
           expect(subject.get_ipaddress).to eq("192.168.122.43")
@@ -226,6 +224,44 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
           end
         end
       end
+    end
+  end
+
+
+  describe '#list_all_networks' do
+    let(:vagrantfile_providerconfig) do
+      <<-EOF
+        libvirt.uri = "qemu:///system"
+      EOF
+    end
+
+    let(:libvirt_networks) { [
+      instance_double(::Libvirt::Network),
+      instance_double(::Libvirt::Network),
+      instance_double(::Libvirt::Network),
+    ] }
+
+    before do
+      allow(subject).to receive(:connection).and_return(connection)
+      allow(connection).to receive(:client).and_return(libvirt_client)
+      expect(libvirt_client).to receive(:list_all_networks).and_return(libvirt_networks)
+    end
+
+    it 'should list networks' do
+      expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')
+      expect(libvirt_networks[1]).to receive(:bridge_name).and_return('virbr0')
+      expect(libvirt_networks[2]).to receive(:bridge_name).and_return('virbr1')
+
+      expect(subject.list_all_networks).to eq(libvirt_networks)
+    end
+
+    it 'should skip networks missing bridge_name' do
+      expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')
+      expect(libvirt_networks[1]).to receive(:bridge_name).and_raise(Libvirt::Error)
+      expect(libvirt_networks[1]).to receive(:name).and_return('bad_network')
+      expect(libvirt_networks[2]).to receive(:bridge_name).and_return('virbr1')
+
+      expect(subject.list_all_networks).to eq([libvirt_networks[0], libvirt_networks[2]])
     end
   end
 
@@ -265,7 +301,7 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
       end.and_return(Vagrant::Util::Subprocess::Result.new(exit_code=0, stdout=ip_link_show, stderr=''))
 
       expect(libvirt_client).to receive(:list_all_interfaces).and_return(libvirt_interfaces)
-      expect(libvirt_client).to receive(:list_all_networks).and_return(libvirt_networks)
+      expect(subject).to receive(:list_all_networks).and_return(libvirt_networks)
       expect(libvirt_interfaces[0]).to receive(:name).and_return('eth0')
       expect(libvirt_interfaces[1]).to receive(:name).and_return('virbr0')
       expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')

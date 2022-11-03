@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'support/sharedcontext'
+require 'spec_helper'
 
 require 'vagrant-libvirt/config'
 require 'vagrant-libvirt/util/erb_template'

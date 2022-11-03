@@ -197,6 +197,25 @@ module VagrantPlugins
         domain
       end
 
+      def list_all_networks
+        client = if @machine.provider_config.qemu_use_session
+                   system_connection
+                else
+                  connection.client
+                end
+
+        client.list_all_networks.select do |net|
+          begin
+            net.bridge_name
+          rescue Libvirt::Error
+            # there does not appear to be a mechanism to determine the type of network, only by
+            # querying the attribute and catching the error is it possible to ignore unsupported.
+            @logger.debug "Ignoring #{net.name} as it does not support retrieval of bridge_name attribute"
+            next
+          end
+        end
+      end
+
       def host_devices
         @host_devices ||= begin
           cmd = []
@@ -216,7 +235,7 @@ module VagrantPlugins
           (
             info.map { |iface| iface['ifname'] } +
             connection.client.list_all_interfaces.map { |iface| iface.name } +
-            connection.client.list_all_networks.map { |net| net.bridge_name }
+            list_all_networks.map { |net| net.bridge_name }
           ).uniq.reject(&:empty?)
         end
       end
@@ -234,7 +253,7 @@ module VagrantPlugins
       def get_ipaddress_from_system(mac)
         ip_address = nil
 
-        system_connection.list_all_networks.each do |net|
+        list_all_networks.each do |net|
           leases = net.dhcp_leases(mac, 0)
           # Assume the lease expiring last is the current IP address
           ip_address = leases.max_by { |lse| lse['expirytime'] }['ipaddr'] unless leases.empty?

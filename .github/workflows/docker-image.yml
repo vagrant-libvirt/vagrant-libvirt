@@ -6,11 +6,24 @@ on:
       - main
     tags:
       - '*.*.*'
-  pull_request:
+  pull_request_target:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      # for delete
+      - closed
+
+
+permissions:
+  packages: write
+  pull-requests: write
 
 jobs:
   build-image-with-buildah:
-    runs-on: ubuntu-latest
+    if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Checkout
@@ -21,46 +34,37 @@ jobs:
         name: Build with buildah
         run: buildah bud .
 
+  generate-docker-metadata:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
+    secrets: inherit
+
+  generate-docker-metadata-slim:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
+    with:
+      flavor: |
+        suffix=-slim
+    secrets: inherit
+
   build-docker-image:
-    runs-on: ubuntu-latest
+    if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
     steps:
       -
         name: Checkout
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
       -
-        name: Prepare
-        id: prep
-        run: |
-          DOCKER_IMAGE=${DOCKERHUB_ORGANIZATION:-vagrantlibvirt}/vagrant-libvirt
-          VERSION=noop
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            VERSION=nightly
-          elif [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
-            if [ "${{ github.event.repository.default_branch }}" = "$VERSION" ]; then
-              VERSION=edge
-            fi
-          elif [[ $GITHUB_REF == refs/pull/* ]]; then
-            VERSION=pr-${{ github.event.number }}
-          fi
-          TAGS="${DOCKER_IMAGE}:${VERSION}"
-          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            MINOR=${VERSION%.*}
-            MAJOR=v${MINOR%.*}
-            TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR},${DOCKER_IMAGE}:latest"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
-          fi
-          echo ::set-output name=version::${VERSION}
-          echo ::set-output name=tags::${TAGS}
-          echo ::set-output name=slim_tags::$(echo $TAGS | sed "s/,/-slim,/g")-slim
-          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-        env:
-          DOCKERHUB_ORGANIZATION: ${{ secrets.DOCKERHUB_ORGANIZATION }}
+        if: startsWith(github.event_name, 'pull_request')
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -78,13 +82,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
       -
-        name: Check have credentials
-        id: have_credentials
-        run: |
-          echo ::set-output name=access::${{ secrets.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Login to DockerHub
-        if: steps.have_credentials.outputs.access == 'true'
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -96,18 +102,10 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ steps.have_credentials.outputs.access }}
-          tags: ${{ steps.prep.outputs.tags }}
+          push: true
+          tags: ${{ needs.generate-docker-metadata.outputs.tags }}
           target: final
-          labels: |
-            org.opencontainers.image.title=${{ github.event.repository.name }}
-            org.opencontainers.image.description=${{ github.event.repository.description }}
-            org.opencontainers.image.url=${{ github.event.repository.html_url }}
-            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
-            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
+          labels: ${{ needs.generate-docker-metadata.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       -
@@ -117,18 +115,10 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ steps.have_credentials.outputs.access }}
-          tags: ${{ steps.prep.outputs.slim_tags }}
+          push: true
+          tags: ${{ needs.generate-docker-metadata-slim.outputs.tags }}
           target: slim
-          labels: |
-            org.opencontainers.image.title=${{ github.event.repository.name }}
-            org.opencontainers.image.description=${{ github.event.repository.description }}
-            org.opencontainers.image.url=${{ github.event.repository.html_url }}
-            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
-            org.opencontainers.image.version=${{ steps.prep.outputs.version }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
+          labels: ${{ needs.generate-docker-metadata-slim.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       -
@@ -137,3 +127,50 @@ jobs:
       -
         name: Image digest Slim
         run: echo ${{ steps.docker_build_slim.outputs.digest }}
+      -
+        name: Comment on label required for docs preview deploy
+        if: startsWith(github.event_name, 'pull_request')
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          header: docker-image-tag
+          message: |-
+            A docker image containing the code from this plugin to allow testing locally without installing
+            can be pulled from: ${{ fromJSON(steps.docker_build_slim.outputs.metadata)['image.name'] }}
+
+            If you need the image with the full dev toolchain, you can instead pull: ${{ fromJSON(steps.docker_build.outputs.metadata)['image.name'] }}
+
+  generate-delete-docker-images-matrix:
+    if: startsWith(github.event_name, 'pull_request') && github.event.action == 'closed'
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
+    outputs:
+      matrix: ${{ steps.matrix.outputs.tags }}
+    steps:
+      -
+        name: Generate matrix
+        id: matrix
+        run: |
+          TAGS="$(echo "${{ needs.generate-docker-metadata-slim.outputs.tags }},${{ needs.generate-docker-metadata.outputs.tags }}" | jq --raw-input -c '[split(",") | .[] / ":" |.[1]]')"
+
+          echo "tags=${TAGS}" >> ${GITHUB_OUTPUT}
+
+# Currently delete requires a PAT, which is considered unsafe until it is possible to scope them to a specific org.
+# As this appears to be in beta, uncomment the following at some point in the future.
+#
+#  delete-docker-images:
+#    needs: generate-delete-docker-images-matrix
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
+#    steps:
+#      - name: Delete image
+#        uses: bots-house/ghcr-delete-image-action@v1.0.0
+#        with:
+#          owner: ${{ github.repository_owner }}
+#          name: ${{ github.event.repository.name }}
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          tag: ${{ matrix.tag }}

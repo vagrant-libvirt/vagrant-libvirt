@@ -244,9 +244,11 @@ module VagrantPlugins
           unless @shares.nil?
             env[:ui].info(" -- Shares:            #{@shares}")
           end
-          env[:ui].info(" -- Management MAC:    #{@management_network_mac}")
-          env[:ui].info(" -- Loader:            #{@loader}")
-          env[:ui].info(" -- Nvram:             #{@nvram}")
+          env[:ui].info(" -- Management MAC:    #{@management_network_mac}") if @management_network_mac
+          env[:ui].info(" -- Kernel:            #{@kernel}") if @kernel
+          env[:ui].info(" -- Initrd:            #{@initrd}") if @initrd
+          env[:ui].info(" -- Loader:            #{@loader}") if @loader
+          env[:ui].info(" -- Nvram:             #{@nvram}") if @nvram
           if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
@@ -261,8 +263,6 @@ module VagrantPlugins
             env[:ui].info(" -- Disk driver opts:  cache='#{@domain_volume_cache}'")
           end
 
-          env[:ui].info(" -- Kernel:            #{@kernel}")
-          env[:ui].info(" -- Initrd:            #{@initrd}")
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
           if !@graphics_autoport
             env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
@@ -272,14 +272,14 @@ module VagrantPlugins
           env[:ui].info(" -- Video Type:        #{@video_type}")
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
-          env[:ui].info(" -- Sound Type:        #{@sound_type}")
+          env[:ui].info(" -- Sound Type:        #{@sound_type}") if @sound_type
           env[:ui].info(" -- Keymap:            #{@keymap}")
           env[:ui].info(" -- TPM Backend:       #{@tpm_type}")
           if @tpm_type == 'emulator'
             env[:ui].info(" -- TPM Model:         #{@tpm_model}")
             env[:ui].info(" -- TPM Version:       #{@tpm_version}")
           else
-            env[:ui].info(" -- TPM Path:          #{@tpm_path}")
+            env[:ui].info(" -- TPM Path:          #{@tpm_path}") if @tpm_path
           end
 
           unless @sysinfo.empty?

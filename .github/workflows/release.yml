@@ -2,119 +2,21 @@ name: release
 
 on:
   push:
-    branches:
-      - '**'
     tags:
       - '*.*.*'
 
 jobs:
-  release-notes:
-    name: Generate Release Notes
-    runs-on: ubuntu-latest
-    outputs:
-      release_branch: ${{ steps.prep.outputs.release_branch }}
-    steps:
-      -
-        name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      -
-        name: Determine remote default branch
-        uses: actions/github-script@v6.3.1
-        id: remote_default_branch
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          result-encoding: string
-          script: |
-            repo = await github.rest.repos.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-            })
-            return repo.data.default_branch
-      -
-        name: Prepare
-        id: prep
-        run: |
-          set -eu -o pipefail
-
-          echo "max-issues=200" >> .github_changelog_generator
-          # cache requests to reduce load on API
-          echo "cache-file=.github_changelog_generator_cache" >> .github_changelog_generator
-
-          # only apply this section if triggered by a tag event
-          if [[ ${GITHUB_REF} == refs/tags/* ]]
-          then
-            # exclude unreleased in case re-running workflow
-              echo "unreleased=false" >> .github_changelog_generator
-              # in case we've tagged subsequently ensure consistent run
-              NEXT_TAG_SHA1="$(git rev-list --tags --skip=0 --no-walk | grep -B 1 ${{ github.sha }} || true)"
-              if [[ "${NEXT_TAG_SHA1:-}" != "${{ github.sha }}" ]]
-              then
-                  NEXT_TAG=$(git describe --tags --abbrev=0 ${NEXT_TAG_SHA1})
-                  echo "due-tag=${NEXT_TAG}" >> .github_changelog_generator
-              fi
-          fi
-
-          # limit list to next tag if any
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || true)
-
-          # to ensure that releases continue to get 'x commits since release'
-          # need to pass the branch name in addition to the tag to the create
-          # release. Work out which branch the current tag is on
-          DEFAULT_BRANCH=origin/${{ steps.remote_default_branch.outputs.result }}
-          if git merge-base --is-ancestor ${{ github.ref }} ${DEFAULT_BRANCH}
-          then
-              # if the tag is in the history of the default remote branch
-              BRANCH=${DEFAULT_BRANCH}
-          else
-              # otherwise take the first match and hope for the best
-              BRANCH=$(git branch -r --format="%(refname:short)" --contains ${{ github.ref }} | head -n1)
-          fi
-          BRANCH=${BRANCH#origin/}
-
-          # set outputs for usage
-          echo ::set-output name=previous_version::${LAST_TAG}
-          echo ::set-output name=release_branch::${BRANCH}
-      -
-        name: Cache Github API requests
-        id: cache-changelog-api-requests
-        uses: actions/cache@v3
-        with:
-          key: github-changelog-cache
-          path: .github_changelog_generator_cache
-      -
-        name: Changelog Generation
-        uses: CharMixer/auto-changelog-action@v1.4
-        with:
-          release_branch: ${{ steps.prep.outputs.release_branch }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          since_tag: ${{ steps.prep.outputs.previous_version }}
-          output: release_notes.md
-      -
-        uses: actions/upload-artifact@v3
-        with:
-          name: release-notes
-          path: release_notes.md
-
   publish-release:
     name: Create Release
-    needs: release-notes
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       -
-        uses: actions/download-artifact@v3
-        with:
-          name: release-notes
-      -
         name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          commitish: ${{ needs.release-notes.outputs.release_branch }}
-          release_name: Release ${{ github.ref }}
-          body_path: release_notes.md
+          name: Release ${{ github.ref_name }}
+          target_commitish: ${{ github.event.repository.default_branch }}
+          generate_release_notes: true
+          tag_name: ${{ github.ref_name }}
