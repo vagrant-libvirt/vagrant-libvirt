@@ -35,11 +35,11 @@ jobs:
         run: buildah bud .
 
   generate-docker-metadata:
-    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@publish-pr-docker-image
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
     secrets: inherit
 
   generate-docker-metadata-slim:
-    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@publish-pr-docker-image
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
     with:
       flavor: |
         suffix=-slim
@@ -90,7 +90,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Login to DockerHub
-        if: steps.docker_io_publish.outputs.enable == 'true'
+        if: ${{ ! (startsWith(github.event_name, 'pull_request') }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
