@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        tag: ${{ fromJSON(needs.generate-delete-docker-tags.outputs.matrix) }}
+        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
     steps:
       - name: Delete image
         uses: bots-house/ghcr-delete-image-action@v1.0.0
