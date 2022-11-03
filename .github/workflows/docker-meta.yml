@@ -30,7 +30,7 @@ jobs:
         id: docker_image_names
         run: |
           IMAGE_NAMES="ghcr.io/${{ github.repository_owner }}/vagrant-libvirt"
-          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" && "${{ github.event_name }}" != 'pull_request' ]]
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]] && [[ ${{ github.event_name }} != pull_request* ]]
           then
               IMAGE_NAMES="${IMAGE_NAMES}\n${{ secrets.DOCKERHUB_ORGANIZATION }}/vagrant-libvirt"
           fi
