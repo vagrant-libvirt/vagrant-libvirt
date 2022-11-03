@@ -153,7 +153,7 @@ jobs:
         name: Generate matrix
         id: matrix
         run: |
-          TAGS="$(echo "${{ needs.generate-docker-metadata-slim.outputs.tags }},${{ needs.generate-docker-metadata.outputs.tags }}" | jq -c --raw-input 'split(",")')"
+          TAGS="$(echo "${{ needs.generate-docker-metadata-slim.outputs.tags }},${{ needs.generate-docker-metadata.outputs.tags }}" | jq --raw-input -c '[split(",") | .[] / ":" |.[1]]')"
 
           echo "tags=${TAGS}" >> ${GITHUB_OUTPUT}
 
