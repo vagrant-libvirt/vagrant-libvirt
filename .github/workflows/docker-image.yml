@@ -157,17 +157,20 @@ jobs:
 
           echo "tags=${TAGS}" >> ${GITHUB_OUTPUT}
 
-  delete-docker-images:
-    needs: generate-delete-docker-images-matrix
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
-    steps:
-      - name: Delete image
-        uses: bots-house/ghcr-delete-image-action@v1.0.0
-        with:
-          owner: ${{ github.repository_owner }}
-          name: ${{ github.event.repository.name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ matrix.tag }}
+# Currently delete requires a PAT, which is considered unsafe until it is possible to scope them to a specific org.
+# As this appears to be in beta, uncomment the following at some point in the future.
+#
+#  delete-docker-images:
+#    needs: generate-delete-docker-images-matrix
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
+#    steps:
+#      - name: Delete image
+#        uses: bots-house/ghcr-delete-image-action@v1.0.0
+#        with:
+#          owner: ${{ github.repository_owner }}
+#          name: ${{ github.event.repository.name }}
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          tag: ${{ matrix.tag }}
