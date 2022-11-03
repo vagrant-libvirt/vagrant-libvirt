@@ -7,6 +7,14 @@ on:
     tags:
       - '*.*.*'
   pull_request:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      # for delete
+      - closed
+
 
 permissions:
   packages: write
@@ -14,7 +22,8 @@ permissions:
 
 jobs:
   build-image-with-buildah:
-    runs-on: ubuntu-latest
+    if: ${{ ! (github.event_name == 'pull_request' && github.event_type == 'closed' ) }}
+    runs-on: ubuntu-22.04
     steps:
       -
         name: Checkout
@@ -25,8 +34,23 @@ jobs:
         name: Build with buildah
         run: buildah bud .
 
+  generate-docker-metadata:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@publish-pr-docker-image
+    secrets: inherit
+
+  generate-docker-metadata-slim:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@publish-pr-docker-image
+    with:
+      flavor: |
+        suffix=-slim
+    secrets: inherit
+
   build-docker-image:
-    runs-on: ubuntu-latest
+    if: ${{ ! (github.event_name == 'pull_request' && github.event_type == 'closed' ) }}
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
     steps:
       -
         name: Checkout
@@ -41,55 +65,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-      -
-        name: Check if should publish to docker.io
-        id: docker_io_publish
-        run: |
-          echo "enabled=${{ secrets.DOCKERHUB_USERNAME != '' && github.event_name != 'pull_request' }}" >> ${GITHUB_OUTPUT}
-      -
-        name: Setup publish tags and versions
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            name=ghcr.io/${{ github.repository_owner }}/vagrant-libvirt,enable=true
-            name=${{ secrets.DOCKERHUB_ORGANIZATION }}/vagrant-libvirt,enable=${{ steps.docker_io_publish.outputs.enabled }}
-          tags: |
-            # nightly
-            type=schedule
-            # tag events
-            type=pep440,pattern={{version}}
-            type=pep440,pattern={{major}}
-            type=pep440,pattern={{major}}.{{minor}}
-            type=pep440,pattern={{version}},value=latest
-            # push to master
-            type=edge,branch=${{ github.event.repository.default_branch }}
-            type=sha,enable={{is_default_branch}}
-            # pull requests
-            type=ref,event=pr
-      -
-        name: Setup publish tags and versions
-        id: meta-slim
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            name=ghcr.io/${{ github.repository_owner }}/vagrant-libvirt,enable=true
-            name=${{ secrets.DOCKERHUB_ORGANIZATION }}/vagrant-libvirt,enable=${{ steps.docker_io_publish.outputs.enabled }}
-          tags: |
-            # nightly
-            type=schedule
-            # tag events
-            type=pep440,pattern={{version}}
-            type=pep440,pattern={{major}}
-            type=pep440,pattern={{major}}.{{minor}}
-            type=pep440,pattern={{version}},value=latest
-            # push to master
-            type=edge,branch=${{ github.event.repository.default_branch }}
-            type=sha,enable={{is_default_branch}}
-            # pull requests
-            type=ref,event=pr
-          flavor: |
-            suffix=slim-
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -128,9 +103,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ needs.generate-docker-metadata.outputs.tags }}
           target: final
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ needs.generate-docker-metadata.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       -
@@ -141,9 +116,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta-slim.outputs.tags }}
+          tags: ${{ needs.generate-docker-metadata-slim.outputs.tags }}
           target: slim
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ needs.generate-docker-metadata-slim.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       -
@@ -164,3 +139,37 @@ jobs:
             can be pulled from: ${{ fromJSON(steps.docker_build_slim.outputs.metadata)['image.name'] }}
 
             If you need the image with the full dev toolchain, you can instead pull: ${{ fromJSON(steps.docker_build.outputs.metadata)['image.name'] }}
+
+  generate-delete-docker-images-matrix:
+    if: github.event_name == 'pull_request' && github.event_type == 'closed'
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
+    outputs:
+      matrix: ${{ steps.matrix.outputs.tags }}
+    steps:
+      -
+        name: Generate matrix
+        id: matrix
+        run: |
+          TAGS="$(echo "${{ needs.generate-docker-metadata-slim.outputs.tags }},${{ needs.generate-docker-metadata.outputs.tags }}" | jq --raw-input 'split(",")')"
+
+          echo "tags=${TAGS}" >> ${GITHUB_OUTPUT}
+
+  delete-docker-images:
+    needs: generate-delete-docker-images-matrix
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        tag: ${{ fromJSON(needs.generate-delete-docker-tags.outputs.matrix) }}
+    steps:
+      - name: Delete image
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          # NOTE: at now only orgs is supported
+          owner: ${{ github.repository_owner }}
+          name: ${{ github.repository_name }}
+          # NOTE: using Personal Access Token
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ matrix.tag }}
