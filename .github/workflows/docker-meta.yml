@@ -33,7 +33,6 @@ jobs:
           # passing multi-line strings to subsequent action
           echo 'IMAGE_NAMES<<EOF' >> ${GITHUB_ENV}
           echo ghcr.io/${{ github.repository_owner }}/vagrant-libvirt >> ${GITHUB_ENV}
-          echo vagrantlibvirt/vagrant-libvirt >> ${GITHUB_ENV}
           if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]] && [[ ${{ github.event_name }} != pull_request* ]]
           then
               echo ${{ secrets.DOCKERHUB_ORGANIZATION }}/vagrant-libvirt >> ${GITHUB_ENV}
