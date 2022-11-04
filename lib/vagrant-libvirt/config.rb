@@ -1109,6 +1109,10 @@ module VagrantPlugins
           errors << "cannot set cpu_model with cpu_mode of 'host-passthrough'. leave model unset or switch mode."
         end
 
+        unless @cpu_model != '' || @cpu_features.empty?
+          errors << "cannot set cpu_features with cpu_model unset, please set a model or skip setting features."
+        end
+
         # The @uri and @qemu_use_session should not conflict
         uri = _parse_uri(@uri)
         if (uri.scheme.start_with? "qemu") && (uri.path.include? "session")

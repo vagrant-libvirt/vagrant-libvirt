@@ -857,18 +857,30 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
-    context 'with cpu_mode and cpu_model defined' do
-      it 'should discard model if mode is passthrough' do
+    context 'with cpu_mode defined' do
+      before do
         subject.cpu_mode = 'host-passthrough'
-        subject.cpu_model = 'qemu64'
-        assert_valid
-        expect(subject.cpu_model).to be_empty
       end
 
-      it 'should allow custom mode with model' do
-        subject.cpu_mode = 'custom'
-        subject.cpu_model = 'qemu64'
-        assert_valid
+      context 'with cpu_model defined' do
+        it 'should discard model if mode is passthrough' do
+          subject.cpu_model = 'qemu64'
+          assert_valid
+          expect(subject.cpu_model).to be_empty
+        end
+
+        it 'should allow custom mode with model' do
+          subject.cpu_mode = 'custom'
+          subject.cpu_model = 'qemu64'
+          assert_valid
+        end
+      end
+
+      context 'with cpu_model not defined' do
+        it 'should reject if cpu features enabled' do
+          subject.cpu_features = [{:name => 'feature', :policy => 'optional'}]
+          assert_invalid
+        end
       end
     end
 
