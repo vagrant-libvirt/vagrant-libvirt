@@ -41,7 +41,8 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v4
         with:
-          images: ${{ steps.docker_image_names.outputs.image_names }}
+          images: |
+            ${{ steps.docker_image_names.outputs.image_names }}
           tags: |
             # nightly
             type=schedule
