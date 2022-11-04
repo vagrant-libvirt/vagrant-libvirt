@@ -25,7 +25,7 @@ jobs:
       matrix:
         # need to define one entry with a single entry for each of the options
         # to allow include to expand the matrix correctly.
-        ruby: [2.6.6]
+        ruby: [3.1]
         vagrant: [main]
         allow_fail: [true]
         include:
@@ -47,7 +47,7 @@ jobs:
             # above block is to ensure compatible with Ubuntu 20.04 vagrant package
             # although it uses 2.2.10 it is the earliest version that will install on
             # ruby 2.7 without patching
-          - ruby: 3.0.0
+          - ruby: 3.1
             vagrant:
             allow_fail: false
 
@@ -55,15 +55,8 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Clone vagrant for ruby 3.0 support
-      if: ${{ matrix.ruby == '3.0.0' }}
-      uses: actions/checkout@v3
-      with:
-        repository: hashicorp/vagrant
-        path: .deps/vagrant
-        ref: f7973f00edb9438d0b36085f210c80af71cfe5c5
-    - name: Clone ruby-libvirt for ruby 3.0 support
-      if: ${{ matrix.ruby == '3.0.0' }}
+    - name: Clone ruby-libvirt for ruby 3.1 support
+      if: ${{ startsWith(matrix.ruby, '3.1') }}
       uses: actions/checkout@v3
       with:
         repository: libvirt/libvirt-ruby
@@ -90,18 +83,9 @@ jobs:
     - name: Ensure bundle uses https instead of insecure git
       run: |
         git config --global url."https://github.com/".insteadOf git://github.com/
-    - name: Handle additional ruby 3.0 setup
-      if: ${{ matrix.ruby == '3.0.0' }}
+    - name: Handle additional ruby 3.1 setup
+      if: ${{ startsWith(matrix.ruby, '3.1') }}
       run: |
-        # ensure vagrant gemspec allows ruby 3.0
-        pushd .deps/vagrant/
-        # ensure main branch exists
-        git checkout -b main
-        sed -i -e 's@s.required_ruby_version.*=.*@s.required_ruby_version     = "~> 3.0"@' vagrant.gemspec
-        popd
-
-        bundle config local.vagrant ${PWD}/.deps/vagrant/
-
         # build gem of latest bindings that contain fix for ruby include path
         pushd .deps/libvirt-ruby
         rake gem
