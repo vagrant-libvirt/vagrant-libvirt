@@ -222,7 +222,9 @@ sudo dnf remove vagrant-libvirt
 sudo sed -i \
     '/^\(exclude=.*\)/ {/vagrant-libvirt/! s//\1 vagrant-libvirt/;:a;n;ba;q}; $aexclude=vagrant-libvirt' \
     /etc/dnf/dnf.conf
-sudo dnf install --assumeyes @virtualization vagrant rubygem-fog-libvirt
+vagrant_libvirt_deps=($(sudo dnf repoquery --disableexcludes main --depends vagrant-libvirt 2>/dev/null | cut -d' ' -f1))
+dependencies=$(sudo dnf repoquery --qf "%{name}" ${vagrant_libvirt_deps[@]/#/--whatprovides })
+sudo dnf install --assumeyes @virtualization ${dependencies}
 ```
 
 The above `sed` command will add `vagrant-libvirt` to the list of packages to be excluded from being installed.
