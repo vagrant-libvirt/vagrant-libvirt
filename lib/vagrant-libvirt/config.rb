@@ -67,6 +67,7 @@ module VagrantPlugins
       attr_accessor :management_network_domain
       attr_accessor :management_network_mtu
       attr_accessor :management_network_keep
+      attr_accessor :management_network_driver_iommu
 
       # System connection information
       attr_accessor :system_uri
@@ -81,6 +82,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :nodeset
       attr_accessor :memory_backing
+      attr_accessor :memtunes
       attr_accessor :channel
       attr_accessor :cpus
       attr_accessor :cpuset
@@ -95,6 +97,7 @@ module VagrantPlugins
       attr_accessor :features_hyperv
       attr_accessor :clock_offset
       attr_accessor :clock_timers
+      attr_accessor :launchsecurity_data
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -243,6 +246,7 @@ module VagrantPlugins
         @management_network_domain = UNSET_VALUE
         @management_network_mtu = UNSET_VALUE
         @management_network_keep = UNSET_VALUE
+        @management_network_driver_iommu = UNSET_VALUE
 
         # System connection information
         @system_uri      = UNSET_VALUE
@@ -254,6 +258,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
+        @memtunes          = {}
         @cpus              = UNSET_VALUE
         @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -267,6 +272,7 @@ module VagrantPlugins
         @features_hyperv   = UNSET_VALUE
         @clock_offset      = UNSET_VALUE
         @clock_timers      = []
+        @launchsecurity_data = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -526,6 +532,37 @@ module VagrantPlugins
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @memory_backing.push(name: option,
                              config: config)
+      end
+
+      def memtune(config={})
+        if config[:type].nil?
+          raise "Missing memtune type"
+        end
+
+        unless ['hard_limit', 'soft_limit', 'swap_hard_limit'].include? config[:type]
+          raise "Memtune type '#{config[:type]}' not allowed (hard_limit, soft_limit, swap_hard_limit are allowed)"
+        end
+
+        if config[:value].nil?
+          raise "Missing memtune value"
+        end
+
+        opts = config[:options] || {}
+        opts[:unit] = opts[:unit] || "KiB"
+
+        @memtunes[config[:type]] = { value: config[:value], config: opts }
+      end
+
+      def launchsecurity(options = {})
+        if options.fetch(:type) != 'sev'
+          raise "Launch security type only supports SEV. Explicitly set 'sev' as a type"
+        end
+
+        @launchsecurity_data = {}
+        @launchsecurity_data[:type] = options[:type]
+        @launchsecurity_data[:cbitpos] = options[:cbitpos] || 47
+        @launchsecurity_data[:reducedPhysBits] = options[:reducedPhysBits] || 1
+        @launchsecurity_data[:policy] = options[:policy] || "0x0003"
       end
 
       def input(options = {})
@@ -916,6 +953,7 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
         @management_network_keep = false if @management_network_keep == UNSET_VALUE
+        @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
@@ -954,6 +992,7 @@ module VagrantPlugins
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
         @clock_timers = [] if @clock_timers == UNSET_VALUE
+        @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
@@ -1223,6 +1262,8 @@ module VagrantPlugins
           c = floppies.dup
           c += other.floppies
           result.floppies = c
+
+          result.memtunes = memtunes.merge(other.memtunes)
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 

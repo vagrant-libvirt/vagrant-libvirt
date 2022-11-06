@@ -149,6 +149,14 @@ end
     {:cpus => "2-3", :memory => "4096"}
   ]
   ```
+* `launchsecurity` - Configure Secure Encryption Virtualization for the guest, requires additional components to be configured to work, see [examples](./examples.html#secure-encryption-virtualization). For more information look at [libvirt documentation](https://libvirt.org/kbase/launch_security_sev.html).
+  ```
+  libvirt.launchsecurity :type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"
+  ```
+* `memtune` - Configure the memtune settings for the guest, primarily exposed to facilitate enabling Secure Encryption Virtualization. Note that when configuring `hard_limit` that the value is in kB as opposed to `libvirt.memory` which is in Mb. Additionally it must be set to be higher than `libvirt.memory`, see [libvirt documentation](https://libvirt.org/kbase/launch_security_sev.html) for details on why.
+  ```
+  libvirt.memtune :type => "hard_limit", :value => 2500000 # Note here the value in kB (not in Mb)
+  ```
 * `loader` - Sets path to custom UEFI loader.
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.

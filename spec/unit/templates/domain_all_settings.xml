@@ -13,6 +13,10 @@
   <numatune>
     <memory nodeset='1-4,^3,6'/>
   </numatune>
+  <memtune>
+    <hard_limit unit='KiB'>250000</hard_limit>
+    <soft_limit unit='KiB'>200000</soft_limit>
+  </memtune>
   <cputune>
     <vcpupin vcpu="0" cpuset="0" />
     <shares>1024</shares>
@@ -107,7 +111,8 @@
       <source path='/tmp/foo'/>
       <target type='guestfwd' address='192.0.2.42' port='4242'/>
     </channel>
-    <input type='mouse' bus='ps2'/>
+    <input type='mouse' bus='ps2'>
+    </input>
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
       <gl enable='yes'/>
     </graphics>
@@ -154,7 +159,8 @@
         <device path='/dev/tpm0'/>
       </backend>
     </tpm>
-    <controller type='usb' model='nec-xhci' ports="4" />
+    <controller type='usb' model='nec-xhci' ports="4" >
+    </controller>
   </devices>
   <qemu:commandline>
     <qemu:arg value='-device'/>

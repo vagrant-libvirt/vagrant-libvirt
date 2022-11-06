@@ -67,6 +67,8 @@ describe 'templates/domain' do
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
+      domain.memtune(type: 'hard_limit', value: '250000')
+      domain.memtune(type: 'soft_limit', value: '200000')
       domain.cpuaffinitiy(0 => '0')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
