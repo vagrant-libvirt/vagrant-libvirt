@@ -14,6 +14,7 @@ on:
       - reopened
       # for delete
       - closed
+  pull_request:
 
 
 permissions:
@@ -25,6 +26,25 @@ jobs:
     if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
     runs-on: ubuntu-22.04
     steps:
+      -
+        name: Setup golang
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.17.0' #
+      -
+        name: Buildah build
+        run: |
+          # install some deps
+          sudo apt-get -y install bats btrfs-tools git libapparmor-dev libdevmapper-dev libglib2.0-dev libgpgme11-dev libseccomp-dev libselinux1-dev skopeo-containers go-md2man
+
+          mkdir ~/buildah
+          cd ~/buildah
+          export GOPATH=`pwd`
+          git clone -b v1.26.5 https://github.com/containers/buildah ./src/github.com/containers/buildah
+          cd ./src/github.com/containers/buildah
+          make runc all SECURITYTAGS="apparmor seccomp"
+          sudo make install install.runc
+          buildah --help
       -
         name: Checkout
         if: ${{ ! startsWith(github.event_name, 'pull_request') }}
