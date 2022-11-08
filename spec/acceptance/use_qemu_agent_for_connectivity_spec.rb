@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 describe 'use qemu agent to determine machine private address', acceptance: true do
   include_context 'libvirt_acceptance'

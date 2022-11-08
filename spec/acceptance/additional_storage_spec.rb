@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 describe 'additional storage configured', acceptance: true do
   include_context 'libvirt_acceptance'

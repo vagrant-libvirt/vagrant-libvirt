@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
+
 require 'json'
 
-require 'vagrant-libvirt/action/destroy_domain'
+require 'vagrant-libvirt/action/handle_box_image'
 require 'vagrant-libvirt/util/byte_number'
 
 
