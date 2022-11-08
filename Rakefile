@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 #require 'rubygems'
 #require 'bundler/setup'
-require "parallel_tests"
 require 'bundler/gem_tasks'
 require File.expand_path('../lib/vagrant-libvirt/version', __FILE__)
 
