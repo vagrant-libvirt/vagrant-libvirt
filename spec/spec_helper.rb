@@ -38,6 +38,8 @@ rescue LoadError
   end
 end
 
+require 'rspec'
+
 RSpec.configure do |config|
   require 'tmpdir'
 

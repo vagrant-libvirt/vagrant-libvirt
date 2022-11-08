@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/action/start_domain'

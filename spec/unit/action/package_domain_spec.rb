@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
 
-require 'vagrant-libvirt/action/clean_machine_folder'
+require 'vagrant-libvirt/action/package_domain'
 
 describe VagrantPlugins::ProviderLibvirt::Action::PackageDomain do
   subject { described_class.new(app, env) }

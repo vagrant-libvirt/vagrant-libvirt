@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-require 'support/binding_proc'
-
-require 'spec_helper'
+require_relative '../spec_helper'
+require_relative '../support/binding_proc'
 
 require 'vagrant-libvirt/config'
 
