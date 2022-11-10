@@ -12,12 +12,15 @@
   <% end %>
   <model type='<%=@model_type%>'/>
   <% if @driver_name and @driver_queues %>
-    <driver name='<%=@driver_name%>' queues='<%=@driver_queues%>'/>
+    <driver <% if @driver_iommu %> iommu="on" <% end %> name='<%=@driver_name%>' queues='<%=@driver_queues%>'/>
   <% elsif @driver_queues %>
-    <driver queues='<%=@driver_queues%>'/>
+    <driver <% if @driver_iommu %> iommu="on" <% end %> queues='<%=@driver_queues%>'/>
   <% elsif @driver_name %>
-    <driver name='<%=@driver_name%>'/>
+    <driver <% if @driver_iommu %> iommu="on" <% end %> name='<%=@driver_name%>'/>
+  <% elsif @driver_iommu %>
+    <driver iommu='on' />
   <% end %>
+
   <% if @ovs %>
   <virtualport type='openvswitch'>
     <% if @ovs_interfaceid %>

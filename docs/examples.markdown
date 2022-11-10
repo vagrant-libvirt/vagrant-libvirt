@@ -477,6 +477,66 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+## Secure Encryption Virtualization (SEV)
+
+Secure Encryption Virtualization is supported by libvirt and by the vagrant-libvirt provider but comes with several requirements.
+
+This mode has only been tested with q35 types of machines, so you'll need an UEFI boot
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.loader = "/usr/share/OVMF/OVMF_CODE.fd"
+    libvirt.nvram = "/path/to/ovmf/OVMF_VARS.fd"
+    libvirt.machine_type = 'pc-q35-focal'
+  end
+end
+```
+
+Read the libvirt documentaiton to understand what OVMF is and how to use it.
+
+Next, you'll want to call the following methods:
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.launchsecurity :type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"
+    libvirt.memtune :type => "hard_limit", :value => 2500000 # Note here the value in kB (not in Mb)
+  end
+end
+```
+
+Note that the value provided in the memtune `hard_limit` is in Kb by default. It should be higher than the
+one given in `libvirt.memory` (which is in Mb, by the way) by some amount (again, check out the [https://libvirt.org/kbase/launch_security_sev.html](documentation)) to understand why.
+
+It is also necessary to explicitly define the memballoon for it to accept the iommu flag.
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.memballoon_enabled = true
+    libvirt.memballoon_model = 'virtio'
+    libvirt.memballoon_pci_bus = '0x07'
+    libvirt.memballoon_pci_slot = '0x00'
+  end
+end
+```
+
+And finally, because the iommu flag has to be passed to the networks, you also need to set it explicitly:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    # Management network only (the NAT'ed network provided by Vagrant)
+    libvirt.management_network_driver_iommu = true
+  end
+  # Example in defining a bridge
+  config.vm.network :public_network, :dev => "br0", :bridge => "br0", :mode => "bridge", :type => "bridge", :driver_iommu => true # <== Note here the additional flag
+end
+```
+
+Don't forget that you'll need an UEFI base box.
+
+
 ## Libvirt communication channels
 
 For certain functionality to be available within a guest, a private

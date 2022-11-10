@@ -185,6 +185,38 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         end
       end
 
+      context 'launchSecurity' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.launchsecurity :type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"
+          EOF
+        end
+
+        it 'should emit the settings to the ui' do
+          expect(ui).to receive(:info).with(/ -- Launch security:   type=sev, cbitpos=47, reducedPhysBits=1, policy=0x0003/)
+          expect(servers).to receive(:create).and_return(machine)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'memtunes' do
+        let(:vagrantfile_providerconfig) do
+          <<-EOF
+          libvirt.memtune :type => 'hard_limit', :value => 250000
+          libvirt.memtune :type => 'soft_limit', :value => 200000
+          EOF
+        end
+
+        it 'should emit the settings to the ui' do
+          expect(ui).to receive(:info).with(/ -- Memory Tuning:     hard_limit: unit='KiB', value: 250000/)
+          expect(ui).to receive(:info).with(/ -- Memory Tuning:     soft_limit: unit='KiB', value: 200000/)
+          expect(servers).to receive(:create).and_return(machine)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
       context 'sysinfo' do
         let(:domain_xml_file) { 'sysinfo.xml' }
         let(:vagrantfile_providerconfig) do
