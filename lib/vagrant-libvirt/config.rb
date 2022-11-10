@@ -1214,8 +1214,9 @@ module VagrantPlugins
           # only interested in public networks where portgroup is nil, as then source will be a host device
           if type == :public_network && opts[:portgroup] == nil
             devices = host_devices(machine)
-            if !devices.include?(opts[:dev])
-              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{opts[:dev]}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
+            hostdev = opts.fetch(:dev, 'eth0')
+            if !devices.include?(hostdev)
+              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{hostdev}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
             end
           end
         end
