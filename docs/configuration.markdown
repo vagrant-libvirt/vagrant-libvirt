@@ -169,6 +169,9 @@ end
   or "spice".
 * `graphics_port` - Sets the port for the display protocol to bind to.
   Defaults to `-1`, which will be set automatically by libvirt.
+* `graphics_websocket` - Sets the websocket port for the display protocol to bind to.
+  Defaults to `-1`, which will be set automatically by libvirt.
+  The autoport configuration has no effect on the websocket port due to security reasons.
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to
   "127.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for
@@ -305,6 +308,7 @@ defined domain:
 * `cpu_mode` - Updated. Pay attention that custom mode is not supported
 * `graphics_type` - Updated
 * `graphics_port` - Updated
+* `graphics_websocket` - Updated
 * `graphics_ip` - Updated
 * `graphics_passwd` - Updated
 * `graphics_autoport` - Updated

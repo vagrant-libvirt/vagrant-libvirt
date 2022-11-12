@@ -120,6 +120,7 @@ module VagrantPlugins
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
       attr_accessor :graphics_port
+      attr_accessor :graphics_websocket
       attr_accessor :graphics_passwd
       attr_accessor :graphics_ip
       attr_accessor :graphics_gl
@@ -294,6 +295,7 @@ module VagrantPlugins
         @graphics_type     = UNSET_VALUE
         @graphics_autoport = UNSET_VALUE
         @graphics_port     = UNSET_VALUE
+        @graphics_websocket = UNSET_VALUE
         @graphics_ip       = UNSET_VALUE
         @graphics_passwd   = UNSET_VALUE
         @graphics_gl       = UNSET_VALUE
@@ -1021,6 +1023,7 @@ module VagrantPlugins
           @graphics_passwd = nil
         end
         @graphics_port = @graphics_type == 'spice' ? nil : -1 if @graphics_port == UNSET_VALUE
+        @graphics_websocket = @graphics_type == 'spice' ? nil : -1 if @graphics_websocket == UNSET_VALUE
         @graphics_ip = @graphics_type == 'spice' ? nil : '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_accel3d = false if @video_accel3d == UNSET_VALUE
         @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE

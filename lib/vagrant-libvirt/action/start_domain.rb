@@ -280,6 +280,10 @@ module VagrantPlugins
                 graphics.attributes['port'] = config.graphics_port
               end
             end
+            if graphics.attributes['websocket'] != config.graphics_websocket.to_s
+              descr_changed = true
+              graphics.attributes['websocket'] = config.graphics_websocket
+            end
             if graphics.attributes['keymap'] != config.keymap
               descr_changed = true
               graphics.attributes['keymap'] = config.keymap

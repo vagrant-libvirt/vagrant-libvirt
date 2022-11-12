@@ -65,6 +65,7 @@ module VagrantPlugins
           @graphics_type = config.graphics_type
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
+          @graphics_websocket = config.graphics_websocket
           @graphics_ip = config.graphics_ip
           @graphics_passwd = config.graphics_passwd
           @graphics_gl = config.graphics_gl
@@ -270,6 +271,7 @@ module VagrantPlugins
           end
 
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
+          env[:ui].info(" -- Graphics Websocket: #{@graphics_websocket}")
           if !@graphics_autoport
             env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
             env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
