@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-require 'support/binding_proc'
-
-require 'spec_helper'
+require_relative '../spec_helper'
+require_relative '../support/binding_proc'
 
 require 'vagrant-libvirt/config'
 
@@ -705,6 +704,31 @@ describe VagrantPlugins::ProviderLibvirt::Config do
     end
   end
 
+  describe '#launchsecurity' do
+    it 'should reject invalid type' do
+      expect { subject.launchsecurity(:type => 'bad') }.to raise_error("Launch security type only supports SEV. Explicitly set 'sev' as a type")
+    end
+
+    it 'should save when valid' do
+      expect(subject.launchsecurity(:type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003")).to be_truthy
+    end
+  end
+
+  describe '#memtune' do
+    it 'should raise an exception without type' do
+      expect { subject.memtune(:value => 250000) }.to raise_error('Missing memtune type')
+    end
+
+    it 'should raise an exception if type unrecognized' do
+      expect { subject.memtune(:type => 'limit', :value => 250000) }.to raise_error('Memtune type \'limit\' not allowed (hard_limit, soft_limit, swap_hard_limit are allowed)')
+    end
+
+    it 'should accept multiple calls' do
+      expect(subject.memtune(:type => 'hard_limit', :value => 250000)).to be_truthy
+      expect(subject.memtune(:type => 'soft_limit', :value => 200000)).to be_truthy
+    end
+  end
+
   def assert_invalid
     subject.finalize!
     errors = subject.validate(machine).values.first
@@ -857,18 +881,30 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
     end
 
-    context 'with cpu_mode and cpu_model defined' do
-      it 'should discard model if mode is passthrough' do
+    context 'with cpu_mode defined' do
+      before do
         subject.cpu_mode = 'host-passthrough'
-        subject.cpu_model = 'qemu64'
-        assert_valid
-        expect(subject.cpu_model).to be_empty
       end
 
-      it 'should allow custom mode with model' do
-        subject.cpu_mode = 'custom'
-        subject.cpu_model = 'qemu64'
-        assert_valid
+      context 'with cpu_model defined' do
+        it 'should discard model if mode is passthrough' do
+          subject.cpu_model = 'qemu64'
+          assert_valid
+          expect(subject.cpu_model).to be_empty
+        end
+
+        it 'should allow custom mode with model' do
+          subject.cpu_mode = 'custom'
+          subject.cpu_model = 'qemu64'
+          assert_valid
+        end
+      end
+
+      context 'with cpu_model not defined' do
+        it 'should reject if cpu features enabled' do
+          subject.cpu_features = [{:name => 'feature', :policy => 'optional'}]
+          assert_invalid
+        end
       end
     end
 
@@ -1033,6 +1069,27 @@ describe VagrantPlugins::ProviderLibvirt::Config do
     let(:two) { described_class.new }
 
     subject { one.merge(two) }
+
+    context 'memtunes' do
+      it 'should merge where type is different' do
+        one.memtune(type: 'hard_limit', value: '250000')
+        two.memtune(type: 'soft_limit', value: '200000')
+        subject.finalize!
+        expect(subject.memtunes).to eq({
+          'hard_limit' => {value: '250000', config: {unit: 'KiB'}},
+          'soft_limit' => {value: '200000', config: {unit: 'KiB'}},
+        })
+      end
+
+      it 'should override where type is the same' do
+        one.memtune(type: 'hard_limit', value: '250000')
+        two.memtune(type: 'hard_limit', value: '200000')
+        subject.finalize!
+        expect(subject.memtunes).to eq({
+          'hard_limit' => {value: '200000', config: {unit: 'KiB'}},
+        })
+      end
+    end
 
     context 'storage' do
       context 'with disks' do

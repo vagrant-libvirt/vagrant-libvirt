@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/action/start_domain'
+require 'vagrant-libvirt/util/unindent'
 
 describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
   subject { described_class.new(app, env) }
@@ -223,6 +224,108 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         expect(domain).to receive(:start)
 
         expect(subject.call(env)).to be_nil
+      end
+    end
+
+    context 'launchSecurity' do
+      let(:updated_domain_xml_new_launch_security) {
+        new_xml = domain_xml.dup
+        new_xml.gsub!(
+          /<\/devices>/,
+          <<-EOF.unindent.rstrip
+          </devices>
+            <launchSecurity type='sev'>
+              <cbitpos>47</cbitpos>
+              <reducedPhysBits>1</reducedPhysBits>
+              <policy>0x0003</policy>
+            </launchSecurity>
+          EOF
+        )
+        new_xml
+      }
+
+      it 'should create if not already set' do
+        machine.provider_config.launchsecurity_data = {:type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"}
+
+        expect(ui).to_not receive(:warn)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml_new_launch_security)
+        expect(libvirt_domain).to receive(:autostart=)
+        expect(domain).to receive(:start)
+
+        expect(subject.call(env)).to be_nil
+      end
+
+      context 'already exists' do
+        let(:domain_xml_launch_security) { updated_domain_xml_new_launch_security }
+        let(:updated_domain_xml_launch_security) {
+          new_xml = domain_xml_launch_security.dup
+          new_xml.gsub!(/<cbitpos>47/, '<cbitpos>48')
+          new_xml.gsub!(/<reducedPhysBits>1/, '<reducedPhysBits>2')
+          new_xml.gsub!(/<policy>0x0003/, '<policy>0x0004')
+          new_xml
+        }
+
+
+        it 'should update all settings' do
+          machine.provider_config.launchsecurity_data = {:type => 'sev', :cbitpos => 48, :reducedPhysBits => 2, :policy => "0x0004"}
+
+          expect(ui).to_not receive(:warn)
+          expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml_launch_security, updated_domain_xml_launch_security)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+
+        it 'should remove if disabled' do
+          machine.provider_config.launchsecurity_data = nil
+
+          expect(ui).to_not receive(:warn)
+          expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml_launch_security, domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+
+        context 'with controllers' do
+          # makes domain_xml contain 2 controllers and memballoon
+          # which should mean that launchsecurity element exists, but without
+          # iommu set on controllers
+          let(:test_file) { 'existing.xml' }
+          let(:updated_domain_xml_launch_security_controllers) {
+            new_xml = updated_domain_xml_new_launch_security.dup
+            new_xml.gsub!(
+              /<controller type='pci' index='0' model='pci-root'\/>/,
+              "<controller type='pci' index='0' model='pci-root'><driver iommu='on'/></controller>",
+            )
+            new_xml.gsub!(
+              /(<address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'\/>)/,
+              '\1<driver iommu="on"/>',
+            )
+            # memballoon
+            new_xml.gsub!(
+              /(<address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'\/>)/,
+              '\1<driver iommu="on"/>',
+            )
+            new_xml
+          }
+
+          it 'should set driver iommu on all controllers' do
+            machine.provider_config.launchsecurity_data = {:type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"}
+
+            expect(ui).to_not receive(:warn)
+            expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+            expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml_launch_security, updated_domain_xml_launch_security_controllers)
+            expect(libvirt_domain).to receive(:autostart=)
+            expect(domain).to receive(:start)
+
+            expect(subject.call(env)).to be_nil
+          end
+        end
       end
     end
 

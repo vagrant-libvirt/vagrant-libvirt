@@ -27,9 +27,17 @@ jobs:
     steps:
       -
         name: Checkout
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      -
+        if: startsWith(github.event_name, 'pull_request')
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       -
         name: Build with buildah
         run: buildah bud .

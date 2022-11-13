@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 require 'vagrant-libvirt'
 require 'vagrant-libvirt/plugin'
+require 'vagrant-libvirt/action'
+require 'vagrant-libvirt/action/remove_libvirt_image'
 
 
 describe VagrantPlugins::ProviderLibvirt::Plugin do
@@ -24,7 +26,9 @@ describe VagrantPlugins::ProviderLibvirt::Plugin do
     end
 
     it 'should call the action hook after box remove' do
-      expect(VagrantPlugins::ProviderLibvirt::Action).to receive(:remove_libvirt_image).and_return(Vagrant::Action::Builder.new)
+      expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::RemoveLibvirtImage).to receive(:call) do |cls, env|
+        cls.instance_variable_get(:@app).call(env)
+      end
       expect {
         env[:env].action_runner.run(
           Vagrant::Action.action_box_remove, {

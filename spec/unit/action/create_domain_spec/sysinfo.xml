@@ -58,7 +58,8 @@
     <console type='pty'>
       <target port='0'/>
     </console>
-    <input type='mouse' bus='ps2'/>
+    <input type='mouse' bus='ps2'>
+    </input>
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'/>
     <video>
       <model type='cirrus' vram='16384' heads='1'/>

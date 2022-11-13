@@ -16,6 +16,13 @@ can help a lot :-)
 
 Vagrant-libvirt Documentation is published at [https://vagrant-libvirt.github.io/vagrant-libvirt/](https://vagrant-libvirt.github.io/vagrant-libvirt/)
 
+## QA status
+
+We periodically test basic functionality for vagrant-libvirt on various distributions.
+In the status badges below, build passing means that latest version of Vagrant + Vagrant-libvirt was installed correctly and `vagrant up` is working. Click the badge to review the action workflow.
+
+[![](http://github-actions.40ants.com/vagrant-libvirt/vagrant-libvirt-qa/matrix.svg?only=Distribution%20Install.verify-install)](https://github.com/vagrant-libvirt/vagrant-libvirt-qa/actions/workflows/distro-install.yml)
+
 ## Index
 
 <!-- vim-markdown-toc GFM -->
