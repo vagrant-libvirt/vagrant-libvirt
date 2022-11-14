@@ -50,6 +50,7 @@ module VagrantPlugins
           @machine_arch = config.machine_arch
           @disk_controller_model = config.disk_controller_model
           @disk_driver_opts = config.disk_driver_opts
+          @disk_address_type = config.disk_address_type
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
