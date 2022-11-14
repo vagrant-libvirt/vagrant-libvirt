@@ -152,6 +152,9 @@
       <source file='<%= volume[:absolute_path] %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
+  <%- if volume[:address_type] -%>
+      <address type='<%= volume[:address_type] %>'/>
+  <%- end -%>
     </disk>
 <%- end -%>
 <%- scsi_volumes = @domain_volumes.select { |x| x[:bus] == 'scsi' } %>
@@ -172,6 +175,9 @@
       -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
+  <%- if d[:address_type] || @disk_address_type -%>
+      <address type='<%= d[:address_type] || @disk_address_type %>'/>
+  <%- end -%>
   <%- if d[:shareable] -%>
       <shareable/>
   <%- end -%>

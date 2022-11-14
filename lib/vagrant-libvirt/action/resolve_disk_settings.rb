@@ -23,6 +23,7 @@ module VagrantPlugins
           domain_name = env[:domain_name] # only set on create
           disk_bus = config.disk_bus
           disk_device = config.disk_device
+          disk_address_type = config.disk_address_type
           domain_volume_cache = config.volume_cache || 'default'
 
           # Storage
@@ -84,6 +85,7 @@ module VagrantPlugins
                     device: env[:box_volumes][index][:device],
                     cache: domain_volume_cache,
                     bus: disk_bus,
+                    address_type: disk_address_type,
                     absolute_path: domain_volume.path,
                     virtual_size: env[:box_volumes][index][:virtual_size],
                     pool: pool_name,

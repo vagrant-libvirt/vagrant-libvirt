@@ -107,6 +107,7 @@ module VagrantPlugins
       attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :disk_device
+      attr_accessor :disk_address_type
       attr_accessor :disk_controller_model
       attr_accessor :disk_driver_opts
       attr_accessor :nic_model_type
@@ -281,6 +282,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
+        @disk_address_type = UNSET_VALUE
         @disk_controller_model = UNSET_VALUE
         @disk_driver_opts  = {}
         @nic_model_type    = UNSET_VALUE
@@ -794,6 +796,7 @@ module VagrantPlugins
         disk = {
           device: options[:device],
           type: options[:type],
+          address_type: options[:address_type],
           size: options[:size],
           path: options[:path],
           bus: options[:bus],
@@ -1006,6 +1009,7 @@ module VagrantPlugins
             @disk_controller_model = nil
           end
         end
+        @disk_address_type = nil if @disk_address_type == UNSET_VALUE
         @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE

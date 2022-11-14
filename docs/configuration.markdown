@@ -88,6 +88,11 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_address_type` - The address type of disk device to emulate.
+  Libvirt uses a sensible default if not set, but some fully virtualized guests
+  may need to override this (e.g. Debian on _virt_ machine may need _virtio-mmio_).
+  Possible values are documented in libvirt's [description for
+  _address_](https://libvirt.org/formatdomain.html#elementsAddress).
 * `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
   NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
   * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
@@ -96,6 +101,7 @@ end
   * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
     Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
   * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
+  * `address_type` - Address type of disk device to emulate. If unspecified, Libvirt uses a sensible default.
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
