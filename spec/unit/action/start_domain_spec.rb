@@ -344,7 +344,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, launched_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
-          expect(ui).to receive(:info).with(' -- Graphics Port:     5900')
+          expect(ui).to receive(:info).with(' -- Graphics Port:      5900')
 
           expect(subject.call(env)).to be_nil
         end
