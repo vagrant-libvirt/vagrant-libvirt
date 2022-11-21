@@ -208,9 +208,12 @@
 <%- end -%>
 <%- @serials.each_with_index do |serial, port| -%>
     <serial type='<%= serial[:type] %>'>
-      <%- unless serial[:source].nil? -%>
-      <source path='<%= serial[:source][:path] %>'/>
-      <%- end -%>
+  <%- unless serial[:source].nil?
+    source = serial[:source]
+    seclabel = serial[:source][:seclabel]
+-%>
+      <source path='<%= source[:path] %>' append='<%= source.fetch(:append, 'on') %>'/>
+  <%- end -%>
       <target port='<%= port %>'/>
     </serial>
 <%- end -%>
