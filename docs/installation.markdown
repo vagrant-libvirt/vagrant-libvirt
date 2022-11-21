@@ -166,7 +166,7 @@ You may need to modify your `sources.list` to uncomment the deb-src entries wher
 ```shell
 sudo apt-get purge vagrant-libvirt
 sudo apt-mark hold vagrant-libvirt
-sudo apt-get install -y qemu libvirt-daemon-system ebtables libguestfs-tools
+sudo apt-get install -y qemu libvirt-daemon-system libvirt-dev ebtables libguestfs-tools
 sudo apt-get install -y vagrant ruby-fog-libvirt
 vagrant plugin install vagrant-libvirt
 ```
