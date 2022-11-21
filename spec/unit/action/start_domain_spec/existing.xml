@@ -48,7 +48,7 @@
     </console>
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
-    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
+    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us' websocket='-1'>
       <listen type='address' address='127.0.0.1'/>
     </graphics>
     <audio id='1' type='none'/>

@@ -66,13 +66,15 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         let(:vagrantfile_providerconfig) do
           <<-EOF
           libvirt.graphics_port = 5900
+          libvirt.graphics_websocket = 5700
           EOF
         end
 
-        it 'should emit the graphics port' do
+        it 'should emit the graphics port and websocket' do
           expect(servers).to receive(:create).and_return(machine)
           expect(volumes).to_not receive(:create) # additional disks only
           expect(ui).to receive(:info).with(' -- Graphics Port:     5900')
+          expect(ui).to receive(:info).with(' -- Graphics Websocket: 5700')
 
           expect(subject.call(env)).to be_nil
         end

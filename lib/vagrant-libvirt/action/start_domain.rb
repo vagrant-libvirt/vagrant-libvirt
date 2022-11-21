@@ -280,6 +280,10 @@ module VagrantPlugins
                 graphics.attributes['port'] = config.graphics_port
               end
             end
+            if graphics.attributes['websocket'] != config.graphics_websocket.to_s
+              descr_changed = true
+              graphics.attributes['websocket'] = config.graphics_websocket
+            end
             if graphics.attributes['keymap'] != config.keymap
               descr_changed = true
               graphics.attributes['keymap'] = config.keymap
@@ -544,14 +548,21 @@ module VagrantPlugins
             raise Errors::DomainStartError, error_message: e.message
           end
 
-          if config.graphics_autoport
-            #libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
-            xmldoc = REXML::Document.new(libvirt_domain.xml_desc)
-            graphics = REXML::XPath.first(xmldoc, '/domain/devices/graphics')
-            env[:ui].info(I18n.t('vagrant_libvirt.starting_domain_with_graphics'))
-            env[:ui].info(" -- Graphics Port:     #{graphics.attributes['port']}")
-            env[:ui].info(" -- Graphics IP:       #{graphics.attributes['listen']}")
-            env[:ui].info(" -- Graphics Password: #{config.graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
+          #libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
+          xmldoc = REXML::Document.new(libvirt_domain.xml_desc)
+          graphics = REXML::XPath.first(xmldoc, '/domain/devices/graphics')
+
+          if !graphics.nil?
+            if config.graphics_autoport
+              env[:ui].info(I18n.t('vagrant_libvirt.starting_domain_with_graphics'))
+              env[:ui].info(" -- Graphics Port:      #{graphics.attributes['port']}")
+              env[:ui].info(" -- Graphics IP:        #{graphics.attributes['listen']}")
+              env[:ui].info(" -- Graphics Password:  #{config.graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
+            end
+
+            if config.graphics_websocket == -1
+              env[:ui].info(" -- Graphics Websocket: #{graphics.attributes['websocket']}")
+            end
           end
 
           @app.call(env)
