@@ -660,6 +660,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
         expect(subject.graphics_type).to eq('vnc')
         expect(subject.graphics_port).to eq(-1)
+        expect(subject.graphics_websocket).to eq(-1)
         expect(subject.graphics_ip).to eq('127.0.0.1')
         expect(subject.graphics_autoport).to eq('yes')
         expect(subject.channels).to be_empty
@@ -670,6 +671,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         subject.finalize!
 
         expect(subject.graphics_port).to eq(nil)
+        expect(subject.graphics_websocket).to eq(nil)
         expect(subject.graphics_ip).to eq(nil)
         expect(subject.graphics_autoport).to eq(nil)
         expect(subject.channels).to match([a_hash_including({:target_name => 'com.redhat.spice.0'})])
