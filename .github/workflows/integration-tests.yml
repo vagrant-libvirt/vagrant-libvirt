@@ -52,7 +52,7 @@ jobs:
   run-tests:
     needs: generate-matrix
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -114,8 +114,6 @@ jobs:
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
-        # tell integration tests to use boxes from the cached location
-        export VAGRANT_LIBVIRT_VAGRANT_HOME=$HOME/.vagrant.d
         # use software emulation due to lack of nested emulation
         cat <<EOF > $HOME/.vagrant.d/Vagrantfile
         Vagrant.configure("2") do |config|
@@ -123,5 +121,20 @@ jobs:
             libvirt.driver = "qemu"
           end
         end
-        # run under libvirt group
-        sg libvirt -c "bundle exec rspec --color --fail-fast --tag acceptance -e '${{ matrix.test_name }}'"
+        EOF
+
+        # tell integration tests to use boxes from the cached location
+        # and also to load the above Vagrantfile. This is done because
+        # sg will not inherit env vars, so it's necessary to set them
+        # in a script that sg runs before calling bundle.
+        cat <<EOF > script.bash
+        #!/bin/bash
+        #
+        export VAGRANT_LIBVIRT_VAGRANT_HOME=$HOME/.vagrant.d
+
+        bundle exec rspec --color --fail-fast --tag acceptance -e '${{ matrix.test_name }}'
+        EOF
+        chmod a+x script.bash
+
+        # run script under libvirt group
+        sg libvirt -c ./script.bash
