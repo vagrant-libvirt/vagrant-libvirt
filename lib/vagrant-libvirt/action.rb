@@ -226,6 +226,8 @@ module VagrantPlugins
 
             b2.use Provision
             b2.use action_halt
+
+            b2.use ResolveDiskSettings
             b2.use action_start
           end
         end

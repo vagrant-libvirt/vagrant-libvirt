@@ -107,7 +107,7 @@ module VagrantPlugins
 
       def restore_snapshot(snapshot_name)
         domain = get_libvirt_domain()
-        snapshot = get_snapshot_if_exists(@machine, snapshot_name)
+        snapshot = get_snapshot_if_exists(snapshot_name)
         begin
           # 4 is VIR_DOMAIN_SNAPSHOT_REVERT_FORCE
           # needed due to https://bugzilla.redhat.com/show_bug.cgi?id=1006886

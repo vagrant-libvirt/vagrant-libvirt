@@ -12,7 +12,7 @@ module VagrantPlugins
           env[:ui].info(I18n.t(
             "vagrant.actions.vm.snapshot.deleting",
             name: env[:snapshot_name]))
-          env[:machine].provider.driver.delete_snapshot(env[:machine], env[:snapshot_name])
+          env[:machine].provider.driver.delete_snapshot(env[:snapshot_name])
 
           env[:ui].success(I18n.t(
             "vagrant.actions.vm.snapshot.deleted",

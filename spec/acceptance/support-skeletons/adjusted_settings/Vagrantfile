@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   config.ssh.shell = "/bin/sh"
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.provider :libvirt do |libvirt|
-    libvirt.cpu = 2
+    libvirt.cpus = 2
     libvirt.memory = 1000
     libvirt.default_prefix = "changed_default_prefix"
   end

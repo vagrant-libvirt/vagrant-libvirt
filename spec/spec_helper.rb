@@ -48,6 +48,10 @@ RSpec.configure do |config|
     # the global plugin manager from trying to use the default VAGRANT_HOME.
     temp_dir = Dir.mktmpdir("rspec-")
     ENV['VAGRANT_HOME'] = temp_dir
+
+    config.after(:suite) do
+      FileUtils.remove_entry temp_dir
+    end
   else
     ENV['VAGRANT_HOME'] = ENV['VAGRANT_LIBVIRT_VAGRANT_HOME']
   end
@@ -61,10 +65,6 @@ RSpec.configure do |config|
   # may have it set to 'qemu:///session'.
   config.before(:suite) do
     ENV.delete('LIBVIRT_DEFAULT_URI')
-  end
-
-  config.after(:suite) do
-    FileUtils.remove_entry temp_dir
   end
 
   config.mock_with :rspec do |mocks|

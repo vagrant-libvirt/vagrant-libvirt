@@ -317,16 +317,12 @@ module VagrantPlugins
             env[:ui].info(" -- Boot device:        #{device}")
           end
 
-          unless @disks.empty?
-            env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
-          end
-
           if not @launchsecurity_data.nil?
             env[:ui].info(" -- Launch security:   #{@launchsecurity_data.map { |k, v| "#{k.to_s}=#{v}" }.join(", ")}")
           end
 
           @disks.each do |disk|
-            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
+            msg = " -- Disk(#{disk[:device]}):         #{disk[:absolute_path]}, #{disk[:bus]}, #{disk[:size]}"
             msg += ' Shared' if disk[:shareable]
             msg += ' (Remove only manually)' if disk[:allow_existing]
             msg += ' Not created - using existed.' if disk[:preexisting]
@@ -457,12 +453,6 @@ module VagrantPlugins
         end
 
         private
-        def _disks_print(disks)
-          disks.collect do |x|
-            "#{x[:device]}(#{x[:type]}, #{x[:bus]}, #{x[:size]})"
-          end.join(', ')
-        end
-
         def _cdroms_print(cdroms)
           cdroms.collect { |x| x[:dev] }.join(', ')
         end
