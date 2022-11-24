@@ -11,6 +11,7 @@ RUN apt update \
         curl \
         git \
         gosu \
+        iproute2 \
         kmod \
         libvirt-clients \
         openssh-client \
