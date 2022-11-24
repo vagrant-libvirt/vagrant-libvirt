@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 describe 'package domain', acceptance: true do
   include_context 'libvirt_acceptance'
@@ -49,7 +49,7 @@ describe 'package domain', acceptance: true do
       status('Test: machine from packaged box is created successfully')
       result = environment.execute('vagrant', 'up', extra_env: testbox_envvars)
       expect(result).to exit_with(0)
-      expect(result.stdout).to match(/test-package-complex-domain/)
+      expect(result.stdout).to match(/test-package-simple-domain/)
     end
   end
 

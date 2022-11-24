@@ -38,6 +38,8 @@ rescue LoadError
   end
 end
 
+require 'rspec'
+
 RSpec.configure do |config|
   require 'tmpdir'
 
@@ -46,6 +48,10 @@ RSpec.configure do |config|
     # the global plugin manager from trying to use the default VAGRANT_HOME.
     temp_dir = Dir.mktmpdir("rspec-")
     ENV['VAGRANT_HOME'] = temp_dir
+
+    config.after(:suite) do
+      FileUtils.remove_entry temp_dir
+    end
   else
     ENV['VAGRANT_HOME'] = ENV['VAGRANT_LIBVIRT_VAGRANT_HOME']
   end
@@ -61,16 +67,16 @@ RSpec.configure do |config|
     ENV.delete('LIBVIRT_DEFAULT_URI')
   end
 
-  config.after(:suite) do
-    FileUtils.remove_entry temp_dir
-  end
-
   config.mock_with :rspec do |mocks|
     mocks.verify_partial_doubles = true
   end
 
   # don't run acceptance tests by default
   config.filter_run_excluding :acceptance => true
+
+  config.expect_with :rspec do |c|
+    c.max_formatted_output_length = 2000 if c.respond_to?("max_formatted_output_length=")
+  end
 end
 
 begin

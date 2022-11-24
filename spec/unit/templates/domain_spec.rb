@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
 
 require 'vagrant-libvirt/config'
 require 'vagrant-libvirt/util/erb_template'
@@ -67,6 +67,8 @@ describe 'templates/domain' do
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
+      domain.memtune(type: 'hard_limit', value: '250000')
+      domain.memtune(type: 'soft_limit', value: '200000')
       domain.cpuaffinitiy(0 => '0')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'
@@ -78,9 +80,11 @@ describe 'templates/domain' do
       domain.instance_variable_set('@domain_volume_cache', 'deprecated')
       domain.disk_bus = 'ide'
       domain.disk_device = 'vda'
+      domain.disk_address_type = 'virtio-mmio'
       domain.disk_driver(:cache => 'unsafe', :io => 'threads', :copy_on_read => 'on', :discard => 'unmap', :detect_zeroes => 'on')
       domain.storage(:file, path: 'test-disk1.qcow2')
       domain.storage(:file, path: 'test-disk2.qcow2', io: 'threads', copy_on_read: 'on', discard: 'unmap', detect_zeroes: 'on')
+      domain.storage(:file, path: 'test-disk3.qcow2', address_type: 'pci')
       domain.storage(:file, device: :floppy)
       domain.storage(:file, device: :cdrom)
       domain.storage(:file, device: :cdrom)
@@ -139,12 +143,14 @@ describe 'templates/domain' do
       domain.domain_volumes.push({
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test.qcow2',
+        :address_type => 'virtio-mmio',
       })
       domain.domain_volumes.push({
         :cache => 'unsafe',
         :bus => domain.disk_bus,
-        :absolute_path => '/var/lib/libvirt/images/test2.qcow2'
+        :absolute_path => '/var/lib/libvirt/images/test2.qcow2',
+        :address_type => 'virtio-mmio',
       })
       resolve
 

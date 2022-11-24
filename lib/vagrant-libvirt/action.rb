@@ -52,7 +52,6 @@ module VagrantPlugins
       autoload :StartDomain, action_root.join('start_domain')
       autoload :StartShutdownTimer, action_root.join('shutdown_domain')
       autoload :SuspendDomain, action_root.join('suspend_domain')
-      autoload :TimedProvision, action_root.join('timed_provision')
       autoload :WaitTillUp, action_root.join('wait_till_up')
 
       autoload :Package, 'vagrant/action/general/package'
@@ -94,8 +93,6 @@ module VagrantPlugins
                 b2.use CreateNetworkInterfaces
 
                 b2.use action_start
-
-                b2.use SetupComplete
               else
                 b2.use HandleStoragePool
                 require 'vagrant/action/builtin/handle_box'
@@ -112,6 +109,7 @@ module VagrantPlugins
                 b2.use SetHostname
               end
             else
+              # start VM if halted
               env[:halt_on_error] = true
               b2.use ResolveDiskSettings
               b2.use CreateNetworks
@@ -129,7 +127,6 @@ module VagrantPlugins
       # poweroff state.
       private_class_method def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
-          b.use ConfigValidate
           b.use Call, IsRunning do |env, b2|
             # If the VM is running, run the necessary provisioners
             if env[:result]
@@ -138,16 +135,19 @@ module VagrantPlugins
             end
 
             b2.use Call, IsSuspended do |env2, b3|
-              # if vm is suspended resume it then exit
+              # if vm is suspended resume it
               if env2[:result]
                 b3.use ResumeDomain
-                next
-              end
 
-              if !env[:machine].config.vm.box
+                # if there was a box, want to wait until the communicator is
+                # available and then forward ports
+                next if !env[:machine].config.vm.box
+              elsif !env[:machine].config.vm.box
                 # With no box, we just care about network creation and starting it
                 b3.use SetBootOrder
                 b3.use StartDomain
+
+                next
               else
                 # VM is not running or suspended.
                 b3.use PrepareNFSValidIds
@@ -165,11 +165,12 @@ module VagrantPlugins
                 # Machine should gain IP address when coming up,
                 # so wait for dhcp lease and store IP into machines data_dir.
                 b3.use WaitTillUp
-                require 'vagrant/action/builtin/wait_for_communicator'
-                b3.use WaitForCommunicator, [:running]
-
-                b3.use ForwardPorts
               end
+
+              require 'vagrant/action/builtin/wait_for_communicator'
+              b3.use WaitForCommunicator, [:running]
+
+              b3.use ForwardPorts
             end
           end
         end
@@ -216,15 +217,17 @@ module VagrantPlugins
       # It uses the halt and start actions
       def self.action_reload
         Vagrant::Action::Builder.new.tap do |b|
+          b.use ConfigValidate
           b.use Call, IsCreated do |env, b2|
             unless env[:result]
               b2.use MessageNotCreated
               next
             end
 
-            b2.use ConfigValidate
             b2.use Provision
             b2.use action_halt
+
+            b2.use ResolveDiskSettings
             b2.use action_start
           end
         end
@@ -339,6 +342,7 @@ module VagrantPlugins
                 b3.use MessageNotRunning
                 next
               end
+              b3.use ClearForwardedPorts
               b3.use SuspendDomain
             end
           end
@@ -366,6 +370,7 @@ module VagrantPlugins
               b3.use Provision
               require 'vagrant/action/builtin/wait_for_communicator'
               b3.use WaitForCommunicator, [:running]
+              b3.use ForwardPorts
             end
           end
         end

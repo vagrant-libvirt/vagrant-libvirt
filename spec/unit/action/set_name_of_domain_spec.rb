@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../../spec_helper'
+
+require 'vagrant-libvirt/action/set_name_of_domain'
 
 describe VagrantPlugins::ProviderLibvirt::Action::SetNameOfDomain do
   before :each do

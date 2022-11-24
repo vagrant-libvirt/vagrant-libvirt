@@ -88,6 +88,11 @@ end
   set, which should be fine for paravirtualized guests, but some fully
   virtualized guests may require hda. NOTE: this option also applies only to
   disks associated with a box image.
+* `disk_address_type` - The address type of disk device to emulate.
+  Libvirt uses a sensible default if not set, but some fully virtualized guests
+  may need to override this (e.g. Debian on _virt_ machine may need _virtio-mmio_).
+  Possible values are documented in libvirt's [description for
+  _address_](https://libvirt.org/formatdomain.html#elementsAddress).
 * `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
   NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
   * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
@@ -96,6 +101,7 @@ end
   * `:discard` - Controls whether discard requests (also known as "trim" or "unmap") are ignored or passed to the filesystem. Possible values are "unmap" or "ignore".
     Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
   * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
+  * `address_type` - Address type of disk device to emulate. If unspecified, Libvirt uses a sensible default.
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
   the [documentation for
@@ -149,6 +155,14 @@ end
     {:cpus => "2-3", :memory => "4096"}
   ]
   ```
+* `launchsecurity` - Configure Secure Encryption Virtualization for the guest, requires additional components to be configured to work, see [examples](./examples.html#secure-encryption-virtualization). For more information look at [libvirt documentation](https://libvirt.org/kbase/launch_security_sev.html).
+  ```
+  libvirt.launchsecurity :type => 'sev', :cbitpos => 47, :reducedPhysBits => 1, :policy => "0x0003"
+  ```
+* `memtune` - Configure the memtune settings for the guest, primarily exposed to facilitate enabling Secure Encryption Virtualization. Note that when configuring `hard_limit` that the value is in kB as opposed to `libvirt.memory` which is in Mb. Additionally it must be set to be higher than `libvirt.memory`, see [libvirt documentation](https://libvirt.org/kbase/launch_security_sev.html) for details on why.
+  ```
+  libvirt.memtune :type => "hard_limit", :value => 2500000 # Note here the value in kB (not in Mb)
+  ```
 * `loader` - Sets path to custom UEFI loader.
 * `kernel` - To launch the guest with a kernel residing on host filesystems.
   Equivalent to qemu `-kernel`.
@@ -161,6 +175,9 @@ end
   or "spice".
 * `graphics_port` - Sets the port for the display protocol to bind to.
   Defaults to `-1`, which will be set automatically by libvirt.
+* `graphics_websocket` - Sets the websocket port for the display protocol to bind to.
+  Defaults to `-1`, which will be set automatically by libvirt.
+  The autoport configuration has no effect on the websocket port due to security reasons.
 * `graphics_ip` - Sets the IP for the display protocol to bind to.  Defaults to
   "127.0.0.1".
 * `graphics_passwd` - Sets the password for the display protocol. Working for
@@ -297,6 +314,7 @@ defined domain:
 * `cpu_mode` - Updated. Pay attention that custom mode is not supported
 * `graphics_type` - Updated
 * `graphics_port` - Updated
+* `graphics_websocket` - Updated
 * `graphics_ip` - Updated
 * `graphics_passwd` - Updated
 * `graphics_autoport` - Updated

@@ -45,6 +45,13 @@
     <<%= backing[:name] %> <%= backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>/>
   <%- end -%>
   </memoryBacking>
+<%- end -%>
+<%- unless @memtunes.empty? -%>
+  <memtune>
+  <%- @memtunes.each do |name, options| -%>
+    <<%= name %> <%= options[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')  %>><%= options[:value] %></<%= name %>>
+  <%- end -%>
+  </memtune>
 <%- end%>
 <%- if !@cpu_affinity.empty? || @shares -%>
   <cputune>
@@ -145,6 +152,9 @@
       <source file='<%= volume[:absolute_path] %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
+  <%- if volume[:address_type] -%>
+      <address type='<%= volume[:address_type] %>'/>
+  <%- end -%>
     </disk>
 <%- end -%>
 <%- scsi_volumes = @domain_volumes.select { |x| x[:bus] == 'scsi' } %>
@@ -165,6 +175,9 @@
       -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
+  <%- if d[:address_type] || @disk_address_type -%>
+      <address type='<%= d[:address_type] || @disk_address_type %>'/>
+  <%- end -%>
   <%- if d[:shareable] -%>
       <shareable/>
   <%- end -%>
@@ -229,7 +242,11 @@
     </channel>
 <%- end -%>
 <%- @inputs.each do |input| -%>
-    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'/>
+    <input type='<%= input[:type] %>' bus='<%= input[:bus] %>'>
+  <%- unless @launchsecurity_data.nil? -%>
+      <driver iommu='on' />
+  <%- end -%>
+    </input>
 <%- end -%>
 <%- if !@sound_type.nil? -%>
     <%# Sound device-%>
@@ -242,6 +259,7 @@
         'type' => @graphics_type,
         'port' => @graphics_port,
         'autoport' => @graphics_autoport,
+        'websocket' => @graphics_websocket,
         'listen' => @graphics_ip,
         'keymap' => @keymap,
         'passwd' => @graphics_passwd,
@@ -265,6 +283,9 @@
 <%- if @rng[:model] == "random"%>
     <rng model='virtio'>
       <backend model='random'>/dev/random</backend>
+  <%- unless @launchsecurity_data.nil? -%>
+      <driver iommu='on' />
+  <%- end -%>
     </rng>
 <%- end -%>
 <%-
@@ -338,18 +359,32 @@
 <%- end -%>
 <%- if not @usbctl_dev.empty? -%>
     <%# USB Controller -%>
-    <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>/>
+    <controller type='usb' model='<%= @usbctl_dev[:model] %>' <%= "ports=\"#{@usbctl_dev[:ports]}\" " if @usbctl_dev[:ports] %>>
+  <%- unless @launchsecurity_data.nil? -%>
+      <driver iommu='on' />
+  <%- end -%>
+    </controller>
 <%- end -%>
 <%- unless @memballoon_enabled.nil? -%>
   <%- if @memballoon_enabled -%>
     <memballoon model='<%= @memballoon_model %>'>
       <address type='pci' domain='0x0000' bus='<%= @memballoon_pci_bus %>' slot='<%= @memballoon_pci_slot %>' function='0x0'/>
+  <%- unless @launchsecurity_data.nil? -%>
+      <driver iommu='on' />
+  <%- end -%>
     </memballoon>
   <%- else -%>
     <memballoon model='none'/>
   <%- end -%>
 <%- end -%>
   </devices>
+<%- unless @launchsecurity_data.nil? -%>
+  <launchSecurity type='<%= @launchsecurity_data[:type] %>'>
+    <cbitpos><%= @launchsecurity_data[:cbitpos] %></cbitpos>
+    <reducedPhysBits><%= @launchsecurity_data[:reducedPhysBits] %></reducedPhysBits>
+    <policy><%= @launchsecurity_data[:policy] %></policy>
+  </launchSecurity>
+<%- end -%>
 <%- if not @qemu_args.empty? or not @qemu_env.empty? -%>
   <qemu:commandline>
   <%- @qemu_args.each do |arg| -%>

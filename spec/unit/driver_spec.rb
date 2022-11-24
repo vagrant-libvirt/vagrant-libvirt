@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'fog/libvirt/requests/compute/dhcp_leases'
+require_relative '../spec_helper'
+require_relative '../support/binding_proc'
 
-require 'spec_helper'
-require 'support/binding_proc'
+require 'fog/libvirt/requests/compute/dhcp_leases'
 
 require 'vagrant-libvirt/driver'
 

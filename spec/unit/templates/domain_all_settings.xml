@@ -13,6 +13,10 @@
   <numatune>
     <memory nodeset='1-4,^3,6'/>
   </numatune>
+  <memtune>
+    <hard_limit unit='KiB'>250000</hard_limit>
+    <soft_limit unit='KiB'>200000</soft_limit>
+  </memtune>
   <cputune>
     <vcpupin vcpu="0" cpuset="0" />
     <shares>1024</shares>
@@ -54,24 +58,35 @@
       <driver name='qemu' type='qcow2' cache='unsafe' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
       <source file='/var/lib/libvirt/images/test.qcow2'/>
       <target dev='vda' bus='ide'/>
+      <address type='virtio-mmio'/>
     </disk>
     <disk type='file' device='disk'>
       <alias name='ua-box-volume-1'/>
       <driver name='qemu' type='qcow2' cache='unsafe' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
       <source file='/var/lib/libvirt/images/test2.qcow2'/>
       <target dev='vdb' bus='ide'/>
+      <address type='virtio-mmio'/>
     </disk>
     <disk type='file' device='disk'>
       <alias name='ua-disk-volume-0'/>
       <driver name='qemu' type='qcow2' cache='default'/>
       <source file='/var/lib/libvirt/images/test-disk1.qcow2'/>
       <target dev='vdc' bus='virtio'/>
+      <address type='virtio-mmio'/>
     </disk>
     <disk type='file' device='disk'>
       <alias name='ua-disk-volume-1'/>
       <driver name='qemu' type='qcow2' cache='default' io='threads' copy_on_read='on' discard='unmap' detect_zeroes='on'/>
       <source file='/var/lib/libvirt/images/test-disk2.qcow2'/>
       <target dev='vdd' bus='virtio'/>
+      <address type='virtio-mmio'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <alias name='ua-disk-volume-2'/>
+      <driver name='qemu' type='qcow2' cache='default'/>
+      <source file='/var/lib/libvirt/images/test-disk3.qcow2'/>
+      <target dev='vde' bus='virtio'/>
+      <address type='pci'/>
     </disk>
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw' />
@@ -107,8 +122,9 @@
       <source path='/tmp/foo'/>
       <target type='guestfwd' address='192.0.2.42' port='4242'/>
     </channel>
-    <input type='mouse' bus='ps2'/>
-    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
+    <input type='mouse' bus='ps2'>
+    </input>
+    <graphics type='vnc' port='-1' autoport='yes' websocket='-1' listen='127.0.0.1' keymap='en-us'>
       <gl enable='yes'/>
     </graphics>
     <video>
@@ -154,7 +170,8 @@
         <device path='/dev/tpm0'/>
       </backend>
     </tpm>
-    <controller type='usb' model='nec-xhci' ports="4" />
+    <controller type='usb' model='nec-xhci' ports="4" >
+    </controller>
   </devices>
   <qemu:commandline>
     <qemu:arg value='-device'/>

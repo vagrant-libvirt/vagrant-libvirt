@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 shared_context 'unit' do
   include_context 'vagrant-unit'

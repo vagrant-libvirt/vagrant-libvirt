@@ -38,6 +38,7 @@ module VagrantPlugins
           @features_hyperv = config.features_hyperv
           @clock_offset = config.clock_offset
           @clock_timers = config.clock_timers
+          @launchsecurity_data = config.launchsecurity_data
           @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
@@ -49,9 +50,12 @@ module VagrantPlugins
           @machine_arch = config.machine_arch
           @disk_controller_model = config.disk_controller_model
           @disk_driver_opts = config.disk_driver_opts
+          @disk_address_type = config.disk_address_type
           @nested = config.nested
           @memory_size = config.memory.to_i * 1024
           @memory_backing = config.memory_backing
+          @memtunes = config.memtunes
+
           @management_network_mac = config.management_network_mac
           @domain_volume_cache = config.volume_cache || 'default'
           @kernel = config.kernel
@@ -62,6 +66,7 @@ module VagrantPlugins
           @graphics_type = config.graphics_type
           @graphics_autoport = config.graphics_autoport
           @graphics_port = config.graphics_port
+          @graphics_websocket = config.graphics_websocket
           @graphics_ip = config.graphics_ip
           @graphics_passwd = config.graphics_passwd
           @graphics_gl = config.graphics_gl
@@ -240,6 +245,10 @@ module VagrantPlugins
           @memory_backing.each do |backing|
             env[:ui].info(" -- Memory Backing:    #{backing[:name]}: #{backing[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}")
           end
+
+          @memtunes.each do |type, options|
+            env[:ui].info(" -- Memory Tuning:     #{type}: #{options[:config].map { |k,v| "#{k}='#{v}'"}.join(' ')}, value: #{options[:value]}")
+          end
           unless @shares.nil?
             env[:ui].info(" -- Shares:            #{@shares}")
           end
@@ -263,6 +272,7 @@ module VagrantPlugins
           end
 
           env[:ui].info(" -- Graphics Type:     #{@graphics_type}")
+          env[:ui].info(" -- Graphics Websocket: #{@graphics_websocket}") if @graphics_websocket != -1
           if !@graphics_autoport
             env[:ui].info(" -- Graphics Port:     #{@graphics_port}")
             env[:ui].info(" -- Graphics IP:       #{@graphics_ip}")
@@ -307,12 +317,12 @@ module VagrantPlugins
             env[:ui].info(" -- Boot device:        #{device}")
           end
 
-          unless @disks.empty?
-            env[:ui].info(" -- Disks:         #{_disks_print(@disks)}")
+          if not @launchsecurity_data.nil?
+            env[:ui].info(" -- Launch security:   #{@launchsecurity_data.map { |k, v| "#{k.to_s}=#{v}" }.join(", ")}")
           end
 
           @disks.each do |disk|
-            msg = " -- Disk(#{disk[:device]}):     #{disk[:absolute_path]}"
+            msg = " -- Disk(#{disk[:device]}):         #{disk[:absolute_path]}, #{disk[:bus]}, #{disk[:size]}"
             msg += ' Shared' if disk[:shareable]
             msg += ' (Remove only manually)' if disk[:allow_existing]
             msg += ' Not created - using existed.' if disk[:preexisting]
@@ -443,12 +453,6 @@ module VagrantPlugins
         end
 
         private
-        def _disks_print(disks)
-          disks.collect do |x|
-            "#{x[:device]}(#{x[:type]}, #{x[:bus]}, #{x[:size]})"
-          end.join(', ')
-        end
-
         def _cdroms_print(cdroms)
           cdroms.collect { |x| x[:dev] }.join(', ')
         end

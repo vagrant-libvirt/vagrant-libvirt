@@ -67,6 +67,7 @@ module VagrantPlugins
       attr_accessor :management_network_domain
       attr_accessor :management_network_mtu
       attr_accessor :management_network_keep
+      attr_accessor :management_network_driver_iommu
 
       # System connection information
       attr_accessor :system_uri
@@ -81,6 +82,7 @@ module VagrantPlugins
       attr_accessor :memory
       attr_accessor :nodeset
       attr_accessor :memory_backing
+      attr_accessor :memtunes
       attr_accessor :channel
       attr_accessor :cpus
       attr_accessor :cpuset
@@ -95,6 +97,7 @@ module VagrantPlugins
       attr_accessor :features_hyperv
       attr_accessor :clock_offset
       attr_accessor :clock_timers
+      attr_accessor :launchsecurity_data
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
@@ -104,6 +107,7 @@ module VagrantPlugins
       attr_accessor :machine_virtual_size
       attr_accessor :disk_bus
       attr_accessor :disk_device
+      attr_accessor :disk_address_type
       attr_accessor :disk_controller_model
       attr_accessor :disk_driver_opts
       attr_accessor :nic_model_type
@@ -117,6 +121,7 @@ module VagrantPlugins
       attr_accessor :graphics_type
       attr_accessor :graphics_autoport
       attr_accessor :graphics_port
+      attr_accessor :graphics_websocket
       attr_accessor :graphics_passwd
       attr_accessor :graphics_ip
       attr_accessor :graphics_gl
@@ -243,6 +248,7 @@ module VagrantPlugins
         @management_network_domain = UNSET_VALUE
         @management_network_mtu = UNSET_VALUE
         @management_network_keep = UNSET_VALUE
+        @management_network_driver_iommu = UNSET_VALUE
 
         # System connection information
         @system_uri      = UNSET_VALUE
@@ -254,6 +260,7 @@ module VagrantPlugins
         @memory            = UNSET_VALUE
         @nodeset           = UNSET_VALUE
         @memory_backing    = UNSET_VALUE
+        @memtunes          = {}
         @cpus              = UNSET_VALUE
         @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
@@ -267,6 +274,7 @@ module VagrantPlugins
         @features_hyperv   = UNSET_VALUE
         @clock_offset      = UNSET_VALUE
         @clock_timers      = []
+        @launchsecurity_data = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
@@ -275,6 +283,7 @@ module VagrantPlugins
         @machine_virtual_size = UNSET_VALUE
         @disk_bus          = UNSET_VALUE
         @disk_device       = UNSET_VALUE
+        @disk_address_type = UNSET_VALUE
         @disk_controller_model = UNSET_VALUE
         @disk_driver_opts  = {}
         @nic_model_type    = UNSET_VALUE
@@ -288,6 +297,7 @@ module VagrantPlugins
         @graphics_type     = UNSET_VALUE
         @graphics_autoport = UNSET_VALUE
         @graphics_port     = UNSET_VALUE
+        @graphics_websocket = UNSET_VALUE
         @graphics_ip       = UNSET_VALUE
         @graphics_passwd   = UNSET_VALUE
         @graphics_gl       = UNSET_VALUE
@@ -528,6 +538,37 @@ module VagrantPlugins
                              config: config)
       end
 
+      def memtune(config={})
+        if config[:type].nil?
+          raise "Missing memtune type"
+        end
+
+        unless ['hard_limit', 'soft_limit', 'swap_hard_limit'].include? config[:type]
+          raise "Memtune type '#{config[:type]}' not allowed (hard_limit, soft_limit, swap_hard_limit are allowed)"
+        end
+
+        if config[:value].nil?
+          raise "Missing memtune value"
+        end
+
+        opts = config[:options] || {}
+        opts[:unit] = opts[:unit] || "KiB"
+
+        @memtunes[config[:type]] = { value: config[:value], config: opts }
+      end
+
+      def launchsecurity(options = {})
+        if options.fetch(:type) != 'sev'
+          raise "Launch security type only supports SEV. Explicitly set 'sev' as a type"
+        end
+
+        @launchsecurity_data = {}
+        @launchsecurity_data[:type] = options[:type]
+        @launchsecurity_data[:cbitpos] = options[:cbitpos] || 47
+        @launchsecurity_data[:reducedPhysBits] = options[:reducedPhysBits] || 1
+        @launchsecurity_data[:policy] = options[:policy] || "0x0003"
+      end
+
       def input(options = {})
         if options[:type].nil? || options[:bus].nil?
           raise 'Input type AND bus must be specified'
@@ -757,6 +798,7 @@ module VagrantPlugins
         disk = {
           device: options[:device],
           type: options[:type],
+          address_type: options[:address_type],
           size: options[:size],
           path: options[:path],
           bus: options[:bus],
@@ -916,6 +958,7 @@ module VagrantPlugins
         @management_network_domain = nil if @management_network_domain == UNSET_VALUE
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
         @management_network_keep = false if @management_network_keep == UNSET_VALUE
+        @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
@@ -954,6 +997,7 @@ module VagrantPlugins
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
         @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
         @clock_timers = [] if @clock_timers == UNSET_VALUE
+        @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE
@@ -967,6 +1011,7 @@ module VagrantPlugins
             @disk_controller_model = nil
           end
         end
+        @disk_address_type = nil if @disk_address_type == UNSET_VALUE
         @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
         @nic_model_type = nil if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
@@ -982,6 +1027,7 @@ module VagrantPlugins
           @graphics_passwd = nil
         end
         @graphics_port = @graphics_type == 'spice' ? nil : -1 if @graphics_port == UNSET_VALUE
+        @graphics_websocket = @graphics_type == 'spice' ? nil : -1 if @graphics_websocket == UNSET_VALUE
         @graphics_ip = @graphics_type == 'spice' ? nil : '127.0.0.1' if @graphics_ip == UNSET_VALUE
         @video_accel3d = false if @video_accel3d == UNSET_VALUE
         @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE
@@ -1175,8 +1221,9 @@ module VagrantPlugins
           # only interested in public networks where portgroup is nil, as then source will be a host device
           if type == :public_network && opts[:portgroup] == nil
             devices = host_devices(machine)
-            if !devices.include?(opts[:dev])
-              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{opts[:dev]}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
+            hostdev = opts.fetch(:dev, 'eth0')
+            if !devices.include?(hostdev)
+              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{hostdev}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
             end
           end
         end
@@ -1223,6 +1270,8 @@ module VagrantPlugins
           c = floppies.dup
           c += other.floppies
           result.floppies = c
+
+          result.memtunes = memtunes.merge(other.memtunes)
 
           result.disk_driver_opts = disk_driver_opts.merge(other.disk_driver_opts)
 

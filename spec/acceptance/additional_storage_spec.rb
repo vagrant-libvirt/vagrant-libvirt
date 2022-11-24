@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require_relative '../spec_helper'
 
 describe 'additional storage configured', acceptance: true do
   include_context 'libvirt_acceptance'
@@ -25,8 +25,5 @@ describe 'additional storage configured', acceptance: true do
     status('Test: reload handles additional storage correctly')
     result = environment.execute('vagrant', 'reload')
     expect(result).to exit_with(0)
-
-    status('Test: additional storage reported correctly')
-    expect(result.stdout).to match(/\(vdb\).*work_default-vdb\.qcow2/)
   end
 end
