@@ -47,14 +47,16 @@ module VagrantPlugins
 
           # additional disk bus
           config.disks.each do |disk|
-            device = disk[:device]
-            bus = disk[:bus]
-            REXML::XPath.each(xml_descr, '/domain/devices/disk[@device="disk"]/target[@dev="' + device + '"]') do |disk_target|
-              next unless disk_target.attributes['bus'] != bus
-              @logger.debug "disk #{device} bus updated from '#{disk_target.attributes['bus']}' to '#{bus}'"
-              descr_changed = true
-              disk_target.attributes['bus'] = bus
-              disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
+            if disk[:device]
+              device = disk[:device]
+              bus = disk[:bus]
+              REXML::XPath.each(xml_descr, '/domain/devices/disk[@device="disk"]/target[@dev="' + device + '"]') do |disk_target|
+                next unless disk_target.attributes['bus'] != bus
+                @logger.debug "disk #{device} bus updated from '#{disk_target.attributes['bus']}' to '#{bus}'"
+                descr_changed = true
+                disk_target.attributes['bus'] = bus
+                disk_target.parent.delete_element("#{disk_target.parent.xpath}/address")
+              end
             end
           end
 
