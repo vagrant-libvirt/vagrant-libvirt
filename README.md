@@ -28,6 +28,7 @@ In the status badges below, build passing means that latest version of Vagrant +
 <!-- vim-markdown-toc GFM -->
 
 * [Installing](#installing)
+  * [Latest development version](#latest-development-version)
 * [Running](#running)
 * [Development](#development)
 * [Contributing](#contributing)
@@ -38,6 +39,27 @@ In the status badges below, build passing means that latest version of Vagrant +
 
 Installation typically involves a number of distribution package dependencies to ensure that Libvirt is available.
 Recommend that you follow the [installation guide](https://vagrant-libvirt.github.io/vagrant-libvirt/installation.html).
+
+### Latest development version
+
+If you want to try out the very latest development version you can download the gem package from the GitHub
+rubygems package [repository](https://github.com/vagrant-libvirt/vagrant-libvirt/packages/1659776) under the
+asserts. Unfortunately it's not yet possible to make the rubygem repositories in GitHub public.
+
+To install provide the file directly to the install command:
+```
+vagrant plugin install ./vagrant-libvirt-<version>.gem
+```
+
+It is possible to install directly from the GitHub rubygems package repository, however this will embedded
+your GitHub token directly into the file `~/.vagrant.d/plugins.json`:
+```
+vagrant plugin install vagrant-libvirt \
+  --plugin-source https://${USERNAME}:${GITHUB_TOKEN}@rubygems.pkg.github.com/vagrant-libvirt \
+  --plugin-version "0.10.9.pre.62"
+```
+
+Provided this token is a classic token limited to `read:packages` only, this may be acceptable to you.
 
 ## Running
 
@@ -115,8 +137,11 @@ against multiple ruby versions that align with the ones used by vagrant for
 their embedded ruby depending on the release. You can see what version is used
 by looking at the current [unit tests](.github/workflows/unit-tests.yml)
 workflow. By default if you have rvm installed and enabled it this project looks
-to use ruby 2.6.6 and configures a separate gemset, both of which will be switched
-to each time you enter the project directory.
+to use ruby 3.1.2 and configures a separate gemset, both of which will be switched
+to each time you enter the project directory. It should be considered sufficient
+just to get any tests passing with your system ruby, and as long as you ensure
+that the option to allow maintainers can update your PR, we will fix up any
+issues with the remaining combinations.
 
 You can test the plugin without installing it into your Vagrant environment by
 just creating a `Vagrantfile` in the top level of this directory (it is
