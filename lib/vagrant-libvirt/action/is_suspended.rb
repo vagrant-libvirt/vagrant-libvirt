@@ -20,7 +20,7 @@ module VagrantPlugins
             if libvirt_domain.has_managed_save?
               env[:result] = env[:machine].state.id == :shutoff
             else
-              env[:result] = env[:machine].state.id == :paused
+              env[:result] = [:paused, :pmsuspended].include?(env[:machine].state.id)
               if env[:result]
                 env[:ui].warn('One time switching to pause suspend mode, found a paused VM.')
                 config.suspend_mode = 'pause'
@@ -32,7 +32,7 @@ module VagrantPlugins
               env[:result] = [:shutoff, :paused].include?(env[:machine].state.id)
               config.suspend_mode = 'managedsave'
             else
-              env[:result] = env[:machine].state.id == :paused
+              env[:result] = [:paused, :pmsuspended].include?(env[:machine].state.id)
             end
           end
 

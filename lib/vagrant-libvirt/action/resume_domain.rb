@@ -20,7 +20,9 @@ module VagrantPlugins
 
           libvirt_domain = env[:machine].provider.driver.connection.client.lookup_domain_by_uuid(env[:machine].id)
           config = env[:machine].provider_config
-          if config.suspend_mode == 'managedsave'
+          if env[:machine].state.id == :pmsuspended
+            libvirt_domain.pmwakeup
+          elsif config.suspend_mode == 'managedsave'
             domain.start
           else
             domain.resume
