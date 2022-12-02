@@ -17,14 +17,10 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
 
   let(:domain_xml) { File.read(File.join(File.dirname(__FILE__), File.basename(__FILE__, '.rb'), domain_xml_file)) }
 
-  let(:destroy_method) { double('destroy_method') }
-
   before do
     allow(machine.provider).to receive('driver').and_return(driver)
     allow(driver).to receive(:connection).and_return(connection)
     allow(logger).to receive(:info)
-    allow(domain).to receive(:method).with(:destroy).and_return(destroy_method)
-    allow(destroy_method).to receive(:parameters).and_return([[:opt, :options, :flags]])
   end
 
   describe '#call' do
@@ -202,17 +198,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::DestroyDomain do
         it 'sets destroy flags to keep nvram' do
           expect(domain).to receive(:destroy).with(destroy_volumes: true, flags: VagrantPlugins::ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM)
           expect(subject.call(env)).to be_nil
-        end
-
-        context 'when fog does not support destroy with flags' do
-          before do
-            expect(destroy_method).to receive(:parameters).and_return([[:opt, :options]])
-          end
-
-          it 'skips setting additional destroy flags' do
-            expect(domain).to receive(:destroy).with(destroy_volumes: true)
-            expect(subject.call(env)).to be_nil
-          end
         end
       end
 
