@@ -146,7 +146,7 @@ module VagrantPlugins
               # FIXME: all options for network driver should be hash from Vagrantfile
               driver_options = {}
               driver_options[:name] = @driver_name if @driver_name
-              driver_options[:iommu] = @driver_iommu ? "on" : "off"
+              driver_options[:iommu] = @driver_iommu ? "on" : "off" if @nic_model_type == 'virtio'
               driver_options[:queues] = @driver_queues if @driver_queues
 
               @udp_tunnel ||= {}
@@ -271,10 +271,9 @@ module VagrantPlugins
 
               xml.mac(address: mac) if mac
               xml.target(dev: target_dev_name(device_name, type, iface_number))
-              xml.alias(name: "net#{iface_number}")
               xml.model(type: model_type.to_s)
               xml.mtu(size: Integer(mtu)) if mtu
-              xml.driver(**driver_options)
+              xml.driver(**driver_options) if driver_options
               xml.address(type: 'pci', bus: pci_bus, slot: pci_slot) if pci_bus and pci_slot
             end
           end.to_xml(
