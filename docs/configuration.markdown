@@ -494,9 +494,11 @@ starts with `libvirt__` string. Here is a list of those options:
   for for more information. *Note: takes either 'yes' or 'no' for value*
 * `:libvirt__ipv6_address` - Define ipv6 address, require also prefix.
 * `:libvirt__ipv6_prefix` - Define ipv6 prefix. generate string `<ip family="ipv6" address="address" prefix="prefix" >`
-* `:libvirt__iface_name` - Define a name for the private network interface.
-  With this feature one can [simulate physical link
-  failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498)
+* `:libvirt__iface_name` - Define a name for the corresponding network interface
+  created on the host. With this feature one can [simulate physical link
+  failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498). Note
+  that you cannot use names reserved for libvirt's usage based on [documentation](
+  https://libvirt.org/formatdomain.html#overriding-the-target-element).
 * `:mac` - MAC address for the interface. *Note: specify this in lowercase
   since Vagrant network scripts assume it will be!*
 * `:libvirt__mtu` - MTU size for the Libvirt network, if not defined, the
@@ -542,6 +544,11 @@ virtual network.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
   are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
   Default is 'false'.
+* `:libvirt__iface_name` - Define a name for the corresponding network interface
+  that is created on the host connected to the bridge dev. This can be used to
+  help attach VLAN tags to specific VMs by adjusting the pattern to match. Note
+  that you cannot use names reserved for libvirt's usage based on [documentation](
+  https://libvirt.org/formatdomain.html#overriding-the-target-element).
 
 Additionally for public networks, to facilitate validating if the device provided
 can be used, vagrant-libvirt will check both the host interfaces visible to libvirt

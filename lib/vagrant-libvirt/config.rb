@@ -1412,6 +1412,13 @@ module VagrantPlugins
               errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{hostdev}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
             end
           end
+
+          unless network[:iface_name].nil?
+            restricted_devnames = ['vnet', 'vif', 'macvtap', 'macvlan']
+            if restricted_devnames.any? { |restricted| network[:iface_name].start_with?(restricted) }
+              errors << "network configuration for machine #{machine.name} with setting :libvirt__iface_name => '#{network[:iface_name]}' starts with a restricted prefix according to libvirt docs https://libvirt.org/formatdomain.html#overriding-the-target-element, please use a device name that does not start with one of #{restricted_devnames.join(", ")}"
+            end
+          end
         end
 
         errors
