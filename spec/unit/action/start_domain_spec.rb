@@ -349,6 +349,48 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
           expect(subject.call(env)).to be_nil
         end
       end
+
+      [
+        [
+          'when port explicitly set, should set autoport=no',
+          proc { |config|
+            config.graphics_port = 5901
+          },
+          "<graphics autoport='yes' keymap='en-us' listen='127.0.0.1' port='-1' type='vnc' websocket='-1'/>",
+          "<graphics autoport='no' keymap='en-us' listen='127.0.0.1' port='5901' type='vnc' websocket='-1'/>",
+        ],
+        [
+          'when port updated, should set autoport=no and update port',
+          proc { |config|
+            config.graphics_port = 5902
+          },
+          "<graphics autoport='no' keymap='en-us' listen='127.0.0.1' port='5901' type='vnc' websocket='-1'/>",
+          "<graphics autoport='no' keymap='en-us' listen='127.0.0.1' port='5902' type='vnc' websocket='-1'/>",
+        ],
+        [
+          'when autoport set and no port, should set autoport=yes and update port to -1',
+          proc { |config|
+            config.graphics_autoport = 'yes'
+          },
+          "<graphics autoport='no' keymap='en-us' listen='127.0.0.1' port='5901' type='vnc' websocket='-1'/>",
+          "<graphics autoport='yes' keymap='en-us' listen='127.0.0.1' port='-1' type='vnc' websocket='-1'/>",
+        ],
+      ].each do |description, config_proc, graphics_xml_start, graphics_xml_output|
+        it "#{description}" do
+          config_proc.call(machine.provider_config)
+
+          initial_domain_xml = domain_xml.gsub(/<graphics .*\/>/, graphics_xml_start)
+          updated_domain_xml = domain_xml.gsub(/<graphics .*\/>/, graphics_xml_output)
+
+          expect(ui).to_not receive(:warn)
+          expect(connection).to receive(:define_domain).with(match(graphics_xml_output)).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(initial_domain_xml, updated_domain_xml, updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
     end
 
     context 'nvram' do

@@ -272,12 +272,24 @@ module VagrantPlugins
               graphics.attributes['listen'] = config.graphics_ip
               graphics.delete_element('//listen')
             end
-            if graphics.attributes['autoport'] != config.graphics_autoport
-              descr_changed = true
-              graphics.attributes['autoport'] = config.graphics_autoport
-              if config.graphics_autoport == 'no'
-                graphics.attributes.delete('autoport')
+            unless config.graphics_port.nil? or config.graphics_port == -1
+              if graphics.attributes['autoport'] != 'no'
+                descr_changed = true
+                graphics.attributes['autoport'] = 'no'
+              end
+              if graphics.attributes['port'] != config.graphics_port
+                descr_changed = true
                 graphics.attributes['port'] = config.graphics_port
+              end
+            else
+              if graphics.attributes['autoport'] != config.graphics_autoport
+                descr_changed = true
+                graphics.attributes['autoport'] = config.graphics_autoport
+                if config.graphics_autoport == 'no'
+                  graphics.attributes['port'] = config.graphics_port
+                else
+                  graphics.attributes['port'] = '-1'
+                end
               end
             end
             if graphics.attributes['websocket'] != config.graphics_websocket.to_s
