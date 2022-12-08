@@ -29,9 +29,6 @@ jobs:
         vagrant: [main]
         allow_fail: [true]
         include:
-          - ruby: 2.2.10
-            vagrant: v2.0.4
-            allow_fail: false
           - ruby: 2.3.5
             vagrant: v2.1.5
             allow_fail: false
