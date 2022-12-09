@@ -47,7 +47,7 @@ module VagrantPlugins
           @@lock.synchronize do
             # Iterate over networks If some network is not
             # available, create it if possible. Otherwise raise an error.
-            configured_networks(env, @logger).each do |options|
+            configured_networks(env[:machine], @logger).each do |options|
               # Only need to create private networks
               next if options[:iface_type] != :private_network ||
                       options.fetch(:tunnel_type, nil)
