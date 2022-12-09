@@ -7,11 +7,13 @@ require 'vagrant/action/builtin/mixin_synced_folders'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/resolvers'
+require 'vagrant-libvirt/util/network_util'
 
 module VagrantPlugins
   module ProviderLibvirt
     class Config < Vagrant.plugin('2', :config)
       include Vagrant::Action::Builtin::MixinSyncedFolders
+      include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
 
       # manually specify URI
       # will supersede most other options if provided
@@ -222,6 +224,8 @@ module VagrantPlugins
       ]
 
       def initialize
+        @logger = Log4r::Logger.new("vagrant_libvirt::config")
+
         @uri               = UNSET_VALUE
         @driver            = UNSET_VALUE
         @host              = UNSET_VALUE
@@ -1206,27 +1210,7 @@ module VagrantPlugins
           errors << "#{e}"
         end
 
-        machine.config.vm.networks.each_with_index do |network, index|
-          type, opts = network
-
-          if opts[:mac]
-            if opts[:mac] =~ /\A([0-9a-fA-F]{12})\z/
-              opts[:mac] = opts[:mac].scan(/../).join(':')
-            end
-            unless opts[:mac] =~ /\A([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})\z/
-              errors << "Configured NIC MAC '#{opts[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
-            end
-          end
-
-          # only interested in public networks where portgroup is nil, as then source will be a host device
-          if type == :public_network && opts[:portgroup] == nil
-            devices = host_devices(machine)
-            hostdev = opts.fetch(:dev, 'eth0')
-            if !devices.include?(hostdev)
-              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{hostdev}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
-            end
-          end
-        end
+        errors = validate_networks(machine, errors)
 
         if !machine.provider_config.volume_cache.nil? and machine.provider_config.volume_cache != UNSET_VALUE
           machine.ui.warn("Libvirt Provider: volume_cache is deprecated. Use disk_driver :cache => '#{machine.provider_config.volume_cache}' instead.")
@@ -1389,11 +1373,48 @@ module VagrantPlugins
         end
       end
 
-      def host_devices(machine)
-        machine.provider.driver.host_devices.select do |dev|
-          next if dev.empty?
-          dev != "lo" && !@host_device_exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
+      def validate_networks(machine, errors)
+        begin
+          networks = configured_networks(machine, @logger)
+        rescue Errors::VagrantLibvirtError => e
+          errors << "#{e}"
+
+          return
         end
+
+        return if networks.empty?
+
+        networks.each_with_index do |network, index|
+          if network[:mac]
+            if network[:mac] =~ /\A([0-9a-fA-F]{12})\z/
+              network[:mac] = network[:mac].scan(/../).join(':')
+            end
+            unless network[:mac] =~ /\A([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})\z/
+              errors << "Configured NIC MAC '#{network[:mac]}' is not in 'xx:xx:xx:xx:xx:xx' or 'xxxxxxxxxxxx' format"
+            end
+          end
+
+          # only interested in public networks where portgroup is nil, as then source will be a host device
+          if network[:iface_type] == :public_network && network[:portgroup] == nil
+            exclude_prefixes = @host_device_exclude_prefixes
+            # for qemu sessions the management network injected will be a public_network trying to use a libvirt managed device
+            if index == 0 and machine.provider_config.mgmt_attach and machine.provider_config.qemu_use_session == true
+              exclude_prefixes.delete('virbr')
+            end
+
+            devices = machine.provider.driver.host_devices.select do |dev|
+              next if dev.empty?
+              dev != "lo" && !exclude_prefixes.any? { |exclude| dev.start_with?(exclude) }
+            end
+            hostdev = network.fetch(:dev, 'eth0')
+
+            if !devices.include?(hostdev)
+              errors << "network configuration #{index} for machine #{machine.name} is a public_network referencing host device '#{hostdev}' which does not exist, consider adding ':dev => ....' referencing one of #{devices.join(", ")}"
+            end
+          end
+        end
+
+        errors
       end
 
       def validate_sysinfo(machine, errors)

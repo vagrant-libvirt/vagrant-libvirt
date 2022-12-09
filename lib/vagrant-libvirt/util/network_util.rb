@@ -18,22 +18,22 @@ module VagrantPlugins
       module NetworkUtil
         include Vagrant::Util::NetworkIP
 
-        def configured_networks(env, logger)
-          qemu_use_session = env[:machine].provider_config.qemu_use_session
-          qemu_use_agent = env[:machine].provider_config.qemu_use_agent
-          management_network_device = env[:machine].provider_config.management_network_device
-          management_network_name = env[:machine].provider_config.management_network_name
-          management_network_address = env[:machine].provider_config.management_network_address
-          management_network_mode = env[:machine].provider_config.management_network_mode
-          management_network_mac = env[:machine].provider_config.management_network_mac
-          management_network_guest_ipv6 = env[:machine].provider_config.management_network_guest_ipv6
-          management_network_autostart = env[:machine].provider_config.management_network_autostart
-          management_network_pci_bus = env[:machine].provider_config.management_network_pci_bus
-          management_network_pci_slot = env[:machine].provider_config.management_network_pci_slot
-          management_network_domain = env[:machine].provider_config.management_network_domain
-          management_network_mtu = env[:machine].provider_config.management_network_mtu
-          management_network_keep = env[:machine].provider_config.management_network_keep
-          management_network_driver_iommu = env[:machine].provider_config.management_network_driver_iommu
+        def configured_networks(machine, logger)
+          qemu_use_session = machine.provider_config.qemu_use_session
+          qemu_use_agent = machine.provider_config.qemu_use_agent
+          management_network_device = machine.provider_config.management_network_device
+          management_network_name = machine.provider_config.management_network_name
+          management_network_address = machine.provider_config.management_network_address
+          management_network_mode = machine.provider_config.management_network_mode
+          management_network_mac = machine.provider_config.management_network_mac
+          management_network_guest_ipv6 = machine.provider_config.management_network_guest_ipv6
+          management_network_autostart = machine.provider_config.management_network_autostart
+          management_network_pci_bus = machine.provider_config.management_network_pci_bus
+          management_network_pci_slot = machine.provider_config.management_network_pci_slot
+          management_network_domain = machine.provider_config.management_network_domain
+          management_network_mtu = machine.provider_config.management_network_mtu
+          management_network_keep = machine.provider_config.management_network_keep
+          management_network_driver_iommu = machine.provider_config.management_network_driver_iommu
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -101,23 +101,23 @@ module VagrantPlugins
           # if there is a box and management network is disabled
           # need qemu agent enabled and at least one network that can be accessed
           if (
-            env[:machine].config.vm.box &&
-            !env[:machine].provider_config.mgmt_attach &&
-            !env[:machine].provider_config.qemu_use_agent &&
-            !env[:machine].config.vm.networks.any? { |type, _| ["private_network", "public_network"].include?(type.to_s) }
+            machine.config.vm.box &&
+            !machine.provider_config.mgmt_attach &&
+            !machine.provider_config.qemu_use_agent &&
+            !machine.config.vm.networks.any? { |type, _| ["private_network", "public_network"].include?(type.to_s) }
           )
             raise Errors::ManagementNetworkRequired
           end
 
           # add management network to list of networks to check
           # unless mgmt_attach set to false
-          networks = if env[:machine].provider_config.mgmt_attach
+          networks = if machine.provider_config.mgmt_attach
                        [management_network_options]
                      else
                        []
                      end
 
-          env[:machine].config.vm.networks.each do |type, original_options|
+          machine.config.vm.networks.each do |type, original_options|
             logger.debug "In config found network type #{type} options #{original_options}"
             # Options can be specified in Vagrantfile in short format (:ip => ...),
             # or provider format # (:libvirt__network_name => ...).

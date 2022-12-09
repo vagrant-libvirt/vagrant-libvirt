@@ -768,8 +768,11 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
     context 'with mac defined' do
       let (:vm) { double('vm') }
+      let(:box) { instance_double(::Vagrant::Box) }
+
       before do
         machine.config.instance_variable_get("@keys")[:vm] = vm
+        allow(vm).to receive(:box).and_return(box)
       end
 
       it 'is valid with valid mac' do
@@ -781,7 +784,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         network = [:public, { mac: 'aabbccddeeff' }]
         expect(vm).to receive(:networks).and_return([network])
         assert_valid
-        expect(network[1][:mac]).to eql('aa:bb:cc:dd:ee:ff')
+        expect(network[1][:mac]).to eql('aabbccddeeff')
       end
 
       it 'should be invalid if MAC not formatted correctly' do
@@ -996,10 +999,16 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         EOF
       end
       let(:driver) { instance_double(::VagrantPlugins::ProviderLibvirt::Driver) }
+      let(:host_devices) { [
+        'lo',
+        'eth0',
+        'virbr0',
+      ] }
 
       before do
         allow(machine.provider).to receive(:driver).and_return(driver)
         allow(driver).to receive_message_chain('connection.client.libversion').and_return(6_002_000)
+        allow(driver).to receive(:host_devices).and_return(host_devices)
       end
 
       context 'when type is 9p' do
