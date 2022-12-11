@@ -1,34 +1,36 @@
 <interface type='<%= @type %>'<% if @trust_guest_rx_filters %> trustGuestRxFilters='yes'<% end %>>
   <alias name='ua-net-<%= @iface_number %>'/>
-  <% if @mac %>
+  <%- if @mac %>
   <mac address='<%= @mac %>'/>
-  <% end %>
-  <%if @type == 'direct'%>
+  <%- end %>
+  <%- if @type == 'direct'%>
   <source dev='<%= @device %>' mode='<%= @mode %>'/>
-  <% elsif !@portgroup.nil? %>
+  <%- elsif !@portgroup.nil? %>
   <source network='<%=@network_name%>' portgroup='<%=@portgroup%>'/>
-  <% else %>
+  <%- else %>
   <source bridge='<%=@device%>'/>
-  <% end %>
+  <%- end %>
+  <%- unless @device_name.nil? %>
+  <target dev='<%= @device_name %>'/>
+  <%- end %>
   <model type='<%=@model_type%>'/>
-  <% if @driver_name and @driver_queues %>
+  <%- if @driver_name and @driver_queues %>
     <driver <% if @driver_iommu %> iommu="on" <% end %> name='<%=@driver_name%>' queues='<%=@driver_queues%>'/>
-  <% elsif @driver_queues %>
+  <%- elsif @driver_queues %>
     <driver <% if @driver_iommu %> iommu="on" <% end %> queues='<%=@driver_queues%>'/>
-  <% elsif @driver_name %>
+  <%- elsif @driver_name %>
     <driver <% if @driver_iommu %> iommu="on" <% end %> name='<%=@driver_name%>'/>
-  <% elsif @driver_iommu %>
+  <%- elsif @driver_iommu %>
     <driver iommu='on' />
-  <% end %>
-
-  <% if @ovs %>
+  <%- end %>
+  <%- if @ovs %>
   <virtualport type='openvswitch'>
-    <% if @ovs_interfaceid %>
+    <%- if @ovs_interfaceid %>
       <parameters interfaceid='<%=@ovs_interfaceid%>'/>
-    <% end %>
+    <%- end %>
   </virtualport>
-  <% end %>
-  <% if @pci_bus and @pci_slot %>
+  <%- end %>
+  <%- if @pci_bus and @pci_slot %>
   <address type='pci' bus='<%=@pci_bus%>' slot='<%=@pci_slot%>' />
-  <% end %>
+  <%- end %>
 </interface>

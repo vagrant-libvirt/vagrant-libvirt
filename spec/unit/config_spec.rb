@@ -801,8 +801,9 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         'virbr0',
       ] }
       let(:driver) { instance_double(::VagrantPlugins::ProviderLibvirt::Driver) }
+      let(:device_name) { 'eth0' }
       before do
-        machine.config.vm.network :public_network, dev: 'eth0', ip: "192.168.2.157"
+        machine.config.vm.network :public_network, dev: device_name, ip: "192.168.2.157"
         allow(machine.provider).to receive(:driver).and_return(driver)
         expect(driver).to receive(:host_devices).and_return(host_devices).at_least(:once).times
       end
@@ -812,9 +813,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
 
       context 'when default device not on host' do
-        before do
-          machine.config.vm.network :public_network, dev: 'eno1', ip: "192.168.2.157"
-        end
+        let(:device_name) { 'eno1' }
 
         it 'should be invalid' do
           assert_invalid
@@ -822,9 +821,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       end
 
       context 'when using excluded host device' do
-        before do
-          machine.config.vm.network :public_network, dev: 'virbr0', ip: "192.168.2.157"
-        end
+        let(:device_name) { 'virbr0' }
 
         it 'should be invalid' do
           assert_invalid
@@ -837,6 +834,27 @@ describe VagrantPlugins::ProviderLibvirt::Config do
 
           it 'should validate' do
             assert_valid
+          end
+        end
+      end
+
+      context 'when setting iface_name' do
+        let(:iface_name) { 'myvnet1' }
+
+        before do
+          machine.config.vm.network :public_network, libvirt__iface_name: iface_name, ip: "192.168.2.157"
+        end
+
+        it 'should valididate' do
+          assert_valid
+        end
+
+        context 'when set to reserved value' do
+          let(:iface_name) { 'vnet1' }
+
+          it 'should be invalid' do
+            errors = assert_invalid
+            expect(errors).to include(match(/network configuration for machine test with setting :libvirt__iface_name => '#{iface_name}' starts/))
           end
         end
       end

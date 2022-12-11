@@ -4,6 +4,9 @@ require 'log4r'
 require 'vagrant/util/network_ip'
 require 'vagrant/util/scoped_hash_override'
 
+require 'vagrant-libvirt/util/erb_template'
+require 'vagrant-libvirt/util/network_util'
+
 module VagrantPlugins
   module ProviderLibvirt
     module Action
@@ -96,6 +99,7 @@ module VagrantPlugins
               @driver_iommu = iface_configuration.fetch(:driver_iommu, false )
               @driver_name = iface_configuration.fetch(:driver_name, false)
               @driver_queues = iface_configuration.fetch(:driver_queues, false)
+              @device_name = iface_configuration.fetch(:iface_name, nil)
               @portgroup = iface_configuration.fetch(:portgroup, nil)
               @network_name = iface_configuration.fetch(:network_name, @network_name)
               template_name = 'public_interface'
@@ -169,7 +173,7 @@ module VagrantPlugins
               @logger.debug {
                 "Attaching Network Device with XML:\n#{xml}"
               }
-              domain.attach_device(xml)
+              env[:machine].provider.driver.attach_device(xml)
             rescue => e
               raise Errors::AttachDeviceError,
                     error_message: e.message
