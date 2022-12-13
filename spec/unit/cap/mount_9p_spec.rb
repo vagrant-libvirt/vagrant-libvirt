@@ -15,6 +15,9 @@ describe 'VagrantPlugins::ProviderLibvirt::Cap::Mount9P' do
   end
 
   let(:options) { {} }
+  # Mock the guest operating system.
+  let(:guest)            { double('guest') }
+
   describe '#mount_9p_shared_folder' do
     let(:synced_folders) { {
       "/vagrant" => {
@@ -26,6 +29,7 @@ describe 'VagrantPlugins::ProviderLibvirt::Cap::Mount9P' do
     } }
 
     before do
+      allow(machine).to receive(:guest).and_return(guest)
       allow(guest).to receive(:capability).and_return('/home/vagrant/vagant')
       allow(communicator).to receive(:sudo).with('mkdir -p /home/vagrant/vagant')
     end

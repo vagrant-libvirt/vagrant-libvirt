@@ -42,40 +42,51 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     # need to override the default package iso_env as using a different
     # name for the test machines above.
     let(:machine)    { iso_env.machine(:test1, :libvirt) }
-    let(:machine2)   { iso_env.machine(:test2, :libvirt) }
-    let(:connection1) { double("connection 1") }
-    let(:connection2) { double("connection 2") }
-    let(:system_connection1) { double("system connection 1") }
-    let(:system_connection2) { double("system connection 2") }
+    let(:connection) { double("connection 1") }
+    let(:system_connection) { double("system connection 1") }
 
     # make it easier for distros that want to switch the default value for
     # qemu_use_session to true by ensuring it is explicitly false for tests.
     before do
       allow(machine.provider).to receive('driver').and_call_original
-      allow(machine2.provider).to receive('driver').and_call_original
     end
 
     describe '#connection' do
+      let(:machine2)   { iso_env.machine(:test2, :libvirt) }
+      let(:connection2) { double("connection 2") }
+
+      before do
+        allow(machine2.provider).to receive('driver').and_call_original
+      end
+
       it 'should configure a separate connection per machine' do
         expect(Fog::Compute).to receive(:new).with(
-          hash_including({:libvirt_uri => 'qemu+ssh://user@remote1/system'})).and_return(connection1)
+          hash_including({:libvirt_uri => 'qemu+ssh://user@remote1/system'})).and_return(connection)
         expect(Fog::Compute).to receive(:new).with(
           hash_including({:libvirt_uri => 'qemu+ssh://vms@remote2/system'})).and_return(connection2)
 
-        expect(machine.provider.driver.connection).to eq(connection1)
+        expect(machine.provider.driver.connection).to eq(connection)
         expect(machine2.provider.driver.connection).to eq(connection2)
       end
 
       it 'should configure the connection once' do
-        expect(Fog::Compute).to receive(:new).once().and_return(connection1)
+        expect(Fog::Compute).to receive(:new).once().and_return(connection)
 
-        expect(machine.provider.driver.connection).to eq(connection1)
-        expect(machine.provider.driver.connection).to eq(connection1)
-        expect(machine.provider.driver.connection).to eq(connection1)
+        expect(machine.provider.driver.connection).to eq(connection)
+        expect(machine.provider.driver.connection).to eq(connection)
+        expect(machine.provider.driver.connection).to eq(connection)
       end
     end
 
     describe '#system_connection' do
+      let(:machine2)   { iso_env.machine(:test2, :libvirt) }
+      let(:connection2) { double("connection 2") }
+      let(:system_connection2) { double("system connection 2") }
+
+      before do
+        allow(machine2.provider).to receive('driver').and_call_original
+      end
+
       # note that the urls for the two tests are currently
       # incorrect here as they should be the following:
       #   qemu+ssh://user@remote1/system
@@ -87,19 +98,19 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
       # system_uri should be 'qemu+ssh://user@remote1/system'
       # and not 'qemu:///system'.
       it 'should configure a separate connection per machine' do
-        expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection1)
+        expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection)
         expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://vms@remote2/system').and_return(system_connection2)
 
-        expect(machine.provider.driver.system_connection).to eq(system_connection1)
+        expect(machine.provider.driver.system_connection).to eq(system_connection)
         expect(machine2.provider.driver.system_connection).to eq(system_connection2)
       end
 
       it 'should configure the connection once' do
-        expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection1)
+        expect(Libvirt).to receive(:open_read_only).with('qemu+ssh://user@remote1/system').and_return(system_connection)
 
-        expect(machine.provider.driver.system_connection).to eq(system_connection1)
-        expect(machine.provider.driver.system_connection).to eq(system_connection1)
-        expect(machine.provider.driver.system_connection).to eq(system_connection1)
+        expect(machine.provider.driver.system_connection).to eq(system_connection)
+        expect(machine.provider.driver.system_connection).to eq(system_connection)
+        expect(machine.provider.driver.system_connection).to eq(system_connection)
       end
     end
   end

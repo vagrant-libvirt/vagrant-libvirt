@@ -29,12 +29,9 @@ shared_context 'unit' do
 
   # Mock the communicator to prevent SSH commands for being executed.
   let(:communicator)     { double('communicator') }
-  # Mock the guest operating system.
-  let(:guest)            { double('guest') }
   let(:app)              { ->(env) {} }
 
   before (:each) do
-    allow(machine).to receive(:guest).and_return(guest)
     allow(machine).to receive(:communicate).and_return(communicator)
     allow(machine).to receive(:ui).and_return(ui)
   end
