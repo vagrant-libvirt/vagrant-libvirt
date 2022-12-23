@@ -23,6 +23,9 @@
   <%- elsif @driver_iommu %>
     <driver iommu='on' />
   <%- end %>
+  <% if @mtu %>
+  <mtu size="<%= @mtu %>" />
+  <% end %>
   <%- if @ovs %>
   <virtualport type='openvswitch'>
     <%- if @ovs_interfaceid %>

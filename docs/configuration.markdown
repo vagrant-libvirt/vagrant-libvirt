@@ -549,6 +549,9 @@ virtual network.
   help attach VLAN tags to specific VMs by adjusting the pattern to match. Note
   that you cannot use names reserved for libvirt's usage based on [documentation](
   https://libvirt.org/formatdomain.html#overriding-the-target-element).
+* `:libvirt__mtu` - MTU size for the Libvirt interface, if not defined, the
+  created network will use the Libvirt default (1500). VMs still need to configure
+  their internal interface MTUs.
 
 Additionally for public networks, to facilitate validating if the device provided
 can be used, vagrant-libvirt will check both the host interfaces visible to libvirt
