@@ -150,7 +150,7 @@ module VagrantPlugins
               # FIXME: all options for network driver should be hash from Vagrantfile
               driver_options = {}
               driver_options[:name] = @driver_name if @driver_name
-              driver_options[:iommu] = @driver_iommu ? "on" : "off" if @nic_model_type == 'virtio'
+              driver_options[:iommu] = @driver_iommu ? "on" : "off" if @model_type == 'virtio'
               driver_options[:queues] = @driver_queues if @driver_queues
 
               @udp_tunnel ||= {}
