@@ -93,7 +93,7 @@ module VagrantPlugins
             -N
             #{ssh_info[:host]}
           )
-          params += '-g' if gateway_ports
+          params <<= '-g' if gateway_ports
 
           options = (%W(
             User=#{ssh_info[:username]}
