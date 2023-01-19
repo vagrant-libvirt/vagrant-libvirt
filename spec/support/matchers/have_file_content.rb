@@ -45,7 +45,7 @@ require "rspec/expectations/version"
 #     end
 RSpec::Matchers.define :have_file_content do |expected|
   match do |actual|
-    next false unless File.exists?(actual)
+    next false unless File.exist?(actual)
 
     @actual   = File.read(actual).chomp
     @expected = if expected.is_a? String

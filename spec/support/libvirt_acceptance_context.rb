@@ -71,7 +71,7 @@ shared_context 'libvirt_acceptance' do
     # allows for a helper Vagrantfile to force specific provider options if testing
     # environment needs them
     vagrantfile = File.join(vagrant_home, 'Vagrantfile')
-    if File.exists?(vagrantfile) and !File.exists?(File.join(target_env.homedir, 'Vagrantfile'))
+    if File.exist?(vagrantfile) and !File.exist?(File.join(target_env.homedir, 'Vagrantfile'))
       FileUtils.cp(vagrantfile, target_env.homedir)
     end
   end
