@@ -1304,8 +1304,8 @@ module VagrantPlugins
           end
         end
 
-        # Extract host values from uri if provided, otherwise nil
-        @host = uri.host
+        # Extract host values from uri if provided, otherwise set empty string
+        @host = uri.host || ""
         @port = uri.port
         # only override username if there is a value provided
         @username = nil if @username == UNSET_VALUE

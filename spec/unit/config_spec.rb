@@ -86,7 +86,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
         [ # connect explicit to unix socket
           {:uri => "qemu+unix:///system"},
-          {:uri => "qemu+unix:///system", :connect_via_ssh => false, :host => nil, :username => nil},
+          {:uri => "qemu+unix:///system", :connect_via_ssh => false, :host => "", :username => nil},
         ],
         [ # via libssh2 should enable ssh as well
           {:uri => "qemu+libssh2://user@remote/system?known_hosts=/home/user/.ssh/known_hosts"},
@@ -139,7 +139,7 @@ describe VagrantPlugins::ProviderLibvirt::Config do
         ],
         [ # with session and using ssh infer connect by ssh and ignore host as not provided
           {},
-          {:uri => "qemu+ssh:///session", :qemu_use_session => true, :connect_via_ssh => true, :host => nil},
+          {:uri => "qemu+ssh:///session", :qemu_use_session => true, :connect_via_ssh => true, :host => ""},
           {
             :env => {'LIBVIRT_DEFAULT_URI' => "qemu+ssh:///session"},
           }
