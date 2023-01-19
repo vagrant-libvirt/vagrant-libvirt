@@ -20,7 +20,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanMachineFolder do
 
         expect(subject.call(env)).to be_nil
 
-        expect(File.exists?(machine.data_dir)).to eq(true)
+        expect(File.exist?(machine.data_dir)).to eq(true)
         expect(Dir.entries(machine.data_dir)).to match_array([".", ".."])
       end
     end
@@ -38,7 +38,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanMachineFolder do
 
         expect(subject.call(env)).to be_nil
 
-        expect(File.exists?(machine.data_dir)).to eq(true)
+        expect(File.exist?(machine.data_dir)).to eq(true)
         expect(Dir.entries(machine.data_dir)).to match_array([".", ".."])
       end
     end
@@ -51,7 +51,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::CleanMachineFolder do
 
         expect(subject.call(env)).to be_nil
 
-        expect(File.exists?(machine.data_dir)).to eq(true)
+        expect(File.exist?(machine.data_dir)).to eq(true)
         expect(Dir.entries(machine.data_dir)).to match_array([".", ".."])
       end
     end
