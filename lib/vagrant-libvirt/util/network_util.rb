@@ -34,6 +34,7 @@ module VagrantPlugins
           management_network_mtu = machine.provider_config.management_network_mtu
           management_network_keep = machine.provider_config.management_network_keep
           management_network_driver_iommu = machine.provider_config.management_network_driver_iommu
+          management_network_model_type = machine.provider_config.management_network_model_type
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
           begin
@@ -54,6 +55,7 @@ module VagrantPlugins
           if qemu_use_session
             management_network_options = {
               iface_type: :public_network,
+              model_type: management_network_model_type,
               dev: management_network_device,
               mode: 'bridge',
               type: 'bridge',
@@ -63,6 +65,7 @@ module VagrantPlugins
           else
             management_network_options = {
               iface_type: :private_network,
+              model_type: management_network_model_type,
               network_name: management_network_name,
               ip: Regexp.last_match(1),
               netmask: Regexp.last_match(2),
