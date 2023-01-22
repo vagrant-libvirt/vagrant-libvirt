@@ -105,7 +105,7 @@
       <target dev='fda' bus='fdc'/>
     </disk>
     <serial type='file'>
-      <source path='/var/log/vm_consoles/machine.log'/>
+      <source path='/var/log/vm_consoles/machine.log' append='on'/>
       <target port='0'/>
     </serial>
     <console type='file'>

@@ -198,6 +198,8 @@ module VagrantPlugins
             dir = File.dirname(serial[:source][:path])
             begin
               FileUtils.mkdir_p(dir)
+              FileUtils.touch(serial[:source][:path])
+              File.truncate(serial[:source][:path], 0) unless serial[:source].fetch(:append, false)
             rescue ::Errno::EACCES
               raise Errors::SerialCannotCreatePathError,
                     path: dir
