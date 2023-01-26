@@ -47,7 +47,7 @@
       <spinlocks state='on' retries='4096' />
     </hyperv>
   </features>
-  <clock offset='variable'>
+  <clock offset='variable' basis='localtime' adjustment='-31536000'>
     <timer name='t1'/>
     <timer name='t2' track='b' tickpolicy='c' frequency='d' mode='e' present='yes'/>
   </clock>

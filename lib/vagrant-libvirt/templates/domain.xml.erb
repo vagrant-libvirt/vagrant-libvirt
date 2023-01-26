@@ -132,7 +132,15 @@
     </hyperv>
 <%- end -%>
   </features>
+<%- if not @clock_absolute.nil? -%>
+  <clock offset='absolute' start='<%= @clock_absolute %>'>
+<%- elsif not @clock_adjustment.nil? -%>
+  <clock offset='variable' basis='<%= @clock_basis %>' adjustment='<%= @clock_adjustment %>'>
+<%- elsif not @clock_timezone.nil? -%>
+  <clock offset='timezone' timezone='<%= @clock_timezone %>'>
+<%- else -%>
   <clock offset='<%= @clock_offset %>'>
+<%- end -%>
 <%- @clock_timers.each do |clock_timer| -%>
     <timer<% clock_timer.each do |attr, value| %> <%= attr %>='<%= value %>'<% end %>/>
 <%- end -%>

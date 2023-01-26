@@ -98,7 +98,11 @@ module VagrantPlugins
       attr_accessor :shares
       attr_accessor :features
       attr_accessor :features_hyperv
+      attr_accessor :clock_absolute
+      attr_accessor :clock_adjustment
+      attr_accessor :clock_basis
       attr_accessor :clock_offset
+      attr_accessor :clock_timezone
       attr_accessor :clock_timers
       attr_accessor :launchsecurity_data
       attr_accessor :numa_nodes
@@ -278,7 +282,11 @@ module VagrantPlugins
         @shares            = UNSET_VALUE
         @features          = UNSET_VALUE
         @features_hyperv   = UNSET_VALUE
+        @clock_absolute    = UNSET_VALUE
+        @clock_adjustment  = UNSET_VALUE
+        @clock_basis       = UNSET_VALUE
         @clock_offset      = UNSET_VALUE
+        @clock_timezone    = UNSET_VALUE
         @clock_timers      = []
         @launchsecurity_data = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
@@ -1002,7 +1010,11 @@ module VagrantPlugins
         @shares = nil if @shares == UNSET_VALUE
         @features = ['acpi','apic','pae'] if @features == UNSET_VALUE
         @features_hyperv = [] if @features_hyperv == UNSET_VALUE
+        @clock_absolute = nil if @clock_absolute == UNSET_VALUE
+        @clock_adjustment = nil if @clock_adjustment == UNSET_VALUE
+        @clock_basis = 'utc' if @clock_basis == UNSET_VALUE
         @clock_offset = 'utc' if @clock_offset == UNSET_VALUE
+        @clock_timezone = nil if @clock_timezone == UNSET_VALUE
         @clock_timers = [] if @clock_timers == UNSET_VALUE
         @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa

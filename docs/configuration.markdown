@@ -1046,9 +1046,18 @@ end
 
 ## Clock
 
-Clock offset can be specified via `libvirt.clock_offset`. (Default is utc)
+The clock can be configured using one of the following methods:
 
-Additionally timers can be specified via `libvirt.clock_timer`.
+* Set nothing, and the clock will default to UTC.
+* Set `libvirt.clock_offset` to 'utc' or 'localtime' by assigning the respective values.
+* To set the clock to a different timezone, assign the timezone name to `libvirt.clock_timezone`.
+* To set the clock to the same absolute time whenever the VM starts, set `libvirt.clock_absolute`.
+  The value format is that of an epoch timestamp.
+* To set the clock at an arbitrary offset to realtime, use `libvirt.clock_adjustment`.
+  Specify the offset adjustment in seconds.  By default, the clock offset is relative to UTC,
+  but this can be changed by setting `libvirt.clock_basis` to 'localtime'.
+
+In addition to the above, timers can be specified via `libvirt.clock_timer`.
 Available options for timers are: name, track, tickpolicy, frequency, mode,  present
 
 ```ruby

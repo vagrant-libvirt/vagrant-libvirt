@@ -62,7 +62,8 @@ describe 'templates/domain' do
       domain.cpu_mode = 'custom'
       domain.cpu_feature(name: 'AAA', policy: 'required')
       domain.hyperv_feature(name: 'BBB', state: 'on')
-      domain.clock_offset = 'variable'
+      domain.clock_adjustment = -(365 * 24 * 60 * 60)
+      domain.clock_basis = 'localtime'
       domain.clock_timer(name: 't1')
       domain.clock_timer(name: 't2', track: 'b', tickpolicy: 'c', frequency: 'd', mode: 'e',  present: 'yes')
       domain.hyperv_feature(name: 'spinlocks', state: 'on', retries: '4096')
