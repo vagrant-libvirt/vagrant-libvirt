@@ -1249,6 +1249,10 @@ module VagrantPlugins
           end
         end
 
+        if [@clock_absolute, @clock_adjustment, @clock_timezone].count {|clock| !clock.nil?} > 1
+          errors << "At most, only one of [clock_absolute, clock_adjustment, clock_timezone] may be set."
+        end
+
         errors = validate_sysinfo(machine, errors)
 
         { 'Libvirt Provider' => errors }
