@@ -36,7 +36,11 @@ module VagrantPlugins
           @nodeset = config.nodeset
           @features = config.features
           @features_hyperv = config.features_hyperv
+          @clock_absolute = config.clock_absolute
+          @clock_adjustment = config.clock_adjustment
+          @clock_basis = config.clock_basis
           @clock_offset = config.clock_offset
+          @clock_timezone = config.clock_timezone
           @clock_timers = config.clock_timers
           @launchsecurity_data = config.launchsecurity_data
           @shares = config.shares
@@ -236,7 +240,15 @@ module VagrantPlugins
               env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
             end
           end
-          env[:ui].info(" -- Clock offset:      #{@clock_offset}")
+          if not @clock_absolute.nil?
+            env[:ui].info(" -- Clock absolute:    #{@clock_absolute}")
+          elsif not @clock_adjustment.nil?
+            env[:ui].info(" -- Clock adjustment:  #{@clock_adjustment}")
+          elsif not @clock_timezone.nil?
+            env[:ui].info(" -- Clock timezone:    #{@clock_timezone}")
+          else
+            env[:ui].info(" -- Clock offset:      #{@clock_offset}")
+          end
           @clock_timers.each do |timer|
             env[:ui].info(" -- Clock timer:       #{timer.map { |k,v| "#{k}=#{v}"}.join(', ')}")
           end

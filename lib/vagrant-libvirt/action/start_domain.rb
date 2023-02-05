@@ -166,12 +166,29 @@ module VagrantPlugins
             xml_descr.delete_element('/domain/cpu')
           end
 
-          # Clock
+          # Clock - can change in complicated ways, so just build a new clock and compare
+          newclock = REXML::Element.new('newclock')
+          if not config.clock_absolute.nil?
+            newclock.add_attribute('offset', 'absolute')
+            newclock.add_attribute('start', config.clock_absolute)
+          elsif not config.clock_adjustment.nil?
+            newclock.add_attribute('offset', 'variable')
+            newclock.add_attribute('basis', config.clock_basis)
+            newclock.add_attribute('adjustment', config.clock_adjustment)
+          elsif not config.clock_timezone.nil?
+            newclock.add_attribute('offset', 'timezone')
+            newclock.add_attribute('timezone', config.clock_timezone)
+          else
+            newclock.add_attribute('offset', config.clock_offset)
+          end
           clock = REXML::XPath.first(xml_descr, '/domain/clock')
-          if clock.attributes['offset'] != config.clock_offset
-            @logger.debug "clock offset changed"
+          if clock.attributes != newclock.attributes
+            @logger.debug "clock definition changed"
             descr_changed = true
-            clock.attributes['offset'] = config.clock_offset
+            clock.attributes.clear
+            newclock.attributes.each do |attr, value|
+              clock.add_attribute(attr, value)
+            end
           end
 
           # clock timers - because timers can be added/removed, just rebuild and then compare
