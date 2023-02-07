@@ -106,7 +106,7 @@ jobs:
       -
         name: Build and push main image
         id: docker_build
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64
@@ -119,7 +119,7 @@ jobs:
       -
         name: Build and push slim image
         id: docker_build_slim
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64
