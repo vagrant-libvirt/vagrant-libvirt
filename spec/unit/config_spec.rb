@@ -773,6 +773,8 @@ describe VagrantPlugins::ProviderLibvirt::Config do
       before do
         machine.config.instance_variable_get("@keys")[:vm] = vm
         allow(vm).to receive(:box).and_return(box)
+
+        allow(vm).to receive(:synced_folders).and_return({})
       end
 
       it 'is valid with valid mac' do
