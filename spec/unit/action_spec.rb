@@ -58,7 +58,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
   end
 
   def receive_and_call_next(&block)
-    return receive(:call) { |cls, env| call_next(cls, env, &block) }
+    return receive(:call) { |cls, env| call_next(cls, env, &block) }.exactly(1).times
   end
 
   def call_next(cls, env)
@@ -385,6 +385,35 @@ describe VagrantPlugins::ProviderLibvirt::Action do
 
           expect(runner.run(subject.action_halt)).to match(hash_including({:machine => machine}))
         end
+      end
+    end
+  end
+
+  describe '#action_reload' do
+    context 'when not created' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, false)
+      end
+      
+      it 'should report not created' do
+        expect(ui).to receive(:info).with('Domain is not created. Please run `vagrant up` first.')
+
+        expect(runner.run(subject.action_reload)).to match(hash_including({:machine => machine}))
+      end
+    end
+
+    context 'should call reload' do
+      before do
+        allow_action_env_result(VagrantPlugins::ProviderLibvirt::Action::IsCreated, true)
+      end
+
+      it 'should call reload' do
+        expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::Provision).to receive_and_call_next
+        expect(subject).to receive(:action_halt).and_return(Vagrant::Action::Builder.new)
+        expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::ResolveDiskSettings).to receive_and_call_next
+        expect(subject).to receive(:action_start).and_return(Vagrant::Action::Builder.new)
+        
+        expect(runner.run(subject.action_reload)).to match(hash_including({:machine => machine}))
       end
     end
   end
