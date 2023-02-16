@@ -128,9 +128,7 @@ module VagrantPlugins
       private_class_method def self.action_start
         Vagrant::Action::Builder.new.tap do |b|
           b.use Call, IsRunning do |env, b2|
-            # If the VM is running, run the necessary provisioners
             if env[:result]
-              b2.use action_provision
               next
             end
 
