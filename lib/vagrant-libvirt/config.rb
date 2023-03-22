@@ -734,7 +734,7 @@ module VagrantPlugins
 
       # Disk driver options for primary disk
       def disk_driver(options = {})
-        supported_opts = [:cache, :io, :copy_on_read, :discard, :detect_zeroes]
+        supported_opts = [:cache, :io, :copy_on_read, :discard, :detect_zeroes, :type]
         @disk_driver_opts = options.select { |k,_| supported_opts.include? k }
       end
 
