@@ -77,9 +77,12 @@ jobs:
       run: |
         gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
         gem update bundler --conservative
-    - name: exit tests early
+    - name: exit 1 test run early
       run: |
-        exit 1
+        if [[ "${{ matrix.ruby }}" == "2.7.2" ]]
+        then
+            exit 1
+        fi
     - name: Ensure bundle uses https instead of insecure git
       run: |
         git config --global url."https://github.com/".insteadOf git://github.com/
