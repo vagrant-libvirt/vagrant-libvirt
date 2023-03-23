@@ -102,6 +102,7 @@ jobs:
     - name: Run tests
       run: |
         bundle exec rspec --color --format documentation
+        exit 1
       env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Coveralls Parallel
