@@ -156,7 +156,6 @@
         '%{type}%{cache}%{io}%{copy_on_read}%{discard}%{detect_zeroes}' \
           % { :type => 'qcow2', :cache => "#{volume[:cache]}", :io => nil, :copy_on_read => nil, :discard => nil, :detect_zeroes => nil }
             .merge(@disk_driver_opts)
-            .select { |k,_| [:type, :cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
             .map { |k,v| v.nil? ? [k, ""] : [k, " #{k}='#{v}'"]}.to_h
       -%>/>
       <source file='<%= volume[:absolute_path] %>'/>
