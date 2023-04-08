@@ -8,6 +8,7 @@
       <group>0</group>
       <label>virt_image_t</label>
     </permissions>
+    <compat>1.1</compat>
   </target>
   <backingStore>
     <path>/test/path_0.img</path>

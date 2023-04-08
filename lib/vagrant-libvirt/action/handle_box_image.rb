@@ -43,6 +43,7 @@ module VagrantPlugins
               :name => HandleBoxImage.get_volume_name(env[:machine].box, 'box', image_path, env[:ui]),
               :virtual_size => HandleBoxImage.get_virtual_size(env),
               :format => box_format,
+              :compat => "1.1",
             }]
           else
             # Handle box v2 format
@@ -57,7 +58,7 @@ module VagrantPlugins
               raise Errors::BoxFormatMissingAttribute, attribute: "disks[#{i}]['path']" if disks[i]['path'].nil?
 
               image_path = HandleBoxImage.get_box_image_path(env[:machine].box, disks[i]['path'])
-              format, virtual_size = HandleBoxImage.get_box_disk_settings(image_path)
+              format, virtual_size, compat = HandleBoxImage.get_box_disk_settings(image_path)
               volume_name = HandleBoxImage.get_volume_name(
                 env[:machine].box,
                 disks[i].fetch('name', disks[i]['path'].sub(/#{File.extname(disks[i]['path'])}$/, '')),
@@ -76,7 +77,8 @@ module VagrantPlugins
                 :path => image_path,
                 :name => volume_name,
                 :virtual_size => virtual_size,
-                :format => HandleBoxImage.verify_box_format(format)
+                :format => HandleBoxImage.verify_box_format(format),
+                :compat => compat,
               }
             }
           end
@@ -180,8 +182,9 @@ module VagrantPlugins
           image_info = JSON.parse(stdout)
           format = image_info['format']
           virtual_size = ByteNumber.new(image_info['virtual-size'])
+          compat = image_info.fetch("format-specific", {}).fetch("data", {}).fetch("compat", "0.10")
 
-          return format, virtual_size
+          return format, virtual_size, compat
         end
 
         def send_box_image(env, config, box_image_file, box_volume)
