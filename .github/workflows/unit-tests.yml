@@ -112,9 +112,19 @@ jobs:
         path-to-lcov: ./coverage/lcov.info
 
   finish:
-    needs: test
+    needs: [test]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+    - name: Check matrix execution status
+      run: exit 1
+      # see https://stackoverflow.com/a/67532120/4907315
+      # and https://github.com/orgs/community/discussions/26822
+      if: >-
+        ${{
+             contains(needs.*.result, 'failure')
+          || contains(needs.*.result, 'cancelled')
+        }}
     - name: Coveralls Finished
       uses: coverallsapp/github-action@master
       with:
