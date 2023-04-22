@@ -60,6 +60,7 @@ module VagrantPlugins
                       xml.group storage_gid(env)
                       xml.label 'virt_image_t'
                     end
+                    xml.compat '1.1'
                   end
                   xml.backingStore do
                     xml.path(@backing_file)
