@@ -36,7 +36,7 @@ jobs:
         run: |
           # install some deps
           sudo apt-get update
-          sudo apt-get -y install bats btrfs-progs git libapparmor-dev libdevmapper-dev libglib2.0-dev libgpgme11-dev libseccomp-dev libselinux1-dev skopeo-containers go-md2man
+          sudo apt-get -y install bats btrfs-progs git libapparmor-dev libdevmapper-dev libglib2.0-dev libgpgme11-dev libseccomp-dev libselinux1-dev skopeo go-md2man
 
           mkdir ~/buildah
           cd ~/buildah
