@@ -152,11 +152,11 @@
 <%- @domain_volumes.each_with_index do |volume, index| -%>
     <disk type='file' device='disk'>
       <alias name='ua-box-volume-<%= index -%>'/>
-      <driver name='qemu' type='qcow2' <%=
-        @disk_driver_opts.empty? ? "cache='#{volume[:cache]}'" :
-            @disk_driver_opts.reject { |k,v| v.nil? }
-                             .map { |k,v| "#{k}='#{v}'"}
-                             .join(' ') -%>/>
+      <driver name='qemu' <%=
+        {:type => 'qcow2', :cache => "#{volume[:cache]}"}.merge(@disk_driver_opts)
+          .reject { |k,v| v.nil? }
+          .map { |k,v| "#{k}='#{v}'"}
+          .join(' ') -%>/>
       <source file='<%= volume[:absolute_path] %>'/>
       <%# we need to ensure a unique target dev -%>
       <target dev='<%= volume[:device] %>' bus='<%= volume[:bus] %>'/>
@@ -175,12 +175,12 @@
 <%- @disks.each_with_index do |d, index| -%>
     <disk type='file' device='disk'>
       <alias name='ua-disk-volume-<%= index -%>'/>
-      <driver name='qemu' type='<%= d[:type] %>' <%=
-        d.select { |k,_| [:cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
-         .reject { |k,v| v.nil? }
-         .map { |k,v| "#{k}='#{v}'"}
-         .join(' ')
-      -%>/>
+      <driver name='qemu' <%=
+        {:type => 'qcow2'}.merge(d)
+          .select { |k,_| [:type, :cache, :io, :copy_on_read, :discard, :detect_zeroes].include? k }
+          .reject { |k,v| v.nil? }
+          .map { |k,v| "#{k}='#{v}'"}
+          .join(' ') -%>/>
       <source file='<%= d[:absolute_path] %>'/>
       <target dev='<%= d[:device] %>' bus='<%= d[:bus] %>'/>
   <%- if d[:address_type] || @disk_address_type -%>

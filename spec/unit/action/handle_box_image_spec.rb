@@ -88,6 +88,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :virtual_size=>byte_number_5G,
               :format=>"qcow2",
               :device=>'vda',
+              :compat=>"1.1",
             }
           ]
         )
@@ -118,6 +119,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :virtual_size=>byte_number_5G,
                 :format=>"qcow2",
                 :device=>'vda',
+                :compat=>"1.1",
               }
             ]
           )
@@ -156,6 +158,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :virtual_size=>byte_number_5G,
                 :format=>"qcow2",
                 :device=>'vda',
+                :compat=>"1.1",
               }
             ]
           )
@@ -177,6 +180,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
                 :virtual_size=>byte_number_20G,
                 :format=>"qcow2",
                 :device=>'vda',
+                :compat=>"1.1",
               }
             ]
           )
@@ -269,18 +273,21 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :virtual_size=>byte_number_5G,
               :format=>"qcow2",
               :device=>'vda',
+              :compat=>"0.10"
             },
             {
               :path=>"/test/disk.qcow2",
               :name=>"test_vagrant_box_image_1.1.1_disk.img",
               :virtual_size=>byte_number_10G,
-              :format=>"qcow2"
+              :format=>"qcow2",
+              :compat=>"0.10"
             },
             {
               :path=>"/test/box_2.img",
               :name=>"test_vagrant_box_image_1.1.1_box_2.img",
               :virtual_size=>byte_number_20G,
-              :format=>"qcow2"
+              :format=>"qcow2",
+              :compat=>"0.10"
             }
           ]
         )
