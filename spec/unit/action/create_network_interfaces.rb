@@ -92,6 +92,56 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateNetworkInterfaces do
       expect(subject.call(env)).to be_nil
     end
 
+    context 'management network' do
+      let(:domain_xml) {
+        # don't need full domain here, just enough for the network element to work
+        <<-EOF.unindent
+        <domain type='qemu'>
+          <devices>
+            <interface type='network'>
+              <alias name='ua-net-0'/>
+              <mac address='52:54:00:7d:14:0e'/>
+              <source network='vagrant-libvirt'/>
+              <target dev="myvnet0"></target>
+              <model type='virtio'/>
+              <driver iommu='off'/>
+              <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+            </interface>
+          </devices>
+        </domain>
+        EOF
+      }
+
+      before do
+        allow(libvirt_domain).to receive(:xml_desc).and_return(domain_xml)
+      end
+
+      context 'when iface name is set' do
+        let(:vagrantfile_providerconfig) {
+          <<-EOF
+          libvirt.management_network_iface_name = 'myvnet0'
+          EOF
+        }
+        let(:management_nic_xml) {
+          <<-EOF.unindent
+          <interface type="network">
+            <alias name="ua-net-0"></alias>
+            <source network="vagrant-libvirt"></source>
+            <target dev="myvnet0"></target>
+            <model type="virtio"></model>
+            <driver iommu="off"></driver>
+          </interface>
+          EOF
+        }
+
+        it 'should set target appropriately' do
+          expect(driver).to receive(:attach_device).with(management_nic_xml)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+    end
+
     context 'private network' do
       let(:vagrantfile) do
         <<-EOF

@@ -81,7 +81,7 @@ module VagrantPlugins
             @driver_name = iface_configuration.fetch(:driver_name, false)
             @driver_iommu = iface_configuration.fetch(:driver_iommu, false )
             @driver_queues = iface_configuration.fetch(:driver_queues, false)
-            @device_name = iface_configuration.fetch(:iface_name, false)
+            @device_name = iface_configuration.fetch(:iface_name, nil)
             @mtu = iface_configuration.fetch(:mtu, nil)
             @pci_bus = iface_configuration.fetch(:bus, nil)
             @pci_slot = iface_configuration.fetch(:slot, nil)

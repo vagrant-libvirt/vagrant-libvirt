@@ -70,6 +70,7 @@ module VagrantPlugins
       attr_accessor :management_network_mtu
       attr_accessor :management_network_keep
       attr_accessor :management_network_driver_iommu
+      attr_accessor :management_network_iface_name
       attr_accessor :management_network_model_type
 
       # System connection information
@@ -258,6 +259,7 @@ module VagrantPlugins
         @management_network_mtu = UNSET_VALUE
         @management_network_keep = UNSET_VALUE
         @management_network_driver_iommu = UNSET_VALUE
+        @management_network_iface_name = UNSET_VALUE
         @management_network_model_type = UNSET_VALUE
 
         # System connection information
@@ -973,6 +975,7 @@ module VagrantPlugins
         @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
         @management_network_keep = false if @management_network_keep == UNSET_VALUE
         @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
+        @management_network_iface_name = nil if @management_network_iface_name == UNSET_VALUE
         @management_network_model_type = 'virtio' if @management_network_model_type == UNSET_VALUE
 
         # Domain specific settings.

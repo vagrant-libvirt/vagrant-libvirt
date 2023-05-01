@@ -34,6 +34,7 @@ module VagrantPlugins
           management_network_mtu = machine.provider_config.management_network_mtu
           management_network_keep = machine.provider_config.management_network_keep
           management_network_driver_iommu = machine.provider_config.management_network_driver_iommu
+          management_network_iface_name = machine.provider_config.management_network_iface_name
           management_network_model_type = machine.provider_config.management_network_model_type
           logger.info "Using #{management_network_name} at #{management_network_address} as the management network #{management_network_mode} is the mode"
 
@@ -79,6 +80,7 @@ module VagrantPlugins
           end
 
           management_network_options[:driver_iommu] = management_network_driver_iommu
+          management_network_options[:iface_name] = management_network_iface_name
 
           unless management_network_mac.nil?
             management_network_options[:mac] = management_network_mac
