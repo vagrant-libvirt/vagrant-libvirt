@@ -592,6 +592,7 @@ used by this network are configurable at the provider level.
   the Libvirt default (1500) will be used.
 * `management_network_keep` - Starting from version *0.7.0*, *always_destroy* is set to *true* by default for any network.
   This option allows to change this behaviour for the management network.
+* `management_network_iface_name` - Allow controlling of the network device name that appears on the host for the management network, same as `:libvirt__iface_name` for public and private network definitions. (unreleased).
 * `management_network_model_type` - Model of the network adapter to use for the management interface. Default is 'virtio'.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
