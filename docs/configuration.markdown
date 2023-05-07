@@ -75,7 +75,7 @@ end
    to the guest name. The `default_prefix` options allow you to set the guest name prefix.
 * `disk_bus` - The type of disk device to emulate. Defaults to virtio if not
   set. Possible values are documented in Libvirt's [description for
-  _target_](http://libvirt.org/formatdomain.html#elementsDisks). NOTE: this
+  _target_](http://libvirt.org/formatdomain.html#hard-drives-floppy-disks-cdroms). NOTE: this
   option applies only to disks associated with a box image. To set the bus type
   on additional disks, see the [Additional Disks](#additional-disks) section.
 * `disk_controller_model` - the controller model to use. Ignored unless either
@@ -92,8 +92,8 @@ end
   Libvirt uses a sensible default if not set, but some fully virtualized guests
   may need to override this (e.g. Debian on _virt_ machine may need _virtio-mmio_).
   Possible values are documented in libvirt's [description for
-  _address_](https://libvirt.org/formatdomain.html#elementsAddress).
-* `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#elementsDisks)).
+  _address_](https://libvirt.org/formatdomain.html#device-addresses).
+* `disk_driver` - Extra options for the main disk driver ([see Libvirt documentation](http://libvirt.org/formatdomain.html#hard-drives-floppy-disks-cdroms)).
   NOTE: this option also applies only to disks associated with a box image. In all cases, the value `nil` can be used to force the hypervisor default behaviour (e.g. to override settings defined in top-level Vagrantfiles). Supported options include:
   * `:cache` - Controls the cache mechanism. Possible values are "default", "none", "writethrough", "writeback", "directsync" and "unsafe".
   * `:io` - Controls specific policies on I/O. Possible values are "threads" and "native".
@@ -104,13 +104,12 @@ end
   * `address_type` - Address type of disk device to emulate. If unspecified, Libvirt uses a sensible default.
 * `nic_model_type` - parameter specifies the model of the network adapter when
   you create a domain value by default virtio KVM believe possible values, see
-  the [documentation for
-  Libvirt](https://libvirt.org/formatdomain.html#elementsNICSModel).
-* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUTuning).
+  the [documentation for Libvirt](https://libvirt.org/formatdomain.html#setting-the-nic-model).
+* `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#cpu-tuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
-* `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPUAllocation).
-* `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsCPU).
+* `cpuset` - Physical cpus to which the vcpus can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#cpu-allocation).
+* `cputopology` - Number of CPU sockets, cores and threads running per core. All fields of `:sockets`, `:cores` and `:threads` are mandatory, `cpus` domain option must be present and must be equal to total count of **sockets * cores * threads**. For more details see [documentation](https://libvirt.org/formatdomain.html#cpu-model-and-topology).
 
   ```ruby
   Vagrant.configure("2") do |config|
@@ -133,10 +132,10 @@ end
   end
   ```
 
-* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#elementsNUMATuning).
+* `nodeset` - Physical NUMA nodes where virtual memory can be pinned. For more details see [documentation](https://libvirt.org/formatdomain.html#numa-node-tuning).
 * `nested` - [Enable nested virtualization](https://docs.fedoraproject.org/en-US/quick-docs/using-nested-virtualization-in-kvm/).
   Default is false.
-* `cpu_mode` - [CPU emulation mode](https://libvirt.org/formatdomain.html#elementsCPU). Defaults to
+* `cpu_mode` - [CPU emulation mode](https://libvirt.org/formatdomain.html#cpu-model-and-topology). Defaults to
   'host-model' if not set. Allowed values: host-model, host-passthrough,
   custom.
 * `cpu_model` - CPU Model. Defaults to 'qemu64' if not set and `cpu_mode` is
@@ -189,17 +188,17 @@ end
 `video_accel3d` is `true`.
 * `keymap` - Set keymap for vm. default: en-us
 * `kvm_hidden` - [Hide the hypervisor from the
-  guest](https://libvirt.org/formatdomain.html#elementsFeatures). Useful for
+  guest](https://libvirt.org/formatdomain.html#hypervisor-features). Useful for
   [GPU passthrough](#pci-device-passthrough) on stubborn drivers. Default is false.
 * `video_type` - Sets the graphics card type exposed to the guest.  Defaults to
   "cirrus".  [Possible
-  values](http://libvirt.org/formatdomain.html#elementsVideo) are "vga",
+  values](http://libvirt.org/formatdomain.html#video-devices) are "vga",
   "cirrus", "vmvga", "xen", "vbox", or "qxl".
 * `video_vram` - Used by some graphics card types to vary the amount of RAM
   dedicated to video.  Defaults to 16384.
 * `video_accel3d` - Set to `true` to enable 3D acceleration. Defaults to
 `false`.
-* `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#elementsSound)
+* `sound_type` - [Set the virtual sound card](https://libvirt.org/formatdomain.html#sound-devices)
   Defaults to "ich6".
 * `machine_type` - Sets machine type. Equivalent to qemu `-machine`. Use
   `qemu-system-x86_64 -machine help` to get a list of supported machines.
@@ -251,7 +250,7 @@ end
 * `autostart` - Automatically start the domain when the host boots. Defaults to
   'false'.
 * `channel` - [Libvirt
-  channels](https://libvirt.org/formatdomain.html#elementCharChannel).
+  channels](https://libvirt.org/formatdomain.html#channel).
   Configure a private communication channel between the host and guest, e.g.
   for use by the [QEMU guest
   agent](http://wiki.libvirt.org/page/Qemu_guest_agent) and the Spice/QXL
@@ -260,7 +259,7 @@ end
   it is not possible to communicate with VM through `vagrant ssh` or run
   provisioning. Setting to 'false' is only possible when VM doesn't use box
   or vagrant is told not to connect via ssh. Defaults set to 'true'.
-* `serial` - [libvirt serial devices](https://libvirt.org/formatdomain.html#elementsConsole).
+* `serial` - [libvirt serial devices](https://libvirt.org/formatdomain.html#consoles-serial-parallel-channel-devices).
   Configure a serial/console port to communicate with the guest. Can be used
   to log to file boot time messages sent to ttyS0 console by the guest.
 
@@ -335,17 +334,17 @@ interfaces.
 
 http://wiki.libvirt.org/page/VirtualNetworking
 
-https://libvirt.org/formatdomain.html#elementsNICSTCP
+https://libvirt.org/formatdomain.html#tcp-tunnel
 
-http://libvirt.org/formatdomain.html#elementsNICSMulticast
+http://libvirt.org/formatdomain.html#multicast-tunnel
 
-http://libvirt.org/formatdomain.html#elementsNICSUDP _(in Libvirt v1.2.20 and higher)_
+http://libvirt.org/formatdomain.html#udp-unicast-tunnel _(in Libvirt v1.2.20 and higher)_
 
 Public Network interfaces are currently implemented using the macvtap driver.
 The macvtap driver is only available with the Linux Kernel version >= 2.6.24.
 See the following Libvirt documentation for the details of the macvtap usage.
 
-http://www.libvirt.org/formatdomain.html#elementsNICSDirect
+http://www.libvirt.org/formatdomain.html#direct-attachment-to-physical-interface
 
 An examples of network interface definitions:
 
@@ -508,7 +507,7 @@ starts with `libvirt__` string. Here is a list of those options:
   create a domain value by default virtio KVM believe possible values, see the
   documentation for Libvirt
 * `:libvirt__driver_name` - Define which network driver to use. [More
-  info](https://libvirt.org/formatdomain.html#elementsDriverBackendOptions)
+  info](https://libvirt.org/formatdomain.html#setting-nic-driver-specific-options)
 * `:libvirt__driver_queues` - Define a number of queues to be used for network
   interface. Set equal to number of vCPUs for best performance. [More
   info](http://www.linux-kvm.org/page/Multiqueue)
@@ -532,7 +531,7 @@ virtual network.
   'eth0'.
 * `:mode` - The mode in which the public interface should operate in. Supported
   modes are available from the [libvirt
-  documentation](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
+  documentation](http://www.libvirt.org/formatdomain.html#direct-attachment-to-physical-interface).
   Default mode is 'bridge'.
 * `:type` - is type of interface.(`<interface type="#{@type}">`)
 * `:mac` - MAC address for the interface.
@@ -542,7 +541,7 @@ virtual network.
   'false'.
 * :ovs_interfaceid - Add Open vSwitch 'interfaceid' parameter.
 * `:trust_guest_rx_filters` - Support trustGuestRxFilters attribute. Details
-  are listed [here](http://www.libvirt.org/formatdomain.html#elementsNICSDirect).
+  are listed [here](http://www.libvirt.org/formatdomain.html#direct-attachment-to-physical-interface).
   Default is 'false'.
 * `:libvirt__iface_name` - Define a name for the corresponding network interface
   that is created on the host connected to the bridge dev. This can be used to
@@ -653,7 +652,7 @@ It has a number of options:
 * `wwn` - WWN number of the disk device.
 
 The following disk performance options can also be configured
-(see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#elementsDisks)
+(see the [libvirt documentation for possible values](http://libvirt.org/formatdomain.html#hard-drives-floppy-disks-cdroms)
 or [here](https://www.suse.com/documentation/sles11/book_kvm/data/sect1_chapter_book_kvm.html) for a fuller explanation).
 In all cases, the options use the hypervisor default if not specified, or if set to `nil`.
 
@@ -818,7 +817,7 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-See the [libvirt documentation](https://libvirt.org/formatdomain.html#elementsControllers) for a list of valid models.
+See the [libvirt documentation](https://libvirt.org/formatdomain.html#controllers) for a list of valid models.
 
 If any USB devices are passed through by setting `libvirt.usb` or `libvirt.redirdev`, a default controller will be added using the model `qemu-xhci` in the absence of a user specified one. This should help ensure more devices work out of the box as the default configured by libvirt is pii3-uhci, which appears to only work for USB 1 devices and does not work as expected when connected via a USB 2 controller, while the xhci stack should work for all versions of USB.
 
@@ -915,7 +914,7 @@ end
 ```
 
 ## Serial Console Devices
-You can define settings to redirect output from the serial console of any VM brought up with libvirt to a file or other devices that are listening. [See libvirt documentation](https://libvirt.org/formatdomain.html#elementCharSerial).
+You can define settings to redirect output from the serial console of any VM brought up with libvirt to a file or other devices that are listening. [See libvirt documentation](https://libvirt.org/formatdomain.html#serial-port).
 
 Currently only redirecting to a file is supported.
 
@@ -1100,7 +1099,7 @@ end
 
 ## Memory Backing
 
-You can specify memoryBacking options via `libvirt.memorybacking`. Available options are shown below. Full documentation is available at the [libvirt _memoryBacking_ section](https://libvirt.org/formatdomain.html#elementsMemoryBacking).
+You can specify memoryBacking options via `libvirt.memorybacking`. Available options are shown below. Full documentation is available at the [libvirt _memoryBacking_ section](https://libvirt.org/formatdomain.html#memory-backing).
 
 NOTE: The hugepages `<page>` element is not yet supported
 
