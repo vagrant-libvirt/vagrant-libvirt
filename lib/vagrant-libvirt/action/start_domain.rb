@@ -16,7 +16,7 @@ module VagrantPlugins
       class StartDomain
         include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
 
-        def initialize(app, _env)
+        def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::start_domain')
           config = env[:machine].provider_config
           @nic_adapter_count = config.nic_adapter_count
