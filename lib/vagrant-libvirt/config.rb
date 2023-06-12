@@ -962,21 +962,6 @@ module VagrantPlugins
         @snapshot_pool_name = @storage_pool_name if @snapshot_pool_name == UNSET_VALUE
         @storage_pool_path = nil if @storage_pool_path == UNSET_VALUE
         @random_hostname = false if @random_hostname == UNSET_VALUE
-        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
-        @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
-        @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
-        @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
-        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
-        @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
-        @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
-        @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
-        @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
-        @management_network_domain = nil if @management_network_domain == UNSET_VALUE
-        @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
-        @management_network_keep = false if @management_network_keep == UNSET_VALUE
-        @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
-        @management_network_iface_name = nil if @management_network_iface_name == UNSET_VALUE
-        @management_network_model_type = 'virtio' if @management_network_model_type == UNSET_VALUE
 
         # Domain specific settings.
         @title = '' if @title == UNSET_VALUE
@@ -1035,7 +1020,7 @@ module VagrantPlugins
         end
         @disk_address_type = nil if @disk_address_type == UNSET_VALUE
         @disk_driver_opts = {} if @disk_driver_opts == UNSET_VALUE
-        @nic_model_type = nil if @nic_model_type == UNSET_VALUE
+        @nic_model_type = 'virtio' if @nic_model_type == UNSET_VALUE
         @nested = false if @nested == UNSET_VALUE
         @volume_cache = nil if @volume_cache == UNSET_VALUE
         @kernel = nil if @kernel == UNSET_VALUE
@@ -1149,6 +1134,23 @@ module VagrantPlugins
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
         @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
+
+        # management network options
+        @management_network_device = 'virbr0' if @management_network_device == UNSET_VALUE
+        @management_network_name = 'vagrant-libvirt' if @management_network_name == UNSET_VALUE
+        @management_network_address = '192.168.121.0/24' if @management_network_address == UNSET_VALUE
+        @management_network_mode = 'nat' if @management_network_mode == UNSET_VALUE
+        @management_network_mac = nil if @management_network_mac == UNSET_VALUE
+        @management_network_guest_ipv6 = 'yes' if @management_network_guest_ipv6 == UNSET_VALUE
+        @management_network_autostart = false if @management_network_autostart == UNSET_VALUE
+        @management_network_pci_bus = nil if @management_network_pci_bus == UNSET_VALUE
+        @management_network_pci_slot = nil if @management_network_pci_slot == UNSET_VALUE
+        @management_network_domain = nil if @management_network_domain == UNSET_VALUE
+        @management_network_mtu = nil if @management_network_mtu == UNSET_VALUE
+        @management_network_keep = false if @management_network_keep == UNSET_VALUE
+        @management_network_driver_iommu = false if @management_network_driver_iommu == UNSET_VALUE
+        @management_network_iface_name = nil if @management_network_iface_name == UNSET_VALUE
+        @management_network_model_type = @nic_model_type if @management_network_model_type == UNSET_VALUE
 
         @host_device_exclude_prefixes = ['docker', 'macvtap', 'virbr', 'vnet'] if @host_device_exclude_prefixes == UNSET_VALUE
       end
