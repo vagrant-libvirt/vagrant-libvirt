@@ -89,10 +89,9 @@ module VagrantPlugins
               iface_model.attributes['type'] = nic_model_type
             end
 
-            iface_driver = iface.elements['driver']
-            if nic_model_type == 'virtio'
-              iface_driver = REXML::Element.new('driver', iface) if iface_driver.nil?
+            iface_driver = iface.elements['driver'] || REXML::Element.new('driver', iface)
 
+            if nic_model_type == 'virtio'
               iommu = driver_iommu ? 'on': 'off'
               if !iface_driver.attributes['iommu'].nil? && driver_iommu && iface_driver.attributes['iommu'] != iommu
                 descr_changed = true
