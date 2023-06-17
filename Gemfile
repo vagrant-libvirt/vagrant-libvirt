@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-group :development do
+group :test do
   # We depend on Vagrant for development, but we don't add it as a
   # gem dependency because we expect to be installed within the
   # Vagrant environment itself using `vagrant plugin`.
@@ -46,10 +46,11 @@ group :plugins do
   gemspec
 end
 
-group :test do
+group :development do
   gem "test-prof", require: false
   gem "ruby-prof", ">= 0.17.0", require: false
   gem 'stackprof', '>= 0.2.9', require: false
+  gem 'rubocop', require: false
 end
 
 gem 'parallel_tests', group: [:development, :test], require: false

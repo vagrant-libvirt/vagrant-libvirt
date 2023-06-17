@@ -27,19 +27,15 @@ jobs:
           libvirt-dev \
           libz-dev \
         ;
-    - uses: actions/cache@v3
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6.6
+        bundler-cache: true
     - name: Run bundler using cached path
       run: |
         bundle config path vendor/bundle
+        bundle config set --local without 'development'
         bundle install --jobs 4 --retry 3
     - name: Generate matrix
       id: generate-matrix
@@ -93,12 +89,6 @@ jobs:
         sudo usermod -a -G libvirt $USER
     - uses: actions/cache@v3
       with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
-    - uses: actions/cache@v3
-      with:
         path: ~/.vagrant.d/boxes
         key: ${{ runner.os }}-${{ env.VAGRANT_VERSION }}
         restore-keys: |
@@ -107,9 +97,9 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6.6
+        bundler-cache: true
     - name: Run bundler using cached path
       run: |
-        bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
     - name: Run tests
       run: |

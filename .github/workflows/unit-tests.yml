@@ -63,20 +63,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libvirt-dev
-    - uses: actions/cache@v3
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-    - name: Set up rubygems
-      run: |
-        gem update --system --conservative || (gem i "rubygems-update:~>2.7" --no-document && update_rubygems)
-        gem update bundler --conservative
     - name: Ensure bundle uses https instead of insecure git
       run: |
         git config --global url."https://github.com/".insteadOf git://github.com/
@@ -90,19 +76,24 @@ jobs:
 
         mkdir -p vendor/bundle/ruby/3.0.0/cache/
         cp .deps/libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
+        echo "BUNDLE_DISABLE_CHECKSUM_VALIDATION=true" >> ${GITHUB_ENV}
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+      env:
+        # skip installing development group gems to save time
+        BUNDLE_WITHOUT: 'development'
+        BUNDLE_JOBS: 4
         # need the following to allow the local provided gem to be used instead of the
         # one from rubygems
-        bundle config set --local disable_checksum_validation true
-    - name: Run bundler using cached path
-      run: |
-        bundle config path vendor/bundle
-        bundle install --jobs 4 --retry 3
-      env:
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Run tests
       run: |
-        bundle exec rspec --color --format documentation
+        bundle exec parallel_test spec --type rspec
       env:
+        BUNDLE_WITHOUT: 'development'
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
