@@ -75,8 +75,10 @@ module VagrantPlugins
           adapters = network_interfaces(env[:machine], @logger)
           index = 0
           REXML::XPath.each(xml_descr, '/domain/devices/interface') do |iface|
+            # initial config defaults
             nic_model_type = index == 0 && config.mgmt_attach ? config.management_network_model_type :  config.nic_model_type
             driver_iommu = index == 0 && config.mgmt_attach ? config.management_network_driver_iommu : false
+            # resolve per adapter option
             if index < adapters.length
               nic_model_type = adapters[index].fetch(:model_type, nic_model_type)
               driver_iommu = adapters[index].fetch(:driver_iommu, driver_iommu )
@@ -93,7 +95,7 @@ module VagrantPlugins
 
             if nic_model_type == 'virtio'
               iommu = driver_iommu ? 'on': 'off'
-              if !iface_driver.attributes['iommu'].nil? && driver_iommu && iface_driver.attributes['iommu'] != iommu
+              if !iface_driver.attributes['iommu'].nil? && !driver_iommu.nil? && iface_driver.attributes['iommu'] != iommu
                 descr_changed = true
                 iface_driver.attributes['iommu'] = iommu
               end
@@ -107,7 +109,7 @@ module VagrantPlugins
             index += 1
           end
           if adapters.length != index
-            @logger.warning "number of network adapters in current config (#{adapters.length}) is different to attached interfaces (#{index}), may have incorrectly updated"
+            env[:ui].warn("number of network adapters in current config (#{adapters.length}) is different to attached interfaces (#{index}), may have incorrectly updated")
           end
 
           # vCpu count
