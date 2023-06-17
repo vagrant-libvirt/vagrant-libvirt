@@ -13,6 +13,7 @@ describe 'VagrantPlugins::ProviderLibvirt::Util::NetworkUtil' do
 
       def initialize
         @logger = Log4r::Logger.new('test-logger')
+        @nic_adapter_count = 8  # from config default
       end
     end.new
   end
