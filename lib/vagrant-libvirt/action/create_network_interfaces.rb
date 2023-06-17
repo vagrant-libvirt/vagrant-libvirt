@@ -19,7 +19,6 @@ module VagrantPlugins
           @management_network_name = env[:machine].provider_config.management_network_name
           config = env[:machine].provider_config
           @nic_model_type = config.nic_model_type
-          @nic_adapter_count = config.nic_adapter_count
           @app = app
         end
 

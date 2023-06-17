@@ -39,7 +39,7 @@ module VagrantPlugins
               free_slot = options[:adapter].to_i
               @logger.debug "Using specified adapter slot #{free_slot}"
             else
-              free_slot = find_empty(adapters)
+              free_slot = find_empty(adapters, 0, machine.provider_config.nic_adapter_count)
               @logger.debug "Adapter not specified so found slot #{free_slot}"
               raise Errors::InterfaceSlotExhausted if free_slot.nil?
             end
@@ -233,7 +233,7 @@ module VagrantPlugins
           libvirt_networks
         end
 
-        def find_empty(array, start = 0, stop = @nic_adapter_count)
+        def find_empty(array, start, stop)
           (start..stop).each do |i|
             return i unless array[i]
           end
