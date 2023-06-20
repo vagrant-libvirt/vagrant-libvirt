@@ -102,9 +102,7 @@ end
     Note: for discard to work, you will likely also need to set `disk_bus = 'scsi'`
   * `:detect_zeroes` - Controls whether to detect zero write requests. The value can be "off", "on" or "unmap".
   * `address_type` - Address type of disk device to emulate. If unspecified, Libvirt uses a sensible default.
-* `nic_model_type` - parameter specifies the model of the network adapter when
-  you create a domain value by default virtio KVM believe possible values, see
-  the [documentation for Libvirt](https://libvirt.org/formatdomain.html#setting-the-nic-model).
+* `nic_model_type` - parameter specifies the model of the network adapter when you create a domain, default is 'virtio'. For possible values, see the [documentation for Libvirt](https://libvirt.org/formatdomain.html#setting-the-nic-model).
 * `shares` - Proportional weighted share for the domain relative to others. For more details see [documentation](https://libvirt.org/formatdomain.html#cpu-tuning).
 * `memory` - Amount of memory in MBytes. Defaults to 512 if not set.
 * `cpus` - Number of virtual cpus. Defaults to 1 if not set.
@@ -498,12 +496,12 @@ starts with `libvirt__` string. Here is a list of those options:
   failures](https://github.com/vagrant-libvirt/vagrant-libvirt/pull/498). Note
   that you cannot use names reserved for libvirt's usage based on [documentation](
   https://libvirt.org/formatdomain.html#overriding-the-target-element).
-* `:mac` - MAC address for the interface. *Note: specify this in lowercase
+* `:libvirt__mac` - MAC address for the interface. *Note: specify this in lowercase
   since Vagrant network scripts assume it will be!*
 * `:libvirt__mtu` - MTU size for the Libvirt network, if not defined, the
   created network will use the Libvirt default (1500). VMs still need to set the
   MTU accordingly.
-* `:model_type` - parameter specifies the model of the network adapter when you
+* `:libvirt__model_type` - parameter specifies the model of the network adapter when you
   create a domain value by default virtio KVM believe possible values, see the
   documentation for Libvirt
 * `:libvirt__driver_name` - Define which network driver to use. [More
@@ -513,8 +511,8 @@ starts with `libvirt__` string. Here is a list of those options:
   info](http://www.linux-kvm.org/page/Multiqueue)
 * `:autostart` - Automatic startup of network by the Libvirt daemon.
   If not specified the default is 'false'.
-* `:bus` - The bus of the PCI device. Both :bus and :slot have to be defined.
-* `:slot` - The slot of the PCI device. Both :bus and :slot have to be defined.
+* `:libvirt__bus` - The bus of the PCI device. Both :bus and :slot have to be defined.
+* `:libvirt__slot` - The slot of the PCI device. Both :bus and :slot have to be defined.
 * `:libvirt__always_destroy` - Allow domains that use but did not create a
   network to destroy it when the domain is destroyed (default: `true`). Set to
   `false` to only allow the domain that created the network to destroy it.
@@ -592,7 +590,7 @@ used by this network are configurable at the provider level.
 * `management_network_keep` - Starting from version *0.7.0*, *always_destroy* is set to *true* by default for any network.
   This option allows to change this behaviour for the management network.
 * `management_network_iface_name` - Allow controlling of the network device name that appears on the host for the management network, same as `:libvirt__iface_name` for public and private network definitions. (unreleased).
-* `management_network_model_type` - Model of the network adapter to use for the management interface. Default is 'virtio'.
+* `management_network_model_type` - Model of the network adapter to use for the management interface. Default is `nic_model_type`, which in turn defaults to 'virtio'.
 
 You may wonder how vagrant-libvirt knows the IP address a VM received.  Libvirt
 doesn't provide a standard way to find out the IP address of a running domain.

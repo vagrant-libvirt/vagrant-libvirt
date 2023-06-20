@@ -21,6 +21,12 @@
   </features>
   <clock offset='utc'/>
   <devices>
+    <interface type='network'>
+      <alias name='ua-net-0'/>
+      <source network='vagrant-libvirt'/>
+      <model type='virtio'/>
+      <address bus='0x00' domain='0x0000' function='0x0' slot='0x05' type='pci'/>
+    </interface>
     <serial type='pty'>
       <target port='0'/>
     </serial>

@@ -6,6 +6,7 @@ require 'rexml/document'
 require 'rexml/formatters/pretty'
 require 'rexml/xpath'
 
+require 'vagrant-libvirt/util/network_util'
 require 'vagrant-libvirt/util/xml'
 
 module VagrantPlugins
@@ -13,9 +14,11 @@ module VagrantPlugins
     module Action
       # Just start the domain.
       class StartDomain
+        include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
 
-        def initialize(app, _env)
+        def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::start_domain')
+          config = env[:machine].provider_config
           @app = app
         end
 
@@ -68,14 +71,44 @@ module VagrantPlugins
           end
 
           # Interface type
-          unless config.nic_model_type.nil?
-            REXML::XPath.each(xml_descr, '/domain/devices/interface/model') do |iface_model|
-              if iface_model.attributes['type'] != config.nic_model_type
-                @logger.debug "network type updated from '#{iface_model.attributes['type']}' to '#{config.nic_model_type}'"
+          adapters = network_interfaces(env[:machine], @logger)
+          index = 0
+          REXML::XPath.each(xml_descr, '/domain/devices/interface') do |iface|
+            # initial config defaults
+            nic_model_type = index == 0 && config.mgmt_attach ? config.management_network_model_type :  config.nic_model_type
+            driver_iommu = index == 0 && config.mgmt_attach ? config.management_network_driver_iommu : false
+            # resolve per adapter option
+            if index < adapters.length
+              nic_model_type = adapters[index].fetch(:model_type, nic_model_type)
+              driver_iommu = adapters[index].fetch(:driver_iommu, driver_iommu )
+            end
+
+            iface_model = iface.elements['model']
+            if iface_model.attributes['type'] != nic_model_type
+              @logger.debug "network type updated from '#{iface_model.attributes['type']}' to '#{nic_model_type}'"
+              descr_changed = true
+              iface_model.attributes['type'] = nic_model_type
+            end
+
+            iface_driver = iface.elements['driver'] || REXML::Element.new('driver', iface)
+
+            if nic_model_type == 'virtio'
+              iommu = driver_iommu ? 'on': 'off'
+              if !iface_driver.attributes['iommu'].nil? && !driver_iommu.nil? && iface_driver.attributes['iommu'] != iommu
                 descr_changed = true
-                iface_model.attributes['type'] = config.nic_model_type
+                iface_driver.attributes['iommu'] = iommu
+              end
+            else
+              if !iface_driver.nil?
+                descr_changed = true if iface_driver.attributes['iommu']
+                iface_driver.attributes.delete('iommu')
               end
             end
+            iface.delete_element(iface_driver) if iface_driver.attributes.empty?
+            index += 1
+          end
+          if adapters.length != index
+            env[:ui].warn("number of network adapters in current config (#{adapters.length}) is different to attached interfaces (#{index}), may have incorrectly updated")
           end
 
           # vCpu count

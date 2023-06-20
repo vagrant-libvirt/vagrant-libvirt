@@ -24,6 +24,12 @@
     <timer name='tsc'/>
   </clock>
   <devices>
+    <interface type='network'>
+      <alias name='ua-net-0'/>
+      <source network='vagrant-libvirt'/>
+      <model type='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+    </interface>
     <serial type='pty'>
       <target port='0'/>
     </serial>

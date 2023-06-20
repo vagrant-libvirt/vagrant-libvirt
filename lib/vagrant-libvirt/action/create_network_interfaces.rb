@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'log4r'
-require 'vagrant/util/network_ip'
-require 'vagrant/util/scoped_hash_override'
 
 require 'vagrant-libvirt/util/erb_template'
 require 'vagrant-libvirt/util/network_util'
@@ -15,15 +13,12 @@ module VagrantPlugins
       class CreateNetworkInterfaces
         include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
         include VagrantPlugins::ProviderLibvirt::Util::NetworkUtil
-        include Vagrant::Util::NetworkIP
-        include Vagrant::Util::ScopedHashOverride
 
         def initialize(app, env)
           @logger = Log4r::Logger.new('vagrant_libvirt::action::create_network_interfaces')
           @management_network_name = env[:machine].provider_config.management_network_name
           config = env[:machine].provider_config
-          @nic_model_type = config.nic_model_type || 'virtio'
-          @nic_adapter_count = config.nic_adapter_count
+          @nic_model_type = config.nic_model_type
           @app = app
         end
 
@@ -39,34 +34,7 @@ module VagrantPlugins
           end
 
           # Setup list of interfaces before creating them.
-          adapters = []
-
-          # Vagrant gives you adapter 0 by default
-          # Assign interfaces to slots.
-          configured_networks(env[:machine], @logger).each do |options|
-            # don't need to create interface for this type
-            next if options[:iface_type] == :forwarded_port
-
-            # TODO: fill first ifaces with adapter option specified.
-            if options[:adapter]
-              if adapters[options[:adapter]]
-                raise Errors::InterfaceSlotNotAvailable
-              end
-
-              free_slot = options[:adapter].to_i
-              @logger.debug "Using specified adapter slot #{free_slot}"
-            else
-              free_slot = find_empty(adapters)
-              @logger.debug "Adapter not specified so found slot #{free_slot}"
-              raise Errors::InterfaceSlotExhausted if free_slot.nil?
-            end
-
-            # We have slot for interface, fill it with interface configuration.
-            adapters[free_slot] = options
-            adapters[free_slot][:network_name] = interface_network(
-              env[:machine].provider.driver, adapters[free_slot]
-            )
-          end
+          adapters = network_interfaces(env[:machine], @logger)
 
           # Create each interface as new domain device.
           @macs_per_network = Hash.new(0)
@@ -285,41 +253,6 @@ module VagrantPlugins
                        Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
                        Nokogiri::XML::Node::SaveOptions::FORMAT
           )
-        end
-
-        def find_empty(array, start = 0, stop = @nic_adapter_count)
-          (start..stop).each do |i|
-            return i unless array[i]
-          end
-          nil
-        end
-
-        # Return network name according to interface options.
-        def interface_network(driver, options)
-          # no need to get interface network for tcp tunnel config
-          return 'tunnel_interface' if options.fetch(:tunnel_type, nil)
-
-          if options[:network_name]
-            @logger.debug 'Found network by name'
-            return options[:network_name]
-          end
-
-          # Get list of all (active and inactive) Libvirt networks.
-          available_networks = libvirt_networks(driver)
-
-          return 'public' if options[:iface_type] == :public_network
-
-          if options[:ip]
-            address = network_address(options[:ip], options[:netmask])
-            available_networks.each do |network|
-              if address == network[:network_address]
-                @logger.debug 'Found network by ip'
-                return network[:name]
-              end
-            end
-          end
-
-          raise Errors::NetworkNotAvailableError, network_name: options[:ip]
         end
       end
     end
