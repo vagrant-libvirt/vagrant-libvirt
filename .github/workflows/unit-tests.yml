@@ -76,6 +76,8 @@ jobs:
 
         mkdir -p vendor/bundle/ruby/3.0.0/cache/
         cp .deps/libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
+        # need the following to allow the local provided gem to be used instead of the
+        # one from rubygems
         echo "BUNDLE_DISABLE_CHECKSUM_VALIDATION=true" >> ${GITHUB_ENV}
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
@@ -86,8 +88,6 @@ jobs:
         # skip installing development group gems to save time
         BUNDLE_WITHOUT: 'development'
         BUNDLE_JOBS: 4
-        # need the following to allow the local provided gem to be used instead of the
-        # one from rubygems
         VAGRANT_VERSION: ${{ matrix.vagrant }}
     - name: Run tests
       run: |

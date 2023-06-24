@@ -13,6 +13,9 @@ jobs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
 
     env:
+      # skip installing development group gems to save time
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_JOBS: 4
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
       VAGRANT_VERSION: v2.2.14
 
@@ -32,11 +35,6 @@ jobs:
       with:
         ruby-version: 2.6.6
         bundler-cache: true
-    - name: Run bundler using cached path
-      run: |
-        bundle config path vendor/bundle
-        bundle config set --local without 'development'
-        bundle install --jobs 4 --retry 3
     - name: Generate matrix
       id: generate-matrix
       run: |
@@ -55,6 +53,9 @@ jobs:
         test_name: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
     env:
+      # skip installing development group gems to save time
+      BUNDLE_WITHOUT: 'development'
+      BUNDLE_JOBS: 4
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
       VAGRANT_VERSION: v2.2.14
 
@@ -87,20 +88,11 @@ jobs:
 
         # add user to group
         sudo usermod -a -G libvirt $USER
-    - uses: actions/cache@v3
-      with:
-        path: ~/.vagrant.d/boxes
-        key: ${{ runner.os }}-${{ env.VAGRANT_VERSION }}
-        restore-keys: |
-          ${{ runner.os }}-
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6.6
         bundler-cache: true
-    - name: Run bundler using cached path
-      run: |
-        bundle install --jobs 4 --retry 3
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
