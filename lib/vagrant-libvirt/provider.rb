@@ -63,9 +63,16 @@ module VagrantPlugins
         # deal with it, similar to the docker provider
         return nil unless ip
 
+        if @machine.provider_config.qemu_user_networking
+          ssh_port_options = @machine.config.vm.networks.select { |type, option| type == :forwarded_port and option[:id] == 'ssh' }
+          ssh_ports = ssh_port_options.map { |_, option| option[:host] }
+          ssh_port = ssh_ports.first
+        else
+          ssh_port = @machine.config.ssh.guest_port
+        end
         ssh_info = {
           host: ip,
-          port: @machine.config.ssh.guest_port,
+          port: ssh_port,
           forward_agent: @machine.config.ssh.forward_agent,
           forward_x11: @machine.config.ssh.forward_x11
         }

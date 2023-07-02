@@ -212,6 +212,9 @@ module VagrantPlugins
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
+      # Use QEMU user networking
+      attr_accessor :qemu_user_networking
+
       # Use QEMU Agent to get ip address
       attr_accessor :qemu_use_agent
 
@@ -394,6 +397,8 @@ module VagrantPlugins
         @qemu_use_agent  = UNSET_VALUE
 
         @serials           = UNSET_VALUE
+
+        @qemu_user_networking = UNSET_VALUE
 
         # internal options to help override behaviour
         @host_device_exclude_prefixes = UNSET_VALUE
@@ -1133,6 +1138,11 @@ module VagrantPlugins
 
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
 
+        if @qemu_user_networking == UNSET_VALUE
+          # macOS support not support most networking features
+          @qemu_user_networking = RUBY_PLATFORM =~ /darwin/ ? true : false
+        end
+
         @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
 
         # management network options
@@ -1402,11 +1412,10 @@ module VagrantPlugins
           networks = configured_networks(machine, @logger)
         rescue Errors::VagrantLibvirtError => e
           errors << "#{e}"
-
-          return
+          return errors
         end
 
-        return if networks.empty?
+        return [] if networks.empty?
 
         networks.each_with_index do |network, index|
           if network[:mac]
