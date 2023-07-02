@@ -91,6 +91,7 @@ module VagrantPlugins
       attr_accessor :cpus
       attr_accessor :cpuset
       attr_accessor :cpu_mode
+      attr_accessor :cpu_match
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
@@ -109,6 +110,7 @@ module VagrantPlugins
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
+      attr_accessor :nvram_template
       attr_accessor :boot_order
       attr_accessor :machine_type
       attr_accessor :machine_arch
@@ -280,6 +282,7 @@ module VagrantPlugins
         @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
+        @cpu_match         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
@@ -297,6 +300,7 @@ module VagrantPlugins
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
+        @nvram_template    = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
         @machine_virtual_size = UNSET_VALUE
@@ -979,6 +983,13 @@ module VagrantPlugins
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpuset = nil if @cpuset == UNSET_VALUE
+        if @driver == 'hvf' && @cpu_mode == UNSET_VALUE && @cpu_match == UNSET_VALUE && @cpu_fallback == UNSET_VALUE && @cpu_model == UNSET_VALUE
+          # default value for apple hypervisor framework
+          @cpu_mode = 'custom'
+          @cpu_match = 'exact'
+          @cpu_fallback = 'forbid'
+          @cpu_model = 'host'
+        end
         @cpu_mode = if @cpu_mode == UNSET_VALUE
                       # only some architectures support the cpu element
                       if @machine_arch.nil? || ARCH_SUPPORT_CPU.include?(@machine_arch.downcase)
@@ -995,7 +1006,8 @@ module VagrantPlugins
                        ''
                      else
                        @cpu_model
-          end
+                     end
+        @cpu_match = nil if @cpu_match == UNSET_VALUE
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_affinity = {} if @cpu_affinity == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
@@ -1078,7 +1090,10 @@ module VagrantPlugins
         end
 
         # Inputs
-        @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
+        if @inputs == UNSET_VALUE
+          # hvf does not support ps2 devices
+          @inputs = @driver == 'hvf' ? [] : [{ type: 'mouse', bus: 'ps2' }]
+        end
 
         # Channels
         @channels = [] if @channels == UNSET_VALUE

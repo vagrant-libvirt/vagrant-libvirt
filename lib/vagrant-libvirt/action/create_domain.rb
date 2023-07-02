@@ -46,10 +46,12 @@ module VagrantPlugins
           @shares = config.shares
           @cpu_mode = config.cpu_mode
           @cpu_model = config.cpu_model
+          @cpu_match = config.cpu_match
           @cpu_fallback = config.cpu_fallback
           @numa_nodes = config.numa_nodes
           @loader = config.loader
           @nvram = config.nvram
+          @nvram_template = config.nvram_template
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
           @disk_controller_model = config.disk_controller_model
@@ -271,6 +273,7 @@ module VagrantPlugins
           env[:ui].info(" -- Initrd:            #{@initrd}") if @initrd
           env[:ui].info(" -- Loader:            #{@loader}") if @loader
           env[:ui].info(" -- Nvram:             #{@nvram}") if @nvram
+          env[:ui].info(" -- Nvram Template:    #{@nvram_template}") if @nvram_template
           if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
