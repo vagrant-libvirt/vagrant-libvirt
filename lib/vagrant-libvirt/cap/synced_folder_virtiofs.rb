@@ -109,6 +109,12 @@ module VagrantPlugins
                 error_message: e.message
         end
       end
+
+      # Enable virtiofs synced folders within WSL when in use
+      # on non-DrvFs file systems
+      def self.wsl_allow_non_drvfs?
+        true
+      end
     end
   end
 end
