@@ -60,7 +60,7 @@ vagrant plugin install vagrant-libvirt
 ```
 
 If you encounter any errors during this process, check that you have installed all the prerequisites in [Requirements]({{ '/installation/#requirements' | relative_url }}).
-If you still have issues, see [Troubleshooting]({{ '/troubleshooting/#installation-problems' | relative_url }}).
+If you still have issues, see [Troubleshooting]({{ '/troubleshooting.html' | relative_url }}).
 
 {: .info }
 Installation varies based on your operating system or use of upstream vagrant. See our [guides]({{ '/installation/#guides' | relative_url }}) for OS-specific instructions.
