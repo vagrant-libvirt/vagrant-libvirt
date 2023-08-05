@@ -162,6 +162,109 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
       end
     end
 
+    context 'interface' do
+      let(:test_file) { 'existing_with_iommu.xml' }
+      let(:updated_domain_xml) {
+        new_xml = domain_xml.dup
+        new_xml.sub!(
+          /<model type='virtio'\/>\s+<driver iommu='on'\/>/m,
+          <<-EOF
+          <model type='e1000'/>
+          EOF
+        )
+        new_xml
+      }
+      let(:vagrantfile_providerconfig) {
+        <<-EOF
+        libvirt.management_network_model_type = 'e1000'
+        EOF
+      }
+
+      it 'should remove iommu if not interface model not virtio' do
+        expect(ui).to_not receive(:warn)
+        expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+        expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+        expect(libvirt_domain).to receive(:autostart=)
+        expect(domain).to receive(:start)
+
+        expect(subject.call(env)).to be_nil
+      end
+
+      context 'iommu mismatch' do
+        let(:updated_domain_xml) {
+          new_xml = domain_xml.dup
+          new_xml.sub!(/(<model type='virtio'\/>\s+)<driver iommu='on'\/>/m) { |_|
+            match = Regexp.last_match
+
+            "#{match[1]}<driver iommu='off'/>"
+          }
+          new_xml
+        }
+        let(:vagrantfile_providerconfig) {
+          <<-EOF
+          libvirt.management_network_driver_iommu = false
+          EOF
+        }
+
+
+        it 'should update iommu to off' do
+          expect(ui).to_not receive(:warn)
+          expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+      end
+
+      context 'with additional interface' do
+        let(:test_file) { 'existing_with_two_interfaces_iommu.xml' }
+        let(:adapters) {
+          [
+            {:iface_type => :private_network, :model_type => "e1000", :network_name => "vagrant-libvirt", :driver_iommu => false},
+            {:iface_type => :private_network, :model_type => "virtio", :network_name => "vagrant-libvirt-1", :driver_iommu => true},
+          ]
+        }
+        before do
+          allow(subject).to receive(:network_interfaces).and_return(adapters)
+        end
+
+        it 'should only update the management interface' do
+          expect(updated_domain_xml).to match(/<source network='vagrant-libvirt'\/>\s+<model type='e1000'\/>/m)
+          expect(updated_domain_xml).to match(/<source network='private'\/>\s+<model type='virtio'\/>/m)
+
+          expect(ui).to_not receive(:warn)
+          expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+          expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+          expect(libvirt_domain).to receive(:autostart=)
+          expect(domain).to receive(:start)
+
+          expect(subject.call(env)).to be_nil
+        end
+
+        context 'with more adapters configured than attached' do
+          let(:adapters) {
+            [
+              {:iface_type => :private_network, :model_type => "e1000", :network_name => "vagrant-libvirt", :driver_iommu => false},
+              {:iface_type => :private_network, :model_type => "virtio", :network_name => "vagrant-libvirt-1", :driver_iommu => true},
+              {:iface_type => :private_network, :model_type => "virtio", :network_name => "vagrant-libvirt-2", :driver_iommu => true},
+            ]
+          }
+
+          it 'should update and trigger a warning about mismatched adapters' do
+            expect(ui).to receive(:warn).with(/number of network adapters in current config \(3\) is different to attached interfaces \(2\)/)
+            expect(connection).to receive(:define_domain).and_return(libvirt_domain)
+            expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
+            expect(libvirt_domain).to receive(:autostart=)
+            expect(domain).to receive(:start)
+
+            expect(subject.call(env)).to be_nil
+          end
+        end
+      end
+    end
+
     context 'cpu' do
       let(:test_file) { 'existing.xml' }
       let(:updated_domain_xml) {

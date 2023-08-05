@@ -3,6 +3,7 @@
 require 'ipaddr'
 require 'nokogiri'
 require 'vagrant/util/network_ip'
+require 'vagrant/util/scoped_hash_override'
 
 class IPAddr
   def get_mask
@@ -17,6 +18,39 @@ module VagrantPlugins
     module Util
       module NetworkUtil
         include Vagrant::Util::NetworkIP
+        include Vagrant::Util::ScopedHashOverride
+
+        def network_interfaces(machine, logger)
+          # Setup list of interfaces before creating them.
+          adapters = []
+
+          # Vagrant gives you adapter 0 by default
+          # Assign interfaces to slots.
+          configured_networks(machine, logger).each do |options|
+            # don't need to create interface for this type
+            next if options[:iface_type] == :forwarded_port
+
+            # TODO: fill first ifaces with adapter option specified.
+            if options[:adapter]
+              if adapters[options[:adapter]]
+                raise Errors::InterfaceSlotNotAvailable
+              end
+
+              free_slot = options[:adapter].to_i
+              @logger.debug "Using specified adapter slot #{free_slot}"
+            else
+              free_slot = find_empty(adapters, 0, machine.provider_config.nic_adapter_count)
+              @logger.debug "Adapter not specified so found slot #{free_slot}"
+              raise Errors::InterfaceSlotExhausted if free_slot.nil?
+            end
+
+            # We have slot for interface, fill it with interface configuration.
+            adapters[free_slot] = options
+            adapters[free_slot][:network_name] = interface_network(machine.provider.driver, adapters[free_slot])
+          end
+
+          adapters
+        end
 
         def configured_networks(machine, logger)
           qemu_use_session = machine.provider_config.qemu_use_session
@@ -197,6 +231,41 @@ module VagrantPlugins
           end
 
           libvirt_networks
+        end
+
+        def find_empty(array, start, stop)
+          (start..stop).each do |i|
+            return i unless array[i]
+          end
+          nil
+        end
+
+        # Return network name according to interface options.
+        def interface_network(driver, options)
+          # no need to get interface network for tcp tunnel config
+          return 'tunnel_interface' if options.fetch(:tunnel_type, nil)
+
+          if options[:network_name]
+            @logger.debug 'Found network by name'
+            return options[:network_name]
+          end
+
+          # Get list of all (active and inactive) Libvirt networks.
+          available_networks = libvirt_networks(driver)
+
+          return 'public' if options[:iface_type] == :public_network
+
+          if options[:ip]
+            address = network_address(options[:ip], options[:netmask])
+            available_networks.each do |network|
+              if address == network[:network_address]
+                @logger.debug 'Found network by ip'
+                return network[:name]
+              end
+            end
+          end
+
+          raise Errors::NetworkNotAvailableError, network_name: options[:ip]
         end
       end
     end
