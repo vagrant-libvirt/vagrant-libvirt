@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rexml/document'
+
 require_relative '../../spec_helper'
 
 require 'vagrant-libvirt/util/network_util'

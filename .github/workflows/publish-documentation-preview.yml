@@ -25,6 +25,9 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7
+          bundler-cache: true
+        env:
+          BUNDLE_GEMFILE: ./docs/Gemfile
       - name: Install and Build 🔧
         # don't allow a close to execute anything from the source code
         if: ${{ github.event.action == 'labeled' }}
@@ -41,8 +44,7 @@ jobs:
           plugin_script_base_path: /${REPO_NAME}/pr-preview/pr-${PR_NUMBER}
           EOF
 
-          BUNDLE_GEMFILE=./docs/Gemfile bundle install
-          BUNDLE_GEMFILE=./docs/Gemfile bundle exec jekyll build --source docs/ --baseurl="/${REPO_NAME}/pr-preview/pr-${PR_NUMBER}" --destination build
+          bundle exec jekyll build --source docs/ --baseurl="/${REPO_NAME}/pr-preview/pr-${PR_NUMBER}" --destination build
       - name: Set action
         run: |
           event_type=$(jq -r ".action" "$GITHUB_EVENT_PATH")
