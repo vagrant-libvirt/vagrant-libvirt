@@ -34,7 +34,7 @@ jobs:
           BUNDLE_GEMFILE=./docs/Gemfile bundle install
           BUNDLE_GEMFILE=./docs/Gemfile bundle exec jekyll build --source docs/ --baseurl="/${REPO_NAME}/version/${VERSION}" --destination build
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.4.3
+        uses: JamesIves/github-pages-deploy-action@v4.4.2
         with:
           branch: gh-pages
           folder: build
