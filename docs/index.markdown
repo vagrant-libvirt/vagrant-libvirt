@@ -28,7 +28,7 @@ Before you start using vagrant-libvirt, please make sure your Libvirt
 and QEMU installation is working correctly and you are able to create QEMU or
 KVM type virtual machines with `virsh` or `virt-manager`.
 
-See [Requirements]({{ '/installation/#requirements' | relative_url }}) for guides and details.
+See [Requirements]({{ '/installation#requirements' | relative_url }}) for guides and details.
 
 ## Installation
 
@@ -59,11 +59,11 @@ See [Requirements]({{ '/installation/#requirements' | relative_url }}) for guide
 vagrant plugin install vagrant-libvirt
 ```
 
-If you encounter any errors during this process, check that you have installed all the prerequisites in [Requirements]({{ '/installation/#requirements' | relative_url }}).
-If you still have issues, see [Troubleshooting]({{ '/troubleshooting/#installation-problems' | relative_url }}).
+If you encounter any errors during this process, check that you have installed all the prerequisites in [Requirements]({{ '/installation#requirements' | relative_url }}).
+If you still have issues, see [Troubleshooting]({{ '/troubleshooting#installation-problems' | relative_url }}).
 
 {: .info }
-Installation varies based on your operating system or use of upstream vagrant. See our [guides]({{ '/installation/#guides' | relative_url }}) for OS-specific instructions.
+Installation varies based on your operating system or use of upstream vagrant. See our [guides]({{ '/installation#guides' | relative_url }}) for OS-specific instructions.
 
 ## Initial Project Creation
 
