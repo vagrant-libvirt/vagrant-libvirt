@@ -5,6 +5,10 @@ on:
     branches:
       - main
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/publish-documentation*'
+      - '.github/workflows/deploy-docs*'
 
 jobs:
   generate-matrix:

@@ -118,6 +118,7 @@ jobs:
         }}
     - name: Coveralls Finished
       uses: coverallsapp/github-action@master
+      if: contains(needs.*.result, 'skipped') == false
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true

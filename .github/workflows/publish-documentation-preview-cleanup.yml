@@ -1,13 +1,19 @@
-name: Publish Docs Preview
+name: Deploy Docs Preview Cleanup
 on:
-  pull_request:
+  pull_request_target:
+    types:
+      - closed
     paths:
       - 'docs/**'
       - '.github/workflows/publish-documentation-preview.yml'
       - '.github/workflows/build-docs/**'
 
+permissions:
+  contents: write
+
 jobs:
-  build-and-deploy:
+  remove-docs-preview:
+    concurrency: publish-gh-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -23,13 +29,11 @@ jobs:
         uses: ./.github/workflows/build-docs
         with:
           target-folder: "/${{ steps.setup.outputs.repo_name }}/pr-preview/pr-${{ steps.setup.outputs.pr_number }}"
-          extra-config: |
-            plugin_script_base_path: "/${{ steps.setup.outputs.repo_name }}/pr-preview/pr-${{ steps.setup.outputs.pr_number }}"
 
-      - uses: actions/upload-artifact@v2
+      - name: Deploy preview removal 🚀
+        uses: rossjrw/pr-preview-action@v1
         with:
-          name: jekyll-docs
-          path: |
-            action
-            build/**
-
+          action: remove
+          source-dir: ./build/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
