@@ -1,0 +1,116 @@
+name: Deploy Docs Preview
+on:
+  workflow_run:
+    workflows:
+      - "Build Docs Preview"
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    concurrency: publish-gh-pages
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: 'Download artifact'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          run_id: ${{github.event.workflow_run.id }}
+
+      - name: Configure Settings
+        env:
+          SOURCE_EVENT_PATH: source-event/event.json
+        run: |
+          echo "Using ${SOURCE_EVENT_PATH} as event source"
+
+          event_type=$(jq -r ".action" "$SOURCE_EVENT_PATH")
+          echo "event_type is $event_type"
+          case $event_type in
+            "opened" | "reopened" | "synchronize")
+              echo "action=deploy" >> $GITHUB_ENV
+              ;;
+            "closed")
+              echo "action=remove" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "unknown event type $event_type; no action to take"
+              echo "action=none" >> $GITHUB_ENV
+              ;;
+          esac
+
+          org=$(echo "$GITHUB_REPOSITORY" | cut -d "/" -f 1)
+          thirdleveldomain=$(echo "$GITHUB_REPOSITORY" | cut -d "/" -f 2)
+
+          if [ ! -z "$customurl" ]; then
+            pagesurl="$customurl"
+          elif [ "${org}.github.io" == "$thirdleveldomain" ]; then
+            pagesurl="${org}.github.io"
+          else
+            pagesurl=$(echo "$GITHUB_REPOSITORY" | sed 's/\//.github.io\//')
+          fi
+
+          echo "pagesurl=$pagesurl" >> $GITHUB_ENV
+
+          echo "preview_branch=gh-pages" >> $GITHUB_ENV
+
+          pr=$(jq -r ".number" "$SOURCE_EVENT_PATH")
+          echo "pr=${pr}" >> $GITHUB_ENV
+          echo "targetdir=pr-preview/pr-${pr}" >> $GITHUB_ENV
+
+          echo "emptydir=$(mktemp -d)" >> $GITHUB_ENV
+          echo "datetime=$(date '+%Y-%m-%d %H:%M %Z')" >> $GITHUB_ENV
+
+      - name: Deploy preview directory
+        if: env.action == 'deploy'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: ${{ env.preview_branch }}
+          folder: jekyll-docs
+          target-folder: ${{ env.targetdir }}
+          commit-message: Deploy preview for PR ${{ env.pr }} 🛫
+          force: false
+
+      - name: Leave a comment after deployment
+        if: env.action == 'deploy' && env.deployment_status == 'success'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ env.pr }}
+          header: pr-preview
+          message: "\
+            :rocket: Deployed preview to
+            https://${{ env.pagesurl }}/${{ env.targetdir }}/
+
+            on branch [`${{ env.preview_branch }}`](\
+            ${{ github.server_url }}/${{ github.repository }}\
+            /tree/${{ env.preview_branch }})
+            at ${{ env.datetime }}
+            "
+
+      - name: Remove preview directory
+        if: env.action == 'remove'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: ${{ env.preview_branch }}
+          folder: ${{ env.emptydir }}
+          target-folder: ${{ env.targetdir }}
+          commit-message: Remove preview for PR ${{ env.pr }} 🛬
+          force: false
+
+      - name: Leave a comment after removal
+        if: env.action == 'remove' && env.deployment_status == 'success'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ env.pr }}
+          header: pr-preview
+          message: "\
+            Preview removed because the pull request was closed.
+
+            ${{ env.datetime }}
+            "

@@ -1,0 +1,39 @@
+name: Build Docs Preview
+on:
+  pull_request:
+    types:
+      - closed
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'docs/**'
+      - '.github/workflows/build-documentation-preview.yml'
+      - '.github/workflows/build-docs/**'
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Build docs 🔧
+        if: github.event.action != 'closed'
+        uses: ./.github/workflows/build-docs
+        with:
+          target-folder: "pr-preview/pr-${{ github.event.number }}"
+          extra-config: |
+            plugin_script_base_path: "/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.number }}"
+
+      - uses: actions/upload-artifact@v2
+        if: github.event.action != 'closed'
+        with:
+          name: jekyll-docs
+          path: |
+            build/**
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: source-event
+          path: ${{ github.event_path }}

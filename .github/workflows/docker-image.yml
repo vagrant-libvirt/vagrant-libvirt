@@ -14,6 +14,10 @@ on:
       - reopened
       # for delete
       - closed
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/publish-documentation*'
+      - '.github/workflows/deploy-docs*'
 
 
 permissions:
