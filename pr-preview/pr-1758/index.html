@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Quickstart | vagrant-libvirt</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="Quickstart" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Vagrant provider for libvirt." />
+<meta property="og:description" content="Vagrant provider for libvirt." />
+<meta property="og:site_name" content="vagrant-libvirt" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Quickstart" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Vagrant provider for libvirt.","headline":"Quickstart","name":"vagrant-libvirt","url":"/vagrant-libvirt/pr-preview/pr-1758/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/vagrant-libvirt/pr-preview/pr-1758/assets/css/style.css?v=1a7a039c054121eb8a3748ad4a82dabbce0c943a">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/vagrant-libvirt/pr-preview/pr-1758/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="/vagrant-libvirt/pr-preview/pr-1758/">vagrant-libvirt</a></h1>
+      
+
+      <p>Vagrant-libvirt is a <a href="http://www.vagrantup.com">Vagrant</a> plugin that adds a
+<a href="http://libvirt.org">Libvirt</a> provider to Vagrant, allowing Vagrant to
+control and provision machines via Libvirt toolkit.</p>
+
+<p class="info">Actual version is still a development one. Feedback is welcome and
+can help a lot :-)</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<p>Vagrant-libvirt requires the following:</p>
+
+<ul>
+  <li>Vagrant</li>
+  <li>Libvirt (and QEMU)</li>
+  <li>GCC and Make (if not using vagrant from your distribution)</li>
+</ul>
+
+<p class="warn">Before you start using vagrant-libvirt, please make sure your Libvirt
+and QEMU installation is working correctly and you are able to create QEMU or
+KVM type virtual machines with <code class="language-plaintext highlighter-rouge">virsh</code> or <code class="language-plaintext highlighter-rouge">virt-manager</code>.</p>
+
+<p>See <a href="/vagrant-libvirt/pr-preview/pr-1758/installation#requirements">Requirements</a> for guides and details.</p>
+
+<h2 id="installation">Installation</h2>
+
+<ol>
+  <li>Install Vagrant, Libvirt and QEMU for your distribution
+    <ul>
+      <li>Ubuntu</li>
+    </ul>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get purge vagrant-libvirt
+sudo apt-mark hold vagrant-libvirt
+sudo apt-get update &amp;&amp; \
+    sudo apt-get install -y qemu libvirt-daemon-system ebtables libguestfs-tools \
+        vagrant ruby-fog-libvirt
+</code></pre></div>    </div>
+
+    <ul>
+      <li>Fedora</li>
+    </ul>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo dnf remove vagrant-libvirt
+sudo sed -i \
+    '/^\(exclude=.*\)/ {/vagrant-libvirt/! s//\1 vagrant-libvirt/;:a;n;ba;q}; $aexclude=vagrant-libvirt' \
+    /etc/dnf/dnf.conf
+vagrant_libvirt_deps=($(sudo dnf repoquery --disableexcludes main --depends vagrant-libvirt 2&gt;/dev/null | cut -d' ' -f1))
+dependencies=$(sudo dnf repoquery --qf "%{name}" ${vagrant_libvirt_deps[@]/#/--whatprovides })
+sudo dnf install --assumeyes @virtualization ${dependencies}
+</code></pre></div>    </div>
+  </li>
+  <li>Install the latest release of vagrant-libvirt
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vagrant plugin install vagrant-libvirt
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>If you encounter any errors during this process, check that you have installed all the prerequisites in <a href="/vagrant-libvirt/pr-preview/pr-1758/installation#requirements">Requirements</a>.
+If you still have issues, see <a href="/vagrant-libvirt/pr-preview/pr-1758/troubleshooting#installation-problems">Troubleshooting</a>.</p>
+
+<p class="info">Installation varies based on your operating system or use of upstream vagrant. See our <a href="/vagrant-libvirt/pr-preview/pr-1758/installation#guides">guides</a> for OS-specific instructions.</p>
+
+<h2 id="initial-project-creation">Initial Project Creation</h2>
+
+<p>After installing the plugin (instructions above), the quickest way to get
+started is to add Libvirt box and specify all the details manually within a
+<code class="language-plaintext highlighter-rouge">config.vm.provider</code> block. So first, add Libvirt box using any name you want.
+You can find more Libvirt-ready boxes at
+<a href="https://app.vagrantup.com/boxes/search?provider=libvirt">Vagrant Cloud</a>. For
+example:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vagrant init fedora/36-cloud-base
+</code></pre></div></div>
+
+<p>Or make a Vagrantfile that looks like the following, filling in your
+information where necessary. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Vagrant</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="s2">"2"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">define</span> <span class="ss">:test_vm</span> <span class="k">do</span> <span class="o">|</span><span class="n">test_vm</span><span class="o">|</span>
+    <span class="n">test_vm</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">box</span> <span class="o">=</span> <span class="s2">"fedora/36-cloud-base"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="start-vm">Start VM</h2>
+
+<p>In prepared project directory, run following command:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>vagrant up <span class="nt">--provider</span><span class="o">=</span>libvirt
+</code></pre></div></div>
+
+<p>Vagrant needs to know that we want to use Libvirt and not default VirtualBox.
+That’s why there is <code class="language-plaintext highlighter-rouge">--provider=libvirt</code> option specified. Other way to tell
+Vagrant to use Libvirt provider is to setup environment variable</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">VAGRANT_DEFAULT_PROVIDER</span><span class="o">=</span>libvirt
+</code></pre></div></div>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/vagrant-libvirt/vagrant-libvirt/edit/gh-pages/index.markdown">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

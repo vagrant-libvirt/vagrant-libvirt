@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>About | vagrant-libvirt</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="About" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Vagrant provider for libvirt." />
+<meta property="og:description" content="Vagrant provider for libvirt." />
+<meta property="og:site_name" content="vagrant-libvirt" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="About" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Vagrant provider for libvirt.","headline":"About","name":"vagrant-libvirt","url":"/vagrant-libvirt/pr-preview/pr-1758/about/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/vagrant-libvirt/pr-preview/pr-1758/assets/css/style.css?v=1a7a039c054121eb8a3748ad4a82dabbce0c943a">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/vagrant-libvirt/pr-preview/pr-1758/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="/vagrant-libvirt/pr-preview/pr-1758/">vagrant-libvirt</a></h1>
+      
+
+      <p>Vagrant-libvirt is a <a href="http://www.vagrantup.com">Vagrant</a> plugin that adds a
+<a href="http://libvirt.org">Libvirt</a> provider to Vagrant, allowing Vagrant to
+control and provision machines via Libvirt toolkit.</p>
+
+<p class="info">Actual version is still a development one. Feedback is welcome and
+can help a lot :-)</p>
+
+<p>You can find the source code for Vagrant Libvirt plugin at GitHub:
+<a href="https://github.com/vagrant-libvirt/vagrant-libvirt">https://github.com/vagrant-libvirt/vagrant-libvirt</a></p>
+
+<p>You can find the source code for Vagrant Libvirt QA testing of install instructions at GitHub:
+<a href="https://github.com/vagrant-libvirt/vagrant-libvirt-qa">https://github.com/vagrant-libvirt/vagrant-libvirt-qa</a></p>
+
+<p>Creating issues can be done via GitHub:
+<a href="https://github.com/vagrant-libvirt/vagrant-libvirt/issues">https://github.com/vagrant-libvirt/vagrant-libvirt/issues</a></p>
+
+<p>To ask questions or discuss a problem ahead of logging an issue you can use:</p>
+<ul>
+  <li>Gitter <a href="https://gitter.im/vagrant-libvirt/vagrant-libvirt">https://gitter.im/vagrant-libvirt/vagrant-libvirt</a></li>
+  <li>Github Discussions <a href="https://github.com/vagrant-libvirt/vagrant-libvirt/discussions">https://github.com/vagrant-libvirt/vagrant-libvirt/discussions</a></li>
+</ul>
+
+<h2 id="features">Features</h2>
+
+<ul>
+  <li>Control local Libvirt hypervisors.</li>
+  <li>Vagrant <code class="language-plaintext highlighter-rouge">up</code>, <code class="language-plaintext highlighter-rouge">destroy</code>, <code class="language-plaintext highlighter-rouge">suspend</code>, <code class="language-plaintext highlighter-rouge">resume</code>, <code class="language-plaintext highlighter-rouge">halt</code>, <code class="language-plaintext highlighter-rouge">ssh</code>, <code class="language-plaintext highlighter-rouge">reload</code>,
+<code class="language-plaintext highlighter-rouge">package</code> and <code class="language-plaintext highlighter-rouge">provision</code> commands.</li>
+  <li>Upload box image (qcow2 format) to Libvirt storage pool.</li>
+  <li>Create volume as COW diff image for domains.</li>
+  <li>Create private networks.</li>
+  <li>Create and boot Libvirt domains.</li>
+  <li>SSH into domains.</li>
+  <li>Setup hostname and network interfaces.</li>
+  <li>Provision domains with any built-in Vagrant provisioner.</li>
+  <li>Synced folder support via <code class="language-plaintext highlighter-rouge">rsync</code>, <code class="language-plaintext highlighter-rouge">nfs</code>, <code class="language-plaintext highlighter-rouge">9p</code> or <code class="language-plaintext highlighter-rouge">virtiofs</code>.</li>
+  <li>Snapshots</li>
+  <li>Package caching via
+<a href="http://fgrehm.viewdocs.io/vagrant-cachier/">vagrant-cachier</a>.</li>
+  <li>Use boxes from other Vagrant providers via
+<a href="https://github.com/sciurus/vagrant-mutate">vagrant-mutate</a>.</li>
+  <li>Support VMs with no box for PXE boot purposes (Vagrant 1.6 and up)</li>
+</ul>
+
+<h2 id="how-a-machine-is-created">How a Machine Is Created</h2>
+
+<p>Vagrant goes through steps below when creating new project:</p>
+
+<ol>
+  <li>Connect to Libvirt locally or remotely via SSH.</li>
+  <li>Check if box image is available in Libvirt storage pool. If not, upload it
+to remote Libvirt storage pool as new volume.</li>
+  <li>Create COW diff image of base box image for new Libvirt domain.</li>
+  <li>Create and start new domain on Libvirt host.</li>
+  <li>Check for DHCP lease from dnsmasq server.</li>
+  <li>Wait till SSH is available.</li>
+  <li>Sync folders and run Vagrant provisioner on new domain if setup in
+Vagrantfile.</li>
+</ol>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/vagrant-libvirt/vagrant-libvirt/edit/gh-pages/about.markdown">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

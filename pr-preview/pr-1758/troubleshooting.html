@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Troubleshooting | vagrant-libvirt</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="Troubleshooting" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Vagrant provider for libvirt." />
+<meta property="og:description" content="Vagrant provider for libvirt." />
+<meta property="og:site_name" content="vagrant-libvirt" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Troubleshooting" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Vagrant provider for libvirt.","headline":"Troubleshooting","url":"/vagrant-libvirt/pr-preview/pr-1758/troubleshooting.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/vagrant-libvirt/pr-preview/pr-1758/assets/css/style.css?v=1a7a039c054121eb8a3748ad4a82dabbce0c943a">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/vagrant-libvirt/pr-preview/pr-1758/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="/vagrant-libvirt/pr-preview/pr-1758/">vagrant-libvirt</a></h1>
+      
+
+      <p>The first step for troubleshooting a VM image that appears to not boot correctly,
+or hangs waiting to get an IP, is to check it with a VNC viewer. A key thing
+to remember is that if the VM doesn’t get an IP, then vagrant can’t communicate
+with it to configure anything, so a problem at this stage is likely to come from
+the VM, but we’ll outline the tools and common problems to help you troubleshoot
+that.</p>
+
+<p>By default, when you create a new VM, a vnc server will listen on <code class="language-plaintext highlighter-rouge">127.0.0.1</code> on
+port <code class="language-plaintext highlighter-rouge">TCP5900</code>. If you connect with a vnc viewer you can see the boot process. If
+your VM isn’t listening on <code class="language-plaintext highlighter-rouge">5900</code> by default;</p>
+
+<ul>
+  <li>Check the create domain details outputted to the console, or</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">virsh dumpxml</code> to find out which port it’s listening on, or</li>
+  <li>Explicitly configure it with <code class="language-plaintext highlighter-rouge">graphics_port</code> and <code class="language-plaintext highlighter-rouge">graphics_ip</code>
+(see <a href="/vagrant-libvirt/pr-preview/pr-1758/configuration#domain-specific-options">‘Domain Specific Options’</a>).</li>
+</ul>
+
+<p>Note: Connecting with the console (<code class="language-plaintext highlighter-rouge">virsh console</code>) requires additional config,
+so some VMs may not show anything on the console at all, instead displaying it in
+the VNC console. The issue with the text console is that you also need to build the
+image used to tell the kernel to output to the console during boot, and typically
+most do not have this built in.</p>
+
+<p>Problems we’ve seen in the past include:</p>
+<ul>
+  <li>Forgetting to remove <code class="language-plaintext highlighter-rouge">/etc/udev/rules.d/70-persistent-net.rules</code> before packaging
+the VM</li>
+  <li>VMs expecting a specific disk device to be connected</li>
+</ul>
+
+<p>If you’re still confused, check the Github Issues for this repo for anything that
+looks similar to your problem.</p>
+
+<p><a href="https://github.com/vagrant-libvirt/vagrant-libvirt/issues/1032">Github Issue #1032</a>
+contains some historical troubleshooting for VMs that appeared to hang.</p>
+
+<p>Did you hit a problem that you’d like to note here to save time in the future?
+Please do!</p>
+
+
+      
+      <div class="footer border-top border-gray-light mt-5 pt-3 text-right text-gray">
+        This site is open source. <a href="https://github.com/vagrant-libvirt/vagrant-libvirt/edit/gh-pages/troubleshooting.markdown">Improve this page</a>.
+      </div>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>
