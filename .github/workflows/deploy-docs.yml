@@ -1,0 +1,39 @@
+name: Deploy Docs
+on:
+  workflow_call:
+    inputs:
+      extra-config:
+        required: false
+        type: string
+      target-folder:
+        require: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    concurrency: publish-gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Build Docs 🔧
+        uses: ./.github/workflows/build-docs
+        with:
+          target-folder: ${{ inputs.target-folder }}
+          extra-config: ${{ inputs.extra-config }}
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: gh-pages
+          folder: build
+          force: false
+          target-folder: ${{ inputs.target-folder }}
+          clean-exclude: |
+            pr-preview/
+            version/
+
