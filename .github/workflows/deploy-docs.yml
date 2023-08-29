@@ -17,6 +17,9 @@ jobs:
     concurrency: publish-gh-pages
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
       - name: Build Docs 🔧
         uses: ./.github/workflows/build-docs
         with:
