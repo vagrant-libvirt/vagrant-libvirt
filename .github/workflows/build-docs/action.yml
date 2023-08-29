@@ -42,7 +42,7 @@ runs:
         EOF
 
         echo "Adding additional config settings:"
-        cat ${TEMP_CONFIG} | tee docs/_config.yml
+        cat ${TEMP_CONFIG} | tee -a docs/_config.yml
 
     - name: Install and Build
       shell: bash
