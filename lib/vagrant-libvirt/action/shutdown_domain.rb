@@ -58,7 +58,10 @@ module VagrantPlugins
           if env[:machine].state.id == @source_state
             env[:ui].info(I18n.t('vagrant_libvirt.shutdown_domain'))
             domain.shutdown
-            domain.wait_for(timeout) { !ready? }
+            begin
+                domain.wait_for(timeout) { !ready? }
+            rescue Fog::Errors::TimeoutError
+            end
           end
 
           env[:result] = env[:machine].state.id == @target_state
