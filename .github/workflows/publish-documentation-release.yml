@@ -9,12 +9,6 @@ permissions:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-
-      - name: Deploy docs
-        uses: ./.github/workflows/deploy-docs.yml
-        with:
-          target-folder: version/${{ github.ref_name }}
+    uses: ./.github/workflows/deploy-docs.yml
+    with:
+      target-folder: version/${{ github.ref_name }}
