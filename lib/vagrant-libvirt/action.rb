@@ -195,6 +195,11 @@ module VagrantPlugins
             b2.use Call, IsRunning do |env2, b3|
               next unless env2[:result]
 
+              if env2[:force_halt]
+                b3.use HaltDomain
+                next
+              end
+
               b3.use StartShutdownTimer
               b3.use Call, GracefulHalt, :shutoff, :running do |env3, b4|
                 if !env3[:result]
