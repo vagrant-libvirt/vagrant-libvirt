@@ -69,7 +69,7 @@ jobs:
 
       - name: Deploy preview directory
         if: env.action == 'deploy'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.4.3
         with:
           branch: ${{ env.preview_branch }}
           folder: jekyll-docs
@@ -95,7 +95,7 @@ jobs:
 
       - name: Remove preview directory
         if: env.action == 'remove'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.4.3
         with:
           branch: ${{ env.preview_branch }}
           folder: ${{ env.emptydir }}
