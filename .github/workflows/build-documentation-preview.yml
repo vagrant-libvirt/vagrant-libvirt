@@ -26,14 +26,14 @@ jobs:
           extra-config: |
             plugin_script_base_path: "/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.number }}"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: github.event.action != 'closed'
         with:
           name: jekyll-docs
           path: |
             build/**
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: source-event
           path: ${{ github.event_path }}
