@@ -24,7 +24,7 @@ jobs:
       VAGRANT_VERSION: v2.2.14
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up libvirt for test generation
@@ -64,7 +64,7 @@ jobs:
       VAGRANT_VERSION: v2.2.14
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up libvirt
