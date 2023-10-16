@@ -193,7 +193,7 @@ module VagrantPlugins
             # Use length of 0 to download remaining contents after offset
             volume.download(stream, offset = 0, length = 0)
 
-            buf_size = 1024 * 250 # 250K, copied from upload_image in handle_box_image.rb
+            buf_size = 1024 * 250 # 250K, copied from storage_upload_image in handle_box_image.rb
             progress = 0
             retval = stream.recv(buf_size)
             open(image_file, 'wb') do |io|
