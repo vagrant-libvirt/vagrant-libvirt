@@ -31,6 +31,10 @@ describe 'snapshots', acceptance: true do
     status('Test: restore snapshot')
     expect(environment.execute('vagrant', 'snapshot', 'restore', 'test')).to exit_with(0)
 
+    # KVM needs a moment for IO to catch up.
+    # If anyone comes up with a better way to wait, please update this.
+    sleep(3)
+
     status('Test: files are as expected')
     expect(environment.execute('vagrant', 'ssh', '--', '-t', 'ls a.txt')).to exit_with(0)
     expect(environment.execute('vagrant', 'ssh', '--', '-t', 'ls b.txt')).to exit_with(1)
