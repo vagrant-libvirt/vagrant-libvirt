@@ -92,6 +92,7 @@ describe VagrantPlugins::ProviderLibvirt::Action do
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage).to receive_and_call_next
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::CreateDomainVolume).to receive_and_call_next
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::ResolveDiskSettings).to receive_and_call_next
+        expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::CreateDomainDisks).to receive_and_call_next
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::CreateDomain).to receive_and_call_next
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::CreateNetworks).to receive_and_call_next
         expect_any_instance_of(VagrantPlugins::ProviderLibvirt::Action::CreateNetworkInterfaces).to receive_and_call_next

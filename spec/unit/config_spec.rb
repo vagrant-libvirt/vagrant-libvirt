@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'tempfile'
+
 require_relative '../spec_helper'
 require_relative '../support/binding_proc'
 

@@ -80,50 +80,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         end
       end
 
-      context 'additional disks' do
-        let(:disks) do
-          [
-            :device        => 'vdb',
-            :cache         => 'default',
-            :bus           => 'virtio',
-            :type          => 'qcow2',
-            :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
-            :virtual_size  => ByteNumber.new(20*1024*1024*1024),
-            :pool          => 'default',
-          ]
-        end
-
-        before do
-          env[:disks] = disks
-        end
-
-        context 'volume create failed' do
-          it 'should raise an exception' do
-            expect(volumes).to receive(:create).and_raise(Libvirt::Error)
-
-            expect{ subject.call(env) }.to raise_error(VagrantPlugins::ProviderLibvirt::Errors::FogCreateDomainVolumeError)
-          end
-        end
-
-        context 'volume create succeeded' do
-          let(:domain_xml_file) { 'additional_disks_domain.xml' }
-
-          it 'should complete' do
-            expect(volumes).to receive(:create).with(
-              hash_including(
-                :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-                :owner       => 0,
-                :group       => 0,
-                :pool_name   => "default",
-              )
-            )
-            expect(servers).to receive(:create).with(xml: domain_xml).and_return(machine)
-
-            expect(subject.call(env)).to be_nil
-          end
-        end
-      end
-
       context 'with custom disk device setting' do
         let(:domain_xml_file) { 'custom_disk_settings.xml' }
 
@@ -293,49 +249,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomain do
         expect(servers).to receive(:create).and_return(machine)
 
         expect(subject.call(env)).to be_nil
-      end
-
-      context 'additional disks' do
-        let(:vagrantfile_providerconfig) do
-          <<-EOF
-          libvirt.qemu_use_session = true
-          EOF
-        end
-
-        let(:disks) do
-          [
-            :device        => 'vdb',
-            :cache         => 'default',
-            :bus           => 'virtio',
-            :type          => 'qcow2',
-            :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
-            :virtual_size  => ByteNumber.new(20*1024*1024*1024),
-            :pool          => 'default',
-          ]
-        end
-
-        before do
-          expect(Process).to receive(:uid).and_return(9999).at_least(:once)
-          expect(Process).to receive(:gid).and_return(9999).at_least(:once)
-
-          env[:disks] = disks
-        end
-
-        context 'volume create succeeded' do
-          it 'should complete' do
-            expect(volumes).to receive(:create).with(
-              hash_including(
-                :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-                :owner       => 9999,
-                :group       => 9999,
-                :pool_name   => "default",
-              )
-            )
-            expect(servers).to receive(:create).and_return(machine)
-
-            expect(subject.call(env)).to be_nil
-          end
-        end
       end
     end
   end
