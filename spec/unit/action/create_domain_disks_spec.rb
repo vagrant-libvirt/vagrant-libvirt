@@ -26,45 +26,83 @@ describe VagrantPlugins::ProviderLibvirt::Action::CreateDomainDisks do
     end
 
     context 'additional disks' do
-      let(:vagrantfile_providerconfig) do
-        <<-EOF
-        libvirt.qemu_use_session = true
-        EOF
-      end
 
       let(:disks) do
         [
-          :device        => 'vdb',
-          :cache         => 'default',
-          :bus           => 'virtio',
-          :type          => 'qcow2',
-          :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
-          :virtual_size  => ByteNumber.new(20*1024*1024*1024),
-          :pool          => 'default',
+          {
+            :device        => 'vdb',
+            :cache         => 'default',
+            :bus           => 'virtio',
+            :type          => 'qcow2',
+            :name          => 'vagrant-test_default-vdb.qcow2',
+            :absolute_path => '/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2',
+            :virtual_size  => ByteNumber.new(20*1024*1024*1024),
+            :pool          => 'default',
+          },
         ]
       end
 
       before do
-        expect(Process).to receive(:uid).and_return(9999).at_least(:once)
-        expect(Process).to receive(:gid).and_return(9999).at_least(:once)
-
         env[:disks] = disks
       end
 
-      context 'volume create succeeded' do
-        it 'should complete' do
-          expect(volumes).to receive(:create).with(
-            hash_including(
-              :path        => "/var/lib/libvirt/images/vagrant-test_default-vdb.qcow2",
-              :owner       => 9999,
-              :group       => 9999,
-              :pool_name   => "default",
-            )
-          )
+      context 'volume already exists' do
+        let(:volume) { instance_double(::Fog::Libvirt::Compute::Volume) }
+
+        before do
+          allow(volumes).to receive(:all).and_return([volume])
+          allow(volume).to receive(:id).and_return(1)
+        end
+
+        it 'should succeed and set :preexisting' do
+          expect(subject.call(env)).to be_nil
+          expect(disks[0][:preexisting]).to be(true)
+        end
+      end
+
+      context 'volume needs uploading' do
+        let(:tmp_fh) { Tempfile.new('vagrant-libvirt') }
+
+        before do
+          env[:disks][0][:path] = tmp_fh.path
+          allow(volumes).to receive(:all).and_return([])
+        end
+
+        after do
+          tmp_fh.delete
+        end
+
+        it 'should upload and succeed' do
+          expect(subject).to receive(:storage_upload_image).and_return(true)
+
+          expect(subject.call(env)).to be_nil
+          expect(disks[0][:uploaded]).to be(true)
+        end
+      end
+
+      context 'volume must be created' do
+
+        before do
+          allow(volumes).to receive(:all).and_return([])
+        end
+
+        it 'should succeed' do
+          expect(disks[0][:path]).to be_nil
+          expect(volumes).to receive(:create).and_return(nil)
 
           expect(subject.call(env)).to be_nil
         end
+
+        it 'should fail' do
+          expect(disks[0][:path]).to be_nil
+          expect(volumes).to receive(:create).and_raise(Libvirt::Error)
+
+          expect{ subject.call(env) }.to raise_error(
+            VagrantPlugins::ProviderLibvirt::Errors::FogCreateDomainVolumeError
+          )
+        end
       end
+
     end
   end
 end

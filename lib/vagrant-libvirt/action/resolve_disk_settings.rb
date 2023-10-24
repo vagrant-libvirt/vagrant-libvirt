@@ -5,6 +5,7 @@ require 'log4r'
 require 'rexml/document'
 require 'rexml/xpath'
 
+require 'vagrant-libvirt/util/byte_number'
 require 'vagrant-libvirt/util/resolvers'
 
 module VagrantPlugins
@@ -117,15 +118,30 @@ module VagrantPlugins
           resolver.resolve!(disks)
 
           disks.each do |disk|
-            disk[:path] ||= disk_name(domain_name, disk)
+            # The original version of this plugin only exposed the :path param,
+            # but libvirt only cares about the <name> parameter because volumes
+            # are assigned a storage pool which defines the base directory.
+            # To work around this, :name used to be blindly set to :path, and
+            # :path did not support absolute paths.
+            # The new behavior preserves the old behavior, while introducing
+            # the option to set :path to an existing disk image that will be
+            # uploaded to the specified storage pool.
+            if disk[:path] and File.exists?(disk[:path])
+              disk[:name] = File.basename(disk[:path])
+              disk[:path] = File.absolute_path(disk[:path])
+              disk[:size] = ByteNumber.new(File.size(disk[:path]))
+              disk[:virtual_size] = ByteNumber.new(File.size(disk[:path]))
+            else
+              if disk[:path]
+                disk[:name] = disk[:path]
+                disk.delete(:path)
+              else
+                disk[:name] = disk_name(domain_name, disk)
+                disk.delete(:path)
+              end
+            end
 
-            # On volume creation, the <path> element inside <target>
-            # is oddly ignored; instead the path is taken from the
-            # <name> element:
-            # http://www.redhat.com/archives/libvir-list/2008-August/msg00329.html
-            disk[:name] = disk[:path]
-
-            disk[:absolute_path] = storage_prefix + disk[:path]
+            disk[:absolute_path] = storage_prefix + disk[:name]
 
             if disk[:pool].nil?
               disk[:pool] = storage_pool_name

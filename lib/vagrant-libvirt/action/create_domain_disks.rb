@@ -24,29 +24,31 @@ module VagrantPlugins
           disks = env[:disks] || []
 
           disks.each do |disk|
-            # make the disk. equivalent to:
-            # qemu-img create -f qcow2 <path> 5g
-            begin
-              env[:machine].provider.driver.connection.volumes.create(
-                name: disk[:name],
-                format_type: disk[:type],
-                path: disk[:absolute_path],
-                capacity: disk[:size],
-                owner: storage_uid(env),
-                group: storage_gid(env),
-                #:allocation => ?,
-                pool_name: disk[:pool],
-              )
-            rescue Libvirt::Error => e
-              # It is hard to believe that e contains just a string
-              # and no useful error code!
-              msgs = [disk[:name], disk[:absolute_path]].map do |name|
-                "Call to virStorageVolCreateXML failed: " +
-                "storage volume '#{name}' exists already"
+            # Don't continue if image already exists in storage pool.
+            volume = env[:machine].provider.driver.connection.volumes.all(
+              name: disk[:name]
+            ).first
+            if volume and volume.id
+              disk[:preexisting] = true
+            elsif disk[:path]
+              @@lock.synchronize do
+                storage_send_box_image(env, config, disk[:path], disk)
+                disk[:uploaded] = true
               end
-              if msgs.include?(e.message) and disk[:allow_existing]
-                disk[:preexisting] = true
-              else
+            else
+              # make the disk. equivalent to:
+              # qemu-img create -f qcow2 <path> 5g
+              begin
+                env[:machine].provider.driver.connection.volumes.create(
+                  :name        => disk[:name],
+                  :pool_name   => disk[:pool],
+                  :format_type => disk[:type],
+                  :capacity    => disk[:size],
+                  :owner       => storage_uid(env),
+                  :group       => storage_gid(env),
+                  # :allocation  => ?,
+                )
+              rescue Libvirt::Error => e
                 raise Errors::FogCreateDomainVolumeError,
                       error_message: e.message
               end
