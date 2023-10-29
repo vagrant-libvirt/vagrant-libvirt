@@ -75,6 +75,8 @@ module VagrantPlugins
           @graphics_passwd = config.graphics_passwd
           @graphics_gl = config.graphics_gl
           @video_type = config.video_type
+          @video_resolution_x = config.video_resolution_x
+          @video_resolution_y = config.video_resolution_y
           @sound_type = config.sound_type
           @video_vram = config.video_vram
           @video_accel3d = config.video_accel3d
@@ -293,6 +295,11 @@ module VagrantPlugins
             env[:ui].info(" -- Graphics Password: #{@graphics_passwd.nil? ? 'Not defined' : 'Defined'}")
           end
           env[:ui].info(" -- Video Type:        #{@video_type}")
+          if @video_resolution_x and @video_resolution_y
+            env[:ui].info(" -- Video Resolution:  #{@video_resolution_x}x#{@video_resolution_y}")
+          else
+            env[:ui].info(" -- Video Resolution:  libvirt default")
+          end
           env[:ui].info(" -- Video VRAM:        #{@video_vram}")
           env[:ui].info(" -- Video 3D accel:    #{@video_accel3d}")
           env[:ui].info(" -- Sound Type:        #{@sound_type}") if @sound_type
