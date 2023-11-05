@@ -136,6 +136,8 @@ describe 'templates/domain' do
       domain.nodeset = '1-4,^3,6'
 
       domain.video_accel3d = true
+      domain.video_resolution_x = 1920
+      domain.video_resolution_y = 1080
     end
     let(:test_file) { 'domain_all_settings.xml' }
     it 'renders template' do

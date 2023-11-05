@@ -285,12 +285,9 @@
       <gl enable='yes'/>
     </graphics><% end -%>
     <video>
-      <model type='<%= @video_type %>'
-             vram='<%= @video_vram %>'
-             heads='1'>
-             <% if @video_accel3d %><acceleration accel3d='yes'/><%- end -%>
-             <% if @video_resolution_x and @video_resolution_y %><resolution x='<%= @video_resolution_x %>' y='<%= @video_resolution_y %>'/><%- end -%>
-      </model>
+      <model type='<%= @video_type %>' vram='<%= @video_vram %>' heads='1'<% if not @video_accel3d and not (@video_resolution_x and @video_resolution_y)%>/><% else %>>
+        <% if @video_accel3d %><acceleration accel3d='yes'/><% end %><% if @video_resolution_x and @video_resolution_y %><resolution x='<%= @video_resolution_x %>' y='<%= @video_resolution_y %>'/><% end %>
+      </model><% end %>
     </video>
     <%#End Video -%>
 <%- end -%>
