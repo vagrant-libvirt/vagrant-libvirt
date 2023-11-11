@@ -271,7 +271,6 @@ module VagrantPlugins
           env[:ui].info(" -- Kernel:            #{@kernel}") if @kernel
           env[:ui].info(" -- Initrd:            #{@initrd}") if @initrd
           env[:ui].info(" -- Loader:            #{@loader}") if @loader
-          env[:ui].info(" -- Loader(pflash)     #{@loader_pflash}") if @loader_pflash
           env[:ui].info(" -- Nvram:             #{@nvram}") if @nvram
           env[:ui].info(" -- Nvram Template:             #{@nvram_template}") if @nvram_template
           if env[:machine].config.vm.box

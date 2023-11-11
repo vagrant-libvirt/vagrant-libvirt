@@ -294,7 +294,6 @@ module VagrantPlugins
         @launchsecurity_data = UNSET_VALUE
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
-        @loader_pflash     = UNSET_VALUE
         @nvram             = UNSET_VALUE
         @nvram_template    = UNSET_VALUE
         @machine_type      = UNSET_VALUE
@@ -1010,7 +1009,6 @@ module VagrantPlugins
         @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
-        @loader_pflash = nil if @loader_pflash == UNSET_VALUE
         @nvram = nil if @nvram == UNSET_VALUE 
         @nvram_template = nil if @nvram_template == UNSET_VALUE 
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
