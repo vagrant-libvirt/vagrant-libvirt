@@ -50,6 +50,7 @@ module VagrantPlugins
           @numa_nodes = config.numa_nodes
           @loader = config.loader
           @nvram = config.nvram
+          @nvram_template = config.nvram_template
           @machine_type = config.machine_type
           @machine_arch = config.machine_arch
           @disk_controller_model = config.disk_controller_model
@@ -270,7 +271,9 @@ module VagrantPlugins
           env[:ui].info(" -- Kernel:            #{@kernel}") if @kernel
           env[:ui].info(" -- Initrd:            #{@initrd}") if @initrd
           env[:ui].info(" -- Loader:            #{@loader}") if @loader
+          env[:ui].info(" -- Loader(pflash)     #{@loader_pflash}") if @loader_pflash
           env[:ui].info(" -- Nvram:             #{@nvram}") if @nvram
+          env[:ui].info(" -- Nvram Template:             #{@nvram_template}") if @nvram_template
           if env[:machine].config.vm.box
             env[:ui].info(" -- Base box:          #{env[:machine].box.name}")
           end
@@ -453,9 +456,11 @@ module VagrantPlugins
           }
 
           begin
+            env[:ui].info(xml)
             server = env[:machine].provider.driver.connection.servers.create(
               xml: xml
             )
+            env[:ui].info(server)
           rescue Fog::Errors::Error => e
             raise Errors::FogCreateServerError, error_message: e.message
           end
