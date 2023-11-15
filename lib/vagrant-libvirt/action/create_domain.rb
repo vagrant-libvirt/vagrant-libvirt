@@ -455,7 +455,6 @@ module VagrantPlugins
           }
 
           begin
-            env[:ui].info(xml)
             server = env[:machine].provider.driver.connection.servers.create(
               xml: xml
             )
