@@ -816,6 +816,7 @@ module VagrantPlugins
           type: options[:type],
           address_type: options[:address_type],
           size: options[:size],
+          name: options[:name],
           path: options[:path],
           bus: options[:bus],
           cache: options[:cache] || 'default',
@@ -1209,8 +1210,11 @@ module VagrantPlugins
         end
 
         machine.provider_config.disks.each do |disk|
-          if disk[:path] && (disk[:path][0] == '/')
-            errors << "absolute volume paths like '#{disk[:path]}' not yet supported"
+          if disk[:name] and File.exists?(disk[:name])
+            errors << ":name does not accept file paths like '#{disk[:name]}'"
+          end
+          if disk[:path] and !File.exists?(disk[:path])
+            errors << ":path does not exist: '#{disk[:path]}'"
           end
         end
 
