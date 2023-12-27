@@ -91,8 +91,10 @@ cd "$TMP_DIR"
 
 #Using the awk int function here to truncate the virtual image size to an
 #integer since the fog-libvirt library does not seem to properly handle
-#floating point.
-IMG_SIZE=$(qemu-img info --output=json "$TMP_IMG" | awk '/virtual-size/{s=int($2)/(1024^3); print (s == int(s)) ? s : int(s)+1 }')
+#floating point. Regex in awk function takes in account only "virtual-size"
+#value on the first level of JSON (since QEMU v8 there are multiple
+#"virtual-size"s in disk info).
+IMG_SIZE=$(qemu-img info --output=json "$TMP_IMG" | awk '/^\s{0,4}"virtual-size/{s=int($2)/(1024^3); print (s == int(s)) ? s : int(s)+1 }')
 
 echo "{$IMG_SIZE}"
 
