@@ -29,6 +29,22 @@ module VagrantPlugins
         end
 
         def call(env)
+          if env[:machine].provider_config.qemu_user_networking
+            # do not create networks when user networking is used
+            # instead, we only create host forwarding
+            forwarded_ports = env[:machine].config.vm.networks.select { |type, _| type == :forwarded_port }.map { |_, option| option}
+            host_forwards = forwarded_ports.map { |port| "hostfwd=tcp::#{port[:host]}-:#{port[:guest]}" }.join(',')
+            env[:machine].provider_config.qemu_args +=
+              [
+                {:value => "-device"},
+                {:value => "virtio-net-device,netdev=net0"},
+                {:value => "-netdev"},
+                {:value => "user,id=net0,#{host_forwards}"}
+              ]
+            @app.call(env)
+            return
+          end
+
           if env[:machine].provider_config.qemu_use_session
             # Get a list of all (active and inactive) Libvirt networks. This
             # triggers a side effect to ensure networking is fully available

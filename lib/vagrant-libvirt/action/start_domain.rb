@@ -548,6 +548,35 @@ module VagrantPlugins
             nvram.parent.delete_element(nvram)
           end
 
+          qemu_command_line = REXML::XPath.first(xml_descr, '/domain/qemu:commandline')
+          if not config.qemu_args.empty? or not config.qemu_env.empty?
+            new_command_line = qemu_command_line(config.qemu_args, config.qemu_env)
+            xml = REXML::Document.new new_command_line
+            new_command_line_xml = REXML::XPath.first(xml, '/root/qemu:commandline')
+            domain_xml = REXML::XPath.first(xml_descr, '/domain')
+            if qemu_command_line.nil?
+              descr_changed = true
+            else
+              # compare the differences on existing args and envs
+              arg_elements = qemu_command_line.children.select { |n| n.kind_of?(REXML::Element) && n.name == 'arg' }
+              current_args = arg_elements.map { |arg| {:value => arg[:value]} }
+              env_elements = qemu_command_line.children.select { |n| n.kind_of?(REXML::Element) && n.name == 'env' }
+              current_envs = env_elements.map { |env| [env[:name].to_sym, env[:value]] }.to_h
+              descr_changed = config.qemu_args != current_args || config.qemu_env != current_envs
+            end
+            if descr_changed
+              qemu_command_line.parent.delete_element(qemu_command_line) unless qemu_command_line.nil?
+              ns_attributes = new_command_line_xml.parent.attributes.select { |_, attr| attr.prefix == 'xmlns' }
+              ns_attributes.each do |name, attr|
+                domain_xml.add_namespace(name, attr)
+              end
+              domain_xml << new_command_line_xml
+            end
+          elsif !qemu_command_line.nil?
+            descr_changed = true
+            qemu_command_line.parent.delete_element(qemu_command_line)
+          end
+
           # Apply
           if descr_changed
             env[:ui].info(I18n.t('vagrant_libvirt.updating_domain'))
@@ -628,6 +657,25 @@ module VagrantPlugins
           end
 
           @app.call(env)
+        end
+
+        def qemu_command_line(qemu_args, qemu_env)
+          Nokogiri::XML::Builder.new do |xml|
+            xml.root('xmlns:qemu' => 'http://libvirt.org/schemas/domain/qemu/1.0') {
+              xml['qemu'].commandline {
+                qemu_args.map { |arg|
+                  xml['qemu'].arg(:value => arg[:value])
+                }
+                qemu_env.map { |name, value|
+                  xml['qemu'].env(:name => name.to_s, :value => value)
+                }
+              }
+            }
+          end.to_xml(
+            save_with: Nokogiri::XML::Node::SaveOptions::NO_DECLARATION |
+              Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS |
+              Nokogiri::XML::Node::SaveOptions::FORMAT
+          )
         end
       end
     end

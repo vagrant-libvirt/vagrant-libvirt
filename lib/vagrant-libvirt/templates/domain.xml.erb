@@ -6,7 +6,7 @@
   <memory><%= @memory_size %></memory>
   <vcpu<% if @cpuset %> cpuset='<%= @cpuset %>'<% end %>><%= @cpus %></vcpu>
 <%- unless @cpu_mode.nil? -%>
-  <cpu mode='<%= @cpu_mode %>'>
+  <cpu mode='<%= @cpu_mode %>'<% if @cpu_match %> match='<%= @cpu_match %>'<% end %>>
   <%- if @cpu_mode != 'host-passthrough' -%>
     <model fallback='<%= @cpu_fallback %>'><% if @cpu_mode == 'custom' %><%= @cpu_model %><% end %></model>
   <%- end -%>
@@ -85,7 +85,7 @@
   <%- end -%>
 <%- end -%>
 <%- if @nvram -%>
-    <nvram><%= @nvram %></nvram>
+    <nvram<% if @nvram_template %> template='<%= @nvram_template %>'<% end %>><%= @nvram %></nvram>
 <%- end -%>
     <bootmenu enable='<%= @boot_order.count >= 1 ? "yes" : "no" %>'/>
     <kernel><%= @kernel %></kernel>

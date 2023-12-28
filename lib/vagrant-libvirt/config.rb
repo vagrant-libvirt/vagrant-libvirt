@@ -91,6 +91,7 @@ module VagrantPlugins
       attr_accessor :cpus
       attr_accessor :cpuset
       attr_accessor :cpu_mode
+      attr_accessor :cpu_match
       attr_accessor :cpu_model
       attr_accessor :cpu_fallback
       attr_accessor :cpu_features
@@ -109,6 +110,7 @@ module VagrantPlugins
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
+      attr_accessor :nvram_template
       attr_accessor :boot_order
       attr_accessor :machine_type
       attr_accessor :machine_arch
@@ -212,6 +214,9 @@ module VagrantPlugins
       # Use QEMU session instead of system
       attr_accessor :qemu_use_session
 
+      # Use QEMU user networking
+      attr_accessor :qemu_user_networking
+
       # Use QEMU Agent to get ip address
       attr_accessor :qemu_use_agent
 
@@ -277,6 +282,7 @@ module VagrantPlugins
         @cpuset            = UNSET_VALUE
         @cpu_mode          = UNSET_VALUE
         @cpu_model         = UNSET_VALUE
+        @cpu_match         = UNSET_VALUE
         @cpu_fallback      = UNSET_VALUE
         @cpu_features      = UNSET_VALUE
         @cpu_topology      = UNSET_VALUE
@@ -294,6 +300,7 @@ module VagrantPlugins
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
+        @nvram_template    = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
         @machine_virtual_size = UNSET_VALUE
@@ -394,6 +401,8 @@ module VagrantPlugins
         @qemu_use_agent  = UNSET_VALUE
 
         @serials           = UNSET_VALUE
+
+        @qemu_user_networking = UNSET_VALUE
 
         # internal options to help override behaviour
         @host_device_exclude_prefixes = UNSET_VALUE
@@ -974,6 +983,13 @@ module VagrantPlugins
         @memory_backing = [] if @memory_backing == UNSET_VALUE
         @cpus = 1 if @cpus == UNSET_VALUE
         @cpuset = nil if @cpuset == UNSET_VALUE
+        if @driver == 'hvf' && @cpu_mode == UNSET_VALUE && @cpu_match == UNSET_VALUE && @cpu_fallback == UNSET_VALUE && @cpu_model == UNSET_VALUE
+          # default value for apple hypervisor framework
+          @cpu_mode = 'custom'
+          @cpu_match = 'exact'
+          @cpu_fallback = 'forbid'
+          @cpu_model = 'host'
+        end
         @cpu_mode = if @cpu_mode == UNSET_VALUE
                       # only some architectures support the cpu element
                       if @machine_arch.nil? || ARCH_SUPPORT_CPU.include?(@machine_arch.downcase)
@@ -990,7 +1006,8 @@ module VagrantPlugins
                        ''
                      else
                        @cpu_model
-          end
+                     end
+        @cpu_match = nil if @cpu_match == UNSET_VALUE
         @cpu_topology = {} if @cpu_topology == UNSET_VALUE
         @cpu_affinity = {} if @cpu_affinity == UNSET_VALUE
         @cpu_fallback = 'allow' if @cpu_fallback == UNSET_VALUE
@@ -1073,7 +1090,10 @@ module VagrantPlugins
         end
 
         # Inputs
-        @inputs = [{ type: 'mouse', bus: 'ps2' }] if @inputs == UNSET_VALUE
+        if @inputs == UNSET_VALUE
+          # hvf does not support ps2 devices
+          @inputs = @driver == 'hvf' ? [] : [{ type: 'mouse', bus: 'ps2' }]
+        end
 
         # Channels
         @channels = [] if @channels == UNSET_VALUE
@@ -1132,6 +1152,11 @@ module VagrantPlugins
         @qemu_env = {} if @qemu_env == UNSET_VALUE
 
         @qemu_use_agent = false if @qemu_use_agent == UNSET_VALUE
+
+        if @qemu_user_networking == UNSET_VALUE
+          # macOS support not support most networking features
+          @qemu_user_networking = RUBY_PLATFORM =~ /darwin/ ? true : false
+        end
 
         @serials = [{:type => 'pty', :source => nil}] if @serials == UNSET_VALUE
 
@@ -1402,11 +1427,10 @@ module VagrantPlugins
           networks = configured_networks(machine, @logger)
         rescue Errors::VagrantLibvirtError => e
           errors << "#{e}"
-
-          return
+          return errors
         end
 
-        return if networks.empty?
+        return [] if networks.empty?
 
         networks.each_with_index do |network, index|
           if network[:mac]
