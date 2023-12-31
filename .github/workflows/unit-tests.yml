@@ -49,12 +49,12 @@ jobs:
             allow_fail: false
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Clone ruby-libvirt for ruby 3.1 support
       if: ${{ startsWith(matrix.ruby, '3.1') }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: libvirt/libvirt-ruby
         path: .deps/libvirt-ruby
