@@ -109,6 +109,7 @@ module VagrantPlugins
       attr_accessor :numa_nodes
       attr_accessor :loader
       attr_accessor :nvram
+      attr_accessor :nvram_template
       attr_accessor :boot_order
       attr_accessor :machine_type
       attr_accessor :machine_arch
@@ -294,6 +295,7 @@ module VagrantPlugins
         @numa_nodes        = UNSET_VALUE
         @loader            = UNSET_VALUE
         @nvram             = UNSET_VALUE
+        @nvram_template    = UNSET_VALUE
         @machine_type      = UNSET_VALUE
         @machine_arch      = UNSET_VALUE
         @machine_virtual_size = UNSET_VALUE
@@ -1007,7 +1009,8 @@ module VagrantPlugins
         @launchsecurity_data = nil if @launchsecurity_data == UNSET_VALUE
         @numa_nodes = @numa_nodes == UNSET_VALUE ? nil : _generate_numa
         @loader = nil if @loader == UNSET_VALUE
-        @nvram = nil if @nvram == UNSET_VALUE
+        @nvram = nil if @nvram == UNSET_VALUE 
+        @nvram_template = nil if @nvram_template == UNSET_VALUE 
         @machine_virtual_size = nil if @machine_virtual_size == UNSET_VALUE
         @disk_device = @disk_bus == 'scsi' ? 'sda' : 'vda' if @disk_device == UNSET_VALUE
         @disk_bus = @disk_device.start_with?('sd') ? 'scsi' : 'virtio' if @disk_bus == UNSET_VALUE
