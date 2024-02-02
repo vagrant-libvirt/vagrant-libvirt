@@ -33,6 +33,10 @@
             <bootp file="<%= @network_dhcp_bootp_file %>" />
           <% end %>
         <% end %>
+        <% if @network_dhcp_default_lease_time %>
+            <lease expiry='@network_dhcp_default_lease_time' unit='hours'/>
+        </range>
+        <% end %>
       </dhcp>
     <% end %>
     </ip>
