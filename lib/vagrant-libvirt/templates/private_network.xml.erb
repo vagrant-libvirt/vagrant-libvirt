@@ -25,7 +25,7 @@
     <% end %>
     <% if @network_dhcp_enabled  %>
       <dhcp>
-        <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>" />
+        <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>">
         <% if @network_dhcp_bootp_file  %>
           <% if @network_dhcp_bootp_server  %>
             <bootp file="<%= @network_dhcp_bootp_file %>" server="<%= @network_dhcp_bootp_server %>" />
@@ -35,8 +35,8 @@
         <% end %>
         <% if @network_dhcp_default_lease_time %>
             <lease expiry='@network_dhcp_default_lease_time' unit='hours'/>
-        </range>
         <% end %>
+        </range>
       </dhcp>
     <% end %>
     </ip>
