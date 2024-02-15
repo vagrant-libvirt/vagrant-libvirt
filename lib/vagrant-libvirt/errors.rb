@@ -217,6 +217,10 @@ module VagrantPlugins
       class SerialCannotCreatePathError < VagrantLibvirtError
         error_key(:serial_cannot_create_path_error)
       end
+
+      class FwcfgFileNotAccessible < VagrantLibvirtError
+        error_key(:fwcfg_file_accessibility_error)
+      end
     end
   end
 end
