@@ -115,6 +115,17 @@
   <% end -%>
   </sysinfo>
 <% end -%>
+<%- unless @sysinfo_fwcfgs.empty? -%>
+  <sysinfo type='fwcfg'>
+  <%- @sysinfo_fwcfgs.each do |entry| -%>
+    <%- if !entry[:file].nil? -%>
+      <entry name='<%= entry[:name] %>' file='<%= entry[:file] %>'/>
+    <%- else -%>
+      <entry name='<%= entry[:name] %>'><%= entry[:content] %></entry>
+    <% end -%>
+  <% end -%>
+  </sysinfo>
+<% end -%>
   <features>
 <%- @features.each do |feature| -%>
     <<%= feature %>/>
