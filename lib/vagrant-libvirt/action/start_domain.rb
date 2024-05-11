@@ -36,7 +36,7 @@ module VagrantPlugins
           if config.numa_nodes == nil
             if config.memory.to_i * 1024 != libvirt_domain.max_memory
               libvirt_domain.max_memory = config.memory.to_i * 1024
-              libvirt_domain.memory = libvirt_domain.max_memory
+              libvirt_domain.memory = libvirt_domain.max_memory, VagrantPlugins::ProviderLibvirt::Util::ModImpactFlags::VIR_DOMAIN_AFFECT_CONFIG
             end
           end
 
