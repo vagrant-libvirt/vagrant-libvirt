@@ -70,6 +70,7 @@ describe 'templates/domain' do
       domain.cputopology(sockets: '1', cores: '3', threads: '2')
       domain.memtune(type: 'hard_limit', value: '250000')
       domain.memtune(type: 'soft_limit', value: '200000')
+      domain.shmem(name: 'my_shmem0', type: 'ivshmem-plain', size: 16, unit: 'M')
       domain.cpuaffinitiy(0 => '0')
       domain.machine_type = 'pc-compatible'
       domain.machine_arch = 'x86_64'

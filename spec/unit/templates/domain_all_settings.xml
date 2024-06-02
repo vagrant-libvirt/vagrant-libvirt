@@ -172,6 +172,10 @@
     </tpm>
     <controller type='usb' model='nec-xhci' ports="4" >
     </controller>
+  <shmem name='my_shmem0'>
+    <model type='ivshmem-plain'/>
+    <size unit='M'>16</size>
+  </shmem>
   </devices>
   <qemu:commandline>
     <qemu:arg value='-device'/>

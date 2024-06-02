@@ -175,6 +175,9 @@ module VagrantPlugins
       # PCI device passthrough
       attr_accessor :pcis
 
+      # Shared memory
+      attr_accessor :shmems
+
       # Random number device passthrough
       attr_accessor :rng
 
@@ -353,6 +356,9 @@ module VagrantPlugins
 
         # PCI device passthrough
         @pcis              = UNSET_VALUE
+
+        # Shared memory
+        @shmems            = UNSET_VALUE
 
         # Random number device passthrough
         @rng = UNSET_VALUE
@@ -652,6 +658,28 @@ module VagrantPlugins
                    guest_slot:      options[:guest_slot],
                    guest_function:  options[:guest_function])
       end
+
+      def shmem(options = {})
+        if options[:name].nil? || options[:type].nil? || options[:size].nil?
+          raise 'SHMEM must have a name, type and size specified'
+        end
+
+        if options[:unit].nil?
+          mem_unit = 'M' 
+        else
+          mem_unit = options[:unit]
+        end
+
+        @shmems = [] if @shmems == UNSET_VALUE
+
+        @shmems.push(
+          name: options[:name],
+          type: options[:type],
+          size: options[:size],
+          unit: mem_unit
+        )
+      end
+
 
       def watchdog(options = {})
         if options[:model].nil?
@@ -1094,6 +1122,9 @@ module VagrantPlugins
 
         # PCI device passthrough
         @pcis = [] if @pcis == UNSET_VALUE
+
+	# Shared memory
+	@shmems = [] if @shmems == UNSET_VALUE
 
         # Random number generator passthrough
         @rng = {} if @rng == UNSET_VALUE

@@ -388,6 +388,12 @@
     <memballoon model='none'/>
   <%- end -%>
 <%- end -%>
+<%- @shmems.each do |shmem| -%>
+  <shmem name='<%= shmem[:name] %>'>
+    <model type='<%= shmem[:type] %>'/>
+    <size unit='<%= shmem[:unit] %>'><%= shmem[:size] %></size>
+  </shmem>
+<%- end -%>
   </devices>
 <%- unless @launchsecurity_data.nil? -%>
   <launchSecurity type='<%= @launchsecurity_data[:type] %>'>

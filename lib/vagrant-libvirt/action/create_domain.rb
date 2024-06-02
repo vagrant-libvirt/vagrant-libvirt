@@ -121,6 +121,9 @@ module VagrantPlugins
           # PCI device passthrough
           @pcis = config.pcis
 
+          # Shared memory
+          @shmems = config.shmems
+
           # Watchdog device
           @watchdog_dev = config.watchdog_dev
 
@@ -370,6 +373,10 @@ module VagrantPlugins
 
           @pcis.each do |pci|
             env[:ui].info(" -- PCI passthrough:   #{pci[:domain]}:#{pci[:bus]}:#{pci[:slot]}.#{pci[:function]}")
+          end
+
+          @shmems.each do |shmem|
+            env[:ui].info(" -- Shared memory device:   name=#{shmem[:name]}, type=#{shmem[:type]}, unit=#{shmem[:unit]}, size=#{shmem[:size]}")
           end
 
           unless @rng[:model].nil?
