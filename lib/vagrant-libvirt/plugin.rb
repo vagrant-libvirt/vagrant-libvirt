@@ -39,6 +39,11 @@ module VagrantPlugins
         require_relative 'cap/mount_virtiofs'
         Cap::MountVirtioFS
       end
+      
+      guest_capability('windows', 'mount_virtiofs_shared_folder') do
+        require_relative 'cap/mount_virtiofs'
+        Cap::MountVirtioFSWin
+      end
 
       provider_capability(:libvirt, :nic_mac_addresses) do
         require_relative 'cap/nic_mac_addresses'
