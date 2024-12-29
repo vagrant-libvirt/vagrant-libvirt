@@ -509,7 +509,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
         it 'should add the nvram element' do
           expect(ui).to_not receive(:warn)
-          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+          expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
@@ -530,7 +531,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
         it 'should keep the XML element' do
           expect(ui).to_not receive(:warn)
-          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+          expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
@@ -544,7 +546,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
 
           it 'should delete the XML element' do
             expect(ui).to_not receive(:warn)
-            expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+            arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+            expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
             expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
             expect(libvirt_domain).to receive(:autostart=)
             expect(domain).to receive(:start)
@@ -569,7 +572,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         it 'should modify the domain tpm_path' do
           expect(ui).to_not receive(:warn)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+          expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
@@ -591,7 +595,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         it 'should modify the domain tpm_path' do
           expect(ui).to_not receive(:warn)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+          expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
@@ -654,7 +659,8 @@ describe VagrantPlugins::ProviderLibvirt::Action::StartDomain do
         it 'should modify the domain' do
           expect(ui).to_not receive(:warn)
           expect(logger).to receive(:debug).with('tpm config changed')
-          expect(connection).to receive(:define_domain).with(updated_domain_xml).and_return(libvirt_domain)
+          arg_domain_xml = REXML::VERSION >= "3.3.2" ?  updated_domain_xml.chomp : updated_domain_xml
+          expect(connection).to receive(:define_domain).with(arg_domain_xml).and_return(libvirt_domain)
           expect(libvirt_domain).to receive(:xml_desc).and_return(domain_xml, updated_domain_xml)
           expect(libvirt_domain).to receive(:autostart=)
           expect(domain).to receive(:start)
