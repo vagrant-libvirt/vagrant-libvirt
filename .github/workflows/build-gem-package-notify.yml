@@ -1,0 +1,84 @@
+name: add gem artifact links
+on:
+  workflow_run:
+    workflows: ['publish-gem']
+    types:
+      - completed
+
+jobs:
+  artifacts-url-comments:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    name: Add artifact links to pull request
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const artifacts = await github.paginate(
+              github.rest.actions.listWorkflowRunArtifacts, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: ${{github.event.workflow_run.id }},
+              },
+            );
+            if (!artifacts.length) {
+              return core.error(`No artifacts found`);
+            }
+            var matchArtifact = artifacts.find((artifact) => {
+              return artifact.name == "pr"
+            });
+            if (matchArtifact === undefined) {
+              return core.error(`No PR artifact found`);
+            }
+            var download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
+      - run: unzip pr.zip
+      - uses: actions/github-script@v6
+        with:
+          # This snippet is public-domain, taken from
+          # https://github.com/oprypin/nightly.link/blob/master/.github/workflows/pr-comment.yml
+          script: |
+            async function upsertComment(owner, repo, issue_number, purpose, body) {
+              const {data: comments} = await github.rest.issues.listComments(
+                {owner, repo, issue_number});
+              const marker = `<!-- bot: ${purpose} -->`;
+              body = marker + "\n" + body;
+              const existing = comments.filter((c) => c.body.includes(marker));
+              if (existing.length > 0) {
+                const last = existing[existing.length - 1];
+                core.info(`Updating comment ${last.id}`);
+                await github.rest.issues.updateComment({
+                  owner, repo,
+                  body,
+                  comment_id: last.id,
+                });
+              } else {
+                core.info(`Creating a comment in issue / PR #${issue_number}`);
+                await github.rest.issues.createComment({issue_number, body, owner, repo});
+              }
+            }
+            const {owner, repo} = context.repo;
+            const run_id = ${{github.event.workflow_run.id}};
+            const artifacts = await github.paginate(
+              github.rest.actions.listWorkflowRunArtifacts, {owner, repo, run_id});
+            if (!artifacts.length) {
+              return core.error(`No artifacts found`);
+            }
+            var fs = require('fs');
+            var issue_number = Number(fs.readFileSync('./NR'));
+            let body = `Download the latest artifacts for this pull request here:\n`;
+            for (const art of artifacts) {
+              if (art.name == 'pr') {
+                continue;
+              }
+              body += `\n* [${art.name}.zip](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
+            }
+            core.info("Review thread message body:", body);
+            await upsertComment(owner, repo, issue_number, "nightly-link", body);

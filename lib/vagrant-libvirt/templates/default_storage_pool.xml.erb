@@ -1,0 +1,13 @@
+<pool type='dir'>
+  <name>default</name>
+  <source>
+  </source>
+  <target>
+    <path><%= @storage_pool_path %></path>
+    <permissions>
+      <mode>0755</mode>
+      <owner><%= @storage_pool_uid %></owner>
+      <group><%= @storage_pool_gid %></group>
+    </permissions>
+  </target>
+</pool>

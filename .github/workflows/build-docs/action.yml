@@ -1,0 +1,56 @@
+name: Build Docs
+inputs:
+  extra-config:
+    required: false
+    type: string
+  target-folder:
+    require: false
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+
+    - name: Configure
+      shell: bash
+      env:
+        TARGET_FOLDER: ${{ inputs.target-folder }}
+        EXTRA_CONFIG: ${{ inputs.extra-config }}
+      run: |
+        [[ ${RUNNER_DEBUG:-0} -eq 1 ]] && set -x
+
+        REPO_NAME=$(jq -r ".repository.name" "$GITHUB_EVENT_PATH")
+
+        TEMP_CONFIG=$(mktemp)
+        # avoid look up of API as it doesn't work from within actions without exposing the GITHUB_TOKEN here which is a security risk
+        cat <<EOF >> ${TEMP_CONFIG}
+        repository_nwo: ${GITHUB_REPOSITORY}
+        EOF
+
+        if [[ -n "${TARGET_FOLDER}" ]]
+        then
+          echo "baseurl: /${REPO_NAME}/${TARGET_FOLDER}" >> ${TEMP_CONFIG}
+        fi
+
+        # allow override of everything
+        cat <<EOF >> ${TEMP_CONFIG}
+        ${EXTRA_CONFIG}
+        EOF
+
+        echo "Adding additional config settings:"
+        cat ${TEMP_CONFIG} | tee -a docs/_config.yml
+
+    - name: Install and Build
+      shell: bash
+      env:
+        BUNDLE_GEMFILE: ./docs/Gemfile
+      run: |
+        # TODO find a way for jekyll to perform this automatically
+        convert docs/_assets/images/logo.png -define icon:auto-resize=256,64,48,32,16 docs/favicon.ico
+
+        bundle install
+        bundle exec jekyll build --source docs/ --destination build

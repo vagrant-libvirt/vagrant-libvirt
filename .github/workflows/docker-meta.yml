@@ -1,0 +1,62 @@
+name: Docker Metadata
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        required: false
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_ORGANIZATION:
+        required: false
+    outputs:
+      labels:
+        value: ${{ jobs.generate-metadata.outputs.labels }}
+      tags:
+        value: ${{ jobs.generate-metadata.outputs.tags }}
+
+jobs:
+  generate-metadata:
+    name: Generate Metadata
+    runs-on: ubuntu-22.04
+    outputs:
+      labels: ${{ steps.metadata.outputs.labels }}
+      tags: ${{ steps.metadata.outputs.tags }}
+    steps:
+      -
+        name:  Generate docker image names for publishing
+        id: docker_image_names
+        run: |
+          # suggestion from https://trstringer.com/github-actions-multiline-strings/ to handle
+          # passing multi-line strings to subsequent action
+          echo 'IMAGE_NAMES<<EOF' >> ${GITHUB_ENV}
+          echo ghcr.io/${{ github.repository_owner }}/vagrant-libvirt >> ${GITHUB_ENV}
+          if [[ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]] && [[ ${{ github.event_name }} != pull_request* ]]
+          then
+              ORG_NAME=$(echo ${{ github.repository_owner }} | tr -d '-')
+              echo ${ORG_NAME}/vagrant-libvirt >> ${GITHUB_ENV}
+          fi
+          echo 'EOF' >> ${GITHUB_ENV}
+      -
+        name: Setup publish tags and versions for image
+        id: metadata
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.IMAGE_NAMES }}
+          tags: |
+            # nightly
+            type=schedule
+            # tag events
+            type=pep440,pattern={{version}}
+            type=pep440,pattern={{major}}
+            type=pep440,pattern={{major}}.{{minor}}
+            type=pep440,pattern={{version}},value=latest
+            # push to master
+            type=edge,branch=${{ github.event.repository.default_branch }}
+            type=sha,enable={{is_default_branch}}
+            # pull requests
+            type=ref,event=pr
+          flavor: ${{ inputs.flavor }}

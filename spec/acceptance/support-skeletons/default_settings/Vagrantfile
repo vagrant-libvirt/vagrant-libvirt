@@ -1,0 +1,12 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# frozen_string_literal: true
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "infernix/tinycore"
+  config.ssh.shell = "/bin/sh"
+  config.ssh.insert_key = false  # reboots revert box contents
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.graceful_halt_timeout = 5
+end

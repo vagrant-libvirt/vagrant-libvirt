@@ -1,0 +1,14 @@
+name: Publish Docs Release
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    uses: ./.github/workflows/deploy-docs.yml
+    with:
+      target-folder: version/${{ github.ref_name }}

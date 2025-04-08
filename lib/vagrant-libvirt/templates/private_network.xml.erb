@@ -1,0 +1,45 @@
+<network ipv6='<%= @guest_ipv6 %>'>
+  <name><%= @network_name %></name>
+  <bridge name="<%= @network_bridge_name %>" stp="<%= @network_bridge_stp %>" delay="<%= @network_bridge_delay %>" />
+
+  <% if @network_domain_name %>
+    <domain name="<%= @network_domain_name %>" localOnly="yes" />
+  <% end %>
+
+  <% if @network_mtu %>
+  <mtu size="<%= @network_mtu %>" />
+  <% end %>
+
+  <% if (@network_forward_mode != 'none' && @network_forward_mode != 'veryisolated') %>
+    <% if @network_forward_device %>
+      <forward mode="<%= @network_forward_mode %>" dev="<%= @network_forward_device %>" />
+    <% else %>
+      <forward mode="<%= @network_forward_mode %>" />
+    <% end %>
+  <% end %>
+
+  <% if @network_forward_mode != 'veryisolated' && !@network_address.nil? %>
+    <ip address="<%= @network_address %>" netmask="<%= @network_netmask %>">
+    <% if @tftp_root %>
+      <tftp root="<%= @tftp_root %>" />
+    <% end %>
+    <% if @network_dhcp_enabled  %>
+      <dhcp>
+        <range start="<%= @network_range_start %>" end="<%= @network_range_stop %>" />
+        <% if @network_dhcp_bootp_file  %>
+          <% if @network_dhcp_bootp_server  %>
+            <bootp file="<%= @network_dhcp_bootp_file %>" server="<%= @network_dhcp_bootp_server %>" />
+          <% else %>
+            <bootp file="<%= @network_dhcp_bootp_file %>" />
+          <% end %>
+        <% end %>
+      </dhcp>
+    <% end %>
+    </ip>
+  <% end %>
+
+  <% if !@network_ipv6_address.nil? && !@network_ipv6_prefix.nil? %>
+    <ip family='ipv6' address="<%= @network_ipv6_address %>" prefix="<%= @network_ipv6_prefix %>"></ip>
+  <% end %>
+
+</network>

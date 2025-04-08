@@ -1,0 +1,124 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
+# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    env:
+      VAGRANT_LIBVIRT_REQUIRE_SIMPLECOV: "true"
+    continue-on-error: ${{ matrix.allow_fail }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # need to define one entry with a single entry for each of the options
+        # to allow include to expand the matrix correctly.
+        ruby: [3.1]
+        vagrant: [main]
+        allow_fail: [true]
+        include:
+          - ruby: 2.3.5
+            vagrant: v2.1.5
+            allow_fail: false
+          - ruby: 2.4.10
+            vagrant: v2.2.4
+            allow_fail: false
+          - ruby: 2.6.6
+            vagrant: v2.2.14
+            allow_fail: false
+          - ruby: 2.7.2
+            vagrant: v2.2.10
+            allow_fail: false
+            # above block is to ensure compatible with Ubuntu 20.04 vagrant package
+            # although it uses 2.2.10 it is the earliest version that will install on
+            # ruby 2.7 without patching
+          - ruby: 3.1
+            vagrant:
+            allow_fail: false
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Clone ruby-libvirt for ruby 3.1 support
+      if: ${{ startsWith(matrix.ruby, '3.1') }}
+      uses: actions/checkout@v3
+      with:
+        repository: libvirt/libvirt-ruby
+        path: .deps/libvirt-ruby
+        ref: 43444be184e4d877c5ce110ee5475c952d7590f7
+    - name: Set up libvirt
+      run: |
+        sudo apt-get update
+        sudo apt-get install libvirt-dev
+    - name: Ensure bundle uses https instead of insecure git
+      run: |
+        git config --global url."https://github.com/".insteadOf git://github.com/
+    - name: Handle additional ruby 3.1 setup
+      if: ${{ startsWith(matrix.ruby, '3.1') }}
+      run: |
+        # build gem of latest bindings that contain fix for ruby include path
+        pushd .deps/libvirt-ruby
+        rake gem
+        popd
+
+        mkdir -p vendor/bundle/ruby/3.0.0/cache/
+        cp .deps/libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
+        # need the following to allow the local provided gem to be used instead of the
+        # one from rubygems
+        echo "BUNDLE_DISABLE_CHECKSUM_VALIDATION=true" >> ${GITHUB_ENV}
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+      env:
+        # skip installing development group gems to save time
+        BUNDLE_WITHOUT: 'development'
+        BUNDLE_JOBS: 4
+        VAGRANT_VERSION: ${{ matrix.vagrant }}
+    - name: Run tests
+      run: |
+        bundle exec parallel_test spec --type rspec
+      env:
+        BUNDLE_WITHOUT: 'development'
+        VAGRANT_VERSION: ${{ matrix.vagrant }}
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel: true
+        path-to-lcov: ./coverage/lcov.info
+
+  finish:
+    needs: [test]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check matrix execution status
+      run: exit 1
+      # see https://stackoverflow.com/a/67532120/4907315
+      # and https://github.com/orgs/community/discussions/26822
+      if: >-
+        ${{
+             contains(needs.*.result, 'failure')
+          || contains(needs.*.result, 'cancelled')
+        }}
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      if: contains(needs.*.result, 'skipped') == false
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true

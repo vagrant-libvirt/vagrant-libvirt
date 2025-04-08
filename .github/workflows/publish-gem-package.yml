@@ -1,0 +1,76 @@
+name: publish-gem
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  packages: write
+
+jobs:
+  build-package:
+    runs-on: ubuntu-22.04
+    outputs:
+      artifact_name: ${{ steps.artifact_name.outputs.artifact_name }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Install rake & ruby
+      run: |
+        sudo apt-get install -y \
+          rake \
+          ruby \
+          ;
+    - name: Build gem
+      run: |
+        rake build
+    - name: Generate artifact name
+      id: artifact_name
+      run: |
+        cd pkg/
+        GEM_PKG=$(ls -1 *.gem)
+        echo "artifact_name=${GEM_PKG}" >> ${GITHUB_OUTPUT}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.artifact_name.outputs.artifact_name }}
+        path: pkg/**.gem
+    # workflow_run doesn't receive a list of the pull requests triggering if it's
+    # from a fork, so use this to save the PR number for use in the notify job
+    - name: Save PR number
+      if: github.ref != 'refs/heads/main'
+      run: |
+        mkdir -p ./pr
+        echo ${{ github.event.number }} > ./pr/NR
+    - uses: actions/upload-artifact@v3
+      if: github.ref != 'refs/heads/main'
+      with:
+        name: pr
+        path: pr/
+
+  publish-package:
+    needs: build-package
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ needs.build-package.outputs.artifact_name }}
+    - name: setup credentials
+      run: |
+        mkdir ~/.gem
+        cat <<EOF > ~/.gem/credentials
+        ---
+        :github: Bearer ${GITHUB_TOKEN}
+        EOF
+        chmod 0600 ~/.gem/credentials
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: publish package
+      run: |
+        gem push --key github \
+          --host https://rubygems.pkg.github.com/${GITHUB_REPOSITORY_OWNER} \
+          *.gem
+

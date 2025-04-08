@@ -1,0 +1,188 @@
+name: docker-image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*.*.*'
+  pull_request_target:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      # for delete
+      - closed
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/publish-documentation*'
+      - '.github/workflows/deploy-docs*'
+
+
+permissions:
+  packages: write
+  pull-requests: write
+
+jobs:
+  build-image-with-buildah:
+    if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
+    runs-on: ubuntu-22.04
+    steps:
+      -
+        name: Checkout
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      -
+        if: startsWith(github.event_name, 'pull_request')
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      -
+        name: Build with buildah
+        run: buildah bud .
+
+  generate-docker-metadata:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
+    secrets: inherit
+
+  generate-docker-metadata-slim:
+    uses: vagrant-libvirt/vagrant-libvirt/.github/workflows/docker-meta.yml@main
+    with:
+      flavor: |
+        suffix=-slim
+    secrets: inherit
+
+  build-docker-image:
+    if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
+    steps:
+      -
+        name: Checkout
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      -
+        if: startsWith(github.event_name, 'pull_request')
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: image=moby/buildkit:master
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Login to DockerHub
+        if: ${{ ! startsWith(github.event_name, 'pull_request') }}
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push main image
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ needs.generate-docker-metadata.outputs.tags }}
+          target: final
+          labels: ${{ needs.generate-docker-metadata.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+      -
+        name: Build and push slim image
+        id: docker_build_slim
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ needs.generate-docker-metadata-slim.outputs.tags }}
+          target: slim
+          labels: ${{ needs.generate-docker-metadata-slim.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+      -
+        name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      -
+        name: Image digest Slim
+        run: echo ${{ steps.docker_build_slim.outputs.digest }}
+      -
+        name: Comment on label required for docs preview deploy
+        if: startsWith(github.event_name, 'pull_request')
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          header: docker-image-tag
+          message: |-
+            A docker image containing the code from this plugin to allow testing locally without installing
+            can be pulled from: ${{ fromJSON(steps.docker_build_slim.outputs.metadata)['image.name'] }}
+
+            If you need the image with the full dev toolchain, you can instead pull: ${{ fromJSON(steps.docker_build.outputs.metadata)['image.name'] }}
+
+  generate-delete-docker-images-matrix:
+    if: startsWith(github.event_name, 'pull_request') && github.event.action == 'closed'
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-docker-metadata
+      - generate-docker-metadata-slim
+    outputs:
+      matrix: ${{ steps.matrix.outputs.tags }}
+    steps:
+      -
+        name: Generate matrix
+        id: matrix
+        run: |
+          TAGS="$(echo "${{ needs.generate-docker-metadata-slim.outputs.tags }},${{ needs.generate-docker-metadata.outputs.tags }}" | jq --raw-input -c '[split(",") | .[] / ":" |.[1]]')"
+
+          echo "tags=${TAGS}" >> ${GITHUB_OUTPUT}
+
+# Currently delete requires a PAT, which is considered unsafe until it is possible to scope them to a specific org.
+# As this appears to be in beta, uncomment the following at some point in the future.
+#
+#  delete-docker-images:
+#    needs: generate-delete-docker-images-matrix
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
+#    steps:
+#      - name: Delete image
+#        uses: bots-house/ghcr-delete-image-action@v1.0.0
+#        with:
+#          owner: ${{ github.repository_owner }}
+#          name: ${{ github.event.repository.name }}
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          tag: ${{ matrix.tag }}
