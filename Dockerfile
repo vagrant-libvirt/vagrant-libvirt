@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.0-experimental
-ARG VAGRANT_VERSION=2.3.0
+ARG VAGRANT_VERSION=2.4.3
 
 
 FROM ubuntu:jammy as base
