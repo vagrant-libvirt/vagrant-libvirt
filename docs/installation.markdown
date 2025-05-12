@@ -371,6 +371,15 @@ sudo pacman --sync --needed --noprogressbar --noconfirm \
 vagrant plugin install vagrant-libvirt
 ```
 
+### MacOS
+
+For MacOS, dependencies include pkgconf and iproute2mac.
+Homebrew is the preferred way:
+```shell
+brew install libvirt pkgconf iproute2mac
+vagrant plugin install vagrant-libvirt
+```
+
 ## Issues and Known Solutions
 
 ### Failure to find Libvirt for Native Extensions
