@@ -540,8 +540,9 @@ Don't forget that you'll need an UEFI base box.
 ## Libvirt communication channels
 
 For certain functionality to be available within a guest, a private
-communication channel must be established with the host. Two notable examples
-of this are the QEMU guest agent, and the Spice/QXL graphics type.
+communication channel must be established with the host. Three notable examples
+of this are the QEMU guest agent, the Spice/QXL graphics type, and Spice folder
+sharing.
 
 Below is a simple example which exposes a virtio serial channel to the guest.
 Note: in a multi-VM environment, the channel would be created for all VMs.
@@ -561,6 +562,17 @@ card.
 vagrant.configure(2) do |config|
   config.vm.provider :libvirt do |libvirt|
     libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+  end
+end
+```
+
+Below is a sample configuration for setting up a spiceport channel for use with
+Spice folder sharing.
+
+```ruby
+vagrant.configure(2) do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.channel :type => 'spiceport', :target_name => 'org.spice-space.webdav.0', :source_channel => 'org.spice-space.webdav.0', :target_type => 'virtio'
   end
 end
 ```

@@ -236,9 +236,9 @@
 <%- end -%>
 <%- @channels.each do |channel| -%>
     <channel type='<%= channel[:type] %>' >
-  <%-if channel[:source_mode] or channel[:source_path] -%>
+  <%-if channel[:source_mode] or channel[:source_path] or channel[:source_channel] -%>
       <source <%=
-        channel.select { |k,_| [:source_mode, :source_path].include? k }
+        channel.select { |k,_| [:source_mode, :source_path, :source_channel].include? k }
          .reject { |k,v| v.nil? }
          .map { |k,v| "#{k.to_s.split('_').last}='#{v}'"}
          .join(' ')
