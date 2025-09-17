@@ -94,6 +94,7 @@ cd "$TMP_DIR"
 #floating point. Regex in awk function takes in account only "virtual-size"
 #value on the first level of JSON (since QEMU v8 there are multiple
 #"virtual-size"s in disk info).
+#Awk command here is compatible with GNU awk (BSD awk and mawk are known to not work).
 IMG_SIZE=$(qemu-img info --output=json "$TMP_IMG" | awk '/^\s{0,4}"virtual-size/{s=int($2)/(1024^3); print (s == int(s)) ? s : int(s)+1 }')
 
 echo "{$IMG_SIZE}"
