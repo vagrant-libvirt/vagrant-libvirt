@@ -10,8 +10,12 @@
   <mtu size="<%= @network_mtu %>" />
   <% end %>
 
-  <% if (@network_forward_mode != 'none' && @network_forward_mode != 'veryisolated') %>
-    <% if @network_forward_device %>
+  <% if @network_forward_mode == 'nat' && !@network_ipv6_address.nil? && !@network_ipv6_prefix.nil? %>
+    <forward mode="nat">
+         <nat ipv6="yes" />
+    </forward>
+  <% elsif (@network_forward_mode != 'none' && @network_forward_mode != 'veryisolated') %>
+    <% @network_forward_device %>
       <forward mode="<%= @network_forward_mode %>" dev="<%= @network_forward_device %>" />
     <% else %>
       <forward mode="<%= @network_forward_mode %>" />

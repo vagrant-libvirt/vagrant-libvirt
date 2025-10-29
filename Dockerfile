@@ -1,8 +1,8 @@
 # syntax = docker/dockerfile:1.0-experimental
-ARG VAGRANT_VERSION=2.3.0
+ARG VAGRANT_VERSION=2.4.9
 
 
-FROM ubuntu:jammy as base
+FROM ubuntu:noble as base
 
 RUN apt update \
     && apt install -y --no-install-recommends \
