@@ -1,8 +1,8 @@
 # syntax = docker/dockerfile:1.0-experimental
-ARG VAGRANT_VERSION=2.3.0
+ARG VAGRANT_VERSION=2.4.9
 
 
-FROM ubuntu:jammy as base
+FROM ubuntu:noble as base
 
 RUN apt update \
     && apt install -y --no-install-recommends \
@@ -38,10 +38,9 @@ FROM base as build
 
 # allow caching of packages for build
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-RUN sed -i '/deb-src/s/^# //' /etc/apt/sources.list
+RUN sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update \
     && apt build-dep -y \
-        vagrant \
         ruby-libvirt \
     && apt install -y --no-install-recommends \
         libxslt-dev \
@@ -57,31 +56,17 @@ WORKDIR /build
 COPY . .
 RUN rake build
 
-RUN find /opt/vagrant/embedded/ -type f | grep -v /opt/vagrant/embedded/plugins.json > /files-to-delete.txt
-
-RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems/${VAGRANT_VERSION} ./pkg/vagrant-libvirt*.gem
-
-RUN echo -n '{\n\
-    "version": "1",\n\
-    "installed": {\n\
-        "vagrant-libvirt": {\n\
-            "ruby_version": "'$(/opt/vagrant/embedded/bin/ruby -e 'puts "#{RUBY_VERSION}"')'",\n\
-            "vagrant_version": "'${VAGRANT_VERSION}'",\n\
-            "gem_version":"",\n\
-            "require":"",\n\
-            "sources":[]\n\
-        }\n\
-    }\n\
-}' > /opt/vagrant/embedded/plugins.json
-
-FROM build as pruned
-
-RUN cat /files-to-delete.txt | xargs rm -f
+RUN mkdir -p /tmp/vagrant-home \
+    && VAGRANT_HOME=/tmp/vagrant-home vagrant plugin install ./pkg/vagrant-libvirt*.gem \
+    && mkdir -p /vagrant-libvirt-plugin \
+    && mv /tmp/vagrant-home/plugins.json /vagrant-libvirt-plugin/plugins.json \
+    && mv /tmp/vagrant-home/gems /vagrant-libvirt-plugin/gems \
+    && rm -rf /tmp/vagrant-home \
+    && cd / && rm -rf /build
 
 FROM base as slim
 
-COPY --from=pruned /opt/vagrant/embedded/gems /opt/vagrant/embedded/gems
-COPY --from=build /opt/vagrant/embedded/plugins.json /opt/vagrant/embedded/plugins.json
+COPY --from=build /vagrant-libvirt-plugin /vagrant-libvirt-plugin
 
 COPY entrypoint.sh /usr/local/bin/
 
