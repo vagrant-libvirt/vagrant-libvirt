@@ -196,38 +196,44 @@ module VagrantPlugins
           driver.list_all_networks.each do |libvirt_network|
 
             # Parse ip address and netmask from the network xml description.
-            xml = Nokogiri::XML(libvirt_network.xml_desc)
-            ip = xml.xpath('/network/ip/@address').first
-            ip = ip.value if ip
-            netmask = xml.xpath('/network/ip/@netmask').first
-            netmask = netmask.value if netmask
+            begin
+              xml = Nokogiri::XML(libvirt_network.xml_desc)
 
-            dhcp_enabled = if xml.at_xpath('//network/ip/dhcp')
-                             true
-                           else
-                             false
-                           end
+              ip = xml.xpath('/network/ip/@address').first
+              ip = ip.value if ip
+              netmask = xml.xpath('/network/ip/@netmask').first
+              netmask = netmask.value if netmask
 
-            domain_name = xml.at_xpath('/network/domain/@name')
-            domain_name = domain_name.value if domain_name
+              dhcp_enabled = if xml.at_xpath('//network/ip/dhcp')
+                               true
+                             else
+                               false
+                             end
 
-            # Calculate network address of network from ip address and
-            # netmask.
-            network_address = (network_address(ip, netmask) if ip && netmask)
+              domain_name = xml.at_xpath('/network/domain/@name')
+              domain_name = domain_name.value if domain_name
 
-            libvirt_networks << {
-              name:             libvirt_network.name,
-              ip_address:       ip,
-              netmask:          netmask,
-              network_address:  network_address,
-              dhcp_enabled:     dhcp_enabled,
-              bridge_name:      libvirt_network.bridge_name,
-              domain_name:      domain_name,
-              created:          true,
-              active:           libvirt_network.active?,
-              autostart:        libvirt_network.autostart?,
-              libvirt_network:  libvirt_network
-            }
+              # Calculate network address of network from ip address and
+              # netmask.
+              network_address = (network_address(ip, netmask) if ip && netmask)
+
+              libvirt_networks << {
+                name:             libvirt_network.name,
+                ip_address:       ip,
+                netmask:          netmask,
+                network_address:  network_address,
+                dhcp_enabled:     dhcp_enabled,
+                bridge_name:      libvirt_network.bridge_name,
+                domain_name:      domain_name,
+                created:          true,
+                active:           libvirt_network.active?,
+                autostart:        libvirt_network.autostart?,
+                libvirt_network:  libvirt_network
+              }
+            rescue Libvirt::Error
+              @logger.debug "Network disappeared while iterating, skipping"
+              next
+            end
           end
 
           libvirt_networks
