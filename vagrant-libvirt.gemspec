@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.version       = VagrantPlugins::ProviderLibvirt.get_version
 
+  s.add_runtime_dependency 'cgi'
   s.add_runtime_dependency 'fog-libvirt', '>= 0.6.0'
   s.add_runtime_dependency 'fog-core', '~> 2'
   s.add_runtime_dependency 'rexml'

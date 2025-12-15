@@ -37,6 +37,10 @@ group :test do
     gem 'rexml'
   end
 
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('4.0.0')
+    gem 'cgi'
+  end
+
   gem 'pry'
   gem 'simplecov'
   gem 'simplecov-lcov'
