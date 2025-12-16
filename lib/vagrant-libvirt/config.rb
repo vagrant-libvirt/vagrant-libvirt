@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'cgi'
+require 'uri'
 
 require 'vagrant'
 require 'vagrant/action/builtin/mixin_synced_folders'
@@ -1335,8 +1335,12 @@ module VagrantPlugins
         @username = nil if @username == UNSET_VALUE
         @username = uri.user if uri.user
         if uri.query
-          params = CGI.parse(uri.query)
-          @id_ssh_key_file = params['keyfile'].first if params.has_key?('keyfile')
+          params = URI
+            .decode_www_form(uri.query)
+            .select { |k, v| k == 'keyfile' }
+            .map { |_,v| v }
+            .first
+          @id_ssh_key_file = params if params
         end
 
         finalize_id_ssh_key_file
