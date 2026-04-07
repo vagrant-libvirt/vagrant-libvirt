@@ -63,8 +63,9 @@ just need vagrant-libvirt and don't need to install any additional plugins for y
 If you are connecting to a remote system libvirt, you may omit the
 `-v /var/run/libvirt/:/var/run/libvirt/` mount bind. Some distributions patch the local
 vagrant environment to ensure vagrant-libvirt uses `qemu:///session`, which means you
-may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value if
-looking to use this in place of your distribution provided installation.
+may need to set the environment variable `LIBVIRT_DEFAULT_URI` to the same value and add a
+mount with the user's libvirt run path if looking to use this in place of your distribution
+provided installation.
 
 #### Using Docker
 
@@ -90,6 +91,20 @@ docker run -it --rm \
   --network host \
   vagrantlibvirt/vagrant-libvirt:latest \
     vagrant status
+```
+
+Running the image with `qemu:///session` example:
+```bash
+docker run -it --rm \
+  -e 'LIBVIRT_DEFAULT_URI=qemu:///session' \
+  -v /var/run/libvirt/:/var/run/libvirt/ \
+  -v $XDG_RUNTIME_DIR/libvirt/:/home/vagrant/.cache/libvirt/ \
+  -v ~/.vagrant.d:/.vagrant.d \
+  -v $(realpath "${PWD}"):${PWD} \
+  -w "${PWD}" \
+  --network host \
+  docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+    vagrant "$@"
 ```
 
 It's possible to define a function in `~/.bashrc`, for example:
@@ -132,6 +147,26 @@ vagrant(){
     --security-opt label=disable \
     docker.io/vagrantlibvirt/vagrant-libvirt:latest \
       vagrant $@
+}
+```
+
+`qemu:///session` example:
+
+```bash
+vagrant(){
+  podman run -it --rm \
+    -e 'LIBVIRT_DEFAULT_URI=qemu:///session' \
+    -v /var/run/libvirt/:/var/run/libvirt/ \
+    -v $XDG_RUNTIME_DIR/libvirt/:"${PWD}/.cache/libvirt/" \
+    -v ~/.vagrant.d:/.vagrant.d \
+    -v $(realpath "${PWD}"):${PWD} \
+    -w "${PWD}" \
+    --network host \
+    --userns=keep-id \
+    --entrypoint /bin/bash \
+    --security-opt label=disable \
+    docker.io/vagrantlibvirt/vagrant-libvirt:latest \
+      vagrant "$@"
 }
 ```
 
