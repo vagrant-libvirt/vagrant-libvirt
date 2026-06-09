@@ -236,6 +236,8 @@ module VagrantPlugins
           @features_hyperv.each do |feature|
             if feature[:name] == 'spinlocks'
               env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}, retries=#{feature[:retries]}")
+            elsif feature[:name] == 'vendor_id'
+              env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}, value=#{feature[:value]}")
             else
               env[:ui].info(" -- Feature (HyperV):  name=#{feature[:name]}, state=#{feature[:state]}")
             end
