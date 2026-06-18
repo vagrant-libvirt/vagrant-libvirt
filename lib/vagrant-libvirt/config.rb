@@ -484,12 +484,20 @@ module VagrantPlugins
           raise 'Feature spinlocks requires retries parameter'
         end
 
+        if options[:name] == 'vendor_id' && options[:value].nil?
+          raise 'Feature vendor_id requires value parameter'
+        end
+
         @features_hyperv = []  if @features_hyperv == UNSET_VALUE
 
         if options[:name] == 'spinlocks'
           @features_hyperv.push(name:   options[:name],
                              state: options[:state],
                              retries: options[:retries])
+        elsif options[:name] == 'vendor_id'
+          @features_hyperv.push(name:   options[:name],
+                             state: options[:state],
+                             value: options[:value])
         else
           @features_hyperv.push(name:   options[:name],
                              state: options[:state])
