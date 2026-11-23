@@ -16,7 +16,11 @@ on:
 jobs:
   test:
 
-    runs-on: ubuntu-latest
+    # pinned rather than ubuntu-latest: ruby/setup-ruby only publishes the
+    # latest patch of each series for newer runner images, so the exact old
+    # versions pinned in the matrix below are unavailable on ubuntu-26.04
+    # (which ubuntu-latest now points at).
+    runs-on: ubuntu-24.04
     env:
       VAGRANT_LIBVIRT_REQUIRE_SIMPLECOV: "true"
     continue-on-error: ${{ matrix.allow_fail }}
