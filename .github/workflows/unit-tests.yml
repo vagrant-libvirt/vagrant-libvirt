@@ -29,7 +29,7 @@ jobs:
       matrix:
         # need to define one entry with a single entry for each of the options
         # to allow include to expand the matrix correctly.
-        ruby: [3.1]
+        ruby: ['3.3']
         vagrant: [main]
         allow_fail: [true]
         include:
@@ -48,7 +48,7 @@ jobs:
             # above block is to ensure compatible with Ubuntu 20.04 vagrant package
             # although it uses 2.2.10 it is the earliest version that will install on
             # ruby 2.7 without patching
-          - ruby: 3.1
+          - ruby: '3.3'
             vagrant:
             allow_fail: false
 
@@ -56,13 +56,6 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Clone ruby-libvirt for ruby 3.1 support
-      if: ${{ startsWith(matrix.ruby, '3.1') }}
-      uses: actions/checkout@v3
-      with:
-        repository: libvirt/libvirt-ruby
-        path: .deps/libvirt-ruby
-        ref: 43444be184e4d877c5ce110ee5475c952d7590f7
     - name: Set up libvirt
       run: |
         sudo apt-get update
@@ -70,19 +63,6 @@ jobs:
     - name: Ensure bundle uses https instead of insecure git
       run: |
         git config --global url."https://github.com/".insteadOf git://github.com/
-    - name: Handle additional ruby 3.1 setup
-      if: ${{ startsWith(matrix.ruby, '3.1') }}
-      run: |
-        # build gem of latest bindings that contain fix for ruby include path
-        pushd .deps/libvirt-ruby
-        rake gem
-        popd
-
-        mkdir -p vendor/bundle/ruby/3.0.0/cache/
-        cp .deps/libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
-        # need the following to allow the local provided gem to be used instead of the
-        # one from rubygems
-        echo "BUNDLE_DISABLE_CHECKSUM_VALIDATION=true" >> ${GITHUB_ENV}
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
