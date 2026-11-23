@@ -78,15 +78,23 @@
   <%- end -%>
 <%- end -%>
 <%- if @loader -%>
-  <%- if @nvram -%>
+  <%- if @nvram or @nvram_template -%>
     <loader readonly='yes' type='pflash'><%= @loader %></loader>
   <%- else -%>
     <loader readonly='yes' type='rom'><%= @loader %></loader>
   <%- end -%>
 <%- end -%>
+<%- if @nvram_template -%>
+  <%- if @nvram -%>
+    <nvram template='<%= @nvram_template %>'><%= @nvram %></nvram>
+  <%- else -%>
+  <nvram template='<%= @nvram_template %>'>/var/lib/libvirt/qemu/nvram/<%=  @name %>.fd</nvram>
+  <% end -%>
+<%- else -%>
 <%- if @nvram -%>
-    <nvram><%= @nvram %></nvram>
+  <nvram><%= @nvram %></nvram>
 <%- end -%>
+<% end -%>
     <bootmenu enable='<%= @boot_order.count >= 1 ? "yes" : "no" %>'/>
     <kernel><%= @kernel %></kernel>
     <initrd><%= @initrd %></initrd>

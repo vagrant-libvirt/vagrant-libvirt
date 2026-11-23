@@ -524,7 +524,7 @@ module VagrantPlugins
                 loader.text = config.loader
               end
             end
-            loader.attributes['type'] = config.nvram ? 'pflash' : 'rom'
+            loader.attributes['type'] = config.nvram || config.nvram_template ? 'pflash' : 'rom'
           elsif !loader.nil?
             descr_changed = true
             loader.parent.delete_element(loader)
@@ -543,6 +543,14 @@ module VagrantPlugins
                 nvram.text = config.nvram
               end
             end
+          elsif config.nvram_template
+            if nvram.nil?
+              desc_Changed = true
+              nvram = REXML::Element.new('nvram')
+              REXML::XPath.first(xml_descr, '/domain/os').insert_after(loader, nvram)
+              nvram.text = "/var/lib/libvirt/qemu/nvram/#{env[:machine].name}_VARS.fd"
+            end
+            nvram.attributes['template'] = config.nvram_template
           elsif !nvram.nil?
             descr_changed = true
             nvram.parent.delete_element(nvram)
