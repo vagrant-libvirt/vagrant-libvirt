@@ -33,7 +33,7 @@ jobs:
         cd pkg/
         GEM_PKG=$(ls -1 *.gem)
         echo "artifact_name=${GEM_PKG}" >> ${GITHUB_OUTPUT}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.artifact_name.outputs.artifact_name }}
         path: pkg/**.gem
@@ -44,7 +44,7 @@ jobs:
       run: |
         mkdir -p ./pr
         echo ${{ github.event.number }} > ./pr/NR
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: github.ref != 'refs/heads/main'
       with:
         name: pr
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ needs.build-package.outputs.artifact_name }}
     - name: setup credentials

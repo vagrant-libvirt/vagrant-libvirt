@@ -50,18 +50,19 @@ module VagrantPlugins
               domain_xml = libvirt_domain.xml_desc(1)
               xml_descr = REXML::Document.new(domain_xml)
               domain_name = xml_descr.elements['domain'].elements['name'].text
-              disks_xml = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]')
-              have_aliases = !REXML::XPath.match(disks_xml, './alias[@name="ua-box-volume-0"]').first.nil?
+              have_aliases = !REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]/alias[@name="ua-box-volume-0"]').first.nil?
               env[:ui].warn(I18n.t('vagrant_libvirt.domain_xml.obsolete_method')) unless have_aliases
 
               if have_aliases
-                REXML::XPath.match(disks_xml,
-                                   './alias[contains(@name, "ua-box-volume-")]').each_with_index do |alias_xml, idx|
+                REXML::XPath.match(xml_descr,
+                                   '/domain/devices/disk[@device="disk"]/alias[contains(@name, "ua-box-volume-")]'
+                ).each_with_index do |alias_xml, idx|
                   domain_volumes.push(volume_from_xml(alias_xml.parent, domain_name, idx))
                 end
               else
                 # fallback to try and infer which boxes are box images, as they are listed first
                 # as soon as there is no match, can exit
+                disks_xml = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]')
                 disks_xml.each_with_index do |box_disk_xml, idx|
                   diskname = box_disk_xml.elements['source'].attributes['file'].rpartition('/').last
 

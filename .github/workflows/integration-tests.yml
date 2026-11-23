@@ -12,7 +12,9 @@ on:
 
 jobs:
   generate-matrix:
-    runs-on: ubuntu-latest
+    # pinned rather than ubuntu-latest: ruby 2.6.6 below has no build for
+    # ubuntu-26.04, which ubuntu-latest now points at
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
 
