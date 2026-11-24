@@ -348,7 +348,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::ResolveDiskSettings do
               device: 'vda',
               cache: 'default',
               bus: 'virtio',
-              path: 'vagrant-test_default-vda.qcow2',
               absolute_path: '/var/lib/libvirt/images/vagrant-test_default-vda.qcow2',
               size: '20G',
               pool: 'default'
@@ -372,7 +371,6 @@ describe VagrantPlugins::ProviderLibvirt::Action::ResolveDiskSettings do
             [
               hash_including(
                 device: 'vda',
-                path: 'vagrant-test_default-vda.qcow2',
                 absolute_path: '/var/lib/libvirt/images/vagrant-test_default-vda.qcow2',
                 pool: 'default'
               ),

@@ -192,7 +192,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:size).and_return(5*1024*1024*1024)
           allow(all).to receive(:first).and_return(nil)
-          allow(subject).to receive(:upload_image).and_return(true)
+          allow(subject).to receive(:storage_upload_image).and_return(true)
           allow(volumes).to receive(:create).and_return(fog_volume)
         end
 
@@ -206,7 +206,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :capacity => "5368709120B",
             )
           )
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
           expect(subject.call(env)).to be_nil
         end
       end
@@ -219,7 +219,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
 
         it 'should skip disk upload' do
           expect(volumes).not_to receive(:create)
-          expect(subject).not_to receive(:upload_image)
+          expect(subject).not_to receive(:storage_upload_image)
           expect(subject.call(env)).to be_nil
         end
       end
@@ -298,7 +298,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:size).and_return(5*1024*1024*1024, 10*1024*1024*1024, 20*1024*1024*1024)
           allow(all).to receive(:first).and_return(nil)
-          allow(subject).to receive(:upload_image).and_return(true)
+          allow(subject).to receive(:storage_upload_image).and_return(true)
           allow(volumes).to receive(:create).and_return(fog_volume)
         end
 
@@ -312,7 +312,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :capacity => "5368709120B",
             )
           )
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
           expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_disk.img in storage pool default.')
           expect(volumes).to receive(:create).with(
@@ -322,7 +322,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :capacity => "10737423360B",
             )
           )
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
           expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_box_2.img in storage pool default.')
           expect(volumes).to receive(:create).with(
@@ -332,7 +332,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
               :capacity => "21474836480B",
             )
           )
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
 
           expect(subject.call(env)).to be_nil
         end
@@ -344,7 +344,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           allow(File).to receive(:size).and_return(10*1024*1024*1024, 20*1024*1024*1024)
           allow(all).to receive(:first).and_return(box_volume, nil, nil)
           allow(box_volume).to receive(:id).and_return(1)
-          allow(subject).to receive(:upload_image).and_return(true)
+          allow(subject).to receive(:storage_upload_image).and_return(true)
           allow(volumes).to receive(:create).and_return(fog_volume)
         end
 
@@ -352,11 +352,11 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
           expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_disk.img in storage pool default.')
           expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_disk.img"))
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
           expect(ui).to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
           expect(logger).to receive(:info).with('Creating volume test_vagrant_box_image_1.1.1_box_2.img in storage pool default.')
           expect(volumes).to receive(:create).with(hash_including(:name => "test_vagrant_box_image_1.1.1_box_2.img"))
-          expect(subject).to receive(:upload_image)
+          expect(subject).to receive(:storage_upload_image)
 
           expect(subject.call(env)).to be_nil
         end
@@ -371,7 +371,7 @@ describe VagrantPlugins::ProviderLibvirt::Action::HandleBoxImage do
         it 'should skip disk upload' do
           expect(ui).not_to receive(:info).with('Uploading base box image as volume into Libvirt storage...')
           expect(volumes).not_to receive(:create)
-          expect(subject).not_to receive(:upload_image)
+          expect(subject).not_to receive(:storage_upload_image)
           expect(subject.call(env)).to be_nil
         end
       end

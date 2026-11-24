@@ -10,6 +10,7 @@ module VagrantPlugins
       autoload :CleanupOnFailure, action_root.join('cleanup_on_failure')
       autoload :ClearForwardedPorts, action_root.join('forward_ports')
       autoload :CreateDomain, action_root.join('create_domain')
+      autoload :CreateDomainDisks, action_root.join('create_domain_disks')
       autoload :CreateDomainVolume, action_root.join('create_domain_volume')
       autoload :CreateNetworkInterfaces, action_root.join('create_network_interfaces')
       autoload :CreateNetworks, action_root.join('create_networks')
@@ -100,6 +101,7 @@ module VagrantPlugins
                 b2.use HandleBoxImage
                 b2.use CreateDomainVolume
                 b2.use ResolveDiskSettings
+                b2.use CreateDomainDisks
                 b2.use CreateDomain
                 b2.use CreateNetworks
                 b2.use CreateNetworkInterfaces

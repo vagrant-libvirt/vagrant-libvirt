@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'tempfile'
+
 require_relative '../spec_helper'
 require_relative '../support/binding_proc'
 
@@ -755,14 +757,31 @@ describe VagrantPlugins::ProviderLibvirt::Config do
     end
 
     context 'with disks defined' do
-      it 'is valid if relative path used for disk' do
-        subject.storage :file, path: '../path/to/file.qcow2'
+      let(:tmp_fh) { Tempfile.new('vagrant-libvirt') }
+
+      after do
+        tmp_fh.delete
+      end
+
+      it 'is valid if :name is just a name' do
+        subject.storage :file, name: 'file.qcow2'
         assert_valid
       end
 
-      it 'should be invalid if absolute path used for disk' do
-        subject.storage :file, path: '/absolute/path/to/file.qcow2'
+      # Leave it to libvirt to error on names that could be paths
+      it 'is valid if :name is a path that does not exist' do
+        subject.storage :file, name: './path/to/file.qcow2'
+        assert_valid
+      end
+
+      it 'is invalid if :path does not exist' do
+        subject.storage :file, path: './path/to/file.qcow2'
         assert_invalid
+      end
+
+      it 'is valid if :path exists' do
+        subject.storage :file, path: tmp_fh.path
+        assert_valid
       end
     end
 
