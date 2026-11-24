@@ -13,7 +13,7 @@ runs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        ruby-version: '3.3'
 
     - name: Install ImageMagick
       shell: bash
@@ -55,11 +55,14 @@ runs:
       shell: bash
       env:
         BUNDLE_GEMFILE: ./docs/Gemfile
+        # fail loudly if Gemfile.lock cannot be used as is instead of
+        # silently resolving to a different set of gems
+        BUNDLE_FROZEN: 'true'
       run: |
         # TODO find a way for jekyll to perform this automatically
         # ImageMagick 7 renamed convert to magick
         magick_cmd=$(command -v magick || command -v convert)
-        ${magick_cmd} docs/_assets/images/logo.png -define icon:auto-resize=256,64,48,32,16 docs/favicon.ico
+        ${magick_cmd} docs/assets/images/logo.png -define icon:auto-resize=256,64,48,32,16 docs/favicon.ico
 
         bundle install
         bundle exec jekyll build --source docs/ --destination build

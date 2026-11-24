@@ -11,11 +11,11 @@ permissions:
 
 jobs:
   build-package:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       artifact_name: ${{ steps.artifact_name.outputs.artifact_name }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install rake & ruby
@@ -52,7 +52,7 @@ jobs:
 
   publish-package:
     needs: build-package
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/download-artifact@v4
