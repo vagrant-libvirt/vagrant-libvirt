@@ -46,17 +46,9 @@ gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into t
 remote_theme: just-the-docs/just-the-docs@v0.3.3
 #theme: just-the-docs
 plugins:
-  - jekyll-assets
   - jekyll-feed
   - jekyll-remote-theme
   - jekyll-toc
-
-assets:
-  raw_precompile: [
-    "images/logo.png",
-  ]
-  sources:
-    - _assets
 
 toc:
   max_level: 3
