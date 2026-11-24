@@ -431,7 +431,7 @@ There is a way to pass specific options for Libvirt provider when using
 starts with `libvirt__` string. Here is a list of those options:
 
 * `:libvirt__network_name` - Name of Libvirt network to connect to. By default,
-  network 'default' is used.
+  network 'vagrant-private-dhcp' is used.
 * `:libvirt__netmask` - Used only together with `:ip` option. Default is
   '255.255.255.0'.
 * `:libvirt__network_address` - Used only when `:type` is set to `dhcp`. Only `/24` subnet is supported. Default is `172.28.128.0`.
