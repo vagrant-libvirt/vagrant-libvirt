@@ -49,6 +49,7 @@ module VagrantPlugins
 
           undefine_flags = 0
           undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM if env[:machine].provider_config.nvram
+          undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA
 
           if env[:machine].provider_config.disks.empty? &&
              env[:machine].provider_config.cdroms.empty?
