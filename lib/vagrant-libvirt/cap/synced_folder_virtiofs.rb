@@ -3,19 +3,20 @@
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'
-require 'digest/md5'
 
 require 'vagrant/errors'
 require 'vagrant/util/subprocess'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/erb_template'
+require 'vagrant-libvirt/util/mount_tag'
 
 module VagrantPlugins
   module SyncedFolderVirtioFS
     class SyncedFolder < Vagrant.plugin('2', :synced_folder)
       include Vagrant::Util
       include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+      include VagrantPlugins::ProviderLibvirt::Util::MountTag
 
       def initialize(*args)
         super
@@ -45,14 +46,14 @@ module VagrantPlugins
                                mount: true,
                                readonly: nil) { |_k, ov, _nv| ov }
 
-            mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
-            folder_opts[:mount_tag] = mount_tag
+            tag = mount_tag(folder_opts[:hostpath])
+            folder_opts[:mount_tag] = tag
 
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: 'passthrough') do
                 xml.driver(type: 'virtiofs')
                 xml.source(dir: folder_opts[:hostpath])
-                xml.target(dir: mount_tag)
+                xml.target(dir: tag)
                 xml.readonly unless folder_opts[:readonly].nil?
               end
             end.to_xml(
