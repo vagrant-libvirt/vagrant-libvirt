@@ -1,4 +1,4 @@
-<script src="{% asset "js/site_constants.js" @path %}"></script>
+<script src="{{ "/assets/js/site_constants.js" | relative_url }}"></script>
 <div id="plugin-version-menu" class="site-footer"></div>
 {%- assign basePath = "" %}
 {%- if site.plugin_script_base_path %}

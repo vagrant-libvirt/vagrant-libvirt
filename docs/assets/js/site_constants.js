@@ -1,3 +1,5 @@
+---
+---
 {%- comment %}handle development serving site on root{% endcomment %}
 {%- if site.baseurl.size == 0 %}
 const basePath = '';

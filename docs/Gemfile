@@ -13,7 +13,6 @@ gem "github-pages", "~> 228", group: :jekyll_plugins
 # gem "github-pages", group: :jekyll_plugins
 # If you have any plugins, put them here!
 group :jekyll_plugins do
-  gem "jekyll-assets", "~> 3.0.12"
   gem "jekyll-feed", "~> 0.12"
   gem "jekyll-toc", "~> 0.17"
 end
@@ -27,8 +26,11 @@ end
 
 # Performance-booster for watching directories on Windows
 gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
-gem "sprockets", "~> 3.7.2"
 
 # Lock `http_parser.rb` gem to `v0.6.x` on JRuby builds since newer versions of the gem
 # do not have a Java counterpart.
 gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
+
+# needed by jekyll at build time, no longer provided as a default gem
+# to bundler managed environments with ruby 3.x
+gem "rake"
