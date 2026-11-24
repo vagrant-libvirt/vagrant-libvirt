@@ -553,6 +553,9 @@ module VagrantPlugins
             env[:ui].info(I18n.t('vagrant_libvirt.updating_domain'))
             new_xml = String.new
             xml_descr.write(new_xml)
+            # REXML 3.4 stopped preserving the trailing newline of the source
+            # document, so normalize it to keep the output stable across versions
+            new_xml << "\n" unless new_xml.end_with?("\n")
             begin
               # providing XML for the same name and UUID will update the existing domain
               libvirt_domain = env[:machine].provider.driver.connection.define_domain(new_xml)
