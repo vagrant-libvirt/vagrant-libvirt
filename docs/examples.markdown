@@ -313,6 +313,18 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+Extended attributes (`xattr`) are not enabled by default by virtiofsd. They can
+be turned on (or explicitly off) per synced folder with the `xattr` option:
+
+``` ruby
+Vagrant.configure("2") do |config|
+  config.vm.synced_folder "./", "/vagrant", type: "virtiofs", xattr: true
+end
+```
+
+When the option is not given, the attribute is omitted from the domain XML and
+libvirt applies its own default.
+
 Further documentation on using virtiofs can be found in [official
 HowTo](https://virtio-fs.gitlab.io/index.html#howto) and in [Libvirt
 KB](https://libvirt.org/kbase/virtiofs.html).
