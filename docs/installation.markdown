@@ -257,8 +257,8 @@ sudo dnf remove vagrant-libvirt
 sudo sed -i \
     '/^\(exclude=.*\)/ {/vagrant-libvirt/! s//\1 vagrant-libvirt/;:a;n;ba;q}; $aexclude=vagrant-libvirt' \
     /etc/dnf/dnf.conf
-vagrant_libvirt_deps=($(sudo dnf repoquery --disableexcludes main --depends vagrant-libvirt 2>/dev/null | cut -d' ' -f1))
-dependencies=$(sudo dnf repoquery --qf "%{name}" ${vagrant_libvirt_deps[@]/#/--whatprovides })
+vagrant_libvirt_deps=($(sudo dnf repoquery --setopt=disable_excludes=main --depends vagrant-libvirt 2>/dev/null | cut -d' ' -f1))
+dependencies=$(sudo dnf repoquery --qf "%{name} " ${vagrant_libvirt_deps[@]/#/--whatprovides })
 sudo dnf install --assumeyes @virtualization ${dependencies}
 ```
 
