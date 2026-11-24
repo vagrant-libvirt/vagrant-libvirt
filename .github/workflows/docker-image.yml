@@ -27,7 +27,7 @@ permissions:
 jobs:
   build-image-with-buildah:
     if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
@@ -59,7 +59,7 @@ jobs:
 
   build-docker-image:
     if: ${{ ! (startsWith(github.event_name, 'pull_request') && github.event.action == 'closed' ) }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs:
       - generate-docker-metadata
       - generate-docker-metadata-slim
@@ -154,7 +154,7 @@ jobs:
 
   generate-delete-docker-images-matrix:
     if: startsWith(github.event_name, 'pull_request') && github.event.action == 'closed'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs:
       - generate-docker-metadata
       - generate-docker-metadata-slim
@@ -174,7 +174,7 @@ jobs:
 #
 #  delete-docker-images:
 #    needs: generate-delete-docker-images-matrix
-#    runs-on: ubuntu-22.04
+#    runs-on: ubuntu-latest
 #    strategy:
 #      matrix:
 #        tag: ${{ fromJSON(needs.generate-delete-docker-images-matrix.outputs.matrix) }}
