@@ -54,6 +54,14 @@ See [Requirements]({{ '/installation#requirements' | relative_url }}) for guides
    dependencies=$(sudo dnf repoquery --qf "%{name}" ${vagrant_libvirt_deps[@]/#/--whatprovides })
    sudo dnf install --assumeyes @virtualization ${dependencies}
    ```
+
+   * MacOS
+
+   ```
+   brew install libvirt pkgconf iproute2mac
+   vagrant plugin install vagrant-libvirt
+   ```
+   
 2. Install the latest release of vagrant-libvirt
 ```
 vagrant plugin install vagrant-libvirt
