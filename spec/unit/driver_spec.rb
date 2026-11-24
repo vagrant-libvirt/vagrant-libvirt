@@ -296,8 +296,8 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
     }
 
     let(:libvirt_interfaces) { [
-      instance_double(Libvirt::Interface),
-      instance_double(Libvirt::Interface),
+      instance_double(Libvirt::Interface, :name => 'eth0'),
+      instance_double(Libvirt::Interface, :name => 'virbr0'),
     ] }
     let(:libvirt_networks) { [
       instance_double(Libvirt::Network),
@@ -311,10 +311,8 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
         expect(arr[0]).to eq('ip')
       end.and_return(Vagrant::Util::Subprocess::Result.new(exit_code=0, stdout=ip_link_show, stderr=''))
 
-      expect(libvirt_client).to receive(:list_all_interfaces).and_return(libvirt_interfaces)
+      expect(libvirt_client).to receive(:list_all_interfaces) { libvirt_interfaces }
       expect(subject).to receive(:list_all_networks).and_return(libvirt_networks)
-      expect(libvirt_interfaces[0]).to receive(:name).and_return('eth0')
-      expect(libvirt_interfaces[1]).to receive(:name).and_return('virbr0')
       expect(libvirt_networks[0]).to receive(:bridge_name).and_return('')
       expect(libvirt_networks[1]).to receive(:bridge_name).and_return('virbr0')
     end
@@ -334,6 +332,16 @@ describe VagrantPlugins::ProviderLibvirt::Driver do
 
       expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
       expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
+    end
+
+    context 'when the libvirt interface driver is unavailable' do
+      let(:libvirt_interfaces) {
+        raise Libvirt::RetrieveError, 'this function is not supported by the connection driver: virConnectListAllInterfaces'
+      }
+
+      it 'should ignore the interfaces reported by libvirt' do
+        expect(subject.host_devices).to eq(['lo', 'eth0', 'eth1', 'virbr0'])
+      end
     end
 
     context 'when libvirt is remote' do

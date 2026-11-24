@@ -232,9 +232,19 @@ module VagrantPlugins
 
           info = JSON.parse(result.stdout)
 
+          libvirt_interfaces = begin
+            connection.client.list_all_interfaces.map { |iface| iface.name }
+          rescue Libvirt::Error => e
+            # the interface driver is optional and is not available for qemu session
+            # connections, on macOS, or on hosts where it is simply not installed, so
+            # fall back to the devices reported by the system and by the networks.
+            @logger.debug "Ignoring host interfaces reported by libvirt: #{e}"
+            []
+          end
+
           (
             info.map { |iface| iface['ifname'] } +
-            connection.client.list_all_interfaces.map { |iface| iface.name } +
+            libvirt_interfaces +
             list_all_networks.map { |net| net.bridge_name }
           ).uniq.reject(&:empty?)
         end
