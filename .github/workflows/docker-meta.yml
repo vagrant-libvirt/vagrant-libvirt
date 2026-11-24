@@ -20,7 +20,7 @@ on:
 jobs:
   generate-metadata:
     name: Generate Metadata
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       labels: ${{ steps.metadata.outputs.labels }}
       tags: ${{ steps.metadata.outputs.tags }}
