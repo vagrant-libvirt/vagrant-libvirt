@@ -18,22 +18,22 @@ describe 'snapshots', acceptance: true do
     expect(environment.execute('vagrant', 'up')).to exit_with(0)
 
     status('Test: add test file')
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'touch a.txt')).to exit_with(0)
+    expect(execute_ssh('--', '-t', 'touch a.txt')).to exit_with(0)
 
     status('Test: create snapshot')
     expect(environment.execute('vagrant', 'snapshot', 'save', 'default', 'test')).to exit_with(0)
 
     status('Test: modify files')
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'rm a.txt')).to exit_with(0)
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'ls a.txt')).to exit_with(1)
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'touch b.txt')).to exit_with(0)
+    expect(execute_ssh('--', '-t', 'rm a.txt')).to exit_with(0)
+    expect(execute_ssh('--', '-t', 'ls a.txt')).to exit_with(1)
+    expect(execute_ssh('--', '-t', 'touch b.txt')).to exit_with(0)
 
     status('Test: restore snapshot')
     expect(environment.execute('vagrant', 'snapshot', 'restore', 'test')).to exit_with(0)
 
     status('Test: files are as expected')
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'ls a.txt')).to exit_with(0)
-    expect(environment.execute('vagrant', 'ssh', '--', '-t', 'ls b.txt')).to exit_with(1)
+    expect(execute_ssh('--', '-t', 'ls a.txt')).to exit_with(0)
+    expect(execute_ssh('--', '-t', 'ls b.txt')).to exit_with(1)
 
     status('Test: snapshot removal works')
     expect(environment.execute('vagrant', 'snapshot', 'delete', 'test')).to exit_with(0)

@@ -12,9 +12,7 @@ on:
 
 jobs:
   generate-matrix:
-    # pinned rather than ubuntu-latest: ruby 2.6.6 below has no build for
-    # ubuntu-26.04, which ubuntu-latest now points at
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
 
@@ -23,10 +21,10 @@ jobs:
       BUNDLE_WITHOUT: 'development'
       BUNDLE_JOBS: 4
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
-      VAGRANT_VERSION: v2.2.14
+      VAGRANT_VERSION: v2.4.9
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up libvirt for test generation
@@ -34,13 +32,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libvirt-dev \
-          libz-dev \
+          zlib1g-dev \
         ;
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6.6
+        ruby-version: '3.4'
         bundler-cache: true
+        # see unit-tests.yml, bundler 2.6 to 4.0.23 breaks plugin loading
+        bundler: '4'
     - name: Generate matrix
       id: generate-matrix
       run: |
@@ -52,7 +52,7 @@ jobs:
   run-tests:
     needs: generate-matrix
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -63,10 +63,10 @@ jobs:
       BUNDLE_WITHOUT: 'development'
       BUNDLE_JOBS: 4
       NOKOGIRI_USE_SYSTEM_LIBRARIES: true
-      VAGRANT_VERSION: v2.2.14
+      VAGRANT_VERSION: v2.4.9
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up libvirt
@@ -81,12 +81,12 @@ jobs:
           libvirt-clients \
           libvirt-daemon \
           libvirt-daemon-system \
-          qemu-kvm \
+          qemu-system-x86 \
           qemu-utils \
         ;
         sudo apt-get install -y \
           libvirt-dev \
-          libz-dev \
+          zlib1g-dev \
         ;
 
         # start daemon
@@ -97,8 +97,10 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6.6
+        ruby-version: '3.4'
         bundler-cache: true
+        # see unit-tests.yml, bundler 2.6 to 4.0.23 breaks plugin loading
+        bundler: '4'
     - name: Run tests
       run: |
         mkdir -p $HOME/.vagrant.d/
