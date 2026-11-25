@@ -4,7 +4,8 @@
 # frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "infernix/tinycore"
+  config.vm.box = "vagrant-libvirt/tinycore"
+  config.vm.box_url = "https://vagrant-libvirt.github.io/boxes/tinycore.json"
   config.ssh.shell = "/bin/sh"
   config.ssh.insert_key = false
   config.vm.synced_folder ".", "/vagrant", disabled: true
