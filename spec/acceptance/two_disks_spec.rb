@@ -11,8 +11,6 @@ describe 'handle two disk machine', acceptance: true do
 
   before do
     environment.skeleton('two_disks')
-    environment.execute(File.expand_path('../../tools/create_box_with_two_disks.sh', __dir__),
-                        environment.homedir.to_s, 'vagrant')
   end
 
   it 'should succeed' do

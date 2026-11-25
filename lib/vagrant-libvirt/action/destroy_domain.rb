@@ -49,6 +49,7 @@ module VagrantPlugins
 
           undefine_flags = 0
           undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_KEEP_NVRAM if env[:machine].provider_config.nvram
+          undefine_flags |= ProviderLibvirt::Util::DomainFlags::VIR_DOMAIN_UNDEFINE_CHECKPOINTS_METADATA
 
           if env[:machine].provider_config.disks.empty? &&
              env[:machine].provider_config.cdroms.empty?
@@ -59,7 +60,7 @@ module VagrantPlugins
             domain_xml = libvirt_domain.xml_desc(1)
             xml_descr = REXML::Document.new(domain_xml)
             disks_xml = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]')
-            have_aliases = !(REXML::XPath.match(disks_xml, './alias[@name="ua-box-volume-0"]').first).nil?
+            have_aliases = !REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]/alias[@name="ua-box-volume-0"]').first.nil?
             if !have_aliases
               env[:ui].warn(I18n.t('vagrant_libvirt.domain_xml.obsolete_method'))
             end
@@ -73,7 +74,9 @@ module VagrantPlugins
             # the additional storage devices are.
             detected_box_volumes = 0
             if have_aliases
-              REXML::XPath.match(disks_xml, './alias[contains(@name, "ua-box-volume-")]').each do |box_disk|
+              REXML::XPath.match(xml_descr,
+                                 '/domain/devices/disk[@device="disk"]/alias[contains(@name, "ua-box-volume-")]'
+              ).each do  |box_disk|
                 diskname = box_disk.parent.elements['source'].attributes['file'].rpartition('/').last
                 detected_box_volumes += 1
 
@@ -130,13 +133,13 @@ module VagrantPlugins
               # look for exact match using aliases which will be used
               # for subsequent domain creations
               if have_aliases
-                domain_disk = REXML::XPath.match(disks_xml, './alias[@name="ua-disk-volume-' + index.to_s + '"]').first
+                domain_disk = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]/alias[@name="ua-disk-volume-' + index.to_s + '"]').first
                 domain_disk = domain_disk.parent if !domain_disk.nil?
               else
                 # otherwise fallback to find the disk by device if specified by user
                 # and finally index counting with offset and hope the match is correct
                 if !disk[:device].nil?
-                  domain_disk = REXML::XPath.match(disks_xml, './target[@dev="' + disk[:device] + '"]').first
+                  domain_disk = REXML::XPath.match(xml_descr, '/domain/devices/disk[@device="disk"]/target[@dev="' + disk[:device] + '"]').first
                   domain_disk = domain_disk.parent if !domain_disk.nil?
                 else
                   domain_disk = disks_xml[offset + index]

@@ -114,8 +114,8 @@ alert you if attempting to package a machine with additional disks attached. To 
 to verify ahead of it becoming the default, export the variable `VAGRANT_LIBVIRT_BOX_FORMAT_VERSION=v2`
 before running `vagrant package`
 
-Additionally there is a script in the tools folder
-([`tools/create_box_with_two_disks.sh`](https://github.com/vagrant-libvirt/vagrant-libvirt/blob/main/tools/create_box_with_two_disks.sh))
+Additionally there is a script in the boxes repository
+([`scripts/build-two-disks-box.sh`](https://github.com/vagrant-libvirt/boxes/blob/main/scripts/build-two-disks-box.sh))
 that provides a guideline on how to create such a box from qcow2 images should it not be practical use
 a vagrant machine with additional storage as a starting point.
 

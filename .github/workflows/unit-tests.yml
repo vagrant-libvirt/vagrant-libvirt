@@ -25,40 +25,36 @@ jobs:
       matrix:
         # need to define one entry with a single entry for each of the options
         # to allow include to expand the matrix correctly.
-        ruby: [3.1]
+        ruby: ['3.4']
         vagrant: [main]
         allow_fail: [true]
         include:
-          - ruby: 2.3.5
-            vagrant: v2.1.5
+          # oldest ruby still shipped by a supported distribution (Debian 12).
+          # The vagrant releases those distributions package cannot be tested
+          # here any more: 2.3.4 fails on google-protobuf having dropped the
+          # DescriptorPool#build API its generated code uses, and 2.3.7 on
+          # ruby 3.2, see below.
+          - ruby: '3.1'
+            vagrant: v2.4.9
             allow_fail: false
-          - ruby: 2.4.10
-            vagrant: v2.2.4
+          # ruby 3.2 is skipped because vagrant pins ed25519 to ~> 1.3.0 and
+          # 1.3.0 does not compile against the ruby 3.2 headers with the
+          # compiler on ubuntu-26.04
+          - ruby: '3.3'
+            vagrant: v2.4.9
             allow_fail: false
-          - ruby: 2.6.6
-            vagrant: v2.2.14
+          - ruby: '3.4'
+            vagrant: v2.4.9
             allow_fail: false
-          - ruby: 2.7.2
-            vagrant: v2.2.10
-            allow_fail: false
-            # above block is to ensure compatible with Ubuntu 20.04 vagrant package
-            # although it uses 2.2.10 it is the earliest version that will install on
-            # ruby 2.7 without patching
-          - ruby: 3.1
-            vagrant:
-            allow_fail: false
+          # ruby 4.0 is only accepted by vagrant main (>= 3.3, < 4.1) so far
+          - ruby: '4.0'
+            vagrant: main
+            allow_fail: true
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: Clone ruby-libvirt for ruby 3.1 support
-      if: ${{ startsWith(matrix.ruby, '3.1') }}
-      uses: actions/checkout@v3
-      with:
-        repository: libvirt/libvirt-ruby
-        path: .deps/libvirt-ruby
-        ref: 43444be184e4d877c5ce110ee5475c952d7590f7
     - name: Set up libvirt
       run: |
         sudo apt-get update
@@ -66,24 +62,17 @@ jobs:
     - name: Ensure bundle uses https instead of insecure git
       run: |
         git config --global url."https://github.com/".insteadOf git://github.com/
-    - name: Handle additional ruby 3.1 setup
-      if: ${{ startsWith(matrix.ruby, '3.1') }}
-      run: |
-        # build gem of latest bindings that contain fix for ruby include path
-        pushd .deps/libvirt-ruby
-        rake gem
-        popd
-
-        mkdir -p vendor/bundle/ruby/3.0.0/cache/
-        cp .deps/libvirt-ruby/pkg/ruby-libvirt-*.gem vendor/bundle/ruby/3.0.0/cache/
-        # need the following to allow the local provided gem to be used instead of the
-        # one from rubygems
-        echo "BUNDLE_DISABLE_CHECKSUM_VALIDATION=true" >> ${GITHUB_ENV}
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+        # bundler 2.6 up to 4.0.23 does not apply the enclosing group block to
+        # `gemspec` (ruby/rubygems#9990), which drops this plugin out of the
+        # :plugins group and stops vagrant from loading it. The fix only exists
+        # in bundler 4, which in turn needs ruby 3.2, so the older ruby keeps
+        # the bundler it ships with, which predates the regression.
+        bundler: ${{ matrix.ruby == '3.1' && 'default' || '4' }}
       env:
         # skip installing development group gems to save time
         BUNDLE_WITHOUT: 'development'
