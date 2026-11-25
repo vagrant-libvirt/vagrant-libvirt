@@ -43,14 +43,18 @@ module VagrantPlugins
           folders.each do |id, folder_opts|
             folder_opts.merge!(target: id,
                                mount: true,
-                               readonly: nil) { |_k, ov, _nv| ov }
+                               readonly: nil,
+                               xattr: nil) { |_k, ov, _nv| ov }
 
             mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
             folder_opts[:mount_tag] = mount_tag
 
+            xattr = folder_opts[:xattr]
+
             xml = Nokogiri::XML::Builder.new do |xml|
               xml.filesystem(type: 'mount', accessmode: 'passthrough') do
                 xml.driver(type: 'virtiofs')
+                xml.binary(xattr: xattr ? 'on' : 'off') unless xattr.nil?
                 xml.source(dir: folder_opts[:hostpath])
                 xml.target(dir: mount_tag)
                 xml.readonly unless folder_opts[:readonly].nil?
