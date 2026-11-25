@@ -4,7 +4,8 @@
 # frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/debian10"
+  config.vm.box = "vagrant-libvirt/debian10"
+  config.vm.box_url = "https://vagrant-libvirt.github.io/boxes/debian10.json"
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.provider :libvirt do |libvirt|
