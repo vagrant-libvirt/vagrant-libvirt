@@ -14,7 +14,7 @@ describe 'use qemu agent to determine machine private address', acceptance: true
   end
 
   it 'should succeed' do
-    status('Test: machine is created successfully')
+    status('Test: create the machine')
     result = environment.execute('vagrant', 'up')
     expect(result).to exit_with(0)
 
@@ -27,7 +27,7 @@ describe 'use qemu agent to determine machine private address', acceptance: true
     expect(IPAddr.new('172.28.128.0/255.255.255.0')).to include(IPAddr.new(ip_address))
 
     # ssh'ing successfully means that the private network is accessible
-    status('Test: machine private network is accessible')
+    status('Test: connect over the private network')
     result = environment.execute('vagrant', 'ssh', '-c', 'echo "hello, world"')
     expect(result).to exit_with(0)
     expect(result.stdout).to match(/hello, world/)

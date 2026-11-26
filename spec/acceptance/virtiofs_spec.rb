@@ -33,21 +33,21 @@ describe 'virtiofs synced folder', acceptance: true do
     # checks the mount itself, so a share that did not come back fails here
     expect(environment.execute('vagrant', 'up')).to exit_with(0)
 
-    status('Test: the provisioner before the reboot wrote through to the host')
+    status('Test: check the provisioner before the reboot wrote through to the host')
     expect(shared_dir.join('before.output')).to have_file_content(/\S/)
 
-    status('Test: the provisioner after the reboot wrote through to the host')
+    status('Test: check the provisioner after the reboot wrote through to the host')
     # an unmounted share leaves the guest writing into the bare mount point,
     # where the file never reaches the host
     expect(shared_dir.join('after.output')).to have_file_content(/\S/)
 
-    status('Test: the mount is persisted in /etc/fstab')
+    status('Test: check the mount is persisted in /etc/fstab')
     managed = vagrant_managed_fstab
     entry = fstab_entry.match(managed)
     expect(entry).not_to be_nil,
                          "no virtiofs entry for #{guest_path} in the Vagrant managed fstab block:\n#{managed}"
 
-    status('Test: a share that is gone cannot block the boot of the guest')
+    status('Test: check a share that is gone cannot block the boot of the guest')
     expect(entry[:options].split(',')).to include('nofail')
   end
 

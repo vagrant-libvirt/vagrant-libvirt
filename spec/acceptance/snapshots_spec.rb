@@ -14,10 +14,10 @@ describe 'snapshots', acceptance: true do
   end
 
   it 'should succeed' do
-    status('Test: machine is created successfully')
+    status('Test: create the machine')
     expect(environment.execute('vagrant', 'up')).to exit_with(0)
 
-    status('Test: add test file')
+    status('Test: add a test file')
     expect(execute_ssh('--', '-t', 'touch a.txt')).to exit_with(0)
 
     status('Test: create snapshot')
@@ -31,11 +31,11 @@ describe 'snapshots', acceptance: true do
     status('Test: restore snapshot')
     expect(environment.execute('vagrant', 'snapshot', 'restore', 'test')).to exit_with(0)
 
-    status('Test: files are as expected')
+    status('Test: check the files are as expected')
     expect(execute_ssh('--', '-t', 'ls a.txt')).to exit_with(0)
     expect(execute_ssh('--', '-t', 'ls b.txt')).to exit_with(1)
 
-    status('Test: snapshot removal works')
+    status('Test: remove the snapshot')
     expect(environment.execute('vagrant', 'snapshot', 'delete', 'test')).to exit_with(0)
   end
 end

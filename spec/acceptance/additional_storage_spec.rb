@@ -14,15 +14,15 @@ describe 'additional storage configured', acceptance: true do
   end
 
   it 'should succeed' do
-    status('Test: machine is created successfully')
+    status('Test: create the machine')
     result = environment.execute('vagrant', 'up')
     expect(result).to exit_with(0)
 
-    status('Test: additional storage configured')
+    status('Test: check the additional storage is configured')
     expect(result.stdout).to match(/\(vda\).*work_default.img/)
     expect(result.stdout).to match(/\(vdb\).*work_default-vdb\.qcow2/)
 
-    status('Test: reload handles additional storage correctly')
+    status('Test: reload with the additional storage')
     result = environment.execute('vagrant', 'reload')
     expect(result).to exit_with(0)
   end

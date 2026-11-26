@@ -35,18 +35,18 @@ describe 'package domain', acceptance: true do
     end
 
     it 'should succeed' do
-      status('Test: machine is created successfully')
+      status('Test: create the machine')
       expect(environment.execute('vagrant', 'up')).to exit_with(0)
 
-      status('Test: package machine successfully')
+      status('Test: package the machine')
       expect(environment.execute('vagrant', 'package')).to exit_with(0)
 
-      status('Test: add packaged box')
+      status('Test: add the packaged box')
       expect(environment.execute(
         'vagrant', 'box', 'add', '--force', '--name', 'test-package-simple-domain', 'package.box'
       )).to exit_with(0)
 
-      status('Test: machine from packaged box is created successfully')
+      status('Test: create a machine from the packaged box')
       result = environment.execute('vagrant', 'up', extra_env: testbox_envvars)
       expect(result).to exit_with(0)
       expect(result.stdout).to match(/test-package-simple-domain/)
@@ -70,18 +70,18 @@ describe 'package domain', acceptance: true do
     end
 
     it 'should succeed' do
-      status('Test: machine is created successfully')
+      status('Test: create the machine')
       expect(environment.execute('vagrant', 'up')).to exit_with(0)
 
-      status('Test: package machine successfully')
+      status('Test: package the machine')
       expect(environment.execute('vagrant', 'package')).to exit_with(0)
 
-      status('Test: add packaged box')
+      status('Test: add the packaged box')
       expect(environment.execute(
         'vagrant', 'box', 'add', '--force', '--name', 'test-package-complex-domain', 'package.box'
       )).to exit_with(0)
 
-      status('Test: machine from packaged box is created successfully')
+      status('Test: create a machine from the packaged box')
       result = environment.execute('vagrant', 'up', extra_env: testbox_envvars)
       expect(result).to exit_with(0)
       expect(result.stdout).to match(/test-package-complex-domain/)
