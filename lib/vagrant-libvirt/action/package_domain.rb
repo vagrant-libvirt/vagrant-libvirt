@@ -196,7 +196,7 @@ module VagrantPlugins
             buf_size = 1024 * 250 # 250K, copied from upload_image in handle_box_image.rb
             progress = 0
             retval = stream.recv(buf_size)
-            open(image_file, 'wb') do |io|
+            File.open(image_file, 'wb') do |io|
               while (retval.at(0) > 0)
                 recvd = io.write(retval.at(1))
                 progress += recvd
