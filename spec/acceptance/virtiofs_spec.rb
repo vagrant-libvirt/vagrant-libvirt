@@ -28,7 +28,7 @@ describe 'virtiofs synced folder', acceptance: true do
   end
 
   it 'should still be mounted for a provisioner running after a reboot' do
-    status('Test: machine is created and provisioned successfully')
+    status('Test: create and provision the machine')
     # the second provisioner runs after the first one rebooted the guest and
     # checks the mount itself, so a share that did not come back fails here
     expect(environment.execute('vagrant', 'up')).to exit_with(0)
