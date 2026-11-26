@@ -259,7 +259,7 @@ module VagrantPlugins
 
             buf_size = 1024 * 250 # 250K
             progress = 0
-            open(image_file, 'rb') do |io|
+            File.open(image_file, 'rb') do |io|
               while (buff = io.read(buf_size))
                 sent = stream.send buff
                 progress += sent
