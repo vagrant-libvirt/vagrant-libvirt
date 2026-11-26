@@ -42,6 +42,64 @@ describe VagrantPlugins::SyncedFolderVirtioFS::SyncedFolder do
       subject.prepare(machine, synced_folders, {})
     end
 
+    context 'with xattr enabled' do
+      let(:synced_folders) { {
+        "/vagrant" => {
+          :hostpath => '/home/test/default',
+          :disabled=>false,
+          :guestpath=>'/vagrant',
+          :type => :virtiofs,
+          :xattr => true,
+        },
+      } }
+
+      let(:expected_xml) {
+        <<-EOF.unindent
+        <filesystem type="mount" accessmode="passthrough">
+          <driver type="virtiofs"></driver>
+          <binary xattr="on"></binary>
+          <source dir="/home/test/default"></source>
+          <target dir="1ef53e1c9b6a5a0c695c80665331652\"></target>
+        </filesystem>
+        EOF
+      }
+
+      it 'should attach device xml with xattr on' do
+        expect(libvirt_domain).to receive(:attach_device).with(expected_xml, 0)
+
+        subject.prepare(machine, synced_folders, {})
+      end
+    end
+
+    context 'with xattr disabled' do
+      let(:synced_folders) { {
+        "/vagrant" => {
+          :hostpath => '/home/test/default',
+          :disabled=>false,
+          :guestpath=>'/vagrant',
+          :type => :virtiofs,
+          :xattr => false,
+        },
+      } }
+
+      let(:expected_xml) {
+        <<-EOF.unindent
+        <filesystem type="mount" accessmode="passthrough">
+          <driver type="virtiofs"></driver>
+          <binary xattr="off"></binary>
+          <source dir="/home/test/default"></source>
+          <target dir="1ef53e1c9b6a5a0c695c80665331652\"></target>
+        </filesystem>
+        EOF
+      }
+
+      it 'should attach device xml with xattr off' do
+        expect(libvirt_domain).to receive(:attach_device).with(expected_xml, 0)
+
+        subject.prepare(machine, synced_folders, {})
+      end
+    end
+
     context 'multiple folders' do
       let(:synced_folders) { {
         "/vagrant" => {
