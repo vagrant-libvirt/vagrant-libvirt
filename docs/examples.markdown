@@ -239,6 +239,14 @@ Difference between NFS and 9p is explained
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
 
+The default access mode is `passthrough`, where the file operations on the
+host are performed with the credentials of the user in the guest. That requires
+the qemu process to run as root, which it does not on most distributions, so
+that writing to the share fails with `Operation not permitted`. Against an
+unprivileged qemu use `accessmode: "squash"`, which ignores the ownership the
+guest asks for, or `accessmode: "mapped"`, which keeps it in extended
+attributes of the file on the host.
+
 Example for `accessmode: "squash"` with 9p:
 
 ``` ruby

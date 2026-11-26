@@ -24,9 +24,9 @@ describe '9p synced folder', acceptance: true do
   before do
     environment.skeleton('9p')
 
-    # 9p passthrough performs the file operations as the user the qemu process
-    # runs as, which is an unprivileged one on most distributions, so open up
-    # the temporary environment for it
+    # 9p performs the file operations as the user the qemu process runs as,
+    # which is an unprivileged one on most distributions, so open up the
+    # temporary environment for it
     shared_dir.mkpath
     FileUtils.chmod(0o755, environment.workdir.dirname)
     FileUtils.chmod(0o755, environment.workdir)
