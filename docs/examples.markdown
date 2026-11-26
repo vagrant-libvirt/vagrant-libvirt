@@ -239,6 +239,14 @@ Difference between NFS and 9p is explained
 For 9p shares, a `mount: false` option allows to define synced folders without
 mounting them at boot.
 
+The default access mode is `passthrough`, where the file operations on the
+host are performed with the credentials of the user in the guest. That requires
+the qemu process to run as root, which it does not on most distributions, so
+that writing to the share fails with `Operation not permitted`. Against an
+unprivileged qemu use `accessmode: "squash"`, which ignores the ownership the
+guest asks for, or `accessmode: "mapped"`, which keeps it in extended
+attributes of the file on the host.
+
 Example for `accessmode: "squash"` with 9p:
 
 ``` ruby
@@ -254,6 +262,15 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "./", "/vagrant", type: "9p", disabled: false, accessmode: "mapped", mount: false
 end
 ```
+
+Mounted 9p shares are also written to `/etc/fstab` of the guest, so that they
+survive a reboot of the guest, e.g. one triggered by a provisioner. They are
+mounted with `nofail` to ensure that a share which is no longer configured
+cannot block the guest from booting. Set `config.vm.allow_fstab_modification =
+false` to leave `/etc/fstab` alone, in which case the shares are only mounted
+for as long as the guest keeps running. A share defined with `mount: false` is
+written with `noauto`, so that it stays available to mount by hand without
+being mounted at boot.
 
 Further documentation on using 9p can be found in [kernel
 docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in

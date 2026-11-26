@@ -68,6 +68,19 @@ module VagrantPlugins
 
       # allows Vagrant to persist the mounts in /etc/fstab so that they
       # survive a reboot of the guest
+      synced_folder_capability('9p', 'mount_options') do
+        require_relative 'cap/mount_options_9p'
+        VagrantPlugins::SyncedFolder9P::Cap::MountOptions
+      end
+      synced_folder_capability('9p', 'mount_type') do
+        require_relative 'cap/mount_options_9p'
+        VagrantPlugins::SyncedFolder9P::Cap::MountOptions
+      end
+      synced_folder_capability('9p', 'mount_name') do
+        require_relative 'cap/mount_options_9p'
+        VagrantPlugins::SyncedFolder9P::Cap::MountOptions
+      end
+
       synced_folder_capability('virtiofs', 'mount_options') do
         require_relative 'cap/mount_options_virtiofs'
         VagrantPlugins::SyncedFolderVirtioFS::Cap::MountOptions

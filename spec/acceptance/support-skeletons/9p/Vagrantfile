@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# frozen_string_literal: true
+
+# runs while the machine the `vagrant up` brought up is still running, so the
+# share has to be mounted for it
+provision_check_mount = <<~SHELL
+  set -eu
+  findmnt --type 9p --target /vagrant_shared
+SHELL
+
+Vagrant.configure("2") do |config|
+  # the box is used here because its kernel ships the 9p modules, which not
+  # every distribution enables
+  config.vm.box = "vagrant-libvirt/debian10"
+  config.vm.box_url = "https://vagrant-libvirt.github.io/boxes/debian10.json"
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.memory = 1024
+  end
+
+  # keep the default share out of the way, only the 9p one is under test
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./shared", "/vagrant_shared", type: "9p", create: true
+
+  config.vm.provision "shell", inline: provision_check_mount
+end
