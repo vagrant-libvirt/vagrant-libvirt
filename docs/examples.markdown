@@ -255,6 +255,15 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+Mounted 9p shares are also written to `/etc/fstab` of the guest, so that they
+survive a reboot of the guest, e.g. one triggered by a provisioner. They are
+mounted with `nofail` to ensure that a share which is no longer configured
+cannot block the guest from booting. Set `config.vm.allow_fstab_modification =
+false` to leave `/etc/fstab` alone, in which case the shares are only mounted
+for as long as the guest keeps running. A share defined with `mount: false` is
+written with `noauto`, so that it stays available to mount by hand without
+being mounted at boot.
+
 Further documentation on using 9p can be found in [kernel
 docs](https://www.kernel.org/doc/Documentation/filesystems/9p.txt) and in
 [QEMU
