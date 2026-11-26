@@ -313,6 +313,13 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+Mounted virtiofs shares are also written to `/etc/fstab` of the guest, so that
+they survive a reboot of the guest, e.g. one triggered by a provisioner. They
+are mounted with `nofail` to ensure that a share which is no longer configured
+cannot block the guest from booting. Set `config.vm.allow_fstab_modification =
+false` to leave `/etc/fstab` alone, in which case the shares are only mounted
+for as long as the guest keeps running.
+
 Extended attributes (`xattr`) are not enabled by default by virtiofsd. They can
 be turned on (or explicitly off) per synced folder with the `xattr` option:
 

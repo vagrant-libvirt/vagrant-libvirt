@@ -33,7 +33,7 @@ describe 'package domain', acceptance: true do
     end
 
     it 'should start networking on restart' do
-      status('Test: machine restarts networking')
+      status('Test: start the machine again')
       result = environment.execute('vagrant', 'up')
       expect(result).to exit_with(0)
     end

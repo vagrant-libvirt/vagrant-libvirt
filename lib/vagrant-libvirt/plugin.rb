@@ -66,6 +66,21 @@ module VagrantPlugins
         VagrantPlugins::SyncedFolderVirtioFS::SyncedFolder
       end
 
+      # allows Vagrant to persist the mounts in /etc/fstab so that they
+      # survive a reboot of the guest
+      synced_folder_capability('virtiofs', 'mount_options') do
+        require_relative 'cap/mount_options_virtiofs'
+        VagrantPlugins::SyncedFolderVirtioFS::Cap::MountOptions
+      end
+      synced_folder_capability('virtiofs', 'mount_type') do
+        require_relative 'cap/mount_options_virtiofs'
+        VagrantPlugins::SyncedFolderVirtioFS::Cap::MountOptions
+      end
+      synced_folder_capability('virtiofs', 'mount_name') do
+        require_relative 'cap/mount_options_virtiofs'
+        VagrantPlugins::SyncedFolderVirtioFS::Cap::MountOptions
+      end
+
       # This initializes the internationalization strings.
       def self.setup_i18n
         I18n.load_path << File.expand_path('locales/en.yml',

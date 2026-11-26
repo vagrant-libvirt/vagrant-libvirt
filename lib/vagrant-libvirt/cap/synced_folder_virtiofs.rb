@@ -3,19 +3,20 @@
 require 'log4r'
 require 'ostruct'
 require 'nokogiri'
-require 'digest/md5'
 
 require 'vagrant/errors'
 require 'vagrant/util/subprocess'
 
 require 'vagrant-libvirt/errors'
 require 'vagrant-libvirt/util/erb_template'
+require 'vagrant-libvirt/util/mount_tag'
 
 module VagrantPlugins
   module SyncedFolderVirtioFS
     class SyncedFolder < Vagrant.plugin('2', :synced_folder)
       include Vagrant::Util
       include VagrantPlugins::ProviderLibvirt::Util::ErbTemplate
+      include VagrantPlugins::ProviderLibvirt::Util::MountTag
 
       def initialize(*args)
         super
@@ -46,8 +47,8 @@ module VagrantPlugins
                                readonly: nil,
                                xattr: nil) { |_k, ov, _nv| ov }
 
-            mount_tag = Digest::MD5.new.update(folder_opts[:hostpath]).to_s[0, 31]
-            folder_opts[:mount_tag] = mount_tag
+            tag = mount_tag(folder_opts[:hostpath])
+            folder_opts[:mount_tag] = tag
 
             xattr = folder_opts[:xattr]
 
@@ -56,7 +57,7 @@ module VagrantPlugins
                 xml.driver(type: 'virtiofs')
                 xml.binary(xattr: xattr ? 'on' : 'off') unless xattr.nil?
                 xml.source(dir: folder_opts[:hostpath])
-                xml.target(dir: mount_tag)
+                xml.target(dir: tag)
                 xml.readonly unless folder_opts[:readonly].nil?
               end
             end.to_xml(

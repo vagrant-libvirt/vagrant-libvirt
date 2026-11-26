@@ -1,0 +1,42 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# frozen_string_literal: true
+
+# runs while the share is still mounted by the initial `vagrant up`
+provision_before_reboot = <<~SHELL
+  set -eu
+  findmnt --type virtiofs --target /vagrant_shared
+  date > /vagrant_shared/before.output
+SHELL
+
+# runs after the reboot the provisioner above asked for. Vagrant does not mount
+# the synced folders again for it, so only an /etc/fstab entry can bring the
+# share back, and without one this writes into the bare mount point instead.
+provision_after_reboot = <<~SHELL
+  set -eu
+  findmnt --type virtiofs --target /vagrant_shared
+  date > /vagrant_shared/after.output
+SHELL
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "vagrant-libvirt/almalinux10"
+  config.vm.box_url = "https://vagrant-libvirt.github.io/boxes/almalinux10.json"
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    # the box is used here because its kernel is recent enough to have
+    # virtiofs, so give it enough memory to boot under emulation
+    libvirt.memory = 2048
+    # virtiofsd maps the share into the guest memory, which only works if that
+    # memory is shareable
+    libvirt.memorybacking :access, :mode => "shared"
+  end
+
+  # keep the default share out of the way, only the virtiofs one is under test
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./shared", "/vagrant_shared", type: "virtiofs", create: true
+
+  config.vm.provision "shell", inline: provision_before_reboot, reboot: true
+  config.vm.provision "shell", inline: provision_after_reboot
+end

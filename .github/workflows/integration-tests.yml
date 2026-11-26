@@ -83,6 +83,7 @@ jobs:
           libvirt-daemon-system \
           qemu-system-x86 \
           qemu-utils \
+          virtiofsd \
         ;
         sudo apt-get install -y \
           libvirt-dev \

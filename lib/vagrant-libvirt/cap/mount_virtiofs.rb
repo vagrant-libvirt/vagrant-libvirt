@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-require 'digest/md5'
 require 'vagrant/util/retryable'
+
+require 'vagrant-libvirt/util/mount_tag'
 
 module VagrantPlugins
   module ProviderLibvirt
     module Cap
       class MountVirtioFS
         extend Vagrant::Util::Retryable
+        extend VagrantPlugins::ProviderLibvirt::Util::MountTag
 
         def self.mount_virtiofs_shared_folder(machine, folders)
           folders.each do |_name, opts|
@@ -20,11 +22,11 @@ module VagrantPlugins
             machine.communicate.sudo("mkdir -p #{expanded_guest_path}")
 
             # Mount
-            mount_tag = Digest::MD5.new.update(opts[:hostpath]).to_s[0, 31]
+            tag = mount_tag(opts[:hostpath])
 
             mount_opts = "-o #{opts[:mount_opts]}" if opts[:mount_opts]
 
-            mount_command = "mount -t virtiofs #{mount_opts} '#{mount_tag}' #{expanded_guest_path}"
+            mount_command = "mount -t virtiofs #{mount_opts} '#{tag}' #{expanded_guest_path}"
             retryable(on: Vagrant::Errors::LinuxMountFailed,
                       tries: 5,
                       sleep: 3) do

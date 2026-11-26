@@ -14,14 +14,14 @@ describe 'handle two disk machine', acceptance: true do
   end
 
   it 'should succeed' do
-    status('Test: machine is created successfully')
+    status('Test: create the machine')
     result = environment.execute('vagrant', 'up')
     expect(result).to exit_with(0)
 
-    status('Test: disk one referenced')
+    status('Test: check disk one is referenced')
     expect(result.stdout).to match(/Image\(vda\):.*work_default.img, virtio, 2G/)
 
-    status('Test: disk two referenced')
+    status('Test: check disk two is referenced')
     expect(result.stdout).to match(/Image\(vdb\):.*work_default_1.img, virtio, 10G/)
   end
 end

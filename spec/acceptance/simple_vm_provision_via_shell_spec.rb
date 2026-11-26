@@ -14,18 +14,18 @@ describe 'simple vm provision via shell', acceptance: true do
   end
 
   it 'should succeed' do
-    status('Test: machine is created successfully')
+    status('Test: create the machine')
     result = environment.execute('vagrant', 'up')
     expect(result).to exit_with(0)
 
-    status('Test: provision script executed')
+    status('Test: check the provision script ran')
     expect(result.stdout).to match(/Hello, World/)
 
-    status('Test: reload')
+    status('Test: reload the machine')
     result = environment.execute('vagrant', 'reload')
     expect(result).to exit_with(0)
 
-    status('Test: provision checked if already executed')
+    status('Test: check the machine is reported as already provisioned')
     expect(result.stdout).to match(/Machine already provisioned/)
   end
 end
