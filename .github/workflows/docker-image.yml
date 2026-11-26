@@ -108,6 +108,39 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Build main image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: vagrant-libvirt:test-final
+          target: final
+          cache-from: type=local,src=/tmp/.buildx-cache
+      -
+        name: Build slim image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: vagrant-libvirt:test-slim
+          target: slim
+          cache-from: type=local,src=/tmp/.buildx-cache
+      -
+        # check vagrant runs and the plugin is loaded before publishing
+        name: Smoke test images
+        run: |
+          mkdir -p ${HOME}/.vagrant.d
+          for image in vagrant-libvirt:test-final vagrant-libvirt:test-slim
+          do
+            echo "Testing ${image}"
+            run="docker run --rm -v ${HOME}/.vagrant.d:/.vagrant.d -v ${PWD}:/work -w /work -e IGNORE_MISSING_LIBVIRT_SOCK=1 -e VAGRANT_CHECKPOINT_DISABLE=1 ${image}"
+            ${run} vagrant version
+            ${run} vagrant plugin list | tee plugins.txt
+            grep -q '^vagrant-libvirt ' plugins.txt
+          done
+      -
         name: Build and push main image
         id: docker_build
         uses: docker/build-push-action@v5

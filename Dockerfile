@@ -59,7 +59,7 @@ RUN rake build
 
 RUN find /opt/vagrant/embedded/ -type f | grep -v /opt/vagrant/embedded/plugins.json > /files-to-delete.txt
 
-RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems/${VAGRANT_VERSION} ./pkg/vagrant-libvirt*.gem
+RUN /opt/vagrant/embedded/bin/gem install --install-dir /opt/vagrant/embedded/gems ./pkg/vagrant-libvirt*.gem
 
 RUN echo -n '{\n\
     "version": "1",\n\
