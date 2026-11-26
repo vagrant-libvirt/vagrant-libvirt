@@ -12,6 +12,9 @@ module VagrantPlugins
         # the version the synced folder mounts with by default, see
         # VagrantPlugins::SyncedFolder9P::SyncedFolder#enable
         DEFAULT_VERSION = '9p2000.L'
+        # what the 9p client takes as an access mode besides a uid, see
+        # `v9fs_parse_options` of the kernel
+        ACCESS_MODES = %w[user any client].freeze
 
         # Returns the mount options for a 9p synced folder
         #
@@ -27,9 +30,7 @@ module VagrantPlugins
           mount_options = ['trans=virtio']
           mount_options += Array(options[:mount_options])
 
-          # the deprecation of `:owner` in favour of `:access` is reported
-          # while mounting, so only fall back to it silently here
-          access = options[:access] || options[:owner]
+          access = access_mode(options)
           mount_options << "access=#{access}" if access
 
           mount_options << "version=#{options[:version] || DEFAULT_VERSION}"
@@ -44,6 +45,30 @@ module VagrantPlugins
 
           [mount_options.uniq.join(','), nil, nil]
         end
+
+        # The access mode to mount the synced folder with, if any.
+        #
+        # The deprecation of `:owner` in favour of `:access` is reported while
+        # mounting, so the fallback to it is silent here. It has to ignore
+        # everything the 9p client would not take, because Vagrant fills
+        # `:owner` in with the user it connects as before it renders the
+        # options into /etc/fstab, see the `persist_mount_shared_folder`
+        # capability of its linux guest. An entry carrying that username is
+        # rejected by the client with `Unknown access argument`, and as the
+        # entry is written with `nofail`, the share would silently stay
+        # unmounted after a reboot of the guest.
+        #
+        # @param [Hash] options of the synced folder
+        # @return [String, nil] access mode
+        def self.access_mode(options)
+          return options[:access].to_s if options[:access]
+
+          owner = options[:owner]&.to_s
+          return owner if ACCESS_MODES.include?(owner) || owner =~ /\A\d+\z/
+
+          nil
+        end
+        private_class_method :access_mode
 
         # @param [Machine] machine
         # @return [String] filesystem type to mount

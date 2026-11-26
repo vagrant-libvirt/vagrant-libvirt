@@ -103,6 +103,25 @@ describe 'VagrantPlugins::SyncedFolder9P::Cap::MountOptions' do
           expect(subject).to eq(['trans=virtio,access=user,version=9p2000.L,nofail', nil, nil])
         end
       end
+
+      context 'with a uid' do
+        let(:options) { { :owner => '1000' } }
+
+        it 'should use it as access' do
+          expect(subject).to eq(['trans=virtio,access=1000,version=9p2000.L,nofail', nil, nil])
+        end
+      end
+    end
+
+    context 'with the owner Vagrant fills in' do
+      # Vagrant sets the option to the user it connects as before it renders
+      # the mount options into /etc/fstab, see the `persist_mount_shared_folder`
+      # capability of its linux guest
+      let(:options) { { :owner => 'vagrant', :group => 'vagrant' } }
+
+      it 'should not mount with an access mode the 9p client rejects' do
+        expect(subject).to eq(['trans=virtio,version=9p2000.L,nofail', nil, nil])
+      end
     end
 
     context 'with mounting disabled' do

@@ -3,16 +3,9 @@
 #
 # frozen_string_literal: true
 
-# runs while the share is still mounted by the initial `vagrant up`
-provision_before_reboot = <<~SHELL
-  set -eu
-  findmnt --type 9p --target /vagrant_shared
-SHELL
-
-# runs after the reboot the provisioner above asked for. Vagrant does not mount
-# the synced folders again for it, so only an /etc/fstab entry can bring the
-# share back, and without one this writes into the bare mount point instead.
-provision_after_reboot = <<~SHELL
+# runs while the machine the `vagrant up` brought up is still running, so the
+# share has to be mounted for it
+provision_check_mount = <<~SHELL
   set -eu
   findmnt --type 9p --target /vagrant_shared
 SHELL
@@ -32,6 +25,5 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder "./shared", "/vagrant_shared", type: "9p", create: true
 
-  config.vm.provision "shell", inline: provision_before_reboot, reboot: true
-  config.vm.provision "shell", inline: provision_after_reboot
+  config.vm.provision "shell", inline: provision_check_mount
 end

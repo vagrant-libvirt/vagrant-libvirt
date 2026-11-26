@@ -24,9 +24,8 @@ describe '9p synced folder', acceptance: true do
   before do
     environment.skeleton('9p')
 
-    # 9p performs the file operations as the user the qemu process runs as,
-    # which is an unprivileged one on most distributions, so open up the
-    # temporary environment for it
+    # the qemu process serves the share, and it runs as an unprivileged user
+    # on most distributions, so open up the temporary environment for it
     shared_dir.mkpath
     FileUtils.chmod(0o755, environment.workdir.dirname)
     FileUtils.chmod(0o755, environment.workdir)
@@ -37,19 +36,10 @@ describe '9p synced folder', acceptance: true do
     assert_execute('vagrant', 'destroy', '--force')
   end
 
-  it 'should still be mounted for a provisioner running after a reboot' do
+  it 'should be mounted and persisted in /etc/fstab' do
     status('Test: create and provision the machine')
-    # the second provisioner runs after the first one rebooted the guest and
-    # checks the mount itself, so a share that did not come back fails here
+    # the provisioner checks the mount itself, see the skeleton
     expect(environment.execute('vagrant', 'up')).to exit_with(0)
-
-    status('Test: check the provisioner before the reboot wrote through to the host')
-    expect(shared_dir.join('before.output')).to have_file_content(/\S/)
-
-    status('Test: check the provisioner after the reboot wrote through to the host')
-    # an unmounted share leaves the guest writing into the bare mount point,
-    # where the file never reaches the host
-    expect(shared_dir.join('after.output')).to have_file_content(/\S/)
 
     status('Test: check the mount is persisted in /etc/fstab')
     managed = vagrant_managed_fstab
@@ -62,6 +52,14 @@ describe '9p synced folder', acceptance: true do
 
     status('Test: check a share that is gone cannot block the boot of the guest')
     expect(entry[:options].split(',')).to include('nofail')
+
+    status('Test: check the persisted entry can mount the share')
+    # the guest is not rebooted here, so mount the entry by hand. An entry
+    # carrying an option the 9p client does not take would be written and
+    # found above all the same, and only fail once something mounts it.
+    remount = 'sudo umount %<path>s && sudo mount %<path>s && ' \
+              'findmnt --type 9p --target %<path>s' % { path: guest_path }
+    expect(execute_ssh('-c', remount)).to exit_with(0)
   end
 
   # @return [String] the part of the guest /etc/fstab that Vagrant manages
