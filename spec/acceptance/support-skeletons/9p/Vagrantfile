@@ -7,7 +7,6 @@
 provision_before_reboot = <<~SHELL
   set -eu
   findmnt --type 9p --target /vagrant_shared
-  date > /vagrant_shared/before.output
 SHELL
 
 # runs after the reboot the provisioner above asked for. Vagrant does not mount
@@ -16,7 +15,6 @@ SHELL
 provision_after_reboot = <<~SHELL
   set -eu
   findmnt --type 9p --target /vagrant_shared
-  date > /vagrant_shared/after.output
 SHELL
 
 Vagrant.configure("2") do |config|
@@ -32,13 +30,7 @@ Vagrant.configure("2") do |config|
 
   # keep the default share out of the way, only the 9p one is under test
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  # the default `accessmode: "passthrough"` performs the file operations in
-  # the guest with the credentials of the user in the guest, which the qemu
-  # process can only do while running as root. It is unprivileged on most
-  # distributions, so ask for `squash` instead, where the ownership the guest
-  # asks for is ignored rather than failing the operation
-  config.vm.synced_folder "./shared", "/vagrant_shared", type: "9p",
-                          accessmode: "squash", create: true
+  config.vm.synced_folder "./shared", "/vagrant_shared", type: "9p", create: true
 
   config.vm.provision "shell", inline: provision_before_reboot, reboot: true
   config.vm.provision "shell", inline: provision_after_reboot
