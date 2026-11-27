@@ -884,7 +884,7 @@ module VagrantPlugins
         # Setup connection uri.
         uri = @driver.dup
         virt_path = case uri
-                    when 'qemu', 'kvm'
+                    when 'qemu', 'kvm', 'hvf'
                       qemu_use_session ? '/session' : '/system'
                     when 'openvz', 'uml', 'phyp', 'parallels'
                       '/system'
@@ -895,7 +895,7 @@ module VagrantPlugins
                     else
                       raise "Require specify driver #{uri}"
         end
-        if uri == 'kvm'
+        if ['kvm', 'hvf'].include?(uri)
           uri = 'qemu' # use QEMU uri for KVM domain type
         end
 
