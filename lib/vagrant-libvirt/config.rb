@@ -136,6 +136,8 @@ module VagrantPlugins
       attr_accessor :video_type
       attr_accessor :video_vram
       attr_accessor :video_accel3d
+      attr_accessor :video_resolution_x
+      attr_accessor :video_resolution_y
       attr_accessor :keymap
       attr_accessor :kvm_hidden
       attr_accessor :sound_type
@@ -1040,6 +1042,8 @@ module VagrantPlugins
         @graphics_gl = @video_accel3d if @graphics_gl == UNSET_VALUE
         @video_type = @video_accel3d ? 'virtio' : 'cirrus' if @video_type == UNSET_VALUE
         @video_vram = 16384 if @video_vram == UNSET_VALUE
+        @video_resolution_x = nil if @video_resolution_x == UNSET_VALUE
+        @video_resolution_y = nil if @video_resolution_y == UNSET_VALUE
         @sound_type = nil if @sound_type == UNSET_VALUE
         @keymap = 'en-us' if @keymap == UNSET_VALUE
         @kvm_hidden = false if @kvm_hidden == UNSET_VALUE

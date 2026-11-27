@@ -129,7 +129,7 @@
     </graphics>
     <video>
       <model type='virtio' vram='16384' heads='1'>
-        <acceleration accel3d='yes'/>
+        <acceleration accel3d='yes'/><resolution x='1920' y='1080'/>
       </model>
     </video>
     <rng model='virtio'>
