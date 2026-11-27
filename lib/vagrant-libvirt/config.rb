@@ -612,6 +612,7 @@ module VagrantPlugins
         @channels.push(type: options[:type],
                        source_mode: options[:source_mode],
                        source_path: options[:source_path],
+                       source_channel: options[:source_channel],
                        target_address: options[:target_address],
                        target_name: options[:target_name],
                        target_port: options[:target_port],
