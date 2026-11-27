@@ -32,14 +32,9 @@ module VagrantPlugins
         config = @machine.provider_config
         uri = config.uri
 
-        # Setup command for retrieving IP address for newly created machine
-        # with some MAC address. Get it from dnsmasq leases table
-        ip_command = %q( awk "/$mac/ {print \$1}" /proc/net/arp )
-
         conn_attr = {
           provider: 'libvirt',
           libvirt_uri: uri,
-          libvirt_ip_command: ip_command,
         }
         conn_attr[:libvirt_username] = config.username if config.username
         conn_attr[:libvirt_password] = config.password if config.password
