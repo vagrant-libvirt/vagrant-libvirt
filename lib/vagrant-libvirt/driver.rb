@@ -80,6 +80,11 @@ module VagrantPlugins
           return nil
         end
 
+        if @machine.provider_config.qemu_user_networking
+          # we use host forwarding in user networking mode
+          return '127.0.0.1'
+        end
+
         # attempt to get ip address from qemu agent
         if @machine.provider_config.qemu_use_agent == true
           @logger.info('Get IP via qemu agent')

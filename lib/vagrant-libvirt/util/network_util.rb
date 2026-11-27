@@ -22,6 +22,10 @@ module VagrantPlugins
 
         def network_interfaces(machine, logger)
           # Setup list of interfaces before creating them.
+          if machine.config.qemu_user_networking
+            return []
+          end
+
           adapters = []
 
           # Vagrant gives you adapter 0 by default
@@ -53,6 +57,10 @@ module VagrantPlugins
         end
 
         def configured_networks(machine, logger)
+          if machine.provider_config.qemu_user_networking
+            return []
+          end
+
           qemu_use_session = machine.provider_config.qemu_use_session
           qemu_use_agent = machine.provider_config.qemu_use_agent
           management_network_device = machine.provider_config.management_network_device
