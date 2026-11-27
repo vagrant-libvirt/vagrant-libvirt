@@ -86,8 +86,6 @@ module VagrantPlugins
           return get_ipaddress_from_qemu_agent(@machine.config.vm.boot_timeout, domain)
         end
 
-        return get_ipaddress_from_system domain.mac if @machine.provider_config.qemu_use_session
-
         # Get IP address from dhcp leases table
         begin
           ip_address = get_ipaddress_from_domain(domain)
@@ -198,13 +196,7 @@ module VagrantPlugins
       end
 
       def list_all_networks
-        client = if @machine.provider_config.qemu_use_session
-                   system_connection
-                else
-                  connection.client
-                end
-
-        client.list_all_networks.select do |net|
+        connection.client.list_all_networks.select do |net|
           begin
             net.bridge_name
           rescue Libvirt::Error
@@ -249,19 +241,6 @@ module VagrantPlugins
       end
 
       private
-
-      def get_ipaddress_from_system(mac)
-        ip_address = nil
-
-        list_all_networks.each do |net|
-          leases = net.dhcp_leases(mac, 0)
-          # Assume the lease expiring last is the current IP address
-          ip_address = leases.max_by { |lse| lse['expirytime'] }['ipaddr'] unless leases.empty?
-          break if ip_address
-        end
-
-        ip_address
-      end
 
       def get_ipaddress_from_qemu_agent(timeout, domain=nil)
         ip_address = nil

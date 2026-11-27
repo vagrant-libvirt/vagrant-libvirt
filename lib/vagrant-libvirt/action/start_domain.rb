@@ -548,6 +548,53 @@ module VagrantPlugins
             nvram.parent.delete_element(nvram)
           end
 
+          sysinfo_fwcfg = REXML::XPath.first(xml_descr, '/domain/sysinfo[@type="fwcfg"]')
+          if !config.sysinfo_fwcfgs.empty?
+            if sysinfo_fwcfg.nil?  # insert respective sysinfo entry if it does not exist yet
+              descr_changed = true
+              sysinfo_fwcfg = REXML::Element.new('sysinfo')
+              sysinfo_fwcfg.add_attribute("type", "fwcfg")
+              REXML::XPath.first(xml_descr, '/domain').insert_after(loader, sysinfo_fwcfg)
+            end
+
+            # for each entry in the configuration, check that it exists in the XML
+            config.sysinfo_fwcfgs.each do |fwcfg_entry|
+              sysinfo_entry = REXML::XPath.first(xml_descr, "/domain/sysinfo[@type=\"fwcfg\"]/entry[@name='#{fwcfg_entry[:name]}']")
+
+              # if the entry exists, but either the file attribute or the element content do not match, delete it to be recreated
+              if !sysinfo_entry.nil? && ((sysinfo_entry['file'] != fwcfg_entry[:file]) || (sysinfo_entry.text != fwcfg_entry[:content]))
+                sysinfo_entry.parent.delete_element(sysinfo_entry)
+                sysinfo_entry = nil
+              end
+
+              # if the entry does not exist or it has ben deleted in the step above, create it
+              if sysinfo_entry.nil?
+                descr_changed = true
+
+                sysinfo_entry = REXML::Element.new('entry')
+                sysinfo_entry.add_attribute('name', fwcfg_entry[:name])
+                if !fwcfg_entry[:content].nil?
+                  sysinfo_entry.text = entry[:content]
+                elsif !fwcfg_entry[:file].nil?
+                  sysinfo_entry.add_attribute('file', fwcfg_entry[:file])
+                end
+              end
+            end
+
+            # go through the XML again and check for elements which do not exist in the config (anymore)
+            REXML::XPath.each(xml_descr, '/domain/sysinfo[@type="fwcfg"]/entry') do |sysinfo_entry|
+              if config.sysinfo_fwcfgs.detect{|entry| entry[:name] == sysinfo_entry['name']}.nil?
+                descr_changed = true
+                sysinfo_entry.parent.delete_element(sysinfo_entry)
+              end
+              # all cases where the name matches a desired entry have been handled by the above
+            end
+          elsif !sysinfo_fwcfg.nil?
+            # if the config forw fwcfgs is empty but the XML has an entry, drop it
+            descr_changed = true
+            sysinfo_fwcfg.parent.delete_element(sysinfo_fwcfg)
+          end
+
           # Apply
           if descr_changed
             env[:ui].info(I18n.t('vagrant_libvirt.updating_domain'))

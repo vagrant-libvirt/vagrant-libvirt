@@ -102,6 +102,15 @@ module VagrantPlugins
             'oem strings' => {:ui => "OEM Strings", :xml => "oemStrings"},
           }
 
+          @sysinfo_fwcfgs = config.sysinfo_fwcfgs
+          @sysinfo_fwcfgs.each do |fwcfg_entry|
+            next unless fwcfg_entry[:file]
+
+            if !File.exist?(fwcfg_entry[:file])
+              raise Errors::FwcfgFileNotAccessible, path: fwcfg_entry[:file]
+            end
+          end
+
           # Boot order
           @boot_order = config.boot_order
 
@@ -317,6 +326,17 @@ module VagrantPlugins
                 values.each do |value|
                   env[:ui].info("    -> #{value}")
                 end
+              end
+            end
+          end
+
+          unless @sysinfo_fwcfgs.empty?
+            env[:ui].info(" -- Sysinfo Firmware Configurations:")
+            @sysinfo_fwcfgs.each do |fwcfg_entry|
+              if !fwcfg_entry[:file].nil?
+                env[:ui].info("    -> #{fwcfg_entry[:name]} -> #{fwcfg_entry[:file]}")
+              elsif !fwcfg_entry[:content].nil?
+                env[:ui].info("    -> #{fwcfg_entry[:name]}: '#{fwcfg_entry[:content]}'")
               end
             end
           end

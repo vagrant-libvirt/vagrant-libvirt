@@ -149,6 +149,8 @@ module VagrantPlugins
 
       # Configure sysinfo values
       attr_accessor :sysinfo
+      # Configure sysinfo fwcfg type values
+      attr_accessor :sysinfo_fwcfgs
 
       # Configure the memballoon
       attr_accessor :memballoon_enabled
@@ -330,6 +332,7 @@ module VagrantPlugins
         @tpm_version       = UNSET_VALUE
 
         @sysinfo           = UNSET_VALUE
+        @sysinfo_fwcfgs    = UNSET_VALUE
 
         @memballoon_enabled = UNSET_VALUE
         @memballoon_model   = UNSET_VALUE
@@ -861,6 +864,28 @@ module VagrantPlugins
         @serials << serial
       end
 
+      def sysinfo_fwcfg(options={})
+        @sysinfo_fwcfgs = [] if @sysinfo_fwcfgs == UNSET_VALUE
+
+        options = {
+          :name => '',
+          :content => nil,
+          :file => nil,
+        }.merge(options)
+
+        if options[:name] == '' || !(options[:content].nil? ^ options[:file].nil?)
+          raise "The name and either a content or a file key must be specified for a sysinfo fwcfg entry"
+        end
+
+        entry = {
+          :name => options[:name],
+          :content => options[:content],
+          :file => options[:file],
+        }
+
+        @sysinfo_fwcfgs << entry
+      end
+
       def _default_uri
         # Determine if any settings except driver provided explicitly, if not
         # and the LIBVIRT_DEFAULT_URI var is set, use that.
@@ -1055,6 +1080,7 @@ module VagrantPlugins
         @emulator_path = nil if @emulator_path == UNSET_VALUE
 
         @sysinfo = {} if @sysinfo == UNSET_VALUE
+        @sysinfo_fwcfgs = [] if @sysinfo_fwcfgs == UNSET_VALUE
 
         # Boot order
         @boot_order = [] if @boot_order == UNSET_VALUE
