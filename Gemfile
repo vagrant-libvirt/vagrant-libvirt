@@ -44,6 +44,7 @@ end
 
 group :plugins do
   gemspec
+  gem 'vagrant-s3auth-mfa'
 end
 
 group :development do
@@ -53,4 +54,5 @@ group :development do
   gem 'rubocop', require: false
 end
 
+gem 'log4r'
 gem 'parallel_tests', group: [:development, :test], require: false

@@ -36,6 +36,14 @@ module VagrantPlugins
           end
         end
       end
+
+      class MountVirtioFSWin
+        extend Vagrant::Util::Retryable
+
+        def self.mount_virtiofs_shared_folder(machine, folders)
+          # Do nothing
+        end
+      end
     end
   end
 end
