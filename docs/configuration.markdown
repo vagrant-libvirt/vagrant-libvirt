@@ -445,6 +445,7 @@ starts with `libvirt__` string. Here is a list of those options:
   address in range (after network name and gateway).
 * `:libvirt__dhcp_stop` - Last address given out via DHCP.  Default is last
   possible address in range (before broadcast address).
+* `:libvirt__dhcp_default_lease_time` - default DHCP lease time for addresses in the network
 * `:libvirt__dhcp_bootp_file` - The file to be used for the boot image.  Used
   only when dhcp is enabled.
 * `:libvirt__dhcp_bootp_server` - The server that runs the DHCP server.  Used

@@ -342,6 +342,7 @@ module VagrantPlugins
             @network_dhcp_enabled = true
             @network_dhcp_bootp_file = @options[:dhcp_bootp_file]
             @network_dhcp_bootp_server = @options[:dhcp_bootp_server]
+            @network_dhcp_default_lease_time = @options[:dhcp_default_lease_time]
             @network_range_start = start_address
             @network_range_stop = stop_address
           else
